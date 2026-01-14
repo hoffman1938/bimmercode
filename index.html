@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BMW Diagnostic Codes</title>
+    <link rel="stylesheet" href="./style.css" />
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="shortcut icon" href="./ico.svg" type="image/x-icon" />
+  </head>
+  <body class="bmw-pattern">
+    <div id="webgl-container"></div>
+    <header>
+      <div class="logo-container">
+        <a class="main_logo_refr" href="#">
+          <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="48"
+                stroke="white"
+                stroke-width="4"
+                fill="black"
+              />
+              <circle cx="50" cy="50" r="35" fill="white" />
+              <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+              <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+              <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+              <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+            </svg>
+          </div>
+          <h1>BMW Diagnostic Codes</h1>
+        </a>
+      </div>
+      <div class="controls">
+        <a href="forum.html" class="btn btn-forum"
+          ><i class="fas fa-comments"></i> Форум</a
+        >
+        <button id="language-toggle" class="btn">
+          <i class="fas fa-globe"></i> <span>EN</span>
+        </button>
+      </div>
+    </header>
+    <main class="container">
+      <div id="search-container">
+        <div class="search-box">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Enter DTC code or description..."
+          />
+          <i class="fas fa-search search-icon"></i>
+        </div>
+        <div id="results-container" class="hidden">
+          <!-- Search results will be populated here by JavaScript -->
+        </div>
+        <div id="empty-state" class="message-container">
+          <i class="fas fa-car"></i>
+          <p class="message">
+            Enter a BMW error code to get detailed information
+          </p>
+          <p class="sub-message">Example: 102613, 10890C, 121001</p>
+        </div>
+        <div id="no-results" class="message-container hidden">
+          <i class="fas fa-info-circle"></i>
+          <p class="message">No matching error codes found</p>
+          <p class="sub-message">Try a different code or description</p>
+        </div>
+      </div>
+      <div id="code-detail" class="hidden">
+        <!-- Code details will be populated here by JavaScript -->
+      </div>
+    </main>
+    <footer>
+      <p>BMW DTC Bot © 2025 • All BMW codes and series supported</p>
+    </footer>
+    <script defer src="./script.js"></script>
+  </body>
+</html>

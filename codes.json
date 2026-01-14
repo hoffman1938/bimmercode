@@ -1,0 +1,4023 @@
+{
+  "codes": [
+    {
+      "code": "P0100",
+      "title": {
+        "en": "Mass Air Flow (MAF) Sensor Circuit Malfunction",
+        "ru": "Неисправность цепи датчика расхода воздуха",
+        "ka": "მასის საჰაერო ნაკადის (MAF) სენსორის წრედის გაუმართაობა"
+      },
+      "description": {
+        "en": "This error indicates a problem with the Mass Air Flow sensor circuit. The MAF sensor measures the amount of air entering the engine and helps the ECU determine the proper fuel mixture.",
+        "ru": "Эта ошибка указывает на проблему с цепью датчика массового расхода воздуха. Датчик MAF измеряет количество воздуха, поступающего в двигатель, и помогает ЭБУ определить правильную топливную смесь.",
+        "ka": "ეს შეცდომა მიუთითებს პრობლემაზე მასის საჰაერო ნაკადის სენსორის გაფართოებაში. MAF ECU- განსაზღვრავს სწორ საწვავის სისტემას."
+      },
+      "solutions": {
+        "en": [
+          "Check wiring connections to the MAF sensor",
+          "Clean the MAF sensor using specialized MAF cleaner",
+          "Check for intake leaks after the MAF sensor",
+          "Replace the MAF sensor if cleaning doesn't resolve the issue"
+        ],
+        "ru": [
+          "Проверить соединения проводки к датчику MAF",
+          "Очистить датчик MAF, используя специальный очиститель",
+          "Проверить наличие утечек во впускном коллекторе после датчика MAF",
+          "Заменить датчик MAF, если очистка не решает проблему"
+        ],
+        "ka": [
+          "შეამოწმეთ MAF სენსორის კავშირები და მავთულები",
+          "გაასუფთავეთ MAF სენსორი სპეციალური საწმენდით",
+          "შეამოწმეთ ჰაერის ფილტრის მდგომარეობა",
+          "ტესტირება მოახდინეთ სენსორის ძაბვის გამომავალი",
+          "საჭიროების შემთხვევაში შეცვალეთ MAF სენსორი"
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B58",
+        "M54",
+        "S54"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "P0171",
+      "title": {
+        "en": "Fuel System Too Lean (Bank 1)",
+        "ru": "Слишком бедная смесь (возможен подсос воздуха)",
+        "ka": "სისტემა ძალიან გამხდარია (ბანკი 1)"
+      },
+      "description": {
+        "en": "This error indicates that the oxygen sensor detects the air/fuel mixture is too lean (excess air) on Bank 1. Often caused by vacuum leaks, faulty fuel injectors, or MAF sensor issues.",
+        "ru": "Эта ошибка указывает, что кислородный датчик обнаруживает слишком бедную смесь воздуха/топлива (избыток воздуха) на Банке 1. Часто вызвана вакуумными утечками, неисправными топливными форсунками или проблемами с датчиком MAF.",
+        "ka": "ეს კოდი მიუთითებს, რომ საწვავის სისტემა ძალიან გამხდარია ბანკი 1-ზე. ძრავა არ იღებს საკმარის საწვავს ან იღებს ძალიან ბევრ ჰაერს."
+      },
+      "solutions": {
+        "en": [
+          "Check for vacuum leaks in the intake manifold",
+          "Inspect intake boot for cracks or tears",
+          "Check for leaking fuel injectors",
+          "Verify fuel pressure is within specification",
+          "Check or replace oxygen sensors",
+          "Clean or replace MAF sensor"
+        ],
+        "ru": [
+          "Проверить наличие вакуумных утечек во впускном коллекторе",
+          "Осмотреть впускной патрубок на наличие трещин или разрывов",
+          "Проверить топливные форсунки на утечки",
+          "Убедиться, что давление топлива соответствует спецификации",
+          "Проверить или заменить кислородные датчики",
+          "Очистить или заменить датчик MAF"
+        ],
+        "ka": [
+          "შეამოწმეთ ვაკუუმის გაჟონვა შემწოვ სისტემაში",
+          "დაათვალიერეთ საწვავის ინჟექტორები",
+          "შეამოწმეთ MAF სენსორის სწორი მუშაობა",
+          "შეამოწმეთ საწვავის წნევა",
+          "შეამოწმეთ PCV (კარტერის ვენტილაციის) სისტემა"
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "M54"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0321",
+      "title": {
+        "en": "Ignition/Distributor Engine Speed Input Circuit Range/Performance",
+        "ru": "Неверные сигналы в цепи распределителя зажигания",
+        "ka": "მნათობის განაწილების სიგნალის დიაპაზონი/შესრულება"
+      },
+      "description": {
+        "en": "This code indicates an issue with the crankshaft position sensor or its circuit. The ECU is not receiving proper signals for engine timing purposes.",
+        "ru": "Этот код указывает на проблему с датчиком положения коленчатого вала или его цепью. ЭБУ не получает правильные сигналы для определения фаз работы двигателя.",
+        "ka": "ეს კოდი მიუთითებს პრობლემაზე მნათობის განაწილების სენსორის სიგნალთან. სენსორი აძლევს ECU-ს არასწორ ინფორმაციას ძრავის სიჩქარის შესახებ."
+      },
+      "solutions": {
+        "en": [
+          "Check wiring and connectors to the crankshaft position sensor",
+          "Inspect the crankshaft sensor for damage or contamination",
+          "Check the reluctor ring (trigger wheel) for damaged teeth",
+          "Replace the crankshaft position sensor",
+          "Verify proper gap between sensor and reluctor ring"
+        ],
+        "ru": [
+          "Проверить проводку и разъемы датчика положения коленчатого вала",
+          "Осмотреть датчик коленвала на наличие повреждений или загрязнений",
+          "Проверить зубчатое колесо (триггерное колесо) на наличие поврежденных зубьев",
+          "Заменить датчик положения коленчатого вала",
+          "Проверить правильный зазор между датчиком и зубчатым колесом"
+        ],
+        "ka": [
+          "შეამოწმეთ მნათობის განაწილების სენსორის კავშირები",
+          "დაათვალიერეთ სენსორი დაზიანების თაობაზე",
+          "გამოცადეთ სიგნალის გამომავალი ოსცილოსკოპით",
+          "დარწმუნდით სწორ ჰაერის უფსკერში სენსორსა და რელაქტორის ბორბალს შორის",
+          "საჭიროების შემთხვევაში შეცვალეთ მნათობის განაწილების სენსორი"
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "S54"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0560",
+      "title": {
+        "en": "System Voltage Malfunction",
+        "ru": "Неверное напряжение в цепи питания системы",
+        "ka": "სისტემის არასწორი კვების ძაბვა  "
+      },
+      "description": {
+        "en": "This code indicates a problem with the charging system voltage. The ECU has detected that the system voltage is either too high or too low for proper operation.",
+        "ru": "Этот код указывает на проблему с напряжением системы зарядки. ЭБУ обнаружил, что напряжение системы либо слишком высокое, либо слишком низкое для правильной работы.",
+        "ka": "ეს კოდი მიუთითებს დატენვის სისტემის ძაბვის პრობლემაზე. ECU-მ აღმოაჩინა, რომ სისტემის ძაბვა არის ძალიან მაღალი ან ძალიან დაბალი, რომ სწორად იმუშაოს.  "
+      },
+      "solutions": {
+        "en": [
+          "Check the battery condition and charge level",
+          "Test the alternator output voltage",
+          "Inspect the alternator belt for proper tension",
+          "Check the voltage regulator",
+          "Inspect battery cables and connections for corrosion",
+          "Check for parasitic draw when vehicle is off"
+        ],
+        "ru": [
+          "Проверить состояние аккумулятора и уровень заряда",
+          "Протестировать выходное напряжение генератора",
+          "Проверить ремень генератора на правильное натяжение",
+          "Проверить регулятор напряжения",
+          "Осмотреть кабели и соединения аккумулятора на наличие коррозии",
+          "Проверить паразитный ток при выключенном автомобиле"
+        ],
+        "ka": [
+          "შეამოწმეთ ბატარეის მდგომარეობა და დატენვის დონე  ",
+          "სატესტო გენერატორის გამომავალი ძაბვა  ",
+          "შეამოწმეთ გენერატორის ღვედი სწორი დაჭიმვისთვის  ",
+          "შეამოწმეთ ძაბვის რეგულატორი  ",
+          "შეამოწმეთ ბატარეის კაბელები და კავშირები კოროზიაზე  ",
+          "შეამოწმეთ მაწანწალა დენი გამორთული მანქანით  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Electrical",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "P1140",
+      "title": {
+        "en": "Load Signal Malfunction",
+        "ru": "Неверный сигнал цепи нагрузки",
+        "ka": "არასწორი ჩატვირთვის მიკროსქემის სიგნალი  "
+      },
+      "description": {
+        "en": "This error indicates a problem with the engine load calculation. The ECU uses various sensors to calculate engine load, and this code suggests one or more of these signals is incorrect.",
+        "ru": "Эта ошибка указывает на проблему с расчетом нагрузки двигателя. ЭБУ использует различные датчики для расчета нагрузки двигателя, и этот код предполагает, что один или несколько из этих сигналов неверны.",
+        "ka": "ეს შეცდომა მიუთითებს ძრავის დატვირთვის გაანგარიშების პრობლემაზე. ECU იყენებს სხვადასხვა სენსორებს ძრავის დატვირთვის გამოსათვლელად და ეს კოდი ვარაუდობს, რომ ამ სიგნალებიდან ერთი ან მეტი არასწორია.  "
+      },
+      "solutions": {
+        "en": [
+          "Check throttle position sensor",
+          "Inspect MAF sensor and clean if necessary",
+          "Check for intake leaks",
+          "Verify MAP sensor operation",
+          "Inspect wiring to all load-related sensors"
+        ],
+        "ru": [
+          "Проверить датчик положения дроссельной заслонки",
+          "Осмотреть датчик MAF и очистить при необходимости",
+          "Проверить наличие утечек во впускной системе",
+          "Проверить работу датчика MAP",
+          "Осмотреть проводку ко всем датчикам, связанным с нагрузкой"
+        ],
+        "ka": [
+          "შეამოწმეთ დროსელის პოზიციის სენსორი  ",
+          "შეამოწმეთ MAF სენსორი და საჭიროების შემთხვევაში გაწმინდეთ  ",
+          "შეამოწმეთ გაჟონვა მიმღების სისტემაში  ",
+          "შეამოწმეთ MAP სენსორის მოქმედება  ",
+          "შეამოწმეთ გაყვანილობა დატვირთვასთან დაკავშირებული ყველა სენსორისთვის  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "P1509",
+      "title": {
+        "en": "Idle Control Circuit Malfunction",
+        "ru": "Проблемы в работе электрической цепи управления устройством регулирования холостого хода",
+        "ka": "პრობლემები უმოქმედო ჰაერის მართვის მოწყობილობის ელექტრული მართვის წრედის მუშაობაში  "
+      },
+      "description": {
+        "en": "This error indicates a problem with the idle air control system. The ECU has detected an issue with the circuit that controls the idle speed of the engine.",
+        "ru": "Эта ошибка указывает на проблему с системой управления холостым ходом. ЭБУ обнаружил проблему с цепью, которая управляет скоростью холостого хода двигателя.",
+        "ka": "ეს შეცდომა მიუთითებს უმოქმედო ჰაერის მართვის სისტემის პრობლემაზე. ECU-მ აღმოაჩინა პრობლემა წრედთან, რომელიც აკონტროლებს ძრავის უმოქმედობის სიჩქარეს.  "
+      },
+      "solutions": {
+        "en": [
+          "Clean throttle body and idle air control valve",
+          "Check wiring to the idle air control valve",
+          "Inspect for vacuum leaks in the intake system",
+          "Replace idle air control valve if necessary",
+          "Check for carbon buildup in the intake manifold"
+        ],
+        "ru": [
+          "Очистить дроссельную заслонку и клапан регулирования холостого хода",
+          "Проверить проводку к клапану регулирования холостого хода",
+          "Проверить наличие вакуумных утечек во впускной системе",
+          "Заменить клапан регулирования холостого хода при необходимости",
+          "Проверить наличие нагара во впускном коллекторе"
+        ],
+        "ka": [
+          "გაწმინდეთ დროსელის სარქველი და უმოქმედო ჰაერის კონტროლის სარქველი  ",
+          "შეამოწმეთ გაყვანილობა უმოქმედო ჰაერის მართვის სარქველამდე  ",
+          "ვაკუუმის გაჟონვის შემოწმება მიმღების სისტემაში  ",
+          "საჭიროების შემთხვევაში შეცვალეთ უმოქმედო ჰაერის კონტროლის სარქველი  ",
+          "შეამოწმეთ ნახშირბადის დეპოზიტები მიმღების კოლექტორში  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N62"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "E58C47",
+      "title": {
+        "en": "Front Seat Heating - Missing LIN Component",
+        "ru": "Обогрев передних сидений. Отсутствие компонента LIN",
+        "ka": "წინა სავარძლების გათბობა. აკლია LIN კომპონენტი  "
+      },
+      "description": {
+        "en": "This error indicates a communication problem with the seat heating module. The LIN (Local Interconnect Network) component for the front seat heating system is not responding properly.",
+        "ru": "Эта ошибка указывает на проблему связи с модулем обогрева сидений. Компонент LIN (локальная сеть взаимодействия) для системы обогрева передних сидений не отвечает должным образом.",
+        "ka": "ეს შეცდომა მიუთითებს სავარძლის გაცხელებულ მოდულთან კომუნიკაციის პრობლემაზე. წინა სავარძლების გაცხელებული LIN (ლოკალური ინტერფეისის ქსელი) კომპონენტი სათანადოდ არ რეაგირებს.  "
+      },
+      "solutions": {
+        "en": [
+          "Check connectors under the seats",
+          "Inspect wiring harness for damage",
+          "Test seat heating module",
+          "Check LIN bus connections",
+          "Replace seat heating control module if necessary"
+        ],
+        "ru": [
+          "Проверить разъемы под сиденьями",
+          "Осмотреть жгут проводов на наличие повреждений",
+          "Протестировать модуль обогрева сидений",
+          "Проверить соединения шины LIN",
+          "При необходимости заменить модуль управления обогревом сидений"
+        ],
+        "ka": [
+          "შეამოწმეთ კონექტორები სავარძლების ქვეშ  ",
+          "შეამოწმეთ გაყვანილობის აღკაზმულობა დაზიანებისთვის  ",
+          "სავარძლების სატესტო გათბობის მოდული  ",
+          "შეამოწმეთ LIN ავტობუსის კავშირები  ",
+          "საჭიროების შემთხვევაში შეცვალეთ სავარძლის გათბობის მართვის მოდული  "
+        ]
+      },
+      "applicableModels": [
+        "F10",
+        "F30",
+        "F15",
+        "G30",
+        "G20"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Comfort",
+      "severity": "Low",
+      "software": [
+        "ISTA",
+        "BMW Club"
+      ]
+    },
+    {
+      "code": "E58C49",
+      "title": {
+        "en": "Front Seat Heating - Missing LIN Component",
+        "ru": "Обогрев передних сидений. Отсутствие компонента LIN",
+        "ka": "წინა სავარძლების გათბობა. აკლია LIN კომპონენტი  "
+      },
+      "description": {
+        "en": "This error is similar to E58C47 and indicates a communication problem with the seat heating module on a different seat or channel. The LIN component for the front seat heating system is not responding properly.",
+        "ru": "Эта ошибка похожа на E58C47 и указывает на проблему связи с модулем обогрева сидений на другом сиденье или канале. Компонент LIN для системы обогрева передних сидений не отвечает должным образом.",
+        "ka": "ეს შეცდომა E58C47-ის მსგავსია და მიუთითებს სხვა სავარძელზე ან არხზე გაცხელებული სავარძლის მოდულის კომუნიკაციის პრობლემაზე. წინა სავარძლების გაცხელებული LIN კომპონენტი არ რეაგირებს სათანადოდ.  "
+      },
+      "solutions": {
+        "en": [
+          "Check connectors under the seats",
+          "Inspect wiring harness for damage",
+          "Test seat heating module",
+          "Check LIN bus connections",
+          "Replace seat heating control module if necessary"
+        ],
+        "ru": [
+          "Проверить разъемы под сиденьями",
+          "Осмотреть жгут проводов на наличие повреждений",
+          "Протестировать модуль обогрева сидений",
+          "Проверить соединения шины LIN",
+          "При необходимости заменить модуль управления обогревом сидений"
+        ],
+        "ka": [
+          "შეამოწმეთ კონექტორები სავარძლების ქვეშ  ",
+          "შეამოწმეთ გაყვანილობის აღკაზმულობა დაზიანებისთვის  ",
+          "სავარძლების სატესტო გათბობის მოდული  ",
+          "შეამოწმეთ LIN ავტობუსის კავშირები  ",
+          "საჭიროების შემთხვევაში შეცვალეთ სავარძლის გათბობის მართვის მოდული  "
+        ]
+      },
+      "applicableModels": [
+        "F10",
+        "F30",
+        "F15",
+        "G30",
+        "G20"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Comfort",
+      "severity": "Low",
+      "software": [
+        "ISTA",
+        "BMW Club",
+        "АТГ"
+      ]
+    },
+    {
+      "code": "P0016",
+      "title": {
+        "en": "Crankshaft-Camshaft Position Correlation (Bank 1 Sensor A)",
+        "ru": "Ошибка корреляции положения коленвала-распредвала (Датчик A Банк 1)",
+        "ka": "Crankshaft-Camshaft Position Correlation Error (Sensor A Bank 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the Engine Control Module (ECM) has detected that the crankshaft position and the camshaft position are not properly aligned on Bank 1. This can affect engine timing and performance.",
+        "ru": "Этот код указывает, что модуль управления двигателем (ECM) обнаружил, что положение коленчатого вала и положение распределительного вала не правильно выровнены на Банке 1. Это может повлиять на фазы газораспределения и работу двигателя.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავის მართვის მოდულმა (ECM) აღმოაჩინა, რომ ამწე ლილვის პოზიცია და ამწე ლილვის პოზიცია არ არის სწორად გასწორებული ბანკში 1. ამან შეიძლება გავლენა მოახდინოს სარქვლის დროზე და ძრავის მუშაობაზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for stretched timing chain",
+          "Inspect camshaft and crankshaft sensors",
+          "Check for proper timing chain installation",
+          "Verify vanos solenoid operation",
+          "Check engine oil level and quality"
+        ],
+        "ru": [
+          "Проверить растяжение цепи ГРМ",
+          "Осмотреть датчики распредвала и коленвала",
+          "Проверить правильность установки цепи ГРМ",
+          "Проверить работу соленоида VANOS",
+          "Проверить уровень и качество моторного масла"
+        ],
+        "ka": [
+          "შეამოწმეთ დროის ჯაჭვის დაჭიმულობა  ",
+          "შეამოწმეთ ამწე და ამწე ლილვის სენსორები  ",
+          "შეამოწმეთ, რომ დროის ჯაჭვი სწორად არის დამონტაჟებული  ",
+          "შეამოწმეთ VANOS სოლენოიდის მუშაობა  ",
+          "შეამოწმეთ ძრავის ზეთის დონე და ხარისხი  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0440",
+      "title": {
+        "en": "EVAP System Malfunction",
+        "ru": "Неисправность системы улавливания паров топлива (EVAP)",
+        "ka": "EVAP სისტემის გაუმართაობა  "
+      },
+      "description": {
+        "en": "This code indicates a general problem with the Evaporative Emission Control System (EVAP). This system prevents fuel vapors from escaping into the atmosphere.",
+        "ru": "Этот код указывает на общую проблему с системой контроля выбросов паров топлива (EVAP). Эта система предотвращает утечку паров топлива в атмосферу.",
+        "ka": "ეს კოდი მიუთითებს აორთქლების ემისიის კონტროლის სისტემასთან (EVAP) ზოგად პრობლემაზე. ეს სისტემა ხელს უშლის საწვავის ორთქლის ატმოსფეროში გამოსვლას.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for loose or damaged fuel cap",
+          "Inspect EVAP canister and purge solenoid",
+          "Check for leaks in EVAP hoses and connections",
+          "Test purge valve operation",
+          "Inspect fuel tank pressure sensor"
+        ],
+        "ru": [
+          "Проверить крышку топливного бака на повреждения или слабую фиксацию",
+          "Осмотреть угольный фильтр и продувочный соленоид",
+          "Проверить шланги и соединения системы EVAP на наличие утечек",
+          "Проверить работу продувочного клапана",
+          "Осмотреть датчик давления в топливном баке"
+        ],
+        "ka": [
+          "შეამოწმეთ საწვავის ავზის თავსახურის დაზიანება ან გაფხვიერება  ",
+          "შეამოწმეთ ნახშირბადის ფილტრი და გაწმინდეთ სოლენოიდი  ",
+          "შეამოწმეთ EVAP სისტემის შლანგები და კავშირები გაჟონვისთვის  ",
+          "შეამოწმეთ გამწმენდი სარქვლის მუშაობა  ",
+          "შეამოწმეთ საწვავის ავზის წნევის სენსორი  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Emissions",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "P0300",
+      "title": {
+        "en": "Random/Multiple Cylinder Misfire Detected",
+        "ru": "Обнаружены случайные/множественные пропуски зажигания в цилиндрах",
+        "ka": "აღმოჩენილია შემთხვევითი/მრავალჯერადი ცილინდრის გაუმართაობა  "
+      },
+      "description": {
+        "en": "This code indicates that the engine control module has detected misfires in multiple cylinders. This can be caused by a variety of issues including ignition problems, fuel delivery issues, or mechanical engine problems.",
+        "ru": "Этот код указывает, что модуль управления двигателем обнаружил пропуски зажигания в нескольких цилиндрах. Это может быть вызвано различными проблемами, включая проблемы с зажиганием, подачей топлива или механическими проблемами двигателя.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავის მართვის მოდულმა აღმოაჩინა გაუმართაობა მრავალ ცილინდრზე. ეს შეიძლება გამოწვეული იყოს სხვადასხვა პრობლემებით, მათ შორის აალების, საწვავის მიწოდების ან ძრავის მექანიკური პრობლემებით.  "
+      },
+      "solutions": {
+        "en": [
+          "Check and replace spark plugs if worn",
+          "Inspect ignition coils for proper operation",
+          "Check fuel injectors",
+          "Verify fuel pressure",
+          "Perform compression test",
+          "Check for vacuum leaks",
+          "Inspect valve train components"
+        ],
+        "ru": [
+          "Проверить и заменить свечи зажигания, если они изношены",
+          "Проверить катушки зажигания на правильную работу",
+          "Проверить топливные форсунки",
+          "Проверить давление топлива",
+          "Выполнить тест компрессии",
+          "Проверить наличие вакуумных утечек",
+          "Осмотреть компоненты клапанного механизма"
+        ],
+        "ka": [
+          "შეამოწმეთ და შეცვალეთ სანთლები, თუ ისინი ნახმარია  ",
+          "შეამოწმეთ აალების კოჭები სწორად მუშაობისთვის  ",
+          "შეამოწმეთ საწვავის ინჟექტორები  ",
+          "შეამოწმეთ საწვავის წნევა  ",
+          "შეკუმშვის ტესტის ჩატარება  ",
+          "ვაკუუმის გაჟონვის შემოწმება  ",
+          "სარქვლის მატარებლის კომპონენტების შემოწმება  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55",
+        "S58"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0128",
+      "title": {
+        "en": "Coolant Thermostat Malfunction",
+        "ru": "Неисправность термостата охлаждающей жидкости",
+        "ka": "გამაგრილებლის თერმოსტატის გაუმართაობა  "
+      },
+      "description": {
+        "en": "This code indicates that the engine is not reaching proper operating temperature in the expected time. Usually caused by a faulty thermostat staying open and not allowing the engine to warm up properly.",
+        "ru": "Этот код указывает, что двигатель не достигает надлежащей рабочей температуры за ожидаемое время. Обычно вызвано неисправным термостатом, который остается открытым и не позволяет двигателю правильно прогреться.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავა არ აღწევს სათანადო სამუშაო ტემპერატურას მოსალოდნელ დროში. როგორც წესი, გამოწვეულია გაუმართავი თერმოსტატით, რომელიც რჩება ღია და ხელს უშლის ძრავის სწორად დათბობას.  "
+      },
+      "solutions": {
+        "en": [
+          "Replace thermostat",
+          "Check coolant level and quality",
+          "Inspect coolant temperature sensor",
+          "Check for air in the cooling system",
+          "Verify water pump operation"
+        ],
+        "ru": [
+          "Заменить термостат",
+          "Проверить уровень и качество охлаждающей жидкости",
+          "Осмотреть датчик температуры охлаждающей жидкости",
+          "Проверить наличие воздуха в системе охлаждения",
+          "Проверить работу водяного насоса"
+        ],
+        "ka": [
+          "თერმოსტატის შეცვლა  ",
+          "შეამოწმეთ გამაგრილებლის დონე და ხარისხი  ",
+          "შეამოწმეთ გამაგრილებლის ტემპერატურის სენსორი  ",
+          "შეამოწმეთ ჰაერი გაგრილების სისტემაში  ",
+          "შეამოწმეთ წყლის ტუმბოს მუშაობა  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Cooling",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "P0340",
+      "title": {
+        "en": "Camshaft Position Sensor Circuit Malfunction",
+        "ru": "Неисправность цепи датчика положения распредвала",
+        "ka": "Camshaft Position Sensor Circuit Disfunction  "
+      },
+      "description": {
+        "en": "This code indicates a problem with the camshaft position sensor circuit. The ECU is not receiving proper signals from the camshaft position sensor, which affects engine timing.",
+        "ru": "Этот код указывает на проблему с цепью датчика положения распределительного вала. ЭБУ не получает правильные сигналы от датчика положения распредвала, что влияет на фазы газораспределения.",
+        "ka": "ეს კოდი მიუთითებს ამწე ლილვის პოზიციის სენსორის წრეში არსებულ პრობლემაზე. ECU არ იღებს სწორ სიგნალებს ამწევის პოზიციის სენსორისგან, რაც გავლენას ახდენს სარქვლის დროზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wiring and connectors to the camshaft position sensor",
+          "Inspect the camshaft sensor for damage or contamination",
+          "Check for metal debris on the sensor tip",
+          "Replace the camshaft position sensor",
+          "Verify proper gap between sensor and target wheel"
+        ],
+        "ru": [
+          "Проверить проводку и разъемы датчика положения распредвала",
+          "Осмотреть датчик распредвала на наличие повреждений или загрязнений",
+          "Проверить наличие металлической стружки на наконечнике датчика",
+          "Заменить датчик положения распредвала",
+          "Проверить правильный зазор между датчиком и целевым колесом"
+        ],
+        "ka": [
+          "შეამოწმეთ ლილვის პოზიციის სენსორის გაყვანილობა და კონექტორები  ",
+          "შეამოწმეთ ამწე ლილვის სენსორი დაზიანებაზე ან დაბინძურებაზე  ",
+          "შეამოწმეთ ლითონის ნამსხვრევები სენსორის წვერზე  ",
+          "ამწე ლილვის პოზიციის სენსორის შეცვლა  ",
+          "შეამოწმეთ სწორი კლირენსი სენსორსა და სამიზნე ბორბალს შორის  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55",
+        "S58"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0172",
+      "title": {
+        "en": "Fuel System Too Rich (Bank 1)",
+        "ru": "Слишком богатая смесь (Банк 1)",
+        "ka": "ნარევი ძალიან მდიდარია (ბანკი 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the oxygen sensor detects the air/fuel mixture is too rich (excess fuel) on Bank 1. Often caused by fuel pressure issues, leaking injectors, or MAF sensor problems.",
+        "ru": "Этот код указывает, что кислородный датчик обнаруживает слишком богатую смесь воздуха/топлива (избыток топлива) на Банке 1. Часто вызвано проблемами давления топлива, протекающими форсунками или проблемами с датчиком MAF.",
+        "ka": "ეს კოდი მიუთითებს, რომ ჟანგბადის სენსორი აღმოაჩენს ჰაერის/საწვავის ნარევს, რომელიც არის ძალიან მდიდარი (ძალიან ბევრი საწვავი) ბანკ 1-ზე. ხშირად გამოწვეულია საწვავის წნევის პრობლემებით, ინჟექტორების გაჟონვით ან MAF სენსორთან დაკავშირებული პრობლემებით.  "
+      },
+      "solutions": {
+        "en": [
+          "Check fuel pressure regulator",
+          "Test fuel injectors for leakage",
+          "Clean or replace MAF sensor",
+          "Inspect oxygen sensors",
+          "Check for clogged air filter",
+          "Inspect for fuel in engine oil (could indicate leaking injectors)"
+        ],
+        "ru": [
+          "Проверить регулятор давления топлива",
+          "Проверить топливные форсунки на утечки",
+          "Очистить или заменить датчик MAF",
+          "Осмотреть кислородные датчики",
+          "Проверить воздушный фильтр на засорение",
+          "Проверить наличие топлива в моторном масле (может указывать на протекающие форсунки)"
+        ],
+        "ka": [
+          "შეამოწმეთ საწვავის წნევის რეგულატორი  ",
+          "შეამოწმეთ საწვავის ინჟექტორები გაჟონვისთვის  ",
+          "გაასუფთავეთ ან შეცვალეთ MAF სენსორი  ",
+          "შეამოწმეთ ჟანგბადის სენსორები  ",
+          "შეამოწმეთ ჰაერის ფილტრი დაბლოკვისთვის  ",
+          "შეამოწმეთ საწვავი ძრავის ზეთში (შეიძლება მიუთითებდეს ინჟექტორების გაჟონვაზე)  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P2096",
+      "title": {
+        "en": "Post Catalyst Fuel Trim System Too Lean (Bank 1)",
+        "ru": "Система топливной коррекции после катализатора слишком бедная (Банк 1)",
+        "ka": "პოსტკატალიზატორის საწვავის მორთვის სისტემა ძალიან მჭლე (ბანკი 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the downstream oxygen sensor is detecting a lean condition after the catalytic converter on Bank 1. This could indicate a failing catalytic converter or oxygen sensor issues.",
+        "ru": "Этот код указывает, что задний кислородный датчик обнаруживает бедную смесь после каталитического нейтрализатора на Банке 1. Это может указывать на выход из строя катализатора или проблемы с кислородным датчиком.",
+        "ka": "ეს კოდი მიუთითებს, რომ უკანა ჟანგბადის სენსორი აღმოაჩენს მჭლე ნარევს კატალიზატორის ქვემოთ ბანკ 1-ზე. ეს შეიძლება მიუთითებდეს კატალიზატორის წარუმატებლობაზე ან ჟანგბადის სენსორის პრობლემაზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Inspect catalytic converter for damage or degradation",
+          "Check downstream oxygen sensor",
+          "Look for exhaust leaks before the downstream O2 sensor",
+          "Check for engine misfires that could damage the catalytic converter",
+          "Verify fuel trim values with diagnostic tool"
+        ],
+        "ru": [
+          "Осмотреть каталитический нейтрализатор на наличие повреждений или деградации",
+          "Проверить задний кислородный датчик",
+          "Искать утечки выхлопных газов перед задним датчиком O2",
+          "Проверить наличие пропусков зажигания, которые могут повредить катализатор",
+          "Проверить значения топливной коррекции с помощью диагностического инструмента"
+        ],
+        "ka": [
+          "შეამოწმეთ კატალიზატორის დაზიანება ან დეგრადაცია  ",
+          "შეამოწმეთ უკანა ჟანგბადის სენსორი  ",
+          "მოძებნეთ გამონაბოლქვი აირის გაჟონვა უკანა O2 სენსორის წინ  ",
+          "შეამოწმეთ გაუმართაობა, რამაც შეიძლება დააზიანოს კატალიზატორი  ",
+          "შეამოწმეთ საწვავის მორთვის მნიშვნელობები დიაგნოსტიკური ხელსაწყოს გამოყენებით  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Emissions",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "P0456",
+      "title": {
+        "en": "EVAP System Small Leak Detected",
+        "ru": "Обнаружена небольшая утечка в системе EVAP",
+        "ka": "EVAP სისტემაში აღმოჩენილია მცირე გაჟონვა  "
+      },
+      "description": {
+        "en": "This code indicates that the Evaporative Emission Control System (EVAP) has detected a small leak. This can often be as simple as a loose gas cap or could indicate a small leak in the EVAP system.",
+        "ru": "Этот код указывает, что система контроля выбросов паров топлива (EVAP) обнаружила небольшую утечку. Это может быть просто неплотно закрытая крышка бензобака или может указывать на небольшую утечку в системе EVAP.",
+        "ka": "ეს კოდი მიუთითებს, რომ აორთქლების ემისიის კონტროლის სისტემამ აღმოაჩინა მცირე გაჟონვა. ეს შეიძლება იყოს უბრალოდ გაზის ქუდი ან შეიძლება მიუთითებდეს მცირე გაჟონვაზე EVAP სისტემაში.  "
+      },
+      "solutions": {
+        "en": [
+          "Check and tighten fuel cap",
+          "Replace fuel cap if damaged",
+          "Inspect EVAP canister for cracks or damage",
+          "Check EVAP purge valve and solenoid",
+          "Inspect all EVAP hoses and connections for small leaks",
+          "Perform smoke test to locate leak"
+        ],
+        "ru": [
+          "Проверить и затянуть крышку топливного бака",
+          "Заменить крышку топливного бака, если она повреждена",
+          "Осмотреть угольный фильтр на наличие трещин или повреждений",
+          "Проверить продувочный клапан и соленоид EVAP",
+          "Осмотреть все шланги и соединения EVAP на наличие небольших утечек",
+          "Выполнить дымовой тест для обнаружения утечки"
+        ],
+        "ka": [
+          "შეამოწმეთ და გამკაცრეთ საწვავის ავზის თავსახური  ",
+          "შეცვალეთ საწვავის ავზის თავსახური თუ ის დაზიანებულია  ",
+          "შეამოწმეთ ნახშირბადის ფილტრი ბზარების ან დაზიანებისთვის  ",
+          "შეამოწმეთ გამწმენდი სარქველი და EVAP სოლენოიდი  ",
+          "შეამოწმეთ ყველა EVAP შლანგი და კავშირი მცირე გაჟონვისთვის  ",
+          "კვამლის ტესტის ჩატარება გაჟონვის დასადგენად  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Emissions",
+      "severity": "Low",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "29CC",
+      "title": {
+        "en": "DME: Throttle valve adaptation: Adaptation not performed",
+        "ru": "DME: Адаптация дроссельной заслонки: Адаптация не выполнена",
+        "ka": "DME: Throttle valve adaptation: ადაპტაცია არ დასრულებულა  "
+      },
+      "description": {
+        "en": "This code indicates that the throttle valve adaptation procedure has not been completed successfully. After replacing or cleaning the throttle body, an adaptation procedure must be performed.",
+        "ru": "Этот код указывает, что процедура адаптации дроссельной заслонки не была успешно завершена. После замены или очистки дроссельного узла должна быть выполнена процедура адаптации.",
+        "ka": "ეს კოდი მიუთითებს, რომ დროსელის ადაპტაციის პროცედურა წარმატებით არ დასრულებულა. დროსელის შეკრების გამოცვლის ან გაწმენდის შემდეგ უნდა ჩატარდეს ადაპტაციის პროცედურა.  "
+      },
+      "solutions": {
+        "en": [
+          "Perform throttle valve adaptation using diagnostic tool",
+          "Check for carbon buildup in throttle body",
+          "Clean throttle body if necessary",
+          "Check for proper operation of throttle position sensor",
+          "Verify electrical connections to throttle body"
+        ],
+        "ru": [
+          "Выполнить адаптацию дроссельной заслонки с помощью диагностического инструмента",
+          "Проверить наличие нагара в дроссельном узле",
+          "Очистить дроссельный узел при необходимости",
+          "Проверить правильную работу датчика положения дроссельной заслонки",
+          "Проверить электрические соединения к дроссельному узлу"
+        ],
+        "ka": [
+          "განახორციელეთ დროსელური სარქვლის ადაპტაცია დიაგნოსტიკური ხელსაწყოს გამოყენებით  ",
+          "შეამოწმეთ ნახშირბადის დეპოზიტები დროსელის კრებულში  ",
+          "საჭიროების შემთხვევაში გაწმინდეთ დროსელის კორპუსი  ",
+          "შეამოწმეთ დროსელის პოზიციის სენსორის სწორი მოქმედება  ",
+          "შეამოწმეთ ელექტრული კავშირები დროსელის შეკრებასთან  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "2A87",
+      "title": {
+        "en": "DME: Rail pressure control: Pressure is too low",
+        "ru": "DME: Контроль давления в топливной рампе: Давление слишком низкое",
+        "ka": "DME: საწვავის სარკინიგზო წნევის მონიტორინგი: წნევა ძალიან დაბალია  "
+      },
+      "description": {
+        "en": "This code indicates that the fuel rail pressure is lower than the specified value. This can affect engine performance, starting, and fuel economy.",
+        "ru": "Этот код указывает, что давление в топливной рампе ниже заданного значения. Это может повлиять на производительность двигателя, запуск и расход топлива.",
+        "ka": "ეს კოდი მიუთითებს, რომ საწვავის სარკინიგზო წნევა მითითებულ მნიშვნელობაზე დაბალია. ამან შეიძლება გავლენა მოახდინოს ძრავის მუშაობაზე, დაწყებასა და საწვავის მოხმარებაზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check fuel pump operation",
+          "Inspect fuel pressure sensor",
+          "Check for restrictions in fuel filter or lines",
+          "Test high-pressure fuel pump (HPFP)",
+          "Verify proper fuel pressure regulator operation",
+          "Inspect for leaks in fuel lines or injectors"
+        ],
+        "ru": [
+          "Проверить работу топливного насоса",
+          "Осмотреть датчик давления топлива",
+          "Проверить наличие ограничений в топливном фильтре или линиях",
+          "Протестировать топливный насос высокого давления (HPFP)",
+          "Проверить правильную работу регулятора давления топлива",
+          "Проверить наличие утечек в топливных линиях или форсунках"
+        ],
+        "ka": [
+          "შეამოწმეთ საწვავის ტუმბოს მუშაობა  ",
+          "შეამოწმეთ საწვავის წნევის სენსორი  ",
+          "შეამოწმეთ შეზღუდვები საწვავის ფილტრსა და ხაზებში  ",
+          "ტესტი მაღალი წნევის საწვავის ტუმბო (HPFP)  ",
+          "შეამოწმეთ საწვავის წნევის რეგულატორის სწორი მუშაობა  ",
+          "შეამოწმეთ გაჟონვა საწვავის ხაზებში ან ინჟექტორებში  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Fuel System",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "4212",
+      "title": {
+        "en": "DSC: Wheel speed sensor, rear right: No signal",
+        "ru": "DSC: Датчик скорости колеса, задний правый: Нет сигнала",
+        "ka": "DSC: ბორბლის სიჩქარის სენსორი, უკანა მარჯვენა: სიგნალი არ არის  "
+      },
+      "description": {
+        "en": "This code indicates that the Dynamic Stability Control (DSC) module is not receiving a signal from the rear right wheel speed sensor. This affects ABS, traction control, and stability control functions.",
+        "ru": "Этот код указывает, что модуль системы динамической стабилизации (DSC) не получает сигнал от датчика скорости заднего правого колеса. Это влияет на функции ABS, контроля тяги и контроля устойчивости.",
+        "ka": "ეს კოდი მიუთითებს, რომ დინამიური სტაბილურობის კონტროლის (DSC) მოდული არ იღებს სიგნალს უკანა მარჯვენა ბორბლის სიჩქარის სენსორიდან. ეს გავლენას ახდენს ABS, წევის კონტროლისა და სტაბილურობის კონტროლის ფუნქციებზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wiring to the rear right wheel speed sensor",
+          "Inspect the wheel speed sensor for damage or contamination",
+          "Check for debris around the sensor or tone ring",
+          "Verify the airgap between sensor and tone ring",
+          "Replace wheel speed sensor if damaged",
+          "Check for damaged tone ring on the wheel hub"
+        ],
+        "ru": [
+          "Проверить проводку к датчику скорости заднего правого колеса",
+          "Осмотреть датчик скорости колеса на наличие повреждений или загрязнений",
+          "Проверить наличие мусора вокруг датчика или зубчатого кольца",
+          "Проверить воздушный зазор между датчиком и зубчатым кольцом",
+          "Заменить датчик скорости колеса, если он поврежден",
+          "Проверить наличие поврежденного зубчатого кольца на ступице колеса"
+        ],
+        "ka": [
+          "შეამოწმეთ გაყვანილობა უკანა მარჯვენა ბორბლის სიჩქარის სენსორთან  ",
+          "შეამოწმეთ ბორბლის სიჩქარის სენსორი დაზიანებაზე ან დაბინძურებაზე  ",
+          "შეამოწმეთ ნამსხვრევები სენსორის ან გადაცემათა რგოლის გარშემო  ",
+          "შეამოწმეთ ჰაერის უფსკრული სენსორსა და დაკბილულ რგოლს შორის  ",
+          "შეცვალეთ ბორბლის სიჩქარის სენსორი, თუ ის დაზიანებულია  ",
+          "შეამოწმეთ დაზიანებული დაკბილული რგოლი ბორბლის კერაზე  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "ABS/DSC",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "93B9",
+      "title": {
+        "en": "CAS: Programming data: Incomplete",
+        "ru": "CAS: Данные программирования: Неполные",
+        "ka": "CAS: პროგრამირების მონაცემები: არასრული  "
+      },
+      "description": {
+        "en": "This code indicates that the Car Access System (CAS) module has incomplete programming data. This often occurs after a battery disconnect or when modules have been replaced without proper coding.",
+        "ru": "Этот код указывает, что модуль системы доступа к автомобилю (CAS) имеет неполные данные программирования. Это часто происходит после отключения аккумулятора или когда модули были заменены без правильного кодирования.",
+        "ka": "ეს კოდი მიუთითებს, რომ მანქანის წვდომის სისტემის (CAS) მოდულს აქვს არასრული პროგრამირების მონაცემები. ეს ხშირად ხდება ბატარეის გათიშვის ან მოდულების გამოცვლის შემდეგ სწორი კოდირების გარეშე.  "
+      },
+      "solutions": {
+        "en": [
+          "Reprogram/code the CAS module with the proper dealer-level diagnostic tool",
+          "Check for other communication issues between modules",
+          "Verify proper battery voltage during programming",
+          "Resynchronize the CAS with other modules",
+          "Check for software updates for the CAS module"
+        ],
+        "ru": [
+          "Перепрограммировать/кодировать модуль CAS с помощью диагностического инструмента дилерского уровня",
+          "Проверить наличие других проблем связи между модулями",
+          "Проверить правильное напряжение аккумулятора во время программирования",
+          "Ресинхронизировать CAS с другими модулями",
+          "Проверить наличие обновлений программного обеспечения для модуля CAS"
+        ],
+        "ka": [
+          "Reprogram/Coder CAS Module Using Dealer Level Diagnostic Tool  ",
+          "შეამოწმეთ მოდულებს შორის კომუნიკაციის სხვა პრობლემები  ",
+          "შეამოწმეთ ბატარეის სწორი ძაბვა პროგრამირების დროს  ",
+          "CAS-ის ხელახალი სინქრონიზაცია სხვა მოდულებთან  ",
+          "შეამოწმეთ პროგრამული განახლებები CAS მოდულისთვის  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Electrical",
+      "severity": "Medium",
+      "software": [
+        "ISTA",
+        "BMW Standard Tools"
+      ]
+    },
+    {
+      "code": "30FF",
+      "title": {
+        "en": "DME: Charge-air pressure actuator: Control deviation",
+        "ru": "DME: Привод давления наддувочного воздуха: Отклонение управления",
+        "ka": "DME: Charge air press actuator: Control deviation  "
+      },
+      "description": {
+        "en": "This code indicates a control deviation in the wastegate or turbo actuator system. The actual boost pressure is significantly different from the target pressure.",
+        "ru": "Этот код указывает на отклонение в управлении перепускным клапаном или системой привода турбины. Фактическое давление наддува значительно отличается от целевого давления.",
+        "ka": "ეს კოდი მიუთითებს საკონტროლო ანომალიაზე ნარჩენების სარქველში ან ტურბინის ამძრავ სისტემაში. რეალური გამაძლიერებელი წნევა მნიშვნელოვნად განსხვავდება სამიზნე წნევისგან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wastegate actuator for proper operation",
+          "Inspect actuator rod and linkage for damage or binding",
+          "Check for boost leaks in the intake system",
+          "Verify proper operation of boost pressure sensor",
+          "Test electronic wastegate control solenoid",
+          "Check for exhaust restrictions"
+        ],
+        "ru": [
+          "Проверить работу привода перепускного клапана",
+          "Осмотреть шток привода и соединения на наличие повреждений или заеданий",
+          "Проверить наличие утечек наддува во впускной системе",
+          "Проверить правильную работу датчика давления наддува",
+          "Протестировать электронный соленоид управления перепускным клапаном",
+          "Проверить наличие ограничений в выхлопной системе"
+        ],
+        "ka": [
+          "შეამოწმეთ შემოვლითი სარქვლის ამძრავის მუშაობა  ",
+          "შეამოწმეთ ამძრავის ღერო და კავშირები დაზიანებულად ან შეკვრაზე  ",
+          "შეამოწმეთ გამაძლიერებელი გაჟონვა მიმღების სისტემაში  ",
+          "შეამოწმეთ გამაძლიერებელი წნევის სენსორის სწორი მოქმედება  ",
+          "ელექტრონული შემოვლითი სარქვლის კონტროლის სოლენოიდის ტესტი  ",
+          "შეამოწმეთ შეზღუდვები გამოსაბოლქვი სისტემაში  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55",
+        "S58"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "180101",
+      "title": {
+        "en": "Airbag: Driver's airbag igniter: Resistance too high",
+        "ru": "Подушка безопасности: Воспламенитель подушки безопасности водителя: Сопротивление слишком высокое",
+        "ka": "აირბაგი: მძღოლის აირბალიშის აალებადი: წინააღმდეგობა ძალიან მაღალია  "
+      },
+      "description": {
+        "en": "This code indicates that the resistance measured in the driver's airbag igniter circuit is higher than expected. This could indicate a potential issue with the airbag deployment system.",
+        "ru": "Этот код указывает, что сопротивление, измеренное в цепи воспламенителя подушки безопасности водителя, выше ожидаемого. Это может указывать на потенциальную проблему с системой срабатывания подушки безопасности.",
+        "ka": "ეს კოდი მიუთითებს, რომ მძღოლის აირბალიშის აალების წრეში გაზომილი წინააღმდეგობა მოსალოდნელზე მაღალია. ეს შეიძლება მიუთითებდეს პოტენციურ პრობლემაზე აირბალიშების გააქტიურების სისტემასთან დაკავშირებით.  "
+      },
+      "solutions": {
+        "en": [
+          "Check the clockspring/slip ring connection",
+          "Inspect airbag connector for corrosion or damage",
+          "Verify proper connection of all airbag system connectors",
+          "Replace the driver's airbag module if necessary",
+          "Reset airbag light after repair",
+          "Note: Always disconnect battery before working on airbag systems"
+        ],
+        "ru": [
+          "Проверить соединение контактного кольца",
+          "Осмотреть разъем подушки безопасности на наличие коррозии или повреждений",
+          "Проверить правильное соединение всех разъемов системы подушек безопасности",
+          "При необходимости заменить модуль подушки безопасности водителя",
+          "Сбросить индикатор подушки безопасности после ремонта",
+          "Примечание: Всегда отключайте аккумулятор перед работой с системами подушек безопасности"
+        ],
+        "ka": [
+          "შეამოწმეთ სრიალის რგოლის კავშირი  ",
+          "შეამოწმეთ აირბალიშის კონექტორი კოროზიაზე ან დაზიანებაზე  ",
+          "შეამოწმეთ, რომ აირბალიშების სისტემის ყველა კონექტორი სწორად არის დაკავშირებული  ",
+          "საჭიროების შემთხვევაში შეცვალეთ მძღოლის აირბალიშის მოდული  ",
+          "აირბაგის ინდიკატორის გადატვირთვა შეკეთების შემდეგ  ",
+          "შენიშვნა: ყოველთვის გამორთეთ ბატარეა აირბალიშების სისტემაზე მუშაობამდე  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Restraint System",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "5E2C",
+      "title": {
+        "en": "IHKA: Recirculation flap motor: Characteristic curve exceeded",
+        "ru": "IHKA: Двигатель рециркуляционной заслонки: Превышение характеристической кривой",
+        "ka": "IHKA: Recirculation flap motor: Exceeding characteristic curve  "
+      },
+      "description": {
+        "en": "This code indicates an issue with the recirculation flap motor in the automatic climate control system (IHKA). The motor is drawing more current than expected, likely due to binding or obstruction.",
+        "ru": "Этот код указывает на проблему с двигателем рециркуляционной заслонки в системе автоматического климат-контроля (IHKA). Двигатель потребляет больше тока, чем ожидалось, вероятно, из-за заедания или препятствия.",
+        "ka": "ეს კოდი მიუთითებს ავტომატური კლიმატ კონტროლის სისტემაში (IHKA) რეცირკულაციის დემპერის ძრავის პრობლემაზე. ძრავა მოსალოდნელზე მეტ დენს ატარებს, სავარაუდოდ, საცობის ან დაბრკოლების გამო.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for obstructions in the recirculation flap mechanism",
+          "Inspect flap motor for proper operation",
+          "Check wiring to the recirculation flap motor",
+          "Remove and clean the recirculation flap assembly",
+          "Replace recirculation flap motor if necessary",
+          "Perform IHKA system reset after repair"
+        ],
+        "ru": [
+          "Проверить наличие препятствий в механизме рециркуляционной заслонки",
+          "Проверить правильную работу двигателя заслонки",
+          "Проверить проводку к двигателю рециркуляционной заслонки",
+          "Снять и очистить узел рециркуляционной заслонки",
+          "При необходимости заменить двигатель рециркуляционной заслонки",
+          "Выполнить сброс системы IHKA после ремонта"
+        ],
+        "ka": [
+          "შეამოწმეთ დაბრკოლებები რეცირკულაციის დემპერის მექანიზმში  ",
+          "შეამოწმეთ დემპერის ძრავის სწორი მუშაობა  ",
+          "შეამოწმეთ გაყვანილობა რეცირკულაციის ფლაპის ძრავთან  ",
+          "ამოიღეთ და გაასუფთავეთ რეცირკულაციის დემპერის კრებული  ",
+          "საჭიროების შემთხვევაში შეცვალეთ რეცირკულაციის ფლაპის ძრავა  ",
+          "IHKA სისტემის გადატვირთვა შეკეთების შემდეგ  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "HVAC",
+      "severity": "Low",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "P0017",
+      "title": {
+        "en": "Crankshaft-Camshaft Position Correlation (Bank 1 Sensor B)",
+        "ru": "Ошибка корреляции положения коленвала-распредвала (Датчик B Банк 1)",
+        "ka": "Crankshaft-Camshaft Position Correlation Error (Sensor B Bank 1)  "
+      },
+      "description": {
+        "en": "Similar to P0016, but refers to the exhaust camshaft (Sensor B) on Bank 1. Indicates that the exhaust camshaft timing is not properly synchronized with the crankshaft position.",
+        "ru": "Аналогично P0016, но относится к выпускному распредвалу (Датчик B) на Банке 1. Указывает, что фазы выпускного распредвала не синхронизированы должным образом с положением коленчатого вала.",
+        "ka": "იგივეა, რაც P0016, მაგრამ ეხება გამონაბოლქვი camshaft-ს (სენსორი B) ნაპირზე 1. მიუთითებს, რომ გამონაბოლქვი camshaft დრო არ არის სათანადოდ სინქრონიზებული ამწე ლილვის პოზიციასთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for stretched timing chain",
+          "Inspect exhaust camshaft sensor",
+          "Verify VANOS solenoid operation on exhaust side",
+          "Check for proper timing chain installation",
+          "Inspect for debris or contamination on sensor"
+        ],
+        "ru": [
+          "Проверить растяжение цепи ГРМ",
+          "Проверить датчик выпускного распредвала",
+          "Проверить работу соленоида VANOS на выпускной стороне",
+          "Проверить правильность установки цепи ГРМ",
+          "Проверить наличие мусора или загрязнений на датчике"
+        ],
+        "ka": [
+          "შეამოწმეთ დროის ჯაჭვის დაჭიმულობა  ",
+          "შეამოწმეთ გამონაბოლქვი ამწევის სენსორი  ",
+          "შეამოწმეთ VANOS სოლენოიდის მუშაობა გამონაბოლქვის მხარეს  ",
+          "შეამოწმეთ, რომ დროის ჯაჭვი სწორად არის დამონტაჟებული  ",
+          "შეამოწმეთ ნამსხვრევები ან ჭუჭყიანი სენსორზე  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0018",
+      "title": {
+        "en": "Crankshaft-Camshaft Position Correlation (Bank 2 Sensor A)",
+        "ru": "Ошибка корреляции положения коленвала-распредвала (Датчик A Банк 2)",
+        "ka": "Crankshaft-Camshaft Position Correlation Error (Sensor A Bank 2)  "
+      },
+      "description": {
+        "en": "Similar to P0016 but for Bank 2 (typically the right bank in V-engines). The intake camshaft (Sensor A) timing is not properly synchronized with the crankshaft position.",
+        "ru": "Аналогично P0016, но для Банка 2 (обычно правый банк в V-образных двигателях). Фазы впускного распредвала (Датчик A) не синхронизированы должным образом с положением коленчатого вала.",
+        "ka": "P0016-ის მსგავსი, მაგრამ ბანკი 2-ისთვის (ჩვეულებრივ, მარჯვენა სანაპირო V-twin ძრავებზე). შეყვანის ამწე ლილვის დრო (სენსორი A) არ არის სათანადოდ სინქრონიზებული ამწე ლილვის პოზიციასთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for stretched timing chain on Bank 2",
+          "Inspect Bank 2 intake camshaft sensor",
+          "Check for proper timing chain installation",
+          "Verify VANOS solenoid operation on Bank 2",
+          "Inspect camshaft gear for wear or damage"
+        ],
+        "ru": [
+          "Проверить растяжение цепи ГРМ на Банке 2",
+          "Проверить датчик впускного распредвала Банка 2",
+          "Проверить правильность установки цепи ГРМ",
+          "Проверить работу соленоида VANOS на Банке 2",
+          "Проверить шестерню распредвала на износ или повреждения"
+        ],
+        "ka": [
+          "შეამოწმეთ დროის ჯაჭვის მონაკვეთი ბანკ 2-ზე  ",
+          "Check Intake Camshaft Sensor Bank 2  ",
+          "შეამოწმეთ, რომ დროის ჯაჭვი სწორად არის დამონტაჟებული  ",
+          "შეამოწმეთ VANOS სოლენოიდის მუშაობა ბანკ 2-ზე  ",
+          "შეამოწმეთ ამწე ლილვის მექანიზმი ცვეთა ან დაზიანებაზე  "
+        ]
+      },
+      "applicableModels": [
+        "E60",
+        "F10",
+        "F01",
+        "G30",
+        "G11"
+      ],
+      "engineCodes": [
+        "N62",
+        "N63",
+        "S63",
+        "S65",
+        "S85"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0019",
+      "title": {
+        "en": "Crankshaft-Camshaft Position Correlation (Bank 2 Sensor B)",
+        "ru": "Ошибка корреляции положения коленвала-распредвала (Датчик B Банк 2)",
+        "ka": "Crankshaft-Camshaft Position Correlation Error (Sensor B Bank 2)  "
+      },
+      "description": {
+        "en": "Similar to P0017 but for Bank 2. The exhaust camshaft (Sensor B) timing is not properly synchronized with the crankshaft position on the right bank (V-engines).",
+        "ru": "Аналогично P0017, но для Банка 2. Фазы выпускного распредвала (Датчик B) не синхронизированы должным образом с положением коленчатого вала на правом банке (V-образные двигатели).",
+        "ka": "იგივეა, რაც P0017, მაგრამ ბანკი 2-ისთვის. გამონაბოლქვი ამწევის დრო (სენსორი B) არ არის სათანადოდ სინქრონიზებული ამწე ლილვის პოზიციასთან მარჯვენა სანაპიროზე (V-twin ძრავები).  "
+      },
+      "solutions": {
+        "en": [
+          "Check for stretched timing chain on Bank 2",
+          "Inspect Bank 2 exhaust camshaft sensor",
+          "Verify VANOS solenoid operation on Bank 2 exhaust side",
+          "Check for proper timing chain installation",
+          "Inspect camshaft gear for wear or damage"
+        ],
+        "ru": [
+          "Проверить растяжение цепи ГРМ на Банке 2",
+          "Проверить датчик выпускного распредвала Банка 2",
+          "Проверить работу соленоида VANOS на выпускной стороне Банка 2",
+          "Проверить правильность установки цепи ГРМ",
+          "Проверить шестерню распредвала на износ или повреждения"
+        ],
+        "ka": [
+          "შეამოწმეთ დროის ჯაჭვის მონაკვეთი ბანკ 2-ზე  ",
+          "Check Bank 2 Exhaust Camshaft Sensor  ",
+          "შეამოწმეთ VANOS სოლენოიდის მუშაობა ბანკ 2-ის გამოსასვლელ მხარეს  ",
+          "შეამოწმეთ, რომ დროის ჯაჭვი სწორად არის დამონტაჟებული  ",
+          "შეამოწმეთ ამწე ლილვის მექანიზმი ცვეთა ან დაზიანებაზე  "
+        ]
+      },
+      "applicableModels": [
+        "E60",
+        "F10",
+        "F01",
+        "G30",
+        "G11"
+      ],
+      "engineCodes": [
+        "N62",
+        "N63",
+        "S63",
+        "S65",
+        "S85"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0011",
+      "title": {
+        "en": "Intake Camshaft Position Timing - Over-Advanced (Bank 1)",
+        "ru": "Положение впускного распредвала - Слишком раннее (Банк 1)",
+        "ka": "ამწე ამწევის პოზიცია - ძალიან ადრე (ბანკი 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the intake camshaft timing for Bank 1 is more advanced than commanded by the ECM. Often related to VANOS (Variable Camshaft Timing) system issues.",
+        "ru": "Этот код указывает, что фазы впускного распредвала для Банка 1 более ранние, чем задано ЭБУ. Часто связано с проблемами системы VANOS (система изменения фаз газораспределения).",
+        "ka": "ეს კოდი მიუთითებს, რომ ბანკის 1-ისთვის შემავალი ამწე ლილვის დრო უფრო ადრეა ვიდრე ECU ბრძანება. ხშირად ასოცირდება პრობლემები VANOS-თან (ცვლადი სარქვლის დროის სისტემა).  "
+      },
+      "solutions": {
+        "en": [
+          "Check engine oil level and quality (VANOS is hydraulically operated)",
+          "Inspect VANOS solenoid for intake camshaft Bank 1",
+          "Clean VANOS solenoid screen filter",
+          "Check for proper oil pressure to VANOS unit",
+          "Inspect VANOS seals for leakage",
+          "Replace VANOS unit if necessary"
+        ],
+        "ru": [
+          "Проверить уровень и качество моторного масла (VANOS работает на гидравлике)",
+          "Проверить соленоид VANOS для впускного распредвала Банка 1",
+          "Очистить фильтр соленоида VANOS",
+          "Проверить правильное давление масла на блоке VANOS",
+          "Проверить уплотнения VANOS на утечки",
+          "При необходимости заменить блок VANOS"
+        ],
+        "ka": [
+          "შეამოწმეთ ძრავის ზეთის დონე და ხარისხი (VANOS მუშაობს ჰიდრავლიკაზე)  ",
+          "შეამოწმეთ VANOS სოლენოიდი ამწე ამწევ ლილვის ბანკისთვის 1  ",
+          "VANOS სოლენოიდის ფილტრის გაწმენდა  ",
+          "შეამოწმეთ ზეთის სწორი წნევა VANOS მოწყობილობაზე  ",
+          "შეამოწმეთ VANOS ლუქები გაჟონვისთვის  ",
+          "საჭიროების შემთხვევაში, შეცვალეთ VANOS ერთეული  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0012",
+      "title": {
+        "en": "Intake Camshaft Position Timing - Over-Retarded (Bank 1)",
+        "ru": "Положение впускного распредвала - Слишком позднее (Банк 1)",
+        "ka": "Intake Camshaft Position - Too Late (Bank 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the intake camshaft timing for Bank 1 is more retarded (delayed) than commanded by the ECM. Related to VANOS system issues.",
+        "ru": "Этот код указывает, что фазы впускного распредвала для Банка 1 более поздние (задержанные), чем задано ЭБУ. Связано с проблемами системы VANOS.",
+        "ka": "ეს კოდი მიუთითებს, რომ ბანკის 1-ისთვის შემსვლელი ამწე ლილვის დრო უფრო გვიან (დაგვიანებულია) ვიდრე ECU-ის მიერ ბრძანებული. დაკავშირებულია VANOS სისტემასთან დაკავშირებულ პრობლემებთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check engine oil level and quality",
+          "Inspect VANOS solenoid for intake camshaft Bank 1",
+          "Clean VANOS solenoid screen filter",
+          "Check for low oil pressure to VANOS unit",
+          "Inspect VANOS seals for leakage",
+          "Check for mechanical binding in VANOS mechanism"
+        ],
+        "ru": [
+          "Проверить уровень и качество моторного масла",
+          "Проверить соленоид VANOS для впускного распредвала Банка 1",
+          "Очистить фильтр соленоида VANOS",
+          "Проверить низкое давление масла на блоке VANOS",
+          "Проверить уплотнения VANOS на утечки",
+          "Проверить механические заедания в механизме VANOS"
+        ],
+        "ka": [
+          "შეამოწმეთ ძრავის ზეთის დონე და ხარისხი  ",
+          "შეამოწმეთ VANOS სოლენოიდი ამწე ამწევ ლილვის ბანკისთვის 1  ",
+          "VANOS სოლენოიდის ფილტრის გაწმენდა  ",
+          "შეამოწმეთ ზეთის დაბალი წნევა VANOS ერთეულზე  ",
+          "შეამოწმეთ VANOS ლუქები გაჟონვისთვის  ",
+          "შეამოწმეთ მექანიკური შეფერხება VANOS მექანიზმში  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0013",
+      "title": {
+        "en": "Exhaust Camshaft Position Actuator Circuit (Bank 1)",
+        "ru": "Цепь привода положения выпускного распредвала (Банк 1)",
+        "ka": "გამონაბოლქვი Camshaft Position Actuator Circuit (Bank 1)  "
+      },
+      "description": {
+        "en": "This code indicates an electrical issue with the exhaust camshaft position actuator circuit for Bank 1. This is typically related to the VANOS solenoid for the exhaust camshaft.",
+        "ru": "Этот код указывает на электрическую проблему в цепи привода положения выпускного распредвала для Банка 1. Обычно это связано с соленоидом VANOS для выпускного распредвала.",
+        "ka": "ეს კოდი მიუთითებს ელექტრულ პრობლემაზე გამონაბოლქვი ლილვის პოზიციის ამძრავის წრეში ბანკი 1-ისთვის. ეს ჩვეულებრივ ასოცირდება გამონაბოლქვი ლილვის VANOS სოლენოიდთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wiring to exhaust VANOS solenoid",
+          "Inspect connector for damage or corrosion",
+          "Test VANOS solenoid resistance (typically 7-13 ohms)",
+          "Check for power and ground to the solenoid",
+          "Replace VANOS solenoid if faulty",
+          "Verify DME (ECU) outputs correct signals"
+        ],
+        "ru": [
+          "Проверить проводку к соленоиду выпускного VANOS",
+          "Осмотреть разъем на наличие повреждений или коррозии",
+          "Проверить сопротивление соленоида VANOS (обычно 7-13 Ом)",
+          "Проверить питание и заземление соленоида",
+          "Заменить соленоид VANOS при неисправности",
+          "Проверить, что DME (ЭБУ) выдает правильные сигналы"
+        ],
+        "ka": [
+          "შეამოწმეთ გაყვანილობა VANOS გამონაბოლქვი სოლენოიდთან  ",
+          "შეამოწმეთ კონექტორი დაზიანებაზე ან კოროზიაზე  ",
+          "შეამოწმეთ VANOS სოლენოიდის წინააღმდეგობა (ჩვეულებრივ 7-13 ohms)  ",
+          "შეამოწმეთ ელექტროენერგიის მიწოდება და სოლენოიდის დამიწება  ",
+          "შეცვალეთ VANOS სოლენოიდი გაუმართაობის შემთხვევაში  ",
+          "შეამოწმეთ, რომ DME (ECU) იძლევა სწორ სიგნალებს  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0014",
+      "title": {
+        "en": "Exhaust Camshaft Position Timing - Over-Advanced (Bank 1)",
+        "ru": "Положение выпускного распредвала - Слишком раннее (Банк 1)",
+        "ka": "გამონაბოლქვი Camshaft Position - Too Early (Bank 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the exhaust camshaft timing for Bank 1 is more advanced than commanded by the ECM. Related to VANOS system issues on the exhaust side.",
+        "ru": "Этот код указывает, что фазы выпускного распредвала для Банка 1 более ранние, чем задано ЭБУ. Связано с проблемами системы VANOS на выпускной стороне.",
+        "ka": "ეს კოდი მიუთითებს, რომ გამონაბოლქვი ამწევის დრო ბანკი 1-ისთვის უფრო ადრეა ვიდრე ECU ბრძანება. ასოცირებულია გამონაბოლქვის მხარეს VANOS სისტემის პრობლემებთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check engine oil level and quality",
+          "Inspect exhaust VANOS solenoid for Bank 1",
+          "Clean VANOS solenoid screen filter",
+          "Check for proper oil pressure to VANOS unit",
+          "Inspect VANOS seals for leakage",
+          "Replace VANOS unit if necessary"
+        ],
+        "ru": [
+          "Проверить уровень и качество моторного масла",
+          "Проверить соленоид выпускного VANOS для Банка 1",
+          "Очистить фильтр соленоида VANOS",
+          "Проверить правильное давление масла на блоке VANOS",
+          "Проверить уплотнения VANOS на утечки",
+          "При необходимости заменить блок VANOS"
+        ],
+        "ka": [
+          "შეამოწმეთ ძრავის ზეთის დონე და ხარისხი  ",
+          "შეამოწმეთ VANOS გამონაბოლქვი სოლენოიდი ბანკისთვის 1  ",
+          "VANOS სოლენოიდის ფილტრის გაწმენდა  ",
+          "შეამოწმეთ ზეთის სწორი წნევა VANOS მოწყობილობაზე  ",
+          "შეამოწმეთ VANOS ლუქები გაჟონვისთვის  ",
+          "საჭიროების შემთხვევაში, შეცვალეთ VANOS ერთეული  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0015",
+      "title": {
+        "en": "Exhaust Camshaft Position Timing - Over-Retarded (Bank 1)",
+        "ru": "Положение выпускного распредвала - Слишком позднее (Банк 1)",
+        "ka": "გამონაბოლქვი Camshaft Position - Too Late (Bank 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the exhaust camshaft timing for Bank 1 is more retarded (delayed) than commanded by the ECM. Related to VANOS system issues on the exhaust side.",
+        "ru": "Этот код указывает, что фазы выпускного распредвала для Банка 1 более поздние (задержанные), чем задано ЭБУ. Связано с проблемами системы VANOS на выпускной стороне.",
+        "ka": "ეს კოდი მიუთითებს, რომ გამონაბოლქვი ამწევის დრო ბანკი 1-ისთვის უფრო გვიან (დაგვიანებულია) ვიდრე ECU-ის ბრძანება. ასოცირებულია გამონაბოლქვის მხარეს VANOS სისტემის პრობლემებთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check engine oil level and quality",
+          "Inspect exhaust VANOS solenoid for Bank 1",
+          "Clean VANOS solenoid screen filter",
+          "Check for low oil pressure to VANOS unit",
+          "Inspect VANOS seals for leakage",
+          "Check for mechanical binding in VANOS mechanism"
+        ],
+        "ru": [
+          "Проверить уровень и качество моторного масла",
+          "Проверить соленоид выпускного VANOS для Банка 1",
+          "Очистить фильтр соленоида VANOS",
+          "Проверить низкое давление масла на блоке VANOS",
+          "Проверить уплотнения VANOS на утечки",
+          "Проверить механические заедания в механизме VANOS"
+        ],
+        "ka": [
+          "შეამოწმეთ ძრავის ზეთის დონე და ხარისხი  ",
+          "შეამოწმეთ VANOS გამონაბოლქვი სოლენოიდი ბანკისთვის 1  ",
+          "VANOS სოლენოიდის ფილტრის გაწმენდა  ",
+          "შეამოწმეთ ზეთის დაბალი წნევა VANOS ერთეულზე  ",
+          "შეამოწმეთ VANOS ლუქები გაჟონვისთვის  ",
+          "შეამოწმეთ მექანიკური შეფერხება VANOS მექანიზმში  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0036",
+      "title": {
+        "en": "Oxygen Sensor Heater Circuit (Bank 1 Sensor 2)",
+        "ru": "Цепь нагревателя кислородного датчика (Банк 1 Датчик 2)",
+        "ka": "Oxygen Sensor Heater Circuit (Bank 1 Sensor 2)  "
+      },
+      "description": {
+        "en": "This code indicates a problem with the heater circuit of the downstream (after catalytic converter) oxygen sensor on Bank 1. The heater is used to bring the sensor to operating temperature quickly.",
+        "ru": "Этот код указывает на проблему с цепью нагревателя заднего (после каталитического нейтрализатора) кислородного датчика на Банке 1. Нагреватель используется для быстрого нагрева датчика до рабочей температуры.",
+        "ka": "ეს კოდი მიუთითებს პრობლემაზე ჟანგბადის სენსორის გამათბობლის უკანა (კატალიზური გადამყვანის შემდეგ) წრედ 1 ბანკში. გამათბობელი გამოიყენება სენსორის სამუშაო ტემპერატურამდე სწრაფად გასათბობად.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wiring to oxygen sensor heater",
+          "Inspect connector for damage or corrosion",
+          "Test heater circuit resistance",
+          "Verify power and ground to the heater circuit",
+          "Replace oxygen sensor if heater is faulty",
+          "Check for related engine control module faults"
+        ],
+        "ru": [
+          "Проверить проводку к нагревателю кислородного датчика",
+          "Осмотреть разъем на наличие повреждений или коррозии",
+          "Проверить сопротивление цепи нагревателя",
+          "Проверить питание и заземление цепи нагревателя",
+          "Заменить кислородный датчик, если нагреватель неисправен",
+          "Проверить наличие связанных неисправностей модуля управления двигателем"
+        ],
+        "ka": [
+          "შეამოწმეთ გაყვანილობა ჟანგბადის სენსორის გამათბობელთან  ",
+          "შეამოწმეთ კონექტორი დაზიანებაზე ან კოროზიაზე  ",
+          "შეამოწმეთ გამათბობლის წრის წინააღმდეგობა  ",
+          "შეამოწმეთ გამაცხელებელი წრედის სიმძლავრე და დამიწება  ",
+          "შეცვალეთ ჟანგბადის სენსორი, თუ გამათბობელი გაუმართავია  ",
+          "შეამოწმეთ ძრავის მართვის მოდულის დაკავშირებული ხარვეზები  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Emissions",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "P0420",
+      "title": {
+        "en": "Catalyst System Efficiency Below Threshold (Bank 1)",
+        "ru": "Эффективность каталитической системы ниже порогового значения (Банк 1)",
+        "ka": "კატალიზური სისტემის ეფექტურობა ზღვარს ქვემოთ (ბანკი 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the catalytic converter on Bank 1 is not operating at sufficient efficiency. The ECM detects this by comparing the signals from the upstream and downstream oxygen sensors.",
+        "ru": "Этот код указывает, что каталитический нейтрализатор на Банке 1 не работает с достаточной эффективностью. ЭБУ определяет это путем сравнения сигналов от переднего и заднего кислородных датчиков.",
+        "ka": "ეს კოდი მიუთითებს, რომ ბანკი 1-ზე კატალიზატორი არ მუშაობს ეფექტურად. ECU განსაზღვრავს ამას წინა და უკანა ჟანგბადის სენსორების სიგნალების შედარებით.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for exhaust leaks before or near the catalytic converter",
+          "Inspect for damage or contamination of the catalytic converter",
+          "Verify proper operation of oxygen sensors",
+          "Check for engine misfires which can damage the catalytic converter",
+          "Replace catalytic converter if efficiency is truly compromised",
+          "Check for excessive fuel pressure causing rich condition"
+        ],
+        "ru": [
+          "Проверить наличие утечек выхлопных газов перед или рядом с каталитическим нейтрализатором",
+          "Проверить наличие повреждений или загрязнений каталитического нейтрализатора",
+          "Проверить правильную работу кислородных датчиков",
+          "Проверить наличие пропусков зажигания, которые могут повредить катализатор",
+          "Заменить каталитический нейтрализатор, если эффективность действительно снижена",
+          "Проверить избыточное давление топлива, вызывающее богатую смесь"
+        ],
+        "ka": [
+          "შეამოწმეთ გამონაბოლქვის გაჟონვა კატალიზატორის წინ ან მის მახლობლად  ",
+          "შეამოწმეთ კატალიზატორის დაზიანება ან დაბინძურება  ",
+          "შეამოწმეთ ჟანგბადის სენსორების სწორი მუშაობა  ",
+          "შეამოწმეთ გაუმართაობა, რამაც შეიძლება დააზიანოს კატალიზატორი  ",
+          "შეცვალეთ კატალიზატორი, თუ ეფექტურობა ნამდვილად შემცირდა  ",
+          "შეამოწმეთ საწვავის ჭარბი წნევა, რომელიც იწვევს მდიდარ ნარევს  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Emissions",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0430",
+      "title": {
+        "en": "Catalyst System Efficiency Below Threshold (Bank 2)",
+        "ru": "Эффективность каталитической системы ниже порогового значения (Банк 2)",
+        "ka": "კატალიზური სისტემის ეფექტურობა ზღვარს ქვემოთ (ბანკი 2)  "
+      },
+      "description": {
+        "en": "This code is similar to P0420 but indicates that the catalytic converter on Bank 2 (typically the right bank in V-engines) is not operating at sufficient efficiency.",
+        "ru": "Этот код аналогичен P0420, но указывает, что каталитический нейтрализатор на Банке 2 (обычно правый банк в V-образных двигателях) не работает с достаточной эффективностью.",
+        "ka": "ეს კოდი ჰგავს P0420-ს, მაგრამ მიუთითებს, რომ კატალიზატორი ბანკი 2-ზე (ჩვეულებრივ, მარჯვენა სანაპირო V-twin ძრავებზე) არ მუშაობს ეფექტურად.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for exhaust leaks before or near the catalytic converter",
+          "Inspect for damage or contamination of the catalytic converter",
+          "Verify proper operation of oxygen sensors on Bank 2",
+          "Check for engine misfires which can damage the catalytic converter",
+          "Replace catalytic converter if efficiency is truly compromised",
+          "Check for excessive fuel pressure causing rich condition"
+        ],
+        "ru": [
+          "Проверить наличие утечек выхлопных газов перед или рядом с каталитическим нейтрализатором",
+          "Проверить наличие повреждений или загрязнений каталитического нейтрализатора",
+          "Проверить правильную работу кислородных датчиков на Банке 2",
+          "Проверить наличие пропусков зажигания, которые могут повредить катализатор",
+          "Заменить каталитический нейтрализатор, если эффективность действительно снижена",
+          "Проверить избыточное давление топлива, вызывающее богатую смесь"
+        ],
+        "ka": [
+          "შეამოწმეთ გამონაბოლქვის გაჟონვა კატალიზატორის წინ ან მის მახლობლად  ",
+          "შეამოწმეთ კატალიზატორის დაზიანება ან დაბინძურება  ",
+          "შეამოწმეთ ჟანგბადის სენსორების სწორი მუშაობა ბანკ 2-ზე  ",
+          "შეამოწმეთ გაუმართაობა, რამაც შეიძლება დააზიანოს კატალიზატორი  ",
+          "შეცვალეთ კატალიზატორი, თუ ეფექტურობა ნამდვილად შემცირდა  ",
+          "შეამოწმეთ საწვავის ჭარბი წნევა, რომელიც იწვევს მდიდარ ნარევს  "
+        ]
+      },
+      "applicableModels": [
+        "E60",
+        "F10",
+        "F01",
+        "G30",
+        "G11"
+      ],
+      "engineCodes": [
+        "N62",
+        "N63",
+        "S63",
+        "S65",
+        "S85"
+      ],
+      "category": "Emissions",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P2177",
+      "title": {
+        "en": "System Too Lean Off Idle (Bank 1)",
+        "ru": "Система слишком бедная вне холостого хода (Банк 1)",
+        "ka": "სისტემა ზედმეტად დახრილი გარეთ უმოქმედო (Bank 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the fuel system is running too lean specifically during off-idle operation (not at idle) on Bank 1. This is based on long-term fuel trim adaptations.",
+        "ru": "Этот код указывает, что топливная система работает слишком бедно конкретно в режиме вне холостого хода (не на холостом ходу) на Банке 1. Это основано на адаптациях долгосрочной топливной коррекции.",
+        "ka": "ეს კოდი მიუთითებს, რომ საწვავის სისტემა მუშაობს ზედმეტად დახრილად, სპეციალურად გამორთული (არა უმოქმედო) რეჟიმში ბანკ 1-ზე. ეს ეფუძნება საწვავის გრძელვადიანი ადაპტაციას.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for vacuum leaks in the intake system",
+          "Inspect for clogged fuel injectors",
+          "Verify fuel pressure under load",
+          "Check MAF sensor for contamination or improper airflow reading",
+          "Inspect for exhaust leaks before the first oxygen sensor",
+          "Check for clogged fuel filter restricting flow under load"
+        ],
+        "ru": [
+          "Проверить наличие вакуумных утечек во впускной системе",
+          "Проверить наличие засоренных топливных форсунок",
+          "Проверить давление топлива под нагрузкой",
+          "Проверить датчик MAF на загрязнение или неправильное считывание расхода воздуха",
+          "Проверить наличие утечек выхлопных газов перед первым кислородным датчиком",
+          "Проверить засоренный топливный фильтр, ограничивающий поток под нагрузкой"
+        ],
+        "ka": [
+          "ვაკუუმის გაჟონვის შემოწმება მიმღების სისტემაში  ",
+          "შეამოწმეთ დაბლოკილი საწვავის ინჟექტორები  ",
+          "შეამოწმეთ საწვავის წნევა დატვირთვის ქვეშ  ",
+          "შეამოწმეთ MAF სენსორი დაბინძურების ან ჰაერის ნაკადის არასწორი გაზომვისთვის  ",
+          "შეამოწმეთ გამონაბოლქვი აირის გაჟონვა პირველი ჟანგბადის სენსორამდე  ",
+          "შეამოწმეთ ჩაკეტილი საწვავის ფილტრი, რომელიც ზღუდავს ნაკადს დატვირთვის ქვეშ  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Fuel System",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P2178",
+      "title": {
+        "en": "System Too Rich Off Idle (Bank 1)",
+        "ru": "Система слишком богатая вне холостого хода (Банк 1)",
+        "ka": "სისტემა ძალიან მდიდარი გარეთ უმოქმედო (Bank 1)  "
+      },
+      "description": {
+        "en": "This code indicates that the fuel system is running too rich specifically during off-idle operation (not at idle) on Bank 1. This is based on long-term fuel trim adaptations.",
+        "ru": "Этот код указывает, что топливная система работает слишком богато конкретно в режиме вне холостого хода (не на холостом ходу) на Банке 1. Это основано на адаптациях долгосрочной топливной коррекции.",
+        "ka": "ეს კოდი მიუთითებს, რომ საწვავის სისტემა მუშაობს ზედმეტად მდიდრულად, სპეციალურად გამორთული (არა უმოქმედო) რეჟიმში ბანკ 1-ზე. ეს ეფუძნება საწვავის გრძელვადიან ადაპტაციას.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for leaking fuel injectors",
+          "Inspect fuel pressure regulator for proper operation",
+          "Verify MAF sensor is not under-reporting airflow",
+          "Check for clogged air filter",
+          "Inspect oxygen sensor for proper operation",
+          "Check for excessive fuel pressure"
+        ],
+        "ru": [
+          "Проверить наличие протекающих топливных форсунок",
+          "Проверить регулятор давления топлива на правильную работу",
+          "Убедиться, что датчик MAF не занижает показания расхода воздуха",
+          "Проверить засоренный воздушный фильтр",
+          "Проверить правильную работу кислородного датчика",
+          "Проверить избыточное давление топлива"
+        ],
+        "ka": [
+          "შეამოწმეთ გაჟონვის საწვავის ინჟექტორები  ",
+          "შეამოწმეთ საწვავის წნევის რეგულატორი სწორად მუშაობისთვის  ",
+          "დარწმუნდით, რომ MAF სენსორი არ აფასებს ჰაერის ნაკადის მაჩვენებელს  ",
+          "შეამოწმეთ დაბლოკილი ჰაერის ფილტრი  ",
+          "შეამოწმეთ ჟანგბადის სენსორის სწორი მოქმედება  ",
+          "შეამოწმეთ საწვავის ჭარბი წნევა  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Fuel System",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0301",
+      "title": {
+        "en": "Cylinder 1 Misfire Detected",
+        "ru": "Обнаружен пропуск зажигания в цилиндре 1",
+        "ka": "ცილინდრ 1-ში აღმოჩენილია ხარვეზი  "
+      },
+      "description": {
+        "en": "This code indicates that the engine control module has detected a misfire in cylinder 1. A misfire is a condition where combustion fails to occur properly in the cylinder.",
+        "ru": "Этот код указывает, что модуль управления двигателем обнаружил пропуск зажигания в цилиндре 1. Пропуск зажигания - это состояние, когда сгорание не происходит должным образом в цилиндре.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავის მართვის მოდულმა აღმოაჩინა გაუმართაობა ცილინდრში 1. გაუმართავი არის მდგომარეობა, როდესაც წვა არ ხდება სათანადოდ ცილინდრში.  "
+      },
+      "solutions": {
+        "en": [
+          "Check and replace spark plug for cylinder 1",
+          "Test ignition coil for cylinder 1",
+          "Inspect fuel injector for cylinder 1",
+          "Perform compression test on cylinder 1",
+          "Check for intake leaks affecting cylinder 1",
+          "Verify valve clearances are within specification"
+        ],
+        "ru": [
+          "Проверить и заменить свечу зажигания для цилиндра 1",
+          "Проверить катушку зажигания для цилиндра 1",
+          "Проверить топливную форсунку для цилиндра 1",
+          "Выполнить тест компрессии на цилиндре 1",
+          "Проверить наличие впускных утечек, влияющих на цилиндр 1",
+          "Убедиться, что зазоры клапанов находятся в пределах спецификации"
+        ],
+        "ka": [
+          "შეამოწმეთ და შეცვალეთ სანთელი 1 ცილინდრისთვის  ",
+          "შეამოწმეთ აალების კოჭა ცილინდრისთვის 1  ",
+          "შეამოწმეთ საწვავის ინჟექტორი ცილინდრისთვის 1  ",
+          "შეკუმშვის ტესტის ჩატარება ცილინდრ 1-ზე  ",
+          "შეამოწმეთ წყალმიმღების გაჟონვა, რომელიც გავლენას ახდენს ცილინდრზე 1  ",
+          "დარწმუნდით, რომ სარქვლის კლირენსი შეესაბამება სპეციფიკაციას  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0302",
+      "title": {
+        "en": "Cylinder 2 Misfire Detected",
+        "ru": "Обнаружен пропуск зажигания в цилиндре 2",
+        "ka": "ცილინდრ 2-ში აღმოჩენილია ხარვეზი  "
+      },
+      "description": {
+        "en": "This code indicates that the engine control module has detected a misfire in cylinder 2. A misfire is a condition where combustion fails to occur properly in the cylinder.",
+        "ru": "Этот код указывает, что модуль управления двигателем обнаружил пропуск зажигания в цилиндре 2. Пропуск зажигания - это состояние, когда сгорание не происходит должным образом в цилиндре.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავის მართვის მოდულმა აღმოაჩინა გაუმართაობა ცილინდრში 2. გაუმართავი არის მდგომარეობა, როდესაც წვა არ ხდება სათანადოდ ცილინდრში.  "
+      },
+      "solutions": {
+        "en": [
+          "Check and replace spark plug for cylinder 2",
+          "Test ignition coil for cylinder 2",
+          "Inspect fuel injector for cylinder 2",
+          "Perform compression test on cylinder 2",
+          "Check for intake leaks affecting cylinder 2",
+          "Verify valve clearances are within specification"
+        ],
+        "ru": [
+          "Проверить и заменить свечу зажигания для цилиндра 2",
+          "Проверить катушку зажигания для цилиндра 2",
+          "Проверить топливную форсунку для цилиндра 2",
+          "Выполнить тест компрессии на цилиндре 2",
+          "Проверить наличие впускных утечек, влияющих на цилиндр 2",
+          "Убедиться, что зазоры клапанов находятся в пределах спецификации"
+        ],
+        "ka": [
+          "შეამოწმეთ და შეცვალეთ სანთელი 2 ცილინდრისთვის  ",
+          "შეამოწმეთ აალების კოჭი ცილინდრისთვის 2  ",
+          "შეამოწმეთ საწვავის ინჟექტორი ცილინდრისთვის 2  ",
+          "შეკუმშვის ტესტის ჩატარება ცილინდრ 2-ზე  ",
+          "შეამოწმეთ შემავალი გაჟონვა, რომელიც გავლენას ახდენს ცილინდრ 2-ზე  ",
+          "დარწმუნდით, რომ სარქვლის კლირენსი შეესაბამება სპეციფიკაციას  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0303",
+      "title": {
+        "en": "Cylinder 3 Misfire Detected",
+        "ru": "Обнаружен пропуск зажигания в цилиндре 3",
+        "ka": "ცილინდრ 3-ში აღმოჩენილია ხარვეზი  "
+      },
+      "description": {
+        "en": "This code indicates that the engine control module has detected a misfire in cylinder 3. A misfire is a condition where combustion fails to occur properly in the cylinder.",
+        "ru": "Этот код указывает, что модуль управления двигателем обнаружил пропуск зажигания в цилиндре 3. Пропуск зажигания - это состояние, когда сгорание не происходит должным образом в цилиндре.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავის მართვის მოდულმა აღმოაჩინა გაუმართაობა ცილინდრში 3. გაუმართავი არის მდგომარეობა, როდესაც წვა არ ხდება სათანადოდ ცილინდრში.  "
+      },
+      "solutions": {
+        "en": [
+          "Check and replace spark plug for cylinder 3",
+          "Test ignition coil for cylinder 3",
+          "Inspect fuel injector for cylinder 3",
+          "Perform compression test on cylinder 3",
+          "Check for intake leaks affecting cylinder 3",
+          "Verify valve clearances are within specification"
+        ],
+        "ru": [
+          "Проверить и заменить свечу зажигания для цилиндра 3",
+          "Проверить катушку зажигания для цилиндра 3",
+          "Проверить топливную форсунку для цилиндра 3",
+          "Выполнить тест компрессии на цилиндре 3",
+          "Проверить наличие впускных утечек, влияющих на цилиндр 3",
+          "Убедиться, что зазоры клапанов находятся в пределах спецификации"
+        ],
+        "ka": [
+          "შეამოწმეთ და შეცვალეთ სანთელი 3 ცილინდრისთვის  ",
+          "შეამოწმეთ აალების კოჭა 3 ცილინდრისთვის  ",
+          "შეამოწმეთ საწვავის ინჟექტორი ცილინდრისთვის 3  ",
+          "შეკუმშვის ტესტის ჩატარება ცილინდრ 3-ზე  ",
+          "შეამოწმეთ შემავალი გაჟონვა, რომელიც გავლენას ახდენს ცილინდრზე 3  ",
+          "დარწმუნდით, რომ სარქვლის კლირენსი შეესაბამება სპეციფიკაციას  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0304",
+      "title": {
+        "en": "Cylinder 4 Misfire Detected",
+        "ru": "Обнаружен пропуск зажигания в цилиндре 4",
+        "ka": "ცილინდრ 4-ში აღმოჩენილია ხარვეზი  "
+      },
+      "description": {
+        "en": "This code indicates that the engine control module has detected a misfire in cylinder 4. A misfire is a condition where combustion fails to occur properly in the cylinder.",
+        "ru": "Этот код указывает, что модуль управления двигателем обнаружил пропуск зажигания в цилиндре 4. Пропуск зажигания - это состояние, когда сгорание не происходит должным образом в цилиндре.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავის მართვის მოდულმა აღმოაჩინა გაუმართაობა ცილინდრში 4. გაუმართავი არის მდგომარეობა, როდესაც წვა არ ხდება სათანადოდ ცილინდრში.  "
+      },
+      "solutions": {
+        "en": [
+          "Check and replace spark plug for cylinder 4",
+          "Test ignition coil for cylinder 4",
+          "Inspect fuel injector for cylinder 4",
+          "Perform compression test on cylinder 4",
+          "Check for intake leaks affecting cylinder 4",
+          "Verify valve clearances are within specification"
+        ],
+        "ru": [
+          "Проверить и заменить свечу зажигания для цилиндра 4",
+          "Проверить катушку зажигания для цилиндра 4",
+          "Проверить топливную форсунку для цилиндра 4",
+          "Выполнить тест компрессии на цилиндре 4",
+          "Проверить наличие впускных утечек, влияющих на цилиндр 4",
+          "Убедиться, что зазоры клапанов находятся в пределах спецификации"
+        ],
+        "ka": [
+          "შეამოწმეთ და შეცვალეთ სანთელი ცილინდრისთვის 4  ",
+          "შეამოწმეთ აალების კოჭი ცილინდრისთვის 4  ",
+          "შეამოწმეთ საწვავის ინჟექტორი ცილინდრისთვის 4  ",
+          "შეკუმშვის ტესტის ჩატარება ცილინდრზე 4  ",
+          "შეამოწმეთ შემავალი გაჟონვა, რომელიც გავლენას ახდენს ცილინდრზე 4  ",
+          "დარწმუნდით, რომ სარქვლის კლირენსი შეესაბამება სპეციფიკაციას  "
+        ]
+      },
+      "applicableModels": [
+        "E46",
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M54",
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0305",
+      "title": {
+        "en": "Cylinder 5 Misfire Detected",
+        "ru": "Обнаружен пропуск зажигания в цилиндре 5",
+        "ka": "ცილინდრ 5-ში აღმოჩენილია ხარვეზი  "
+      },
+      "description": {
+        "en": "This code indicates that the engine control module has detected a misfire in cylinder 5. A misfire is a condition where combustion fails to occur properly in the cylinder.",
+        "ru": "Этот код указывает, что модуль управления двигателем обнаружил пропуск зажигания в цилиндре 5. Пропуск зажигания - это состояние, когда сгорание не происходит должным образом в цилиндре.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავის მართვის მოდულმა აღმოაჩინა გაუმართაობა ცილინდრში 5. გაუმართავი არის მდგომარეობა, როდესაც წვა არ ხდება სათანადოდ ცილინდრში.  "
+      },
+      "solutions": {
+        "en": [
+          "Check and replace spark plug for cylinder 5",
+          "Test ignition coil for cylinder 5",
+          "Inspect fuel injector for cylinder 5",
+          "Perform compression test on cylinder 5",
+          "Check for intake leaks affecting cylinder 5",
+          "Verify valve clearances are within specification"
+        ],
+        "ru": [
+          "Проверить и заменить свечу зажигания для цилиндра 5",
+          "Проверить катушку зажигания для цилиндра 5",
+          "Проверить топливную форсунку для цилиндра 5",
+          "Выполнить тест компрессии на цилиндре 5",
+          "Проверить наличие впускных утечек, влияющих на цилиндр 5",
+          "Убедиться, что зазоры клапанов находятся в пределах спецификации"
+        ],
+        "ka": [
+          "შეამოწმეთ და შეცვალეთ სანთელი 5 ცილინდრისთვის  ",
+          "შეამოწმეთ ანთების კოჭა ცილინდრისთვის 5  ",
+          "შეამოწმეთ საწვავის ინჟექტორი ცილინდრისთვის 5  ",
+          "შეკუმშვის ტესტის ჩატარება ცილინდრ 5-ზე  ",
+          "შეამოწმეთ შემავალი გაჟონვა, რომელიც გავლენას ახდენს ცილინდრ 5-ზე  ",
+          "დარწმუნდით, რომ სარქვლის კლირენსი შეესაბამება სპეციფიკაციას  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P0306",
+      "title": {
+        "en": "Cylinder 6 Misfire Detected",
+        "ru": "Обнаружен пропуск зажигания в цилиндре 6",
+        "ka": "ცილინდრ 6-ში აღმოჩენილია ხარვეზი  "
+      },
+      "description": {
+        "en": "This code indicates that the engine control module has detected a misfire in cylinder 6. A misfire is a condition where combustion fails to occur properly in the cylinder.",
+        "ru": "Этот код указывает, что модуль управления двигателем обнаружил пропуск зажигания в цилиндре 6. Пропуск зажигания - это состояние, когда сгорание не происходит должным образом в цилиндре.",
+        "ka": "ეს კოდი მიუთითებს, რომ ძრავის მართვის მოდულმა აღმოაჩინა გაუმართაობა ცილინდრში 6. გაუმართავი არის მდგომარეობა, როდესაც წვა არ ხდება სათანადოდ ცილინდრში.  "
+      },
+      "solutions": {
+        "en": [
+          "Check and replace spark plug for cylinder 6",
+          "Test ignition coil for cylinder 6",
+          "Inspect fuel injector for cylinder 6",
+          "Perform compression test on cylinder 6",
+          "Check for intake leaks affecting cylinder 6",
+          "Verify valve clearances are within specification"
+        ],
+        "ru": [
+          "Проверить и заменить свечу зажигания для цилиндра 6",
+          "Проверить катушку зажигания для цилиндра 6",
+          "Проверить топливную форсунку для цилиндра 6",
+          "Выполнить тест компрессии на цилиндре 6",
+          "Проверить наличие впускных утечек, влияющих на цилиндр 6",
+          "Убедиться, что зазоры клапанов находятся в пределах спецификации"
+        ],
+        "ka": [
+          "შეამოწმეთ და შეცვალეთ სანთელი 6 ცილინდრისთვის  ",
+          "შეამოწმეთ აალების კოჭი ცილინდრისთვის 6  ",
+          "შეამოწმეთ საწვავის ინჟექტორი ცილინდრისთვის 6  ",
+          "შეკუმშვის ტესტის ჩატარება ცილინდრ 6-ზე  ",
+          "შეამოწმეთ შეყვანის გაჟონვა, რომელიც გავლენას ახდენს ცილინდრ 6-ზე  ",
+          "დარწმუნდით, რომ სარქვლის კლირენსი შეესაბამება სპეციფიკაციას  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly",
+        "MHD"
+      ]
+    },
+    {
+      "code": "P2270",
+      "title": {
+        "en": "O2 Sensor Signal Stuck Lean (Bank 1 Sensor 2)",
+        "ru": "Сигнал датчика O2 застрял на бедной смеси (Банк 1 Датчик 2)",
+        "ka": "O2 Sensor Signal Stuck Lean (Bank 1 Sensor 2)  "
+      },
+      "description": {
+        "en": "This code indicates that the downstream oxygen sensor (after catalytic converter) on Bank 1 is showing a consistently lean condition and not fluctuating as expected. This could indicate a sensor issue or exhaust leak.",
+        "ru": "Этот код указывает, что задний кислородный датчик (после каталитического нейтрализатора) на Банке 1 показывает постоянно бедную смесь и не колеблется, как ожидается. Это может указывать на проблему с датчиком или утечку выхлопных газов.",
+        "ka": "ეს კოდი მიუთითებს, რომ უკანა ჟანგბადის სენსორი (კატალიზატორის შემდეგ) ბანკ 1-ზე კითხულობს მუდმივად მჭლე ნარევს და არ იცვლება ისე, როგორც მოსალოდნელი იყო. ეს შეიძლება მიუთითებდეს სენსორის პრობლემაზე ან გამონაბოლქვის გაჟონვაზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for exhaust leaks after the catalytic converter",
+          "Inspect oxygen sensor wiring for damage",
+          "Verify oxygen sensor heater circuit operation",
+          "Test oxygen sensor response with diagnostic equipment",
+          "Replace oxygen sensor if faulty",
+          "Check for contamination on the sensor element"
+        ],
+        "ru": [
+          "Проверить наличие утечек выхлопных газов после каталитического нейтрализатора",
+          "Проверить проводку кислородного датчика на наличие повреждений",
+          "Проверить работу цепи нагревателя кислородного датчика",
+          "Проверить отклик кислородного датчика с помощью диагностического оборудования",
+          "Заменить кислородный датчик при неисправности",
+          "Проверить наличие загрязнений на элементе датчика"
+        ],
+        "ka": [
+          "შეამოწმეთ გამონაბოლქვი აირის გაჟონვა კატალიზატორის შემდეგ  ",
+          "შეამოწმეთ ჟანგბადის სენსორის გაყვანილობა დაზიანებისთვის  ",
+          "შეამოწმეთ ჟანგბადის სენსორის გამათბობელი მიკროსქემის მუშაობა  ",
+          "შეამოწმეთ ჟანგბადის სენსორის რეაქცია დიაგნოსტიკური აღჭურვილობის გამოყენებით  ",
+          "შეცვალეთ ჟანგბადის სენსორი, თუ ის გაუმართავია  ",
+          "შეამოწმეთ დაბინძურება სენსორის ელემენტზე  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Emissions",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "P2271",
+      "title": {
+        "en": "O2 Sensor Signal Stuck Rich (Bank 1 Sensor 2)",
+        "ru": "Сигнал датчика O2 застрял на богатой смеси (Банк 1 Датчик 2)",
+        "ka": "O2 Sensor Signal Stuck Rich (Bank 1 Sensor 2)  "
+      },
+      "description": {
+        "en": "This code indicates that the downstream oxygen sensor (after catalytic converter) on Bank 1 is showing a consistently rich condition and not fluctuating as expected. This could indicate a sensor issue or a rich running condition.",
+        "ru": "Этот код указывает, что задний кислородный датчик (после каталитического нейтрализатора) на Банке 1 показывает постоянно богатую смесь и не колеблется, как ожидается. Это может указывать на проблему с датчиком или состояние богатой смеси.",
+        "ka": "ეს კოდი მიუთითებს, რომ უკანა ჟანგბადის სენსორი (კატალიზატორის შემდეგ) ბანკ 1-ზე კითხულობს მუდმივად მდიდარ ნარევს და არ იცვლება ისე, როგორც მოსალოდნელი იყო. ეს შეიძლება მიუთითებდეს სენსორის პრობლემაზე ან მდიდარ ნარევის მდგომარეობაზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for fuel contamination in exhaust (leaking injectors)",
+          "Inspect oxygen sensor wiring for damage or shorts",
+          "Verify oxygen sensor heater circuit operation",
+          "Test oxygen sensor response with diagnostic equipment",
+          "Replace oxygen sensor if faulty",
+          "Check for fuel pressure regulator issues causing rich condition"
+        ],
+        "ru": [
+          "Проверить наличие топливного загрязнения в выхлопе (протекающие форсунки)",
+          "Проверить проводку кислородного датчика на наличие повреждений или замыканий",
+          "Проверить работу цепи нагревателя кислородного датчика",
+          "Проверить отклик кислородного датчика с помощью диагностического оборудования",
+          "Заменить кислородный датчик при неисправности",
+          "Проверить проблемы с регулятором давления топлива, вызывающие богатую смесь"
+        ],
+        "ka": [
+          "შეამოწმეთ საწვავის დაბინძურება გამონაბოლქვში (გაჟონვის ინჟექტორები)  ",
+          "შეამოწმეთ ჟანგბადის სენსორის გაყვანილობა დაზიანებაზე ან მოკლე ჩართვაზე  ",
+          "შეამოწმეთ ჟანგბადის სენსორის გამათბობელი მიკროსქემის მუშაობა  ",
+          "შეამოწმეთ ჟანგბადის სენსორის რეაქცია დიაგნოსტიკური აღჭურვილობის გამოყენებით  ",
+          "შეცვალეთ ჟანგბადის სენსორი, თუ ის გაუმართავია  ",
+          "შეამოწმეთ საწვავის წნევის რეგულატორის პრობლემები, რომლებიც იწვევს მდიდარ ნარევს  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Emissions",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "2D2A",
+      "title": {
+        "en": "DME: Boost pressure above threshold",
+        "ru": "DME: Давление наддува выше порогового значения",
+        "ka": "DME: გაზრდის წნევა ზღურბლს ზემოთ  "
+      },
+      "description": {
+        "en": "This code indicates that the measured boost pressure from the turbocharger exceeds the maximum allowed value. This could be due to a mechanical issue or a boost pressure control problem.",
+        "ru": "Этот код указывает, что измеренное давление наддува от турбокомпрессора превышает максимально допустимое значение. Это может быть вызвано механической проблемой или проблемой управления давлением наддува.",
+        "ka": "ეს კოდი მიუთითებს, რომ გაზომილი გამაძლიერებელი წნევა ტურბო დამტენიდან აღემატება მაქსიმალურ დასაშვებ მნიშვნელობას. ეს შეიძლება გამოწვეული იყოს მექანიკური პრობლემით ან გამაძლიერებელი წნევის მართვის პრობლემამ.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wastegate actuator for proper operation",
+          "Inspect wastegate control solenoid",
+          "Verify boost pressure sensor is reading correctly",
+          "Check for mechanical binding in wastegate mechanism",
+          "Inspect for boost leaks in the system",
+          "Check for modified engine software causing excessive boost"
+        ],
+        "ru": [
+          "Проверить привод перепускного клапана на правильную работу",
+          "Проверить соленоид управления перепускным клапаном",
+          "Убедиться, что датчик давления наддува показывает правильно",
+          "Проверить наличие механических заеданий в механизме перепускного клапана",
+          "Проверить наличие утечек наддува в системе",
+          "Проверить модифицированное программное обеспечение двигателя, вызывающее чрезмерный наддув"
+        ],
+        "ka": [
+          "შეამოწმეთ შემოვლითი სარქვლის ამძრავი სწორად მუშაობისთვის  ",
+          "შეამოწმეთ შემოვლითი სარქვლის მართვის სოლენოიდი  ",
+          "დარწმუნდით, რომ გამაძლიერებელი წნევის სენსორი სწორად კითხულობს  ",
+          "შემოვლითი სარქვლის მექანიზმში მექანიკური შეფერხებების შემოწმება  ",
+          "შეამოწმეთ გამაძლიერებელი გაჟონვა სისტემაში  ",
+          "შეამოწმეთ შეცვლილი ძრავის პროგრამული უზრუნველყოფა, რომელიც იწვევს გადაჭარბებულ ზრდას  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N54",
+        "N55",
+        "B58",
+        "S55",
+        "S58"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "30FF",
+      "title": {
+        "en": "Boost pressure actuator deviation",
+        "ru": "Отклонение привода давления наддува",
+        "ka": "გამაძლიერებელი წნევის წამყვანის გადახრა  "
+      },
+      "description": {
+        "en": "This code indicates that there is a significant difference between the requested boost pressure and the actual measured boost pressure. This could be due to a mechanical or electrical issue in the boost control system.",
+        "ru": "Этот код указывает на значительную разницу между запрошенным давлением наддува и фактически измеренным давлением наддува. Это может быть вызвано механической или электрической проблемой в системе управления наддувом.",
+        "ka": "ეს კოდი მიუთითებს მნიშვნელოვან განსხვავებას მოთხოვნილ გამაძლიერებელ წნევასა და რეალურ გაზომილ გამაძლიერებელ წნევას შორის. ეს შეიძლება გამოწვეული იყოს გამაძლიერებლის მართვის სისტემაში მექანიკური ან ელექტრული პრობლემის გამო.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wastegate actuator for proper operation",
+          "Inspect wastegate control solenoid for electrical issues",
+          "Verify boost pressure sensor is reading correctly",
+          "Check for boost leaks in the system",
+          "Inspect turbocharger for mechanical issues",
+          "Check vacuum lines for the wastegate actuator (if applicable)"
+        ],
+        "ru": [
+          "Проверить привод перепускного клапана на правильную работу",
+          "Проверить соленоид управления перепускным клапаном на электрические проблемы",
+          "Убедиться, что датчик давления наддува показывает правильно",
+          "Проверить наличие утечек наддува в системе",
+          "Проверить турбокомпрессор на механические проблемы",
+          "Проверить вакуумные линии для привода перепускного клапана (если применимо)"
+        ],
+        "ka": [
+          "შეამოწმეთ შემოვლითი სარქვლის ამძრავი სწორად მუშაობისთვის  ",
+          "შეამოწმეთ შემოვლითი სარქვლის მართვის სოლენოიდი ელექტრო პრობლემებზე  ",
+          "დარწმუნდით, რომ გამაძლიერებელი წნევის სენსორი სწორად კითხულობს  ",
+          "შეამოწმეთ გამაძლიერებელი გაჟონვა სისტემაში  ",
+          "შეამოწმეთ ტურბო დამტენი მექანიკურ პრობლემებზე  ",
+          "შეამოწმეთ ვაკუუმური ხაზები შემოვლითი სარქვლის ამძრავისთვის (ასეთის არსებობის შემთხვევაში)  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N54",
+        "N55",
+        "B58",
+        "S55",
+        "S58"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "9C40",
+      "title": {
+        "en": "Dynamic brake lights: Activation cancelled (DSC)",
+        "ru": "Динамические стоп-сигналы: Активация отменена (DSC)",
+        "ka": "დინამიური სამუხრუჭე განათება: აქტივაცია გაუქმებულია (DSC)  "
+      },
+      "description": {
+        "en": "This code indicates an issue with the dynamic brake light system, which is designed to flash the brake lights during emergency braking. The DSC module has cancelled the activation of this feature due to a fault.",
+        "ru": "Этот код указывает на проблему с системой динамических стоп-сигналов, которая предназначена для мигания стоп-сигналов при экстренном торможении. Модуль DSC отменил активацию этой функции из-за неисправности.",
+        "ka": "ეს კოდი მიუთითებს დინამიური სამუხრუჭე განათების სისტემასთან დაკავშირებული პრობლემაზე, რომელიც შექმნილია სამუხრუჭე შუქების გასანათებლად საგანგებო დამუხრუჭების დროს. DSC მოდულმა გააუქმა ამ ფუნქციის გააქტიურება შეცდომის გამო.  "
+      },
+      "solutions": {
+        "en": [
+          "Check brake light wiring and connectors",
+          "Inspect brake light bulbs or LED modules",
+          "Verify brake pedal switch operation",
+          "Check for communication issues between DSC module and lighting control module",
+          "Scan DSC module for related faults",
+          "Verify brake pressure sensor operation"
+        ],
+        "ru": [
+          "Проверить проводку и разъемы стоп-сигналов",
+          "Проверить лампочки стоп-сигналов или LED модули",
+          "Проверить работу переключателя педали тормоза",
+          "Проверить проблемы связи между модулем DSC и модулем управления освещением",
+          "Просканировать модуль DSC на наличие связанных неисправностей",
+          "Проверить работу датчика давления тормозов"
+        ],
+        "ka": [
+          "შეამოწმეთ სამუხრუჭე შუქის გაყვანილობა და კონექტორები  ",
+          "შეამოწმეთ სამუხრუჭე ნათურები ან LED მოდულები  ",
+          "შეამოწმეთ სამუხრუჭე პედლის გადამრთველის მოქმედება  ",
+          "შეამოწმეთ კომუნიკაციის პრობლემები DSC მოდულსა და განათების მართვის მოდულს შორის  ",
+          "DSC მოდულის სკანირება დაკავშირებული ხარვეზებისთვის  ",
+          "შეამოწმეთ სამუხრუჭე წნევის სენსორის მუშაობა  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Lighting",
+      "severity": "Low",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "A090",
+      "title": {
+        "en": "FRM: Front right low beam: Open circuit or short to ground",
+        "ru": "FRM: Передний правый ближний свет: Обрыв цепи или короткое замыкание на массу",
+        "ka": "FRM: წინა მარჯვენა დაბალი სხივი: ღია ჩართვა ან მოკლე ჩართვა მიწასთან  "
+      },
+      "description": {
+        "en": "This code indicates that the Footwell Module (FRM) has detected an electrical issue with the front right low beam headlight. The circuit is either open (broken) or shorted to ground.",
+        "ru": "Этот код указывает, что модуль подножки (FRM) обнаружил электрическую проблему с передней правой фарой ближнего света. Цепь либо разомкнута (оборвана), либо закорочена на массу.",
+        "ka": "ეს კოდი მიუთითებს, რომ დაფის მოდულმა (FRM) აღმოაჩინა ელექტრული პრობლემა წინა მარჯვენა დაბალ შუქზე. ჩართვა ან ღიაა (გატეხილი) ან დამაგრებულია მიწასთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check front right headlight bulb",
+          "Inspect wiring to the right headlight for damage",
+          "Check connector at the headlight for corrosion or damage",
+          "Verify power and ground connections",
+          "Test headlight socket for proper continuity",
+          "Check FRM module for water damage or internal faults"
+        ],
+        "ru": [
+          "Проверить лампочку передней правой фары",
+          "Проверить проводку к правой фаре на наличие повреждений",
+          "Проверить разъем на фаре на наличие коррозии или повреждений",
+          "Проверить соединения питания и массы",
+          "Проверить патрон фары на надлежащую непрерывность",
+          "Проверить модуль FRM на наличие повреждений от воды или внутренних неисправностей"
+        ],
+        "ka": [
+          "შეამოწმეთ წინა მარჯვენა ფარის ნათურა  ",
+          "შეამოწმეთ მარჯვენა ფარის გაყვანილობა დაზიანებისთვის  ",
+          "შეამოწმეთ ფარის კონექტორი კოროზიაზე ან დაზიანებაზე  ",
+          "შეამოწმეთ დენის და მიწის კავშირები  ",
+          "შეამოწმეთ ფარის ბუდე სათანადო უწყვეტობისთვის  ",
+          "შეამოწმეთ FRM წყლის დაზიანების ან შიდა გაუმართაობისთვის  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "E70",
+        "E82",
+        "E88"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Lighting",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "A091",
+      "title": {
+        "en": "FRM: Front left low beam: Open circuit or short to ground",
+        "ru": "FRM: Передний левый ближний свет: Обрыв цепи или короткое замыкание на массу",
+        "ka": "FRM: წინა მარცხენა დაბალი სხივი: ღია ჩართვა ან მოკლე ჩართვა მიწასთან  "
+      },
+      "description": {
+        "en": "This code indicates that the Footwell Module (FRM) has detected an electrical issue with the front left low beam headlight. The circuit is either open (broken) or shorted to ground.",
+        "ru": "Этот код указывает, что модуль подножки (FRM) обнаружил электрическую проблему с передней левой фарой ближнего света. Цепь либо разомкнута (оборвана), либо закорочена на массу.",
+        "ka": "ეს კოდი მიუთითებს, რომ დაფის მოდულმა (FRM) აღმოაჩინა ელექტრული პრობლემა წინა მარცხენა დაბალ შუქზე. ჩართვა ან ღიაა (გატეხილი) ან დამაგრებულია მიწასთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check front left headlight bulb",
+          "Inspect wiring to the left headlight for damage",
+          "Check connector at the headlight for corrosion or damage",
+          "Verify power and ground connections",
+          "Test headlight socket for proper continuity",
+          "Check FRM module for water damage or internal faults"
+        ],
+        "ru": [
+          "Проверить лампочку передней левой фары",
+          "Проверить проводку к левой фаре на наличие повреждений",
+          "Проверить разъем на фаре на наличие коррозии или повреждений",
+          "Проверить соединения питания и массы",
+          "Проверить патрон фары на надлежащую непрерывность",
+          "Проверить модуль FRM на наличие повреждений от воды или внутренних неисправностей"
+        ],
+        "ka": [
+          "შეამოწმეთ წინა მარცხენა ფარის ნათურა  ",
+          "შეამოწმეთ მარცხენა ფარის გაყვანილობა დაზიანებისთვის  ",
+          "შეამოწმეთ ფარის კონექტორი კოროზიაზე ან დაზიანებაზე  ",
+          "შეამოწმეთ დენის და მიწის კავშირები  ",
+          "შეამოწმეთ ფარის ბუდე სათანადო უწყვეტობისთვის  ",
+          "შეამოწმეთ FRM წყლის დაზიანების ან შიდა გაუმართაობისთვის  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "E70",
+        "E82",
+        "E88"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Lighting",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "4583",
+      "title": {
+        "en": "DSC: Vehicle speed signal: Plausibility",
+        "ru": "DSC: Сигнал скорости автомобиля: Достоверность",
+        "ka": "DSC: Vehicle Speed ​​​​Signal: Plausibility  "
+      },
+      "description": {
+        "en": "This code indicates that the DSC module is receiving inconsistent or implausible vehicle speed signals. This can affect traction and stability control functions.",
+        "ru": "Этот код указывает, что модуль DSC получает непоследовательные или недостоверные сигналы скорости автомобиля. Это может повлиять на функции контроля тяги и устойчивости.",
+        "ka": "ეს კოდი მიუთითებს, რომ DSC მოდული იღებს არათანმიმდევრულ ან არასანდო ავტომობილის სიჩქარის სიგნალებს. ამან შეიძლება გავლენა მოახდინოს წევის კონტროლისა და სტაბილურობის კონტროლის ფუნქციებზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check all wheel speed sensors for proper operation",
+          "Inspect ABS tone rings for damage",
+          "Verify CAN bus communication between modules",
+          "Check for EMI interference affecting speed signals",
+          "Scan for related faults in ABS/DSC modules",
+          "Check instrument cluster for related speed signal issues"
+        ],
+        "ru": [
+          "Проверить все датчики скорости колес на правильную работу",
+          "Проверить зубчатые кольца ABS на наличие повреждений",
+          "Проверить связь по шине CAN между модулями",
+          "Проверить наличие электромагнитных помех, влияющих на сигналы скорости",
+          "Просканировать модули ABS/DSC на наличие связанных неисправностей",
+          "Проверить приборную панель на наличие связанных проблем с сигналом скорости"
+        ],
+        "ka": [
+          "შეამოწმეთ ყველა ბორბლის სიჩქარის სენსორი სათანადო მუშაობისთვის  ",
+          "შეამოწმეთ ABS დროის რგოლები დაზიანებისთვის  ",
+          "შეამოწმეთ კომუნიკაცია CAN ავტობუსით მოდულებს შორის  ",
+          "შეამოწმეთ ელექტრომაგნიტური ჩარევა, რომელიც გავლენას ახდენს სიჩქარის სიგნალებზე  ",
+          "ABS/DSC მოდულების სკანირება დაკავშირებული ხარვეზებისთვის  ",
+          "შეამოწმეთ ინსტრუმენტის პანელი სიჩქარის სიგნალთან დაკავშირებული პრობლემებისთვის  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "ABS/DSC",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "2EFE",
+      "title": {
+        "en": "DME: VANOS, intake: Position deviation",
+        "ru": "DME: VANOS, впуск: Отклонение положения",
+        "ka": "DME: VANOS, მიღება: პოზიციის გადახრა  "
+      },
+      "description": {
+        "en": "This BMW-specific code indicates a problem with the VANOS (Variable Valve Timing) system for the intake camshaft. The actual position deviates from the commanded position.",
+        "ru": "Этот специфический для BMW код указывает на проблему с системой VANOS (Система изменения фаз газораспределения) для впускного распредвала. Фактическое положение отклоняется от заданного положения.",
+        "ka": "BMW-ს სპეციფიკური კოდი მიუთითებს პრობლემას VANOS (ვარიაბელური სარქვლის დროის სისტემა) შემავალი ამწე ლილვისთვის. ფაქტობრივი პოზიცია გადახრის სამიზნე პოზიციიდან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check engine oil level and quality (VANOS operates hydraulically)",
+          "Inspect VANOS solenoid for intake camshaft",
+          "Check oil pressure to VANOS unit",
+          "Clean or replace VANOS solenoid screen filter",
+          "Look for mechanical binding in VANOS mechanism",
+          "Check for worn VANOS seals causing oil pressure loss"
+        ],
+        "ru": [
+          "Проверить уровень и качество моторного масла (VANOS работает гидравлически)",
+          "Проверить соленоид VANOS для впускного распредвала",
+          "Проверить давление масла на блоке VANOS",
+          "Очистить или заменить фильтр соленоида VANOS",
+          "Искать механические заедания в механизме VANOS",
+          "Проверить изношенные уплотнения VANOS, вызывающие потерю давления масла"
+        ],
+        "ka": [
+          "შეამოწმეთ ძრავის ზეთის დონე და ხარისხი (VANOS მუშაობს ჰიდრავლიკურად)  ",
+          "შეამოწმეთ VANOS სოლენოიდი შემავალი ამწე ლილვისთვის  ",
+          "შეამოწმეთ ზეთის წნევა VANOS მოწყობილობაზე  ",
+          "გაასუფთავეთ ან შეცვალეთ VANOS სოლენოიდის ფილტრი  ",
+          "მოძებნეთ მექანიკური საცობები VANOS მექანიზმში  ",
+          "შეამოწმეთ ნახმარი VANOS ლუქები, რომლებიც იწვევს ზეთის წნევის დაკარგვას  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E92",
+        "E60",
+        "F10",
+        "F30",
+        "G20"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "2EFF",
+      "title": {
+        "en": "DME: VANOS, exhaust: Position deviation",
+        "ru": "DME: VANOS, выпуск: Отклонение положения",
+        "ka": "DME: VANOS, issue: Position deviation  "
+      },
+      "description": {
+        "en": "This BMW-specific code indicates a problem with the VANOS (Variable Valve Timing) system for the exhaust camshaft. The actual position deviates from the commanded position.",
+        "ru": "Этот специфический для BMW код указывает на проблему с системой VANOS (Система изменения фаз газораспределения) для выпускного распредвала. Фактическое положение отклоняется от заданного положения.",
+        "ka": "ეს BMW-ს სპეციფიკური კოდი მიუთითებს პრობლემას VANOS (Variable Valve Timing System) სისტემასთან გამონაბოლქვი camshaft-ისთვის. ფაქტობრივი პოზიცია გადახრის სამიზნე პოზიციიდან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check engine oil level and quality",
+          "Inspect VANOS solenoid for exhaust camshaft",
+          "Check oil pressure to VANOS unit",
+          "Clean or replace VANOS solenoid screen filter",
+          "Look for mechanical binding in VANOS mechanism",
+          "Check for worn VANOS seals causing oil pressure loss"
+        ],
+        "ru": [
+          "Проверить уровень и качество моторного масла",
+          "Проверить соленоид VANOS для выпускного распредвала",
+          "Проверить давление масла на блоке VANOS",
+          "Очистить или заменить фильтр соленоида VANOS",
+          "Искать механические заедания в механизме VANOS",
+          "Проверить изношенные уплотнения VANOS, вызывающие потерю давления масла"
+        ],
+        "ka": [
+          "შეამოწმეთ ძრავის ზეთის დონე და ხარისხი  ",
+          "შეამოწმეთ VANOS სოლენოიდი გამონაბოლქვის ამწეზე  ",
+          "შეამოწმეთ ზეთის წნევა VANOS მოწყობილობაზე  ",
+          "გაასუფთავეთ ან შეცვალეთ VANOS სოლენოიდის ფილტრი  ",
+          "მოძებნეთ მექანიკური საცობები VANOS მექანიზმში  ",
+          "შეამოწმეთ ნახმარი VANOS ლუქები, რომლებიც იწვევს ზეთის წნევის დაკარგვას  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E92",
+        "E60",
+        "F10",
+        "F30",
+        "G20"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B58",
+        "S55"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "2C03",
+      "title": {
+        "en": "DME: Coolant pump, electrical: Short circuit to B+",
+        "ru": "DME: Насос охлаждающей жидкости, электрический: Короткое замыкание на B+",
+        "ka": "DME: გამაგრილებლის ტუმბო, ელექტრო: მოკლე ჩართვა B+-თან  "
+      },
+      "description": {
+        "en": "This code indicates an electrical issue with the electric coolant pump. A short circuit to positive battery voltage (B+) has been detected in the pump circuit.",
+        "ru": "Этот код указывает на электрическую проблему с электрическим насосом охлаждающей жидкости. В цепи насоса обнаружено короткое замыкание на положительное напряжение аккумулятора (B+).",
+        "ka": "ეს კოდი მიუთითებს ელექტროგამაგრილებლის ტუმბოს ელექტრო პრობლემაზე. ტუმბოს წრეში აღმოჩენილია მოკლე ჩართვა ბატარეის დადებით ძაბვასთან (B+).  "
+      },
+      "solutions": {
+        "en": [
+          "Check wiring to the electric coolant pump",
+          "Inspect coolant pump connector for damage or corrosion",
+          "Test coolant pump for internal shorts",
+          "Check DME (ECU) output circuit for the pump",
+          "Replace coolant pump if faulty",
+          "Verify proper cooling system operation after repair"
+        ],
+        "ru": [
+          "Проверить проводку к электрическому насосу охлаждающей жидкости",
+          "Осмотреть разъем насоса охлаждающей жидкости на наличие повреждений или коррозии",
+          "Проверить насос охлаждающей жидкости на внутренние замыкания",
+          "Проверить выходную цепь DME (ЭБУ) для насоса",
+          "Заменить насос охлаждающей жидкости при неисправности",
+          "Проверить правильную работу системы охлаждения после ремонта"
+        ],
+        "ka": [
+          "შეამოწმეთ გაყვანილობა ელექტრო გამაგრილებლის ტუმბოსთან  ",
+          "შეამოწმეთ გამაგრილებლის ტუმბოს კონექტორი დაზიანებაზე ან კოროზიაზე  ",
+          "შეამოწმეთ გამაგრილებლის ტუმბო შიდა შორტებისთვის  ",
+          "შეამოწმეთ DME (ECU) გამომავალი წრე ტუმბოსთვის  ",
+          "შეცვალეთ გამაგრილებლის ტუმბო, თუ ის გაუმართავია  ",
+          "შეამოწმეთ გაგრილების სისტემის სწორი მუშაობა შეკეთების შემდეგ  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N54",
+        "N55",
+        "B58",
+        "B48"
+      ],
+      "category": "Cooling",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "2C54",
+      "title": {
+        "en": "DME: Low-pressure fuel pump: Activations",
+        "ru": "DME: Топливный насос низкого давления: Активации",
+        "ka": "DME: Low Pressure Fuel Pump: Activations  "
+      },
+      "description": {
+        "en": "This code indicates that the DME has detected an issue with the low-pressure fuel pump activation. The pump may not be operating as commanded.",
+        "ru": "Этот код указывает, что DME обнаружил проблему с активацией топливного насоса низкого давления. Насос может работать не так, как указано.",
+        "ka": "ეს კოდი მიუთითებს, რომ DME-მ აღმოაჩინა პრობლემა დაბალი წნევის საწვავის ტუმბოს გააქტიურებასთან დაკავშირებით. ტუმბო შეიძლება არ მუშაობდეს ისე, როგორც მითითებულია.  "
+      },
+      "solutions": {
+        "en": [
+          "Check fuel pump relay",
+          "Inspect wiring to the fuel pump",
+          "Test fuel pump operation",
+          "Check for power at the fuel pump",
+          "Verify fuel pressure at the low-pressure side",
+          "Replace fuel pump if necessary"
+        ],
+        "ru": [
+          "Проверить реле топливного насоса",
+          "Проверить проводку к топливному насосу",
+          "Проверить работу топливного насоса",
+          "Проверить наличие питания на топливном насосе",
+          "Проверить давление топлива на стороне низкого давления",
+          "При необходимости заменить топливный насос"
+        ],
+        "ka": [
+          "შეამოწმეთ საწვავის ტუმბოს რელე  ",
+          "შეამოწმეთ გაყვანილობა საწვავის ტუმბოზე  ",
+          "შეამოწმეთ საწვავის ტუმბოს მუშაობა  ",
+          "შეამოწმეთ საწვავის ტუმბოს ელექტრომომარაგება  ",
+          "შეამოწმეთ საწვავის წნევა დაბალი წნევის მხარეს  ",
+          "საჭიროების შემთხვევაში შეცვალეთ საწვავის ტუმბო  "
+        ]
+      },
+      "applicableModels": [
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N54",
+        "N55",
+        "B58",
+        "B48"
+      ],
+      "category": "Fuel System",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "2C69",
+      "title": {
+        "en": "DME: Fuel pressure control: Negative deviation",
+        "ru": "DME: Управление давлением топлива: Отрицательное отклонение",
+        "ka": "DME: Fuel Pressure Management: Negative Deviation  "
+      },
+      "description": {
+        "en": "This code indicates that the actual fuel pressure is lower than the commanded pressure. This could be due to a failing fuel pump, restrictions in the fuel system, or issues with the pressure control system.",
+        "ru": "Этот код указывает, что фактическое давление топлива ниже заданного давления. Это может быть вызвано отказом топливного насоса, ограничениями в топливной системе или проблемами с системой контроля давления.",
+        "ka": "ეს კოდი მიუთითებს, რომ საწვავის ფაქტობრივი წნევა უფრო დაბალია, ვიდრე მითითებული წნევა. ეს შეიძლება გამოწვეული იყოს საწვავის ტუმბოს გაუმართაობით, საწვავის სისტემაში შეზღუდვით ან წნევის კონტროლის სისტემასთან დაკავშირებული პრობლემებით.  "
+      },
+      "solutions": {
+        "en": [
+          "Check fuel filter for restrictions",
+          "Test high-pressure fuel pump (HPFP)",
+          "Inspect fuel pressure sensor",
+          "Check low-pressure fuel pump operation",
+          "Verify fuel lines for restrictions or leaks",
+          "Replace high-pressure fuel pump if necessary"
+        ],
+        "ru": [
+          "Проверить топливный фильтр на наличие ограничений",
+          "Проверить топливный насос высокого давления (HPFP)",
+          "Осмотреть датчик давления топлива",
+          "Проверить работу топливного насоса низкого давления",
+          "Проверить топливные линии на наличие ограничений или утечек",
+          "При необходимости заменить топливный насос высокого давления"
+        ],
+        "ka": [
+          "შეამოწმეთ საწვავის ფილტრი შეზღუდვებისთვის  ",
+          "შეამოწმეთ მაღალი წნევის საწვავის ტუმბო (HPFP)  ",
+          "შეამოწმეთ საწვავის წნევის სენსორი  ",
+          "შეამოწმეთ დაბალი წნევის საწვავის ტუმბოს მუშაობა  ",
+          "შეამოწმეთ საწვავის ხაზები შეზღუდვებისთვის ან გაჟონვისთვის  ",
+          "საჭიროების შემთხვევაში შეცვალეთ მაღალი წნევის საწვავის ტუმბო  "
+        ]
+      },
+      "applicableModels": [
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N54",
+        "N55",
+        "B58",
+        "B48"
+      ],
+      "category": "Fuel System",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "2C6A",
+      "title": {
+        "en": "DME: Fuel pressure control: Positive deviation",
+        "ru": "DME: Управление давлением топлива: Положительное отклонение",
+        "ka": "DME: Fuel Pressure Management: Positive Deviation  "
+      },
+      "description": {
+        "en": "This code indicates that the actual fuel pressure is higher than the commanded pressure. This could be due to a stuck fuel pressure regulator or issues with the pressure control system.",
+        "ru": "Этот код указывает, что фактическое давление топлива выше заданного давления. Это может быть вызвано застрявшим регулятором давления топлива или проблемами с системой контроля давления.",
+        "ka": "ეს კოდი მიუთითებს, რომ საწვავის რეალური წნევა უფრო მაღალია, ვიდრე დაყენებული წნევა. ეს შეიძლება გამოწვეული იყოს საწვავის წნევის რეგულატორის გაჭედვით ან წნევის კონტროლის სისტემასთან დაკავშირებული პრობლემებით.  "
+      },
+      "solutions": {
+        "en": [
+          "Check fuel pressure regulator",
+          "Inspect high-pressure fuel pump (HPFP)",
+          "Test fuel pressure sensor",
+          "Check for debris in pressure regulator",
+          "Verify DME control signals to pressure regulator",
+          "Replace pressure regulator if stuck"
+        ],
+        "ru": [
+          "Проверить регулятор давления топлива",
+          "Осмотреть топливный насос высокого давления (HPFP)",
+          "Проверить датчик давления топлива",
+          "Проверить наличие мусора в регуляторе давления",
+          "Проверить сигналы управления DME на регулятор давления",
+          "Заменить регулятор давления, если застрял"
+        ],
+        "ka": [
+          "შეამოწმეთ საწვავის წნევის რეგულატორი  ",
+          "შეამოწმეთ მაღალი წნევის საწვავის ტუმბო (HPFP)  ",
+          "შეამოწმეთ საწვავის წნევის სენსორი  ",
+          "შეამოწმეთ ნამსხვრევები წნევის რეგულატორში  ",
+          "შეამოწმეთ DME კონტროლის სიგნალები წნევის რეგულატორისთვის  ",
+          "ჩაკეტვის შემთხვევაში შეცვალეთ წნევის რეგულატორი  "
+        ]
+      },
+      "applicableModels": [
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N54",
+        "N55",
+        "B58",
+        "B48"
+      ],
+      "category": "Fuel System",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "5E20",
+      "title": {
+        "en": "IHKA: Air-conditioning compressor control circuit: Electrical fault",
+        "ru": "IHKA: Цепь управления компрессором кондиционера: Электрическая неисправность",
+        "ka": "IHKA: A/C კომპრესორის მართვის წრე: ელექტრული გაუმართაობა  "
+      },
+      "description": {
+        "en": "This code indicates an electrical issue in the control circuit for the air conditioning compressor. The IHKA (automatic climate control) module has detected a fault in the circuit that controls the compressor activation.",
+        "ru": "Этот код указывает на электрическую проблему в цепи управления компрессором кондиционера. Модуль IHKA (автоматический климат-контроль) обнаружил неисправность в цепи, которая управляет активацией компрессора.",
+        "ka": "ეს კოდი მიუთითებს ელექტრო პრობლემაზე კონდიცირების კომპრესორის მართვის წრეში. IHKA (ავტომატური კლიმატ კონტროლის) მოდულმა აღმოაჩინა ხარვეზი წრეში, რომელიც აკონტროლებს კომპრესორის გააქტიურებას.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wiring to the A/C compressor clutch",
+          "Inspect A/C compressor clutch relay",
+          "Test compressor clutch coil resistance",
+          "Verify power supply to the compressor circuit",
+          "Check IHKA module outputs",
+          "Replace compressor clutch if electrically faulty"
+        ],
+        "ru": [
+          "Проверить проводку к муфте компрессора кондиционера",
+          "Проверить реле муфты компрессора кондиционера",
+          "Проверить сопротивление катушки муфты компрессора",
+          "Проверить электропитание цепи компрессора",
+          "Проверить выходы модуля IHKA",
+          "Заменить муфту компрессора, если она электрически неисправна"
+        ],
+        "ka": [
+          "შეამოწმეთ გაყვანილობა კონდიციონერის კომპრესორის გადაბმულობისთვის  ",
+          "შეამოწმეთ კონდიცირების კომპრესორის გადაბმულობის რელე  ",
+          "შეამოწმეთ კომპრესორის გადაბმულობის კოჭის წინააღმდეგობა  ",
+          "შეამოწმეთ კომპრესორის წრედის კვების წყარო  ",
+          "შეამოწმეთ IHKA მოდულის შედეგები  ",
+          "შეცვალეთ კომპრესორის გადაბმა, თუ ის ელექტრონულად არის გაუმართავი  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "HVAC",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "940A",
+      "title": {
+        "en": "CAS: Immobilizer: Communication error",
+        "ru": "CAS: Иммобилайзер: Ошибка связи",
+        "ka": "CAS: იმობილაიზერი: კომუნიკაციის შეცდომა  "
+      },
+      "description": {
+        "en": "This code indicates a communication problem between the Car Access System (CAS) and the immobilizer system. This can prevent the vehicle from starting.",
+        "ru": "Этот код указывает на проблему связи между системой доступа к автомобилю (CAS) и системой иммобилайзера. Это может препятствовать запуску автомобиля.",
+        "ka": "ეს კოდი მიუთითებს კომუნიკაციის პრობლემაზე ავტომობილის წვდომის სისტემას (CAS) და იმობილაიზერის სისტემას შორის. ამან შეიძლება ხელი შეუშალოს მანქანის დაწყებას.  "
+      },
+      "solutions": {
+        "en": [
+          "Check for proper key recognition",
+          "Inspect CAS module connectors",
+          "Verify ring antenna around ignition switch is functioning",
+          "Test key battery and transponder",
+          "Check DME/ECU communication with CAS",
+          "Reprogram/synchronize CAS with key if necessary"
+        ],
+        "ru": [
+          "Проверить правильное распознавание ключа",
+          "Осмотреть разъемы модуля CAS",
+          "Проверить работу кольцевой антенны вокруг замка зажигания",
+          "Проверить батарею ключа и транспондер",
+          "Проверить связь DME/ECU с CAS",
+          "При необходимости перепрограммировать/синхронизировать CAS с ключом"
+        ],
+        "ka": [
+          "შეამოწმეთ გასაღების სწორი ამოცნობა  ",
+          "შეამოწმეთ CAS მოდულის კონექტორები  ",
+          "შეამოწმეთ რგოლის ანტენის მოქმედება ანთების გადამრთველის გარშემო  ",
+          "შეამოწმეთ გასაღების ბატარეა და ტრანსპონდერი  ",
+          "შეამოწმეთ კავშირი DME/ECU-სა და CAS-ს შორის  ",
+          "საჭიროების შემთხვევაში, CAS-ის ხელახალი დაპროგრამება/სინქრონიზაცია გასაღებით  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "E70",
+        "E82",
+        "E88"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Security",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "A138",
+      "title": {
+        "en": "FRM: Adaptive headlight: Control current right",
+        "ru": "FRM: Адаптивная фара: Ток управления правый",
+        "ka": "FRM: ადაპტური ფარები: მართეთ მიმდინარეობა მარჯვნივ  "
+      },
+      "description": {
+        "en": "This code indicates an issue with the control current for the right adaptive headlight (headlights that turn with steering). The Footwell Module (FRM) has detected an abnormal current condition.",
+        "ru": "Этот код указывает на проблему с током управления для правой адаптивной фары (фары, которые поворачиваются вместе с рулем). Модуль подножки (FRM) обнаружил ненормальное состояние тока.",
+        "ka": "ეს კოდი მიუთითებს სწორი ადაპტაციური ფარების საკონტროლო დენის პრობლემაზე (ფარები, რომლებიც ბრუნავს საჭით). ფეხის საყრდენი მოდულმა (FRM) აღმოაჩინა არანორმალური მიმდინარე მდგომარეობა.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wiring to the right adaptive headlight motor",
+          "Inspect headlight connectors for corrosion or damage",
+          "Test adaptive headlight motor operation",
+          "Verify headlight leveling sensor operation",
+          "Check for mechanical binding in headlight assembly",
+          "Replace adaptive headlight motor if faulty"
+        ],
+        "ru": [
+          "Проверить проводку к мотору правой адаптивной фары",
+          "Осмотреть разъемы фар на наличие коррозии или повреждений",
+          "Проверить работу мотора адаптивной фары",
+          "Проверить работу датчика выравнивания фар",
+          "Проверить наличие механических заеданий в узле фары",
+          "Заменить мотор адаптивной фары, если он неисправен"
+        ],
+        "ka": [
+          "შეამოწმეთ გაყვანილობა მარჯვენა ადაპტირებულ ფარების ძრავზე  ",
+          "შეამოწმეთ ფარების კონექტორები კოროზიაზე ან დაზიანებაზე  ",
+          "შეამოწმეთ ადაპტური ფარების ძრავის მუშაობა  ",
+          "შეამოწმეთ ფარების გასწორების სენსორის მუშაობა  ",
+          "შეამოწმეთ მექანიკური შეფერხებები ფარების აწყობაში  ",
+          "შეცვალეთ ადაპტაციური ფარის ძრავა, თუ ის გაუმართავია  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "E70",
+        "F10"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Lighting",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "9C23",
+      "title": {
+        "en": "DSC: Brake pressure sensor: Signal",
+        "ru": "DSC: Датчик давления тормозов: Сигнал",
+        "ka": "DSC: სამუხრუჭე წნევის სენსორი: სიგნალი  "
+      },
+      "description": {
+        "en": "This code indicates an issue with the brake pressure sensor signal. The Dynamic Stability Control (DSC) module is not receiving correct information about brake pressure.",
+        "ru": "Этот код указывает на проблему с сигналом датчика давления тормозов. Модуль динамического контроля устойчивости (DSC) не получает правильную информацию о давлении тормозов.",
+        "ka": "ეს კოდი მიუთითებს სამუხრუჭე წნევის სენსორის სიგნალის პრობლემაზე. დინამიური სტაბილურობის კონტროლის (DSC) მოდული არ იღებს სწორ ინფორმაციას სამუხრუჭე წნევის შესახებ.  "
+      },
+      "solutions": {
+        "en": [
+          "Check wiring to the brake pressure sensor",
+          "Inspect brake pressure sensor connector",
+          "Verify brake fluid level is correct",
+          "Test brake pressure sensor operation",
+          "Bleed brake system to remove air",
+          "Replace brake pressure sensor if faulty"
+        ],
+        "ru": [
+          "Проверить проводку к датчику давления тормозов",
+          "Осмотреть разъем датчика давления тормозов",
+          "Убедиться, что уровень тормозной жидкости правильный",
+          "Проверить работу датчика давления тормозов",
+          "Прокачать тормозную систему для удаления воздуха",
+          "Заменить датчик давления тормозов, если он неисправен"
+        ],
+        "ka": [
+          "შეამოწმეთ გაყვანილობა სამუხრუჭე წნევის სენსორთან  ",
+          "შეამოწმეთ სამუხრუჭე წნევის სენსორის კონექტორი  ",
+          "დარწმუნდით, რომ სამუხრუჭე სითხის დონე სწორია  ",
+          "შეამოწმეთ სამუხრუჭე წნევის სენსორის მუშაობა  ",
+          "ჰაერის ამოსაღებად სამუხრუჭე სისტემის სისხლდენა  ",
+          "შეცვალეთ სამუხრუჭე წნევის სენსორი, თუ ის გაუმართავია  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "ABS/DSC",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "4F02",
+      "title": {
+        "en": "DME: Throttle valve angle: Plausibility",
+        "ru": "DME: Угол дроссельной заслонки: Достоверность",
+        "ka": "DME: დროსელის კუთხე: სანდოობა  "
+      },
+      "description": {
+        "en": "This code indicates that the throttle valve angle sensor is reporting values that are not plausible based on other engine parameters. The DME has detected inconsistency in the throttle position feedback.",
+        "ru": "Этот код указывает, что датчик угла дроссельной заслонки сообщает значения, которые не являются достоверными на основании других параметров двигателя. DME обнаружил несоответствие в обратной связи положения дроссельной заслонки.",
+        "ka": "ეს კოდი მიუთითებს, რომ დროსელის კუთხის სენსორი აფიქსირებს მნიშვნელობებს, რომლებიც არ არის სანდო ძრავის სხვა პარამეტრებზე დაყრდნობით. DME-მ აღმოაჩინა შეუსაბამობა დროსელის პოზიციის გამოხმაურებაში.  "
+      },
+      "solutions": {
+        "en": [
+          "Check throttle body for carbon buildup",
+          "Clean throttle body",
+          "Inspect throttle position sensor connections",
+          "Perform throttle adaptation procedure with diagnostic tool",
+          "Check for vacuum leaks affecting idle control",
+          "Replace throttle body assembly if necessary"
+        ],
+        "ru": [
+          "Проверить дроссельный узел на наличие нагара",
+          "Очистить дроссельный узел",
+          "Проверить соединения датчика положения дроссельной заслонки",
+          "Выполнить процедуру адаптации дроссельной заслонки с помощью диагностического инструмента",
+          "Проверить наличие вакуумных утечек, влияющих на управление холостым ходом",
+          "При необходимости заменить узел дроссельной заслонки"
+        ],
+        "ka": [
+          "შეამოწმეთ დროსელის შეკრება ნახშირბადის საბადოებისთვის  ",
+          "დროსელის კორპუსი სუფთა  ",
+          "შეამოწმეთ დროსელის პოზიციის სენსორის კავშირები  ",
+          "დროსელის ადაპტაციის პროცედურის შესრულება დიაგნოსტიკური ხელსაწყოს გამოყენებით  ",
+          "შეამოწმეთ ვაკუუმის გაჟონვა, რომელიც გავლენას ახდენს უმოქმედობის კონტროლზე  ",
+          "საჭიროების შემთხვევაში, შეცვალეთ დროსელის სარქველი  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55",
+        "B48",
+        "B58"
+      ],
+      "category": "Engine",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "93BA",
+      "title": {
+        "en": "CAS: Key number 1: Key battery voltage too low",
+        "ru": "CAS: Ключ номер 1: Слишком низкое напряжение батареи ключа",
+        "ka": "CAS: გასაღები ნომერი 1: გასაღების ბატარეის ძაბვა ძალიან დაბალია  "
+      },
+      "description": {
+        "en": "This code indicates that the battery in key number 1 is low on voltage. The Car Access System (CAS) has detected insufficient power from the key's internal battery.",
+        "ru": "Этот код указывает, что батарея в ключе номер 1 имеет низкое напряжение. Система доступа к автомобилю (CAS) обнаружила недостаточную мощность от внутренней батареи ключа.",
+        "ka": "ეს კოდი მიუთითებს, რომ ბატარეა ნომრის 1-ში დაბალი ძაბვისაა. მანქანის წვდომის სისტემამ (CAS) აღმოაჩინა არასაკმარისი ენერგია შიდა გასაღების ბატარეიდან.  "
+      },
+      "solutions": {
+        "en": [
+          "Replace the battery in key number 1",
+          "Check key for physical damage",
+          "Verify key functionality after battery replacement",
+          "Resynchronize key if necessary",
+          "Check for water damage to key electronics",
+          "Replace key if battery replacement doesn't resolve the issue"
+        ],
+        "ru": [
+          "Заменить батарею в ключе номер 1",
+          "Проверить ключ на физические повреждения",
+          "Проверить функциональность ключа после замены батареи",
+          "При необходимости ресинхронизировать ключ",
+          "Проверить наличие повреждений от воды в электронике ключа",
+          "Заменить ключ, если замена батареи не решает проблему"
+        ],
+        "ka": [
+          "შეცვალეთ ბატარეა გასაღებ ნომერში 1  ",
+          "შეამოწმეთ გასაღები ფიზიკური დაზიანებისთვის  ",
+          "შეამოწმეთ გასაღების ფუნქციონირება ბატარეის გამოცვლის შემდეგ  ",
+          "საჭიროების შემთხვევაში, კლავიშის ხელახლა სინქრონიზაცია  ",
+          "შეამოწმეთ წყლის დაზიანება საკვანძო ელექტრონიკაში  ",
+          "შეცვალეთ გასაღები, თუ ბატარეის გამოცვლა პრობლემას არ მოაგვარებს  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "E70",
+        "F10",
+        "F30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Security",
+      "severity": "Low",
+      "software": [
+        "INPA",
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "5F30",
+      "title": {
+        "en": "EPS: Steering boot adaptation",
+        "ru": "EPS: Адаптация рулевого управления",
+        "ka": "EPS: საჭის ადაპტაცია  "
+      },
+      "description": {
+        "en": "This code indicates that the Electric Power Steering (EPS) system requires adaptation or initialization. This often occurs after battery replacement or EPS component replacement.",
+        "ru": "Этот код указывает, что система электроусилителя руля (EPS) требует адаптации или инициализации. Это часто происходит после замены аккумулятора или компонентов EPS.",
+        "ka": "ეს კოდი მიუთითებს, რომ ელექტროგადამცემი სისტემა (EPS) საჭიროებს ადაპტაციას ან ინიციალიზაციას. ეს ხშირად ხდება ბატარეის ან EPS კომპონენტების შეცვლის შემდეგ.  "
+      },
+      "solutions": {
+        "en": [
+          "Perform steering angle sensor calibration with diagnostic tool",
+          "Initialize EPS system",
+          "Check for proper battery voltage",
+          "Verify proper EPS module communication",
+          "Perform vehicle test drive to complete adaptation",
+          "Clear adaptation values and reinitialize if necessary"
+        ],
+        "ru": [
+          "Выполнить калибровку датчика угла поворота руля с помощью диагностического инструмента",
+          "Инициализировать систему EPS",
+          "Проверить правильное напряжение аккумулятора",
+          "Проверить правильную связь модуля EPS",
+          "Выполнить тестовую поездку для завершения адаптации",
+          "При необходимости очистить значения адаптации и повторно инициализировать"
+        ],
+        "ka": [
+          "შეასრულეთ საჭის კუთხის სენსორის დაკალიბრება დიაგნოსტიკური ხელსაწყოს გამოყენებით  ",
+          "EPS სისტემის ინიცირება  ",
+          "შეამოწმეთ ბატარეის სწორი ძაბვა  ",
+          "შეამოწმეთ EPS მოდულის სწორი კომუნიკაცია  ",
+          "ჩაატარეთ სატესტო დრაივი ადაპტაციის დასასრულებლად  ",
+          "საჭიროების შემთხვევაში, გაასუფთავეთ ადაპტაციის მნიშვნელობები და ხელახლა დაიწყეთ  "
+        ]
+      },
+      "applicableModels": [
+        "F10",
+        "F30",
+        "F15",
+        "G20",
+        "G30",
+        "G11"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Steering",
+      "severity": "Medium",
+      "software": [
+        "ISTA",
+        "Carly"
+      ]
+    },
+    {
+      "code": "A0B7",
+      "title": {
+        "en": "VDM: Adaptive headlight: Steering angle sensor signal implausible",
+        "ru": "VDM: Адаптивная фара: Сигнал датчика угла поворота руля недостоверен",
+        "ka": "VDM: ადაპტაციური ფარები: საჭის კუთხის სენსორის სიგნალი არასანდოა  "
+      },
+      "description": {
+        "en": "This code indicates that the Vehicle Dynamics Management (VDM) module is receiving implausible signals from the steering angle sensor, affecting the adaptive headlight functionality.",
+        "ru": "Этот код указывает, что модуль управления динамикой автомобиля (VDM) получает недостоверные сигналы от датчика угла поворота руля, что влияет на функциональность адаптивных фар.",
+        "ka": "ეს კოდი მიუთითებს, რომ ავტომობილის დინამიკის მოდული (VDM) იღებს არასწორი სიგნალებს საჭის კუთხის სენსორიდან, რაც გავლენას ახდენს ადაპტაციური ფარების ფუნქციონირებაზე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check steering angle sensor connections",
+          "Calibrate steering angle sensor",
+          "Verify communication between VDM and steering systems",
+          "Check for other related steering angle sensor codes",
+          "Perform steering angle sensor initialization",
+          "Replace steering angle sensor if necessary"
+        ],
+        "ru": [
+          "Проверить соединения датчика угла поворота руля",
+          "Откалибровать датчик угла поворота руля",
+          "Проверить связь между VDM и системами рулевого управления",
+          "Проверить наличие других связанных кодов датчика угла поворота руля",
+          "Выполнить инициализацию датчика угла поворота руля",
+          "При необходимости заменить датчик угла поворота руля"
+        ],
+        "ka": [
+          "შეამოწმეთ საჭის კუთხის სენსორის კავშირები  ",
+          "საჭის კუთხის სენსორის დაკალიბრება  ",
+          "შეამოწმეთ კომუნიკაცია VDM-სა და საჭის სისტემას შორის  ",
+          "შეამოწმეთ სხვა დაკავშირებული საჭის კუთხის სენსორის კოდები  ",
+          "საჭის კუთხის სენსორის ინიცირება  ",
+          "საჭიროების შემთხვევაში შეცვალეთ საჭის კუთხის სენსორი  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Lighting",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "800F00",
+      "title": {
+        "en": "Valvetronic Motor: Synchronization error",
+        "ru": "Двигатель Valvetronic: Ошибка синхронизации",
+        "ka": "Valvetronic engine: სინქრონიზაციის შეცდომა  "
+      },
+      "description": {
+        "en": "This code indicates a synchronization error with the Valvetronic motor that controls variable valve lift. The system is unable to properly synchronize the motor position with the control module commands.",
+        "ru": "Этот код указывает на ошибку синхронизации двигателя Valvetronic, который управляет переменным подъемом клапанов. Система не может правильно синхронизировать положение двигателя с командами модуля управления.",
+        "ka": "ეს კოდი მიუთითებს Valvetronic-ის ძრავის დროის შეცდომაზე, რომელიც აკონტროლებს სარქვლის ცვლადი ამწევს. სისტემა ვერ ახდენს ძრავის პოზიციის სწორად სინქრონიზაციას საკონტროლო მოდულის ბრძანებებთან.  "
+      },
+      "solutions": {
+        "en": [
+          "Check Valvetronic motor and eccentric shaft",
+          "Inspect Valvetronic motor position sensor",
+          "Verify proper Valvetronic wiring",
+          "Initialize/adapt Valvetronic system with diagnostic tool",
+          "Check for mechanical binding in valve train",
+          "Replace Valvetronic motor if necessary"
+        ],
+        "ru": [
+          "Проверить двигатель Valvetronic и эксцентриковый вал",
+          "Проверить датчик положения двигателя Valvetronic",
+          "Проверить правильную проводку Valvetronic",
+          "Инициализировать/адаптировать систему Valvetronic с помощью диагностического инструмента",
+          "Проверить наличие механических заеданий в клапанном механизме",
+          "При необходимости заменить двигатель Valvetronic"
+        ],
+        "ka": [
+          "შეამოწმეთ Valvetronic ძრავა და ექსცენტრიული ლილვი  ",
+          "შეამოწმეთ Valvetronic ძრავის პოზიციის სენსორი  ",
+          "შეამოწმეთ სწორი Valvetronic გაყვანილობა  ",
+          "Valvetronic სისტემის ინიცირება/ადაპტირება დიაგნოსტიკური ხელსაწყოს გამოყენებით  ",
+          "შეამოწმეთ სარქვლის მექანიზმში მექანიკური შეფერხებები  ",
+          "საჭიროების შემთხვევაში შეცვალეთ Valvetronic ძრავა  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "N52",
+        "N53",
+        "B48",
+        "B58"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "5F10",
+      "title": {
+        "en": "LWR: Height level sensor, front: Signal implausible",
+        "ru": "LWR: Датчик уровня высоты, передний: Сигнал недостоверен",
+        "ka": "LWR: სიმაღლის დონის სენსორი, წინა: სიგნალი არასწორია  "
+      },
+      "description": {
+        "en": "This code indicates an issue with the front height level sensor used for automatic headlight leveling (LWR). The sensor is providing implausible values.",
+        "ru": "Этот код указывает на проблему с передним датчиком уровня высоты, используемым для автоматического выравнивания фар (LWR). Датчик предоставляет недостоверные значения.",
+        "ka": "ეს კოდი მიუთითებს პრობლემაზე წინა სიმაღლის სენსორთან, რომელიც გამოიყენება შუქის ავტომატური გასწორებისთვის (LWR). სენსორი იძლევა არასანდო მნიშვნელობებს.  "
+      },
+      "solutions": {
+        "en": [
+          "Check front height level sensor and linkage",
+          "Inspect sensor connections for corrosion or damage",
+          "Verify proper sensor movement throughout suspension travel",
+          "Test sensor resistance values",
+          "Check for bent or damaged sensor arms",
+          "Replace height level sensor if necessary"
+        ],
+        "ru": [
+          "Проверить передний датчик уровня высоты и соединения",
+          "Осмотреть соединения датчика на наличие коррозии или повреждений",
+          "Проверить правильное движение датчика при ходе подвески",
+          "Проверить значения сопротивления датчика",
+          "Проверить наличие погнутых или поврежденных рычагов датчика",
+          "При необходимости заменить датчик уровня высоты"
+        ],
+        "ka": [
+          "შეამოწმეთ წინა სიმაღლის სენსორი და კავშირები  ",
+          "შეამოწმეთ სენსორის კავშირები კოროზიაზე ან დაზიანებაზე  ",
+          "შეამოწმეთ სენსორის სწორი მოძრაობა შეჩერების დროს  ",
+          "შეამოწმეთ სენსორის წინააღმდეგობის მნიშვნელობები  ",
+          "შეამოწმეთ მოხრილი ან დაზიანებული სენსორის მკლავები  ",
+          "საჭიროების შემთხვევაში შეცვალეთ სიმაღლის სენსორი  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Lighting",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "A19B",
+      "title": {
+        "en": "FRM: Right brake light: Short circuit to ground",
+        "ru": "FRM: Правый стоп-сигнал: Короткое замыкание на массу",
+        "ka": "FRM: მარჯვენა სამუხრუჭე შუქი: მოკლე ჩართვა მიწასთან  "
+      },
+      "description": {
+        "en": "This code indicates that the Footwell Module (FRM) has detected a short circuit to ground in the right brake light circuit.",
+        "ru": "Этот код указывает, что модуль подножки (FRM) обнаружил короткое замыкание на массу в цепи правого стоп-сигнала.",
+        "ka": "ეს კოდი მიუთითებს, რომ ფეხის საყრდენი მოდულმა (FRM) აღმოაჩინა მოკლე სამუხრუჭე შუქის მარჯვენა წრეში დამიწებამდე.  "
+      },
+      "solutions": {
+        "en": [
+          "Check right brake light bulb",
+          "Inspect brake light socket for corrosion or damage",
+          "Test wiring to the right brake light for shorts to ground",
+          "Check tail light assembly for water intrusion",
+          "Verify brake light switch operation",
+          "Replace wiring or bulb holder if necessary"
+        ],
+        "ru": [
+          "Проверить лампочку правого стоп-сигнала",
+          "Осмотреть патрон стоп-сигнала на наличие коррозии или повреждений",
+          "Проверить проводку к правому стоп-сигналу на наличие замыканий на массу",
+          "Проверить задний фонарь на проникновение воды",
+          "Проверить работу выключателя стоп-сигналов",
+          "При необходимости заменить проводку или держатель лампочки"
+        ],
+        "ka": [
+          "შეამოწმეთ მარჯვენა სამუხრუჭე ნათურა  ",
+          "შეამოწმეთ სამუხრუჭე შუქის ბუდე კოროზიაზე ან დაზიანებაზე  ",
+          "შეამოწმეთ გაყვანილობა მარჯვენა სამუხრუჭე შუქზე შორტების დასამიწებლად  ",
+          "შეამოწმეთ უკანა შუქი წყლის შეღწევადობისთვის  ",
+          "შეამოწმეთ სამუხრუჭე შუქის ჩამრთველის მუშაობა  ",
+          "საჭიროების შემთხვევაში, შეცვალეთ გაყვანილობა ან ნათურის დამჭერი  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "E70",
+        "E82",
+        "E88"
+      ],
+      "engineCodes": [
+        "All"
+      ],
+      "category": "Lighting",
+      "severity": "Medium",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    },
+    {
+      "code": "CC9A",
+      "title": {
+        "en": "MSD85: Water in fuel",
+        "ru": "MSD85: Вода в топливе",
+        "ka": "MSD85: წყალი საწვავში  "
+      },
+      "description": {
+        "en": "This diesel-specific code indicates that the fuel water separator has detected water in the fuel system. This can cause serious damage to diesel injection components if not addressed.",
+        "ru": "Этот специфический для дизельных двигателей код указывает, что сепаратор воды в топливе обнаружил воду в топливной системе. Это может вызвать серьезные повреждения компонентов дизельного впрыска, если не устранить проблему.",
+        "ka": "დიზელის ძრავისთვის დამახასიათებელი ეს კოდი მიუთითებს, რომ წყლის საწვავის გამყოფმა აღმოაჩინა წყალი საწვავის სისტემაში. ამან შეიძლება გამოიწვიოს დიზელის საინექციო კომპონენტების სერიოზული დაზიანება, თუ პრობლემა არ გამოსწორდება.  "
+      },
+      "solutions": {
+        "en": [
+          "Drain water from fuel filter/water separator",
+          "Check fuel quality for water contamination",
+          "Replace fuel filter",
+          "Inspect fuel tank for water intrusion",
+          "Verify water-in-fuel sensor operation",
+          "Bleed air from fuel system after draining water"
+        ],
+        "ru": [
+          "Слить воду из топливного фильтра/сепаратора воды",
+          "Проверить качество топлива на наличие загрязнения водой",
+          "Заменить топливный фильтр",
+          "Проверить топливный бак на проникновение воды",
+          "Проверить работу датчика воды в топливе",
+          "Удалить воздух из топливной системы после слива воды"
+        ],
+        "ka": [
+          "გაწურეთ საწვავის ფილტრი/წყლის გამყოფი  ",
+          "შეამოწმეთ საწვავის ხარისხი წყლის დაბინძურებისთვის  ",
+          "საწვავის ფილტრის შეცვლა  ",
+          "შეამოწმეთ საწვავის ავზი წყლის შეღწევადობისთვის  ",
+          "შეამოწმეთ წყლის მუშაობა საწვავის სენსორში  ",
+          "ამოიღეთ ჰაერი საწვავის სისტემიდან წყლის ამოწურვის შემდეგ  "
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "F30",
+        "G20",
+        "G30"
+      ],
+      "engineCodes": [
+        "M57",
+        "N57",
+        "B47"
+      ],
+      "category": "Fuel System",
+      "severity": "High",
+      "software": [
+        "INPA",
+        "ISTA"
+      ]
+    }
+  ]
+}
