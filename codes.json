@@ -996,6 +996,100 @@
       ]
     },
     {
+      "code": "30BA",
+      "title": {
+        "en": "DME: Digital Motor Electronics, Internal Failure",
+        "ru": "DME: Внутренняя неисправность (MOSFET инжекторов)",
+        "ka": "DME: შიდა გაუმართაობა (ინჟექტორის MOSFET)"
+      },
+      "description": {
+        "en": "Internal DME failure related to the fuel injector driver circuit (MOSFETs). Very common on N54 engines (MSD80 DME). Results in misfires and 'Limp Mode'.",
+        "ru": "Внутренняя неисправность блока управления двигателем, связанная с силовыми ключами (MOSFET) управления форсунками. Часто встречается на моторах N54 (блок MSD80). Вызывает пропуски зажигания и аварийный режим.",
+        "ka": "DME-ს შიდა გაუმართაობა, რომელიც დაკავშირებულია საწვავის ინჟექტორის მართვის სქემასთან (MOSFET). ძალიან გავრცელებულია N54 ძრავებზე."
+      },
+      "solutions": {
+        "en": [
+          "Repair DME by replacing MOSFETs (usually 30N06VL)",
+          "Replace DME with updated MSD81 version",
+          "Check fuel injectors for electrical shorts"
+        ],
+        "ru": [
+          "Ремонт DME путем замены MOSFET-транзисторов (обычно 30N06VL)",
+          "Замена DME на обновленную версию MSD81",
+          "Проверить топливные форсунки на короткое замыкание"
+        ],
+        "ka": [
+          "DME-ს შეკეთება MOSFET-ების შეცვლით",
+          "DME-ს შეცვლა განახლებული MSD81 ვერსიით",
+          "შეამოწმეთ ინჟექტორები ელექტრო მოკლე ჩართვაზე"
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E92",
+        "E60",
+        "E70"
+      ],
+      "engineCodes": [
+        "N54"
+      ],
+      "category": "Engine",
+      "severity": "Critical",
+      "software": [
+        "ISTA",
+        "INPA",
+        "MHD"
+      ]
+    },
+    {
+      "code": "2A82",
+      "title": {
+        "en": "DME: VANOS Intake: Mechanism",
+        "ru": "DME: VANOS впуск: Механизм",
+        "ka": "DME: VANOS შემშვები: მექანიზმი"
+      },
+      "description": {
+        "en": "Mechanical fault in the intake VANOS system. Camshaft is not reaching target position due to sludge or faulty solenoid.",
+        "ru": "Механическая неисправность в системе VANOS на впуске. Распредвал не достигает заданного положения, часто из-за масляных отложений или соленоида.",
+        "ka": "მექანიკური გაუმართაობა შემშვები VANOS-ის სისტემაში. ამწე ლილვი ვერ აღწევს სამიზნე პოზიციას."
+      },
+      "solutions": {
+        "en": [
+          "Clean or replace intake VANOS solenoid",
+          "Check engine oil level and pressure",
+          "Inspect VANOS check valve filters for clogging"
+        ],
+        "ru": [
+          "Очистить или заменить соленоид VANOS на впуске",
+          "Проверить уровень и давление масла",
+          "Осмотреть обратные клапаны-фильтры VANOS на предмет засорения"
+        ],
+        "ka": [
+          "გაასუფთავეთ ან შეცვალეთ შემშვები VANOS სოლენოიდი",
+          "შეამოწმეთ ზეთის დონე და წნევა",
+          "შეამოწმეთ VANOS-ის ფილტრები"
+        ]
+      },
+      "applicableModels": [
+        "E90",
+        "E60",
+        "F10",
+        "E70"
+      ],
+      "engineCodes": [
+        "N52",
+        "N54",
+        "N55"
+      ],
+      "category": "Engine",
+      "severity": "High",
+      "software": [
+        "ISTA",
+        "INPA",
+        "MHD"
+      ]
+    },
+    {
       "code": "2A87",
       "title": {
         "en": "DME: Rail pressure control: Pressure is too low",

@@ -1048,7 +1048,9 @@ main.container {
   font-family: "Exo 2", sans-serif;
   font-size: 32px;
   color: #fff;
+  margin: 0;
   text-shadow: 0 0 15px rgba(0, 102, 179, 0.5);
+  line-height: 1.2;
 }
 
 .back-btn {
@@ -1065,22 +1067,28 @@ main.container {
 .back-btn,
 .close-button {
   background: rgba(255, 255, 255, 0.05);
-  border: none;
-  width: 43px;
-  height: 31px;
-  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  /* Жесткие размеры */
+  width: 44px;
+  height: 44px;
+  min-width: 44px; /* Защита от сплющивания */
+  min-height: 44px;
+  border-radius: 50%; /* Идеальный круг */
   color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0; /* Убираем внутренние отступы, которые делают овал */
   transition: var(--transition);
+  z-index: 10; /* Чтобы кнопка была поверх всего */
 }
 
-.back-btn:hover,
-.close-button:hover {
+.back-btn:hover {
   background: var(--bmw-blue);
-  transform: rotate(-90deg);
+  border-color: var(--bmw-blue);
+  transform: rotate(-90deg); /* Эффект вращения при наведении */
+  box-shadow: 0 0 15px rgba(0, 102, 179, 0.5);
 }
 
 .code-info {
@@ -1158,12 +1166,256 @@ main.container {
 }
 
 .detail-header {
+  position: relative; /* Важно для позиционирования кнопки */
   display: flex;
   align-items: center;
-  gap: 55% !important;
+  justify-content: center; /* Центрируем содержимое по горизонтали */
   margin-bottom: 30px;
   border-bottom: 1px solid var(--glass-border);
   padding-bottom: 20px;
+  min-height: 50px;
+}
+
+.wizard-fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: var(--bmw-blue);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(0, 102, 179, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2000;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.wizard-fab:hover {
+  transform: scale(1.1);
+  background: #fff;
+}
+
+.wizard-fab:hover i {
+  color: var(--bmw-blue);
+}
+
+.wizard-fab i {
+  font-size: 28px;
+  color: #fff;
+  transition: color 0.3s;
+}
+
+.chat-window {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 380px;
+  height: 600px;
+  background: rgba(18, 20, 24, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  transform: translateY(20px) scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 1999;
+}
+.chat-window.active {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Шапка чата */
+.chat-header {
+  background: linear-gradient(90deg, var(--bmw-dark-blue), var(--bmw-blue));
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bot-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bot-avatar {
+  width: 35px;
+  height: 35px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bmw-blue);
+  font-size: 18px;
+}
+
+.bot-status {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #2ecc71;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(46, 204, 113, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+  }
+}
+
+.chat-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.message {
+  max-width: 100%!;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  animation: msg-appear 0.3s ease;
+}
+
+@keyframes msg-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.bot {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-bottom-left-radius: 2px;
+  align-self: flex-start;
+  border: 1px solid var(--glass-border);
+}
+
+.message.user {
+  background: var(--bmw-blue);
+  color: #fff;
+  border-bottom-right-radius: 2px;
+  align-self: flex-end;
+  box-shadow: 0 4px 15px rgba(0, 102, 179, 0.3);
+}
+
+/* Опции выбора (Кнопки ответов) */
+.chat-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 5px;
+}
+
+.chat-option-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--bmw-blue);
+  color: var(--bmw-sky);
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.chat-option-btn:hover {
+  background: var(--bmw-blue);
+  color: #fff;
+}
+
+/* Индикатор набора текста */
+.typing-indicator {
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  align-self: flex-start;
+  display: none; /* Скрыт по умолчанию */
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: #aaa;
+  border-radius: 50%;
+  animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.detail-header .back-btn {
+  position: absolute;
+  left: 0;
+  top: 25%;
+  transform: translateY(-50%); /* Центровка кнопки по вертикали */
+}
+
+.detail-header .back-btn:hover {
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+.header-title-wrapper {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 0 50px; /* Отступы, чтобы текст не наезжал на кнопку на моб. */
 }
 
 .detail-title {
@@ -1176,6 +1428,64 @@ main.container {
   margin: 0;
   font-size: 1.4rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.alt-code-badge {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px dashed var(--glass-border);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: "Exo 2", sans-serif;
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-top: 5px;
+  display: inline-block;
+}
+
+.alt-code-badge span {
+  color: #fff;
+  font-weight: 600;
+}
+
+.parts-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-part {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(0, 102, 179, 0.15);
+  border: 1px solid var(--bmw-blue);
+  color: #fff;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-part:hover {
+  background: var(--bmw-blue);
+  box-shadow: 0 0 15px rgba(0, 102, 179, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-part.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--glass-border);
+}
+
+.btn-part.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #fff;
 }
 
 .close-button {
@@ -1247,6 +1557,80 @@ main.container {
   color: var(--bmw-blue);
   font-size: 12px;
   top: 14px;
+}
+
+.chat-footer {
+  padding: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 10px 15px;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+
+.chat-input:focus {
+  border-color: var(--bmw-blue);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.chat-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bmw-blue);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.chat-send-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(0, 102, 179, 0.5);
+}
+
+.chat-result-link {
+  background: rgba(0, 102, 179, 0.15);
+  border: 1px solid var(--bmw-blue);
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.chat-result-link:hover {
+  background: var(--bmw-blue);
+  color: white;
+}
+
+.chat-result-code {
+  font-weight: bold;
+  font-family: "Exo 2", sans-serif;
+  color: var(--bmw-sky);
+}
+.chat-result-link:hover .chat-result-code {
+  color: white;
 }
 
 .info-badge {
@@ -1432,9 +1816,45 @@ footer {
   animation-delay: 0.2s;
 }
 
+@media (max-width: 480px) {
+  .chat-window {
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+    z-index: 2005; /* Поверх всего */
+  }
+}
+
 @media (max-width: 768px) {
   header {
     padding: 15px;
+  }
+
+  .detail-header h2 {
+    font-size: 24px;
+  }
+  .header-title-wrapper {
+    padding: 0 45px; /* Чуть меньше отступов */
+  }
+  .tag-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .parts-buttons {
+    flex-direction: column;
+  }
+
+  .btn-part {
+    width: 100%;
+  }
+  main.container {
+    padding: 0 15px;
+    margin-top: 20px;
+  }
+  #code-detail {
+    padding: 20px;
   }
   .logo svg {
     width: 40px;
@@ -1447,10 +1867,6 @@ footer {
   #search-input {
     padding: 15px 20px;
     font-size: 16px;
-  }
-
-  .tag-grid {
-    grid-template-columns: 1fr;
   }
 
   .detail-header h2 {
