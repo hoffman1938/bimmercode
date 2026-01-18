@@ -1044,37 +1044,38 @@
     {
       "code": "2A82",
       "title": {
-        "en": "DME: VANOS Intake: Mechanism",
-        "ru": "DME: VANOS впуск: Механизм",
-        "ka": "DME: VANOS შემშვები: მექანიზმი"
+        "en": "VANOS Solenoid Valve, intake: Mechanical jamming",
+        "ru": "Электромагнитный клапан VANOS, впуск: Механическое заедание",
+        "ka": "VANOS სოლენოიდი, შემშვები: მექანიკური გაჭედვა"
       },
       "description": {
-        "en": "Mechanical fault in the intake VANOS system. Camshaft is not reaching target position due to sludge or faulty solenoid.",
-        "ru": "Механическая неисправность в системе VANOS на впуске. Распредвал не достигает заданного положения, часто из-за масляных отложений или соленоида.",
-        "ka": "მექანიკური გაუმართაობა შემშვები VANOS-ის სისტემაში. ამწე ლილვი ვერ აღწევს სამიზნე პოზიციას."
+        "en": "The DME detects that the VANOS intake camshaft is not reaching the target position. Often caused by dirty oil or a failing solenoid.",
+        "ru": "DME обнаружил, что впускной распредвал VANOS не достигает целевого положения. Часто вызвано грязным маслом или неисправным соленоидом.",
+        "ka": "DME აფიქსირებს, რომ VANOS-ის შემშვები ლილვი ვერ აღწევს მიზნობრივ პოზიციას. ხშირად გამოწვეულია ჭუჭყიანი ზეთით ან დაზიანებული სოლენოიდით."
       },
       "solutions": {
         "en": [
-          "Clean or replace intake VANOS solenoid",
-          "Check engine oil level and pressure",
-          "Inspect VANOS check valve filters for clogging"
+          "Clean or replace VANOS intake solenoid",
+          "Check oil level",
+          "Check VANOS non-return valves"
         ],
         "ru": [
-          "Очистить или заменить соленоид VANOS на впуске",
-          "Проверить уровень и давление масла",
-          "Осмотреть обратные клапаны-фильтры VANOS на предмет засорения"
+          "Очистить/заменить клапан VANOS (впуск)",
+          "Проверить уровень масла",
+          "Проверить обратные клапаны"
         ],
         "ka": [
-          "გაასუფთავეთ ან შეცვალეთ შემშვები VANOS სოლენოიდი",
-          "შეამოწმეთ ზეთის დონე და წნევა",
-          "შეამოწმეთ VANOS-ის ფილტრები"
+          "გაწმინდეთ/შეცვალეთ VANOS სოლენოიდი",
+          "შეამოწმეთ ზეთის დონე",
+          "შეამოწმეთ უკუსარქველები"
         ]
       },
       "applicableModels": [
         "E90",
         "E60",
         "F10",
-        "E70"
+        "X3",
+        "X5"
       ],
       "engineCodes": [
         "N52",
@@ -1084,68 +1085,8 @@
       "category": "Engine",
       "severity": "High",
       "software": [
-        "ISTA",
         "INPA",
-        "MHD"
-      ]
-    },
-    {
-      "code": "2A87",
-      "title": {
-        "en": "DME: Rail pressure control: Pressure is too low",
-        "ru": "DME: Контроль давления в топливной рампе: Давление слишком низкое",
-        "ka": "DME: საწვავის სარკინიგზო წნევის მონიტორინგი: წნევა ძალიან დაბალია  "
-      },
-      "description": {
-        "en": "This code indicates that the fuel rail pressure is lower than the specified value. This can affect engine performance, starting, and fuel economy.",
-        "ru": "Этот код указывает, что давление в топливной рампе ниже заданного значения. Это может повлиять на производительность двигателя, запуск и расход топлива.",
-        "ka": "ეს კოდი მიუთითებს, რომ საწვავის სარკინიგზო წნევა მითითებულ მნიშვნელობაზე დაბალია. ამან შეიძლება გავლენა მოახდინოს ძრავის მუშაობაზე, დაწყებასა და საწვავის მოხმარებაზე.  "
-      },
-      "solutions": {
-        "en": [
-          "Check fuel pump operation",
-          "Inspect fuel pressure sensor",
-          "Check for restrictions in fuel filter or lines",
-          "Test high-pressure fuel pump (HPFP)",
-          "Verify proper fuel pressure regulator operation",
-          "Inspect for leaks in fuel lines or injectors"
-        ],
-        "ru": [
-          "Проверить работу топливного насоса",
-          "Осмотреть датчик давления топлива",
-          "Проверить наличие ограничений в топливном фильтре или линиях",
-          "Протестировать топливный насос высокого давления (HPFP)",
-          "Проверить правильную работу регулятора давления топлива",
-          "Проверить наличие утечек в топливных линиях или форсунках"
-        ],
-        "ka": [
-          "შეამოწმეთ საწვავის ტუმბოს მუშაობა  ",
-          "შეამოწმეთ საწვავის წნევის სენსორი  ",
-          "შეამოწმეთ შეზღუდვები საწვავის ფილტრსა და ხაზებში  ",
-          "ტესტი მაღალი წნევის საწვავის ტუმბო (HPFP)  ",
-          "შეამოწმეთ საწვავის წნევის რეგულატორის სწორი მუშაობა  ",
-          "შეამოწმეთ გაჟონვა საწვავის ხაზებში ან ინჟექტორებში  "
-        ]
-      },
-      "applicableModels": [
-        "E90",
-        "F10",
-        "F30",
-        "G20",
-        "G30"
-      ],
-      "engineCodes": [
-        "N54",
-        "N55",
-        "B48",
-        "B58"
-      ],
-      "category": "Fuel System",
-      "severity": "High",
-      "software": [
-        "INPA",
-        "ISTA",
-        "MHD"
+        "ISTA"
       ]
     },
     {
@@ -2792,66 +2733,6 @@
       ],
       "category": "Engine",
       "severity": "High",
-      "software": [
-        "INPA",
-        "ISTA",
-        "MHD"
-      ]
-    },
-    {
-      "code": "30FF",
-      "title": {
-        "en": "Boost pressure actuator deviation",
-        "ru": "Отклонение привода давления наддува",
-        "ka": "გამაძლიერებელი წნევის წამყვანის გადახრა  "
-      },
-      "description": {
-        "en": "This code indicates that there is a significant difference between the requested boost pressure and the actual measured boost pressure. This could be due to a mechanical or electrical issue in the boost control system.",
-        "ru": "Этот код указывает на значительную разницу между запрошенным давлением наддува и фактически измеренным давлением наддува. Это может быть вызвано механической или электрической проблемой в системе управления наддувом.",
-        "ka": "ეს კოდი მიუთითებს მნიშვნელოვან განსხვავებას მოთხოვნილ გამაძლიერებელ წნევასა და რეალურ გაზომილ გამაძლიერებელ წნევას შორის. ეს შეიძლება გამოწვეული იყოს გამაძლიერებლის მართვის სისტემაში მექანიკური ან ელექტრული პრობლემის გამო.  "
-      },
-      "solutions": {
-        "en": [
-          "Check wastegate actuator for proper operation",
-          "Inspect wastegate control solenoid for electrical issues",
-          "Verify boost pressure sensor is reading correctly",
-          "Check for boost leaks in the system",
-          "Inspect turbocharger for mechanical issues",
-          "Check vacuum lines for the wastegate actuator (if applicable)"
-        ],
-        "ru": [
-          "Проверить привод перепускного клапана на правильную работу",
-          "Проверить соленоид управления перепускным клапаном на электрические проблемы",
-          "Убедиться, что датчик давления наддува показывает правильно",
-          "Проверить наличие утечек наддува в системе",
-          "Проверить турбокомпрессор на механические проблемы",
-          "Проверить вакуумные линии для привода перепускного клапана (если применимо)"
-        ],
-        "ka": [
-          "შეამოწმეთ შემოვლითი სარქვლის ამძრავი სწორად მუშაობისთვის  ",
-          "შეამოწმეთ შემოვლითი სარქვლის მართვის სოლენოიდი ელექტრო პრობლემებზე  ",
-          "დარწმუნდით, რომ გამაძლიერებელი წნევის სენსორი სწორად კითხულობს  ",
-          "შეამოწმეთ გამაძლიერებელი გაჟონვა სისტემაში  ",
-          "შეამოწმეთ ტურბო დამტენი მექანიკურ პრობლემებზე  ",
-          "შეამოწმეთ ვაკუუმური ხაზები შემოვლითი სარქვლის ამძრავისთვის (ასეთის არსებობის შემთხვევაში)  "
-        ]
-      },
-      "applicableModels": [
-        "E90",
-        "F10",
-        "F30",
-        "G20",
-        "G30"
-      ],
-      "engineCodes": [
-        "N54",
-        "N55",
-        "B58",
-        "S55",
-        "S58"
-      ],
-      "category": "Engine",
-      "severity": "Medium",
       "software": [
         "INPA",
         "ISTA",
