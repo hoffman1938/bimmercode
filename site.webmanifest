@@ -1,0 +1,66 @@
+{
+  "name": "BMW Diagnostic Codes Database",
+  "short_name": "BMW DTC",
+  "description": "Free BMW diagnostic trouble codes database with solutions and repair tips",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050507",
+  "theme_color": "#0066b3",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["automotive", "utilities", "tools"],
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ico.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "BMW DTC Code Search"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "BMW DTC Mobile View"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Search Error Codes",
+      "short_name": "Search",
+      "description": "Search BMW diagnostic codes",
+      "url": "/?action=search",
+      "icons": [{ "src": "/icon-search.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Forum",
+      "short_name": "Forum",
+      "description": "BMW Community Forum",
+      "url": "/forum.html",
+      "icons": [{ "src": "/icon-forum.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
