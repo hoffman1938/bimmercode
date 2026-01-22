@@ -467,7 +467,7 @@ const translations = {
     applicableModels: "Models",
     engineCodes: "Engines",
     category: "System",
-    footer: "BMW DTC Bot © 2026 • Professional Diagnostic Data",
+    footer: "BMW DTC Bot © 2026 • Diagnostic Data",
     // Новые ключи для кнопок
     partsBtn: "RealOEM (Parts)",
     catalogBtn: "Catalog Search",
@@ -486,7 +486,7 @@ const translations = {
     applicableModels: "Модели",
     engineCodes: "Двигатели",
     category: "Система",
-    footer: "BMW DTC Bot © 2026 • Профессиональная диагностика",
+    footer: "BMW DTC Bot © 2026 • Диагностика",
     partsBtn: "Запчасти (RealOEM)",
     catalogBtn: "Поиск в каталоге",
     obdLabel: "Код OBD-II:",
@@ -504,11 +504,11 @@ const translations = {
     applicableModels: "მოდელები",
     engineCodes: "ძრავები",
     category: "სისტემა",
-    footer: "BMW DTC Bot © 2026 • პროფესიონალური მონაცემები",
+    footer: "BMW DTC Bot © 2026 • დიაგნოსტიკის კოდები",
     partsBtn: "ნაწილები (RealOEM)",
     catalogBtn: "კატალოგში ძებნა",
     obdLabel: "OBD-II კოდი:",
-    chatTitle: "BMW-ს იი ექსპერტი",
+    chatTitle: "BMW-ს AI ექსპერტი",
     chatStatus: "დაკავშირებულია ბაზასთან",
     chatPlaceholder: "აღწერეთ პრობლემა (მაგ. 'ბოლი')...",
   },
@@ -524,7 +524,7 @@ async function init() {
     }
 
     // 2. Пытаемся подгрузить JSON
-    const response = await fetch("codes.json");
+    const response = await fetch("../data/codes.json");
     if (response.ok) {
       const data = await response.json();
       // Объединяем списки
