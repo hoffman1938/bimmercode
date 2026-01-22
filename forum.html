@@ -80,6 +80,19 @@
         </a>
       </div>
       <div class="controls">
+        <div class="notification-wrapper" style="position: relative; display: inline-block; margin-right: 15px;">
+    <button class="btn icon-only" onclick="toggleNotifications()">
+        <i class="fas fa-bell"></i>
+        <span id="notif-badge" class="notif-badge hidden">0</span>
+    </button>
+    
+    <div id="notif-dropdown" class="notif-dropdown hidden">
+        <div class="notif-header">Уведомления <button onclick="markAllRead()" style="font-size:10px; background:none; border:none; color:#6f9bd1; cursor:pointer;">Прочитать все</button></div>
+        <div id="notif-list" class="notif-list">
+            <div style="padding:15px; text-align:center; color:#777;">Нет новых уведомлений</div>
+        </div>
+    </div>
+</div>
         <button id="lang-btn" class="btn" onclick="toggleLanguage()">
             <i class="fas fa-globe"></i> <span id="current-lang">RU</span>
         </button>
@@ -550,49 +563,68 @@
                 closeTopic();
             }
         }
-
         function renderReplies(posts) {
-            const container = document.getElementById('replies-container');
-            const currentUser = JSON.parse(localStorage.getItem('user')); 
-            
-            container.innerHTML = '';
-            
-            if (posts.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Пока нет ответов.</div>';
-                return;
-            }
+    const container = document.getElementById('replies-container');
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    
+    // Находим ID автора темы из DOM (хак, но работает, так как мы уже отрисовали заголовок)
+    // Лучше передавать author_id в функцию, но пока так:
+    const topicAuthorName = document.querySelector('.topic-author-badge').innerText.trim(); 
+    // Внимание: сравнение по имени ненадежно, но для примера сойдет. 
+    // В идеале в openTopic сохранять currentTopicAuthorId в переменную.
+    
+    container.innerHTML = '';
+    
+    if (posts.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Пока нет ответов.</div>';
+        return;
+    }
 
-            posts.forEach(post => {
-                const date = new Date(post.created_at).toLocaleDateString();
-                const initial = post.username.charAt(0).toUpperCase();
-                
-                let controls = '';
-                // Кнопка удаления поста
-                if (currentUser && (parseInt(currentUser.id) === post.user_id || currentUser.role === 'admin')) {
-                    controls = `
-                        <div class="post-controls">
-                            <button class="control-btn delete" onclick="deletePost(${post.id}, this)" title="Удалить">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                }
-// Логика лайка
-        const likeClass = post.is_liked ? 'liked' : '';
-        const heartIcon = post.is_liked ? 'fas fa-heart' : 'far fa-heart';
+    posts.forEach(post => {
+        const date = new Date(post.created_at).toLocaleDateString();
+        const initial = post.username.charAt(0).toUpperCase();
+        
+        // 1. Стили решения
+        const solutionClass = post.is_solution ? 'solution' : '';
+        const solutionBadge = post.is_solution ? '<span class="solution-badge"><i class="fas fa-check"></i> Решение</span>' : '';
+
+        // 2. Кнопки управления (Удалить)
+        let controls = '';
+        if (currentUser && (parseInt(currentUser.id) === post.user_id || currentUser.role === 'admin')) {
+            controls += `
+                <button class="control-btn delete" onclick="deletePost(${post.id}, this)" title="Удалить">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+        }
+
+        // 3. Кнопка "Выбрать решением" (видна только автору темы и если решение еще не выбрано)
+        // Нам нужно знать ID автора темы. Давайте для простоты считать, что если у пользователя есть кнопка "Удалить тему" в заголовке, то он автор.
+        const canMark = document.querySelector('.topic-meta-header .delete'); // Проверка наличия кнопки удаления темы
+        let solveBtn = '';
+        
+        if (canMark && !post.is_solution) {
+            solveBtn = `
+                <button class="solve-btn" onclick="markSolution(${post.topic_id}, ${post.id}, this)" title="Это решение">
+                    <i class="fas fa-check"></i>
+                </button>
+            `;
+        }
 
         const html = `
-            <div class="reply-card">
+            <div class="reply-card ${solutionClass}">
                 <div class="reply-avatar">${initial}</div>
                 <div class="reply-body">
                     <div class="reply-header">
-                        <div>
+                        <div style="display:flex; align-items:center;">
                             <span class="reply-username">${post.username}</span>
                             <span class="reply-date">${date}</span>
+                            ${solutionBadge}
                         </div>
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <button class="like-btn ${likeClass}" onclick="toggleLike(${post.id}, this)">
-                                <i class="${heartIcon}"></i> <span>${post.likes_count}</span>
+                            ${solveBtn}
+                            <button class="like-btn ${post.is_liked ? 'liked' : ''}" onclick="toggleLike(${post.id}, this)">
+                                <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i> <span>${post.likes_count}</span>
                             </button>
                             ${controls}
                         </div>
@@ -603,7 +635,6 @@
         container.insertAdjacentHTML('beforeend', html);
     });
 }
-        
 
         function closeTopic() {
             currentTopicId = null;
@@ -809,6 +840,99 @@ async function toggleLike(postId, btn) {
         }
     } catch(e) { console.error(e); }
 }
+
+// === 12. ЛУЧШИЙ ОТВЕТ ===
+async function markSolution(topicId, postId, btn) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if(!confirm("Отметить этот ответ как решение?")) return;
+
+    try {
+        const res = await fetch('/api/forum/solve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic_id: topicId, post_id: postId, user_id: user.id })
+        });
+        
+        if(res.ok) {
+            // Перезагружаем тему, чтобы увидеть изменения
+            openTopic(topicId);
+        } else {
+            const data = await res.json();
+            alert(data.error || "Ошибка");
+        }
+    } catch(e) { console.error(e); }
+}
+
+// === 13. УВЕДОМЛЕНИЯ ===
+async function checkNotifications() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if(!user) return;
+
+    try {
+        const res = await fetch(`/api/user/notifications?user_id=${user.id}`);
+        const data = await res.json();
+        
+        const badge = document.getElementById('notif-badge');
+        const list = document.getElementById('notif-list');
+        
+        // 1. Обновляем бейдж
+        if (data.unread_count > 0) {
+            badge.innerText = data.unread_count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+
+        // 2. Рендерим список
+        if (data.notifications.length > 0) {
+            list.innerHTML = data.notifications.map(n => {
+                let icon = 'fa-bell';
+                let color = '#ccc';
+                let text = '';
+
+                if(n.type === 'reply') { icon = 'fa-reply'; color = '#3498db'; text = `<b>${n.sender_name}</b> ответил в теме "${n.topic_title}"`; }
+                if(n.type === 'like') { icon = 'fa-heart'; color = '#e74c3c'; text = `Кто-то оценил ваш пост в "${n.topic_title}"`; }
+                if(n.type === 'solve') { icon = 'fa-check-circle'; color = '#2ecc71'; text = `Ваш ответ отмечен как решение!`; }
+
+                return `
+                <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="openTopic(${n.topic_id})">
+                    <div class="notif-icon" style="color:${color}"><i class="fas ${icon}"></i></div>
+                    <div class="notif-content">
+                        ${text}
+                        <div class="notif-time">${new Date(n.created_at).toLocaleTimeString()}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+    } catch(e) { console.error("Notif error", e); }
+}
+
+function toggleNotifications() {
+    const dropdown = document.getElementById('notif-dropdown');
+    dropdown.classList.toggle('hidden');
+    if (!dropdown.classList.contains('hidden')) {
+        markAllRead(); // Читаем при открытии
+    }
+}
+
+async function markAllRead() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if(!user) return;
+    
+    // Визуально скрываем бейдж сразу
+    document.getElementById('notif-badge').classList.add('hidden');
+    
+    await fetch('/api/user/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id })
+    });
+}
+
+// Запускаем проверку раз в 30 секунд
+setInterval(checkNotifications, 30000);
+// И при загрузке
+window.addEventListener('load', checkNotifications);
     </script>
 </body>
 </html>

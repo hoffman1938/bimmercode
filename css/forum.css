@@ -423,7 +423,41 @@
     gap: 15px;
     margin-bottom: 30px;
 }
+.reply-card.solution {
+    border: 2px solid #2ecc71;
+    background: rgba(46, 204, 113, 0.05);
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.1);
+}
 
+.solution-badge {
+    background: #2ecc71;
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Кнопка "Отметить решением" */
+.solve-btn {
+    color: #94a3b8;
+    background: none;
+    border: 1px solid #94a3b8;
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: 0.2s;
+    opacity: 0.5;
+}
+.solve-btn:hover {
+    color: #2ecc71;
+    border-color: #2ecc71;
+    opacity: 1;
+}
 .reply-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
