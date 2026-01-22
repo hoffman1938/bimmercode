@@ -200,22 +200,16 @@
 
     <input type="file" id="global-file-input" accept="image/*" style="display: none;">
 
-   <script>
+    <script>
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        // Читаем язык при старте
         let currentLang = localStorage.getItem('forumLanguage') || 'en';
         let currentTopicId = null;
         let currentTargetInputId = null;
         let currentUploadBtn = null; 
-        
-        // КЭШ ДЛЯ УВЕДОМЛЕНИЙ (Чтобы перевод был мгновенным)
-        let cachedNotifications = []; 
-        let cachedUnreadCount = 0;
 
-        // === 1. СЛОВАРЬ ПЕРЕВОДОВ ===
+        // === ПЕРЕВОДЫ (ПОЛНЫЕ) ===
         const forumTranslations = {
             ru: {
-                // UI
                 brandName: "BMW Сообщество", homeBtn: "Главная", loginTab: "Вход", regTab: "Регистрация",
                 emailLabel: "Email", passLabel: "Пароль", userLabel: "Никнейм", loginBtn: "Войти", regBtn: "Создать аккаунт",
                 roleMember: "Участник клуба", statPosts: "Посты", statLikes: "Лайки",
@@ -223,14 +217,12 @@
                 forumTitle: "Форум сообщества", btnNewTopic: "Новая тема", btnBack: "Назад к списку",
                 modalTitle: "Создать тему", modalCategory: "Категория", modalSubject: "Заголовок", modalContent: "Описание", modalPublish: "Опубликовать",
                 profileTitle: "Мой профиль", lblMyCar: "Мой BMW", lblBio: "О себе", btnSave: "Сохранить",
-                // Категории
                 cat_engine: "Двигатель и Трансмиссия", cat_chassis: "Ходовая и Тормоза", cat_coding: "Кодирование", cat_general: "Общие вопросы",
-                // Посты
                 lbl_replies: "Ответы", lbl_author: "Автор", lbl_solved: "Решение", btn_delete: "Удалить", btn_solve: "Решение",
-                // Плейсхолдеры
+                // Placeholders
                 ph_search: "Поиск по форуму...", ph_reply: "Написать комментарий...", ph_car: "Например: E90 335i", ph_bio: "Пару слов о вас...",
                 ph_topic_title: "Например: Стук в двигателе", ph_topic_desc: "Опишите проблему подробно...",
-                // Уведомления
+                // Notifications
                 n_header: "Уведомления", n_read_all: "Прочитать все", n_empty: "Нет новых уведомлений",
                 n_reply: "<b>{user}</b> ответил в теме \"{topic}\"", n_like: "Кто-то оценил ваш пост в \"{topic}\"", n_solve: "Ваш ответ отмечен как решение!"
             },
@@ -244,8 +236,10 @@
                 profileTitle: "My Profile", lblMyCar: "My BMW", lblBio: "Bio", btnSave: "Save",
                 cat_engine: "Engine & Transmission", cat_chassis: "Chassis & Brakes", cat_coding: "Coding & Software", cat_general: "General",
                 lbl_replies: "Replies", lbl_author: "Author", lbl_solved: "Solution", btn_delete: "Delete", btn_solve: "Mark Solved",
+                // Placeholders
                 ph_search: "Search forum...", ph_reply: "Write a comment...", ph_car: "E.g. E90 335i", ph_bio: "A few words about you...",
                 ph_topic_title: "E.g. Engine knocking", ph_topic_desc: "Describe the issue...",
+                // Notifications
                 n_header: "Notifications", n_read_all: "Mark all read", n_empty: "No new notifications",
                 n_reply: "<b>{user}</b> replied in \"{topic}\"", n_like: "Someone liked your post in \"{topic}\"", n_solve: "Your answer marked as solution!"
             },
@@ -259,8 +253,10 @@
                 profileTitle: "ჩემი პროფილი", lblMyCar: "ჩემი BMW", lblBio: "ჩემ შესახებ", btnSave: "შენახვა",
                 cat_engine: "ძრავი და გადაცემათა კოლოფი", cat_chassis: "სავალი ნაწილი", cat_coding: "კოდირება", cat_general: "ზოგადი",
                 lbl_replies: "პასუხი", lbl_author: "ავტორი", lbl_solved: "გადაწყვეტილება", btn_delete: "წაშლა", btn_solve: "ნიშანი",
+                // Placeholders
                 ph_search: "ძიება ფორუმში...", ph_reply: "კომენტარის დაწერა...", ph_car: "მაგ: E90 335i", ph_bio: "რამოდენიმე სიტყვა შენზე...",
                 ph_topic_title: "მაგ: ძრავის ხმა", ph_topic_desc: "აღწერეთ პრობლემა...",
+                // Notifications
                 n_header: "შეტყობინებები", n_read_all: "ყველას წაკითხვა", n_empty: "ახალი შეტყობინებები არ არის",
                 n_reply: "<b>{user}</b>-მა გიპასუხათ თემაში \"{topic}\"", n_like: "ვიღაცამ მოიწონა თქვენი პოსტი \"{topic}\"", n_solve: "თქვენი პასუხი მონიშნულია როგორც გამოსავალი!"
             }
@@ -271,132 +267,41 @@
             let idx = langs.indexOf(currentLang);
             currentLang = langs[(idx + 1) % langs.length];
             localStorage.setItem('forumLanguage', currentLang);
-            
             applyTranslations();
-            loadTopics(); // Перезагружаем темы (чтобы обновились категории)
-            
-            // ВАЖНО: Перерисовываем уведомления из памяти (без запроса к серверу)
-            renderNotifications(); 
+            loadTopics();
+            checkNotifications(); 
         }
 
         function applyTranslations() {
             const t = forumTranslations[currentLang];
-            
-            // 1. Обновляем текст на странице
+            // Текст
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.innerText = t[key];
             });
-
-            // 2. Обновляем выпадающий список категорий
+            // Категории
             const options = document.getElementById('topic-category').options;
             if(options.length > 0) {
                 options[0].text = t.cat_engine; options[1].text = t.cat_chassis;
                 options[2].text = t.cat_coding; options[3].text = t.cat_general;
             }
-            
-            // 3. ОБНОВЛЕНИЕ КНОПКИ ЯЗЫКА (Исправлено)
             document.getElementById('current-lang').innerText = currentLang.toUpperCase();
 
-            // 4. ОБНОВЛЕНИЕ ВСЕХ ПЛЕЙСХОЛДЕРОВ
-            const searchInput = document.getElementById('forum-search');
-            if (searchInput) searchInput.placeholder = t.ph_search;
+            // Плейсхолдеры
+            document.getElementById('forum-search').placeholder = t.ph_search;
+            document.getElementById('reply-input').placeholder = t.ph_reply;
+            document.getElementById('profile-car').placeholder = t.ph_car;
+            document.getElementById('profile-bio').placeholder = t.ph_bio;
+            document.getElementById('topic-title').placeholder = t.ph_topic_title;
+            document.getElementById('topic-content').placeholder = t.ph_topic_desc;
 
-            const replyInput = document.getElementById('reply-input');
-            if (replyInput) replyInput.placeholder = t.ph_reply;
-
-            const carInput = document.getElementById('profile-car');
-            if (carInput) carInput.placeholder = t.ph_car;
-
-            const bioInput = document.getElementById('profile-bio');
-            if (bioInput) bioInput.placeholder = t.ph_bio;
-
-            const topicTitle = document.getElementById('topic-title');
-            if (topicTitle) topicTitle.placeholder = t.ph_topic_title;
-
-            const topicContent = document.getElementById('topic-content');
-            if (topicContent) topicContent.placeholder = t.ph_topic_desc;
-
-            // 5. Статичные тексты уведомлений
+            // Уведомления (статичный текст)
             const notifHeader = document.getElementById('notif-header-title');
             if(notifHeader) notifHeader.innerText = t.n_header;
             const notifReadBtn = document.getElementById('notif-read-all-btn');
             if(notifReadBtn) notifReadBtn.innerText = t.n_read_all;
-            
-            // Если уведомлений нет, обновляем текст "Нет новых..."
-            if (cachedNotifications.length === 0) {
-                const emptyMsg = document.getElementById('notif-empty-msg');
-                if(emptyMsg) emptyMsg.innerText = t.n_empty;
-            }
-        }
-
-        // === УВЕДОМЛЕНИЯ (OPTIMIZED) ===
-        // 1. Функция получения данных с сервера (Запускается по таймеру)
-        async function checkNotifications() {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if(!user) return;
-
-            try {
-                const res = await fetch(`/api/user/notifications?user_id=${user.id}`);
-                const data = await res.json();
-                
-                // Сохраняем в кэш
-                cachedNotifications = data.notifications || [];
-                cachedUnreadCount = data.unread_count || 0;
-
-                // Обновляем UI
-                renderNotifications();
-
-            } catch(e) { console.error("Notif error", e); }
-        }
-
-        // 2. Функция отрисовки (Мгновенная, использует кэш и текущий язык)
-        function renderNotifications() {
-            const t = forumTranslations[currentLang];
-            const badge = document.getElementById('notif-badge');
-            const list = document.getElementById('notif-list');
-
-            // Бейдж
-            if (cachedUnreadCount > 0) {
-                badge.innerText = cachedUnreadCount;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-
-            // Список
-            if (cachedNotifications.length > 0) {
-                list.innerHTML = cachedNotifications.map(n => {
-                    let icon = 'fa-bell';
-                    let color = '#ccc';
-                    let text = '';
-
-                    // Переводим текст на лету
-                    if(n.type === 'reply') { 
-                        icon = 'fa-reply'; color = '#3498db'; 
-                        text = t.n_reply.replace('{user}', n.sender_name).replace('{topic}', n.topic_title);
-                    }
-                    if(n.type === 'like') { 
-                        icon = 'fa-heart'; color = '#e74c3c'; 
-                        text = t.n_like.replace('{topic}', n.topic_title);
-                    }
-                    if(n.type === 'solve') { 
-                        icon = 'fa-check-circle'; color = '#2ecc71'; 
-                        text = t.n_solve;
-                    }
-
-                    return `
-                    <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="openTopic(${n.topic_id})">
-                        <div class="notif-icon" style="color:${color}"><i class="fas ${icon}"></i></div>
-                        <div class="notif-content">
-                            ${text}
-                            <div class="notif-time">${new Date(n.created_at).toLocaleTimeString()}</div>
-                        </div>
-                    </div>`;
-                }).join('');
-            } else {
-                list.innerHTML = `<div style="padding:20px; text-align:center; color:#777; font-size:13px;" id="notif-empty-msg">${t.n_empty}</div>`;
-            }
+            const emptyMsg = document.getElementById('notif-empty-msg');
+            if(emptyMsg) emptyMsg.innerText = t.n_empty;
         }
 
         // === АВТОРИЗАЦИЯ ===
@@ -414,7 +319,6 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button'); btn.textContent = '...';
             try {
                 const res = await fetch('/api/auth/login', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -428,13 +332,11 @@
                     localStorage.setItem('user', JSON.stringify(result.user));
                     showForum(result.user);
                 } else { document.getElementById('login-message').innerText = result.error; }
-            } catch (err) { document.getElementById('login-message').innerText = "Network Error"; }
-            btn.textContent = forumTranslations[currentLang].loginBtn;
+            } catch (err) { document.getElementById('login-message').innerText = "Error"; }
         });
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button'); btn.textContent = '...';
             try {
                 const res = await fetch('/api/auth/register', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -454,7 +356,6 @@
                     document.getElementById('reg-message').innerText = result.error;
                 }
             } catch (err) { console.error(err); }
-            btn.textContent = forumTranslations[currentLang].regBtn;
         });
 
         // === ОСНОВА ===
@@ -505,7 +406,7 @@
                 container.innerHTML = ''; 
 
                 if (topics.length === 0) {
-                    container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;">Nothing found</div>`;
+                    container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;">No topics found</div>`;
                     return;
                 }
 
@@ -681,7 +582,6 @@
                 const res = await fetch(`/api/user/profile?id=${user.id}`);
                 const data = await res.json();
                 document.getElementById('profile-username').innerText = data.username;
-                document.getElementById('profile-role').innerText = data.role;
                 document.getElementById('profile-car').value = data.car_model || '';
                 document.getElementById('profile-bio').value = data.bio || '';
             } catch(e) { console.error(e); }
@@ -750,7 +650,29 @@
             if(res.ok) openTopic(topicId);
         }
 
-        // === СЛУШАТЕЛИ ===
+        // === УВЕДОМЛЕНИЯ ===
+        async function checkNotifications() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!user) return;
+            const t = forumTranslations[currentLang];
+            try {
+                const res = await fetch(`/api/user/notifications?user_id=${user.id}`);
+                const data = await res.json();
+                const badge = document.getElementById('notif-badge');
+                if (data.unread_count > 0) { badge.innerText = data.unread_count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+                
+                const list = document.getElementById('notif-list');
+                if (data.notifications.length > 0) {
+                    list.innerHTML = data.notifications.map(n => {
+                        let icon = 'fa-bell', color = '#ccc', text = '';
+                        if(n.type === 'reply') { icon = 'fa-reply'; color = '#3498db'; text = t.n_reply.replace('{user}', n.sender_name).replace('{topic}', n.topic_title); }
+                        if(n.type === 'like') { icon = 'fa-heart'; color = '#e74c3c'; text = t.n_like.replace('{topic}', n.topic_title); }
+                        if(n.type === 'solve') { icon = 'fa-check-circle'; color = '#2ecc71'; text = t.n_solve; }
+                        return `<div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="openTopic(${n.topic_id})"><div class="notif-icon" style="color:${color}"><i class="fas ${icon}"></i></div><div class="notif-content">${text}<div class="notif-time">${new Date(n.created_at).toLocaleTimeString()}</div></div></div>`;
+                    }).join('');
+                } else { list.innerHTML = `<div style="padding:20px; text-align:center; color:#777; font-size:13px;">${t.n_empty}</div>`; }
+            } catch(e) {}
+        }
         function toggleNotifications() {
             const d = document.getElementById('notif-dropdown');
             d.classList.toggle('hidden');
@@ -759,26 +681,15 @@
         async function markAllRead() {
             const user = JSON.parse(localStorage.getItem('user'));
             document.getElementById('notif-badge').classList.add('hidden');
-            cachedUnreadCount = 0; // Сбрасываем кэш
             await fetch('/api/user/notifications', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({user_id: user.id})});
         }
-        
-        // Live обновление (5 сек)
-        setInterval(checkNotifications, 5000); 
+        setInterval(checkNotifications, 5000); // 5 сек для Live
 
-        // === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ===
+        // === START ===
         window.onload = function() {
-            // 1. Применяем язык сразу (исправление "всегда EN")
-            const savedLang = localStorage.getItem('forumLanguage');
-            if (savedLang) currentLang = savedLang;
-            
-            // 2. Сначала переводим интерфейс, потом загружаем данные
-            applyTranslations(); 
-            
             const user = localStorage.getItem('user');
-            if (user) { 
-                try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); } 
-            }
+            applyTranslations(); 
+            if (user) { try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); } }
         }
     </script>
 </body>
