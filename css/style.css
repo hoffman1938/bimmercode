@@ -888,6 +888,33 @@ main.container {
   transition: transform 0.4s ease;
 }
 
+
+/* Кнопка Лайка */
+.like-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid transparent;
+    padding: 4px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+.like-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.05);
+}
+.like-btn.liked {
+    color: #e74c3c; /* Красное сердце */
+    background: rgba(231, 76, 60, 0.15);
+    border-color: rgba(231, 76, 60, 0.3);
+}
+.like-btn.liked i {
+    animation: pulse 0.3s ease;
+}
 /* Search Box */
 .search-box {
   position: relative;
