@@ -1,0 +1,37 @@
+<div class="auth-container">
+    <h2>Регистрация</h2>
+    <form id="registerForm">
+        <input type="text" id="reg-username" placeholder="Никнейм" required>
+        <input type="email" id="reg-email" placeholder="Email" required>
+        <input type="password" id="reg-password" placeholder="Пароль" required>
+        <button type="submit">Создать аккаунт</button>
+    </form>
+    <div id="reg-message"></div>
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const data = {
+        username: document.getElementById('reg-username').value,
+        email: document.getElementById('reg-email').value,
+        password: document.getElementById('reg-password').value
+    };
+
+    const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    
+    if (response.ok) {
+        document.getElementById('reg-message').innerText = "Успешно! Теперь войдите.";
+        // Тут можно перенаправить на логин
+    } else {
+        document.getElementById('reg-message').innerText = "Ошибка: " + result.error;
+    }
+});
+</script>
