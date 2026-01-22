@@ -38,6 +38,28 @@
             border: 1px solid var(--glass-border);
             display: block;
         }
+
+        /* Кнопки управления (удалить/редактировать) */
+        .post-controls {
+            display: flex;
+            gap: 10px;
+            opacity: 0.6;
+            transition: 0.2s;
+            margin-left: auto; /* Отодвигаем вправо */
+        }
+        .post-controls:hover { opacity: 1; }
+
+        .control-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px;
+            color: var(--text-secondary);
+            transition: 0.2s;
+        }
+        .control-btn:hover { color: white; transform: scale(1.1); }
+        .control-btn.delete:hover { color: #e74c3c; } 
     </style>
 </head>
 <body class="bmw-pattern">
@@ -130,8 +152,14 @@
                     </div>
 
                     <nav class="nav-menu">
-                        <a href="#" class="nav-item active"><i class="fas fa-th-large"></i> <span data-i18n="navOverview">Обзор</span></a>
-                        <a href="#" class="nav-item"><i class="fas fa-fire"></i> <span data-i18n="navPopular">Популярное</span></a>
+                        <a href="#" class="nav-item active" onclick="filterCategory('all', this)"><i class="fas fa-th-large"></i> <span data-i18n="navOverview">Обзор</span></a>
+                        <a href="#" class="nav-item" onclick="filterCategory('all', this)"><i class="fas fa-fire"></i> <span data-i18n="navPopular">Популярное</span></a>
+                        
+                        <a href="#" class="nav-item" onclick="filterCategory('engine', this)"><i class="fas fa-cogs"></i> <span data-i18n="cat_engine">Двигатель</span></a>
+                        <a href="#" class="nav-item" onclick="filterCategory('chassis', this)"><i class="fas fa-car-crash"></i> <span data-i18n="cat_chassis">Ходовая</span></a>
+                        <a href="#" class="nav-item" onclick="filterCategory('coding', this)"><i class="fas fa-laptop-code"></i> <span data-i18n="cat_coding">Кодирование</span></a>
+                        
+                        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
                         <button onclick="logout()" class="nav-item" style="background:none; border:none; width:100%; cursor:pointer; text-align: left; padding-left: 15px;">
                             <i class="fas fa-sign-out-alt" style="color: #e74c3c;"></i> <span data-i18n="navLogout">Выход</span>
                         </button>
@@ -141,7 +169,14 @@
 
             <section class="forum-feed">
                 <div class="forum-header-actions">
-                    <h1 class="page-title" data-i18n="forumTitle">Форум сообщества</h1>
+                    <div>
+                        <h1 class="page-title" data-i18n="forumTitle">Форум сообщества</h1>
+                        <div class="forum-search-box" style="margin-top: 10px; position: relative;">
+                            <i class="fas fa-search" style="position: absolute; left: 15px; top: 12px; color: #6f9bd1;"></i>
+                            <input type="text" id="forum-search" placeholder="Поиск по форуму..." 
+                                   style="padding: 10px 10px 10px 40px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; width: 300px;">
+                        </div>
+                    </div>
                     <button class="btn-create" onclick="openModal()">
                         <i class="fas fa-plus"></i> <span data-i18n="btnNewTopic">Новая тема</span>
                     </button>
@@ -160,13 +195,12 @@
                 </div>
                 
                 <div id="topic-detail-container"></div>
-                
                 <div id="replies-container" class="replies-list"></div>
                 
                 <div class="reply-form-container">
                     <form id="replyForm" style="display: flex; flex-direction: column; gap: 10px;">
                         <div style="display: flex; gap: 10px;">
-                            <button type="button" class="editor-btn" onclick="triggerUpload('reply-input')">
+                            <button type="button" class="editor-btn" onclick="triggerUpload('reply-input', this)">
                                 <i class="fas fa-image"></i>
                             </button>
                             <input type="text" id="reply-input" class="form-input" placeholder="Написать комментарий..." autocomplete="off" required>
@@ -205,7 +239,7 @@
                     <label class="form-label">Описание</label>
                     
                     <div class="editor-toolbar" style="background:rgba(255,255,255,0.05); padding:5px; border-radius:5px 5px 0 0; border:1px solid var(--glass-border); border-bottom:none; display:flex; gap:10px;">
-                        <button type="button" class="editor-btn" onclick="triggerUpload('topic-content')" title="Добавить фото">
+                        <button type="button" class="editor-btn" onclick="triggerUpload('topic-content', this)" title="Добавить фото">
                             <i class="fas fa-image"></i>
                         </button>
                         <div style="font-size:11px; color:#777; align-self:center;">Поддерживается Markdown</div>
@@ -251,9 +285,10 @@
 
     <script>
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        let currentLang = 'ru';
+        let currentLang = localStorage.getItem('forumLanguage') || 'ru';
         let currentTopicId = null;
         let currentTargetInputId = null;
+        let currentUploadBtn = null; 
 
         // === 1. МУЛЬТИЯЗЫЧНОСТЬ ===
         const forumTranslations = {
@@ -293,6 +328,7 @@
             const langs = ['ru', 'en', 'ka'];
             let idx = langs.indexOf(currentLang);
             currentLang = langs[(idx + 1) % langs.length];
+            localStorage.setItem('forumLanguage', currentLang);
             document.getElementById('current-lang').innerText = currentLang.toUpperCase();
             applyTranslations();
             loadTopics();
@@ -307,6 +343,7 @@
             const options = document.getElementById('topic-category').options;
             options[0].text = t.cat_engine; options[1].text = t.cat_chassis;
             options[2].text = t.cat_coding; options[3].text = t.cat_general;
+            document.getElementById('current-lang').innerText = currentLang.toUpperCase();
         }
 
         // === 2. АВТОРИЗАЦИЯ ===
@@ -380,34 +417,59 @@
         // === 4. ФОРМАТИРОВАНИЕ ТЕКСТА (КАРТИНКИ) ===
         function formatContent(text) {
             if (!text) return '';
-            // Превращаем ![Image](url) в тег <img>
             let formatted = text.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="topic-image">');
             return formatted;
         }
 
-        // === 5. ЗАГРУЗКА ТЕМ ===
-        async function loadTopics() {
+        // === 5. ЗАГРУЗКА ТЕМ (С ПОИСКОМ) ===
+        let currentCategory = 'all';
+        let searchTimer = null;
+
+        function filterCategory(category, element) {
+            currentCategory = category;
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            document.getElementById('forum-search').value = '';
+            loadTopics(category);
+        }
+
+        document.getElementById('forum-search').addEventListener('input', (e) => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                const query = e.target.value;
+                loadTopics(currentCategory, query);
+            }, 500); 
+        });
+
+        async function loadTopics(category = 'all', search = '') {
             const container = document.getElementById('topics-container');
             const t = forumTranslations[currentLang];
+            container.style.opacity = '0.5';
             
             try {
-                const res = await fetch('/api/forum/topics');
+                let url = `/api/forum/topics?category=${category}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+
+                const res = await fetch(url);
                 if (!res.ok) throw new Error('API Error');
                 const topics = await res.json();
 
+                container.style.opacity = '1';
+                container.innerHTML = ''; 
+
                 if (topics.length === 0) {
-                    container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;">No topics yet.</div>`;
+                    container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;">Ничего не найдено 🤷‍♂️</div>`;
                     return;
                 }
 
-                container.innerHTML = ''; 
                 topics.forEach(topic => {
                     const date = new Date(topic.created_at).toLocaleDateString();
                     let icon = 'fa-comments';
-                    let catName = t.cat_general;
+                    let catName = t.cat_general || 'General';
+                    
                     if(topic.category === 'engine') { icon = 'fa-cogs'; catName = t.cat_engine; }
-                    if(topic.category === 'chassis') { icon = 'fa-car-crash'; catName = t.cat_chassis; }
-                    if(topic.category === 'coding') { icon = 'fa-laptop-code'; catName = t.cat_coding; }
+                    else if(topic.category === 'chassis') { icon = 'fa-car-crash'; catName = t.cat_chassis; }
+                    else if(topic.category === 'coding') { icon = 'fa-laptop-code'; catName = t.cat_coding; }
 
                     const html = `
                     <div class="topic-card" onclick="openTopic(${topic.id})">
@@ -430,7 +492,7 @@
                 });
             } catch (err) {
                 console.error(err);
-                container.innerHTML = `<div style="text-align:center; color:#e74c3c;">Failed to load topics.</div>`;
+                container.innerHTML = `<div style="text-align:center; color:#e74c3c;">Ошибка загрузки.</div>`;
             }
         }
 
@@ -452,12 +514,26 @@
                 
                 const t = data.topic;
                 const date = new Date(t.created_at).toLocaleDateString() + ' ' + new Date(t.created_at).toLocaleTimeString().slice(0,5);
+                const currentUser = JSON.parse(localStorage.getItem('user'));
+                
+                let topicControls = '';
+                // Кнопка удаления темы
+                if (currentUser && (parseInt(currentUser.id) === t.user_id || currentUser.role === 'admin')) {
+                    topicControls = `
+                        <button class="control-btn delete" onclick="deleteTopic(${t.id})" style="margin-left:15px; color:#e74c3c; font-size:13px; display:flex; align-items:center; gap:5px;">
+                            <i class="fas fa-trash"></i> Удалить тему
+                        </button>
+                    `;
+                }
 
                 container.innerHTML = `
                     <div class="topic-header-card">
                         <div class="topic-meta-header">
                             <div class="topic-author-badge"><i class="fas fa-user"></i> ${t.username}</div>
-                            <div><i class="fas fa-eye"></i> ${t.views} &nbsp;•&nbsp; ${date}</div>
+                            <div style="display:flex; align-items:center;">
+                                <i class="fas fa-eye"></i> ${t.views} &nbsp;•&nbsp; ${date}
+                                ${topicControls}
+                            </div>
                         </div>
                         <h1 class="topic-full-title">${t.title}</h1>
                         <div class="topic-content-text">${formatContent(t.content)}</div>
@@ -475,21 +551,41 @@
 
         function renderReplies(posts) {
             const container = document.getElementById('replies-container');
+            const currentUser = JSON.parse(localStorage.getItem('user')); 
+            
             container.innerHTML = '';
+            
             if (posts.length === 0) {
                 container.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Пока нет ответов.</div>';
                 return;
             }
+
             posts.forEach(post => {
                 const date = new Date(post.created_at).toLocaleDateString();
                 const initial = post.username.charAt(0).toUpperCase();
+                
+                let controls = '';
+                // Кнопка удаления поста
+                if (currentUser && (parseInt(currentUser.id) === post.user_id || currentUser.role === 'admin')) {
+                    controls = `
+                        <div class="post-controls">
+                            <button class="control-btn delete" onclick="deletePost(${post.id}, this)" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+
                 const html = `
                     <div class="reply-card">
                         <div class="reply-avatar">${initial}</div>
                         <div class="reply-body">
                             <div class="reply-header">
-                                <span class="reply-username">${post.username}</span>
-                                <span class="reply-date">${date}</span>
+                                <div>
+                                    <span class="reply-username">${post.username}</span>
+                                    <span class="reply-date">${date}</span>
+                                </div>
+                                ${controls}
                             </div>
                             <div class="topic-content-text" style="font-size:14px;">${formatContent(post.content)}</div>
                         </div>
@@ -536,7 +632,7 @@
 
         document.getElementById('createTopicForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button'); 
+            const btn = e.target.querySelector('button[type="submit"]'); 
             btn.textContent = '...';
             const user = JSON.parse(localStorage.getItem('user'));
             const data = {
@@ -602,9 +698,10 @@
             btn.innerText = 'Сохранить';
         });
 
-        // === 9. ЗАГРУЗКА ФОТО ===
-        function triggerUpload(inputId) {
+        // === 9. ЗАГРУЗКА ФОТО (ИСПРАВЛЕНО) ===
+        function triggerUpload(inputId, btnElement) {
             currentTargetInputId = inputId;
+            currentUploadBtn = btnElement;
             document.getElementById('global-file-input').click();
         }
 
@@ -613,9 +710,9 @@
             const file = this.files[0];
             const targetInput = document.getElementById(currentTargetInputId);
             
-            const originalPlaceholder = targetInput.placeholder;
-            targetInput.value += `\n[Загрузка фото: ${file.name}...]`;
-            targetInput.disabled = true;
+            const originalIcon = currentUploadBtn.innerHTML;
+            currentUploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            currentUploadBtn.disabled = true;
 
             const formData = new FormData();
             formData.append('file', file);
@@ -623,26 +720,45 @@
             try {
                 const res = await fetch('/api/upload', { method: 'POST', body: formData });
                 const data = await res.json();
-                targetInput.value = targetInput.value.replace(`\n[Загрузка фото: ${file.name}...]`, '');
-                
                 if (res.ok) {
                     const markdown = `\n![Image](${data.url})\n`;
                     targetInput.value += markdown;
                 } else { alert('Ошибка загрузки: ' + data.error); }
-            } catch (err) {
-                alert('Ошибка сети');
-                targetInput.value = targetInput.value.replace(`\n[Загрузка фото: ${file.name}...]`, '');
-            } finally {
-                targetInput.disabled = false;
+            } catch (err) { alert('Ошибка сети при загрузке фото'); }
+            finally {
+                currentUploadBtn.innerHTML = originalIcon;
+                currentUploadBtn.disabled = false;
                 targetInput.focus();
                 this.value = '';
             }
         });
 
+        // === 10. УДАЛЕНИЕ ===
+        async function deletePost(postId, element) {
+            if(!confirm("Удалить этот ответ?")) return;
+            try {
+                const res = await fetch(`/api/forum/post?id=${postId}`, { method: 'DELETE' });
+                if(res.ok) {
+                    element.closest('.reply-card').remove(); 
+                } else { alert('Ошибка удаления'); }
+            } catch(e) { console.error(e); }
+        }
+
+        async function deleteTopic(topicId) {
+            if(!confirm("Удалить тему и все ответы? Это нельзя отменить.")) return;
+            try {
+                const res = await fetch(`/api/forum/topic?id=${topicId}`, { method: 'DELETE' });
+                if(res.ok) {
+                    closeTopic();
+                    loadTopics();
+                } else { alert('Ошибка удаления'); }
+            } catch(e) { console.error(e); }
+        }
+
         // === ИНИЦИАЛИЗАЦИЯ ===
         window.onload = function() {
             const user = localStorage.getItem('user');
-            applyTranslations();
+            applyTranslations(); 
             if (user) {
                 try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); }
             }
