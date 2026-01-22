@@ -458,6 +458,7 @@ let selectedCode = null;
 // UI Text Translations
 const translations = {
   en: {
+    forumBtn: "Forum",
     searchPlaceholder: "Enter DTC code (e.g. 102613) or P-code...",
     emptyStateMessage: "BMW Diagnostic Database",
     emptyStateSubMessage: "Search for engine, transmission, and body codes.",
@@ -477,6 +478,7 @@ const translations = {
     chatPlaceholder: "Describe issue (e.g. 'smoke', 'misfire')...",
   },
   ru: {
+    forumBtn: "Форум",
     searchPlaceholder: "Введите код ошибки (напр. 102613)...",
     emptyStateMessage: "База диагностики BMW",
     emptyStateSubMessage: "Поиск кодов двигателя, трансмиссии и кузова.",
@@ -495,6 +497,7 @@ const translations = {
     chatPlaceholder: "Опишите проблему (напр. 'дым', 'троит')...",
   },
   ka: {
+    forumBtn: "ფორუმი",
     searchPlaceholder: "შეიყვანეთ კოდი (მაგ. 102613)...",
     emptyStateMessage: "BMW დიაგნოსტიკური ბაზა",
     emptyStateSubMessage: "მოძებნეთ ძრავის და სისტემის კოდები.",
@@ -569,6 +572,8 @@ function setupEventListeners() {
 // Update UI language
 function updateLanguage() {
   const text = translations[currentLanguage];
+  const forumBtn = document.getElementById("forum-btn-text");
+  if (forumBtn) forumBtn.textContent = text.forumBtn;
 
   // Update placeholder
   searchInput.placeholder = text.searchPlaceholder;
