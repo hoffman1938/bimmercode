@@ -895,7 +895,17 @@ main.container {
 }
 
 .btn-forum {
-  display: none;
+  display: flex; /* Делаем кнопку видимой */
+  align-items: center;
+  gap: 8px;
+  background: var(--glass-highlight); /* Возвращаем стили как у кнопки языка */
+  border: 1px solid var(--glass-border);
+}
+
+.btn-forum:hover {
+  background: var(--bmw-blue);
+  border-color: var(--bmw-blue);
+  box-shadow: var(--shadow-glow);
 }
 
 .search-box:focus-within {
