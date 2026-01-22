@@ -13,6 +13,7 @@
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
 
     <style>
+        /* === МОДАЛЬНЫЕ ОКНА === */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
@@ -30,7 +31,7 @@
         .close-btn:hover { color: white; }
         select.form-input option { background: #151922; color: white; }
         
-        /* Стили для картинок в постах */
+        /* === КАРТИНКИ В ПОСТАХ === */
         .topic-image {
             max-width: 100%;
             border-radius: 8px;
@@ -39,27 +40,104 @@
             display: block;
         }
 
-        /* Кнопки управления (удалить/редактировать) */
+        /* === КНОПКИ УПРАВЛЕНИЯ === */
         .post-controls {
-            display: flex;
-            gap: 10px;
-            opacity: 0.6;
-            transition: 0.2s;
-            margin-left: auto; /* Отодвигаем вправо */
+            display: flex; gap: 10px; opacity: 0.6; transition: 0.2s; margin-left: auto;
         }
         .post-controls:hover { opacity: 1; }
-
         .control-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 5px;
-            color: var(--text-secondary);
-            transition: 0.2s;
+            background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px;
+            color: var(--text-secondary); transition: 0.2s;
         }
         .control-btn:hover { color: white; transform: scale(1.1); }
         .control-btn.delete:hover { color: #e74c3c; } 
+
+        /* === КНОПКА ЛАЙКА === */
+        .like-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.05); border: 1px solid transparent;
+            padding: 4px 10px; border-radius: 15px; cursor: pointer;
+            font-size: 13px; color: #94a3b8; transition: all 0.2s;
+        }
+        .like-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
+        .like-btn.liked {
+            color: #e74c3c; background: rgba(231, 76, 60, 0.15); border-color: rgba(231, 76, 60, 0.3);
+        }
+
+        /* === ЛУЧШИЙ ОТВЕТ (Solved) === */
+        .reply-card.solution {
+            border: 1px solid #2ecc71;
+            background: rgba(46, 204, 113, 0.05);
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.1);
+        }
+        .solution-badge {
+            background: #2ecc71; color: white; font-size: 11px; padding: 2px 8px;
+            border-radius: 10px; margin-left: 10px; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .solve-btn {
+            color: #94a3b8; background: none; border: 1px solid #94a3b8;
+            border-radius: 5px; padding: 2px 8px; font-size: 11px; cursor: pointer;
+            transition: 0.2s; opacity: 0.5;
+        }
+        .solve-btn:hover { color: #2ecc71; border-color: #2ecc71; opacity: 1; }
+
+        /* === УВЕДОМЛЕНИЯ (Улучшенный дизайн) === */
+        .notification-wrapper {
+            position: relative; display: inline-flex; align-items: center; margin-right: 15px;
+        }
+        /* Увеличенная кнопка колокольчика */
+        .icon-only {
+            width: 42px; height: 42px; 
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 18px; /* Иконка крупнее */
+            cursor: pointer; transition: 0.2s;
+        }
+        .icon-only:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+        
+        .notif-badge {
+            position: absolute; top: 0px; right: 0px;
+            background: #e74c3c; color: white;
+            font-size: 10px; font-weight: bold;
+            padding: 2px 6px; border-radius: 10px;
+            border: 2px solid #0f1116;
+            pointer-events: none;
+        }
+        
+        /* Адаптивное выпадающее меню */
+        .notif-dropdown {
+            position: absolute; top: 55px; right: -10px; width: 320px;
+            background: #151922; border: 1px solid var(--glass-border);
+            border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            z-index: 1000; overflow: hidden;
+            animation: fadeIn 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Мобильная адаптация меню */
+        @media (max-width: 480px) {
+            .notif-dropdown {
+                width: 300px;
+                right: -60px; /* Сдвигаем влево, чтобы не вылезало */
+            }
+        }
+
+        .notif-header {
+            padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 14px; font-weight: bold; color: white; background: rgba(0,0,0,0.2);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .notif-item {
+            padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.03);
+            cursor: pointer; transition: 0.2s; display: flex; gap: 12px; align-items: start;
+        }
+        .notif-item:hover { background: rgba(255,255,255,0.05); }
+        .notif-item.unread { background: rgba(0, 102, 179, 0.15); border-left: 3px solid #0066b3; }
+        .notif-icon { width: 24px; text-align: center; font-size: 16px; margin-top: 2px; }
+        .notif-content { font-size: 13px; color: #e2e8f0; line-height: 1.4; flex: 1; }
+        .notif-time { font-size: 11px; color: #94a3b8; margin-top: 4px; display: block; }
     </style>
 </head>
 <body class="bmw-pattern">
@@ -80,19 +158,23 @@
         </a>
       </div>
       <div class="controls">
-        <div class="notification-wrapper" style="position: relative; display: inline-block; margin-right: 15px;">
-    <button class="btn icon-only" onclick="toggleNotifications()">
-        <i class="fas fa-bell"></i>
-        <span id="notif-badge" class="notif-badge hidden">0</span>
-    </button>
-    
-    <div id="notif-dropdown" class="notif-dropdown hidden">
-        <div class="notif-header">Уведомления <button onclick="markAllRead()" style="font-size:10px; background:none; border:none; color:#6f9bd1; cursor:pointer;">Прочитать все</button></div>
-        <div id="notif-list" class="notif-list">
-            <div style="padding:15px; text-align:center; color:#777;">Нет новых уведомлений</div>
+        <div class="notification-wrapper">
+            <button class="icon-only" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <span id="notif-badge" class="notif-badge hidden">0</span>
+            </button>
+            
+            <div id="notif-dropdown" class="notif-dropdown hidden">
+                <div class="notif-header">
+                    <span id="notif-header-title">Уведомления</span> 
+                    <button onclick="markAllRead()" id="notif-read-all-btn" style="font-size:11px; background:none; border:none; color:#6f9bd1; cursor:pointer;">Прочитать все</button>
+                </div>
+                <div id="notif-list" class="notif-list">
+                    <div style="padding:20px; text-align:center; color:#777; font-size:13px;" id="notif-empty-msg">Загрузка...</div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+
         <button id="lang-btn" class="btn" onclick="toggleLanguage()">
             <i class="fas fa-globe"></i> <span id="current-lang">RU</span>
         </button>
@@ -186,8 +268,7 @@
                         <h1 class="page-title" data-i18n="forumTitle">Форум сообщества</h1>
                         <div class="forum-search-box" style="margin-top: 10px; position: relative;">
                             <i class="fas fa-search" style="position: absolute; left: 15px; top: 12px; color: #6f9bd1;"></i>
-                            <input type="text" id="forum-search" placeholder="Поиск по форуму..." 
-                                   style="padding: 10px 10px 10px 40px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; width: 300px;">
+                            <input type="text" id="forum-search" style="padding: 10px 10px 10px 40px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; width: 300px;">
                         </div>
                     </div>
                     <button class="btn-create" onclick="openModal()">
@@ -216,7 +297,7 @@
                             <button type="button" class="editor-btn" onclick="triggerUpload('reply-input', this)">
                                 <i class="fas fa-image"></i>
                             </button>
-                            <input type="text" id="reply-input" class="form-input" placeholder="Написать комментарий..." autocomplete="off" required>
+                            <input type="text" id="reply-input" class="form-input" autocomplete="off" required>
                             <button type="submit" class="btn-create" style="width: auto; padding: 0 20px;">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
@@ -249,15 +330,13 @@
                     <input type="text" id="topic-title" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Описание</label>
-                    
+                    <label class="form-label" data-i18n="modalContent">Описание</label>
                     <div class="editor-toolbar" style="background:rgba(255,255,255,0.05); padding:5px; border-radius:5px 5px 0 0; border:1px solid var(--glass-border); border-bottom:none; display:flex; gap:10px;">
                         <button type="button" class="editor-btn" onclick="triggerUpload('topic-content', this)" title="Добавить фото">
                             <i class="fas fa-image"></i>
                         </button>
-                        <div style="font-size:11px; color:#777; align-self:center;">Поддерживается Markdown</div>
+                        <div style="font-size:11px; color:#777; align-self:center;">Markdown</div>
                     </div>
-                    
                     <textarea id="topic-content" class="form-input" style="min-height: 120px; border-radius:0 0 5px 5px; margin-top:0;" required></textarea>
                 </div>
                 <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="modalPublish">Опубликовать</button>
@@ -283,11 +362,11 @@
             <form id="profileForm">
                 <div class="form-group">
                     <label class="form-label">Мой BMW</label>
-                    <input type="text" id="profile-car" class="form-input" placeholder="Например: E90 335i">
+                    <input type="text" id="profile-car" class="form-input">
                 </div>
                 <div class="form-group">
                     <label class="form-label">О себе</label>
-                    <textarea id="profile-bio" class="form-input" placeholder="Пару слов о вас..." style="min-height: 80px;"></textarea>
+                    <textarea id="profile-bio" class="form-input" style="min-height: 80px;"></textarea>
                 </div>
                 <button type="submit" class="form-submit btn-primary" style="width:100%">Сохранить</button>
             </form>
@@ -303,7 +382,7 @@
         let currentTargetInputId = null;
         let currentUploadBtn = null; 
 
-        // === 1. МУЛЬТИЯЗЫЧНОСТЬ ===
+        // === 1. МУЛЬТИЯЗЫЧНОСТЬ (РАСШИРЕННАЯ) ===
         const forumTranslations = {
             ru: {
                 brandName: "BMW Сообщество", homeBtn: "Главная", loginTab: "Вход", regTab: "Регистрация",
@@ -313,7 +392,21 @@
                 forumTitle: "Форум сообщества", btnNewTopic: "Новая тема",
                 modalTitle: "Создать тему", modalCategory: "Категория", modalSubject: "Заголовок", modalContent: "Описание", modalPublish: "Опубликовать",
                 cat_engine: "Двигатель и Трансмиссия", cat_chassis: "Ходовая и Тормоза", cat_coding: "Кодирование", cat_general: "Общие вопросы",
-                lbl_replies: "Ответы", lbl_author: "Автор"
+                lbl_replies: "Ответы", lbl_author: "Автор",
+                // Плейсхолдеры
+                ph_search: "Поиск по форуму...",
+                ph_reply: "Написать комментарий...",
+                ph_car: "Например: E90 335i",
+                ph_bio: "Пару слов о вас...",
+                ph_topic_title: "Например: Стук в двигателе",
+                ph_topic_desc: "Опишите проблему подробно...",
+                // Уведомления
+                n_header: "Уведомления",
+                n_read_all: "Прочитать все",
+                n_empty: "Нет новых уведомлений",
+                n_reply: "<b>{user}</b> ответил в теме \"{topic}\"",
+                n_like: "Кто-то оценил ваш пост в \"{topic}\"",
+                n_solve: "Ваш ответ отмечен как решение!"
             },
             en: {
                 brandName: "BMW Community", homeBtn: "Home", loginTab: "Login", regTab: "Register",
@@ -323,7 +416,21 @@
                 forumTitle: "Community Forum", btnNewTopic: "New Topic",
                 modalTitle: "Create Topic", modalCategory: "Category", modalSubject: "Subject", modalContent: "Content", modalPublish: "Publish",
                 cat_engine: "Engine & Transmission", cat_chassis: "Chassis & Brakes", cat_coding: "Coding & Software", cat_general: "General",
-                lbl_replies: "Replies", lbl_author: "Author"
+                lbl_replies: "Replies", lbl_author: "Author",
+                // Placeholders
+                ph_search: "Search forum...",
+                ph_reply: "Write a comment...",
+                ph_car: "E.g. E90 335i",
+                ph_bio: "A few words about you...",
+                ph_topic_title: "E.g. Engine knocking",
+                ph_topic_desc: "Describe the issue...",
+                // Notifications
+                n_header: "Notifications",
+                n_read_all: "Mark all read",
+                n_empty: "No new notifications",
+                n_reply: "<b>{user}</b> replied in \"{topic}\"",
+                n_like: "Someone liked your post in \"{topic}\"",
+                n_solve: "Your answer marked as solution!"
             },
             ka: {
                 brandName: "BMW კლუბი", homeBtn: "მთავარი", loginTab: "შესვლა", regTab: "რეგისტრაცია",
@@ -333,7 +440,21 @@
                 forumTitle: "საზოგადოების ფორუმი", btnNewTopic: "ახალი თემა",
                 modalTitle: "თემის შექმნა", modalCategory: "კატეგორია", modalSubject: "სათაური", modalContent: "შინაარსი", modalPublish: "გამოქვეყნება",
                 cat_engine: "ძრავი და გადაცემათა კოლოფი", cat_chassis: "სავალი ნაწილი", cat_coding: "კოდირება", cat_general: "ზოგადი",
-                lbl_replies: "პასუხი", lbl_author: "ავტორი"
+                lbl_replies: "პასუხი", lbl_author: "ავტორი",
+                // Placeholders
+                ph_search: "ძიება ფორუმში...",
+                ph_reply: "კომენტარის დაწერა...",
+                ph_car: "მაგ: E90 335i",
+                ph_bio: "რამოდენიმე სიტყვა შენზე...",
+                ph_topic_title: "მაგ: ძრავის ხმა",
+                ph_topic_desc: "აღწერეთ პრობლემა...",
+                // Notifications
+                n_header: "შეტყობინებები",
+                n_read_all: "ყველას წაკითხვა",
+                n_empty: "ახალი შეტყობინებები არ არის",
+                n_reply: "<b>{user}</b>-მა გიპასუხათ თემაში \"{topic}\"",
+                n_like: "ვიღაცამ მოიწონა თქვენი პოსტი \"{topic}\"",
+                n_solve: "თქვენი პასუხი მონიშნულია როგორც გამოსავალი!"
             }
         };
 
@@ -342,21 +463,40 @@
             let idx = langs.indexOf(currentLang);
             currentLang = langs[(idx + 1) % langs.length];
             localStorage.setItem('forumLanguage', currentLang);
-            document.getElementById('current-lang').innerText = currentLang.toUpperCase();
+            
             applyTranslations();
-            loadTopics();
+            loadTopics(); // Перезагрузить темы (названия категорий)
+            checkNotifications(); // Обновить язык уведомлений
         }
 
         function applyTranslations() {
             const t = forumTranslations[currentLang];
+            // 1. Текстовые элементы
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.innerText = t[key];
             });
+            // 2. Опции селекта
             const options = document.getElementById('topic-category').options;
             options[0].text = t.cat_engine; options[1].text = t.cat_chassis;
             options[2].text = t.cat_coding; options[3].text = t.cat_general;
+            
+            // 3. Кнопка языка
             document.getElementById('current-lang').innerText = currentLang.toUpperCase();
+
+            // 4. Плейсхолдеры (ВАЖНО!)
+            document.getElementById('forum-search').placeholder = t.ph_search;
+            document.getElementById('reply-input').placeholder = t.ph_reply;
+            document.getElementById('profile-car').placeholder = t.ph_car;
+            document.getElementById('profile-bio').placeholder = t.ph_bio;
+            document.getElementById('topic-title').placeholder = t.ph_topic_title;
+            document.getElementById('topic-content').placeholder = t.ph_topic_desc;
+
+            // 5. Статичные тексты уведомлений
+            const notifHeader = document.getElementById('notif-header-title');
+            if(notifHeader) notifHeader.innerText = t.n_header;
+            const notifReadBtn = document.getElementById('notif-read-all-btn');
+            if(notifReadBtn) notifReadBtn.innerText = t.n_read_all;
         }
 
         // === 2. АВТОРИЗАЦИЯ ===
@@ -423,6 +563,7 @@
             document.getElementById('forum-content').classList.remove('hidden');
             document.getElementById('sidebar-username').innerText = user.username;
             loadTopics();
+            checkNotifications(); // Загружаем уведомления при входе
         }
 
         function logout() { localStorage.removeItem('user'); location.reload(); }
@@ -532,11 +673,10 @@
                 const currentUser = JSON.parse(localStorage.getItem('user'));
                 
                 let topicControls = '';
-                // Кнопка удаления темы
                 if (currentUser && (parseInt(currentUser.id) === t.user_id || currentUser.role === 'admin')) {
                     topicControls = `
                         <button class="control-btn delete" onclick="deleteTopic(${t.id})" style="margin-left:15px; color:#e74c3c; font-size:13px; display:flex; align-items:center; gap:5px;">
-                            <i class="fas fa-trash"></i> Удалить тему
+                            <i class="fas fa-trash"></i>
                         </button>
                     `;
                 }
@@ -563,78 +703,68 @@
                 closeTopic();
             }
         }
+
         function renderReplies(posts) {
-    const container = document.getElementById('replies-container');
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    
-    // Находим ID автора темы из DOM (хак, но работает, так как мы уже отрисовали заголовок)
-    // Лучше передавать author_id в функцию, но пока так:
-    const topicAuthorName = document.querySelector('.topic-author-badge').innerText.trim(); 
-    // Внимание: сравнение по имени ненадежно, но для примера сойдет. 
-    // В идеале в openTopic сохранять currentTopicAuthorId в переменную.
-    
-    container.innerHTML = '';
-    
-    if (posts.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Пока нет ответов.</div>';
-        return;
-    }
+            const container = document.getElementById('replies-container');
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            const canMark = document.querySelector('.topic-meta-header .delete'); 
+            
+            container.innerHTML = '';
+            
+            if (posts.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Пока нет ответов.</div>';
+                return;
+            }
 
-    posts.forEach(post => {
-        const date = new Date(post.created_at).toLocaleDateString();
-        const initial = post.username.charAt(0).toUpperCase();
-        
-        // 1. Стили решения
-        const solutionClass = post.is_solution ? 'solution' : '';
-        const solutionBadge = post.is_solution ? '<span class="solution-badge"><i class="fas fa-check"></i> Решение</span>' : '';
+            posts.forEach(post => {
+                const date = new Date(post.created_at).toLocaleDateString();
+                const initial = post.username.charAt(0).toUpperCase();
+                
+                const solutionClass = post.is_solution ? 'solution' : '';
+                const solutionBadge = post.is_solution ? '<span class="solution-badge"><i class="fas fa-check"></i> Решение</span>' : '';
 
-        // 2. Кнопки управления (Удалить)
-        let controls = '';
-        if (currentUser && (parseInt(currentUser.id) === post.user_id || currentUser.role === 'admin')) {
-            controls += `
-                <button class="control-btn delete" onclick="deletePost(${post.id}, this)" title="Удалить">
-                    <i class="fas fa-trash"></i>
-                </button>
-            `;
-        }
+                let controls = '';
+                if (currentUser && (parseInt(currentUser.id) === post.user_id || currentUser.role === 'admin')) {
+                    controls += `
+                        <button class="control-btn delete" onclick="deletePost(${post.id}, this)" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+                }
 
-        // 3. Кнопка "Выбрать решением" (видна только автору темы и если решение еще не выбрано)
-        // Нам нужно знать ID автора темы. Давайте для простоты считать, что если у пользователя есть кнопка "Удалить тему" в заголовке, то он автор.
-        const canMark = document.querySelector('.topic-meta-header .delete'); // Проверка наличия кнопки удаления темы
-        let solveBtn = '';
-        
-        if (canMark && !post.is_solution) {
-            solveBtn = `
-                <button class="solve-btn" onclick="markSolution(${post.topic_id}, ${post.id}, this)" title="Это решение">
-                    <i class="fas fa-check"></i>
-                </button>
-            `;
-        }
+                let solveBtn = '';
+                if (canMark && !post.is_solution) {
+                    solveBtn = `
+                        <button class="solve-btn" onclick="markSolution(${post.topic_id}, ${post.id}, this)" title="Это решение">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    `;
+                }
 
-        const html = `
-            <div class="reply-card ${solutionClass}">
-                <div class="reply-avatar">${initial}</div>
-                <div class="reply-body">
-                    <div class="reply-header">
-                        <div style="display:flex; align-items:center;">
-                            <span class="reply-username">${post.username}</span>
-                            <span class="reply-date">${date}</span>
-                            ${solutionBadge}
+                const html = `
+                    <div class="reply-card ${solutionClass}">
+                        <div class="reply-avatar">${initial}</div>
+                        <div class="reply-body">
+                            <div class="reply-header">
+                                <div style="display:flex; align-items:center;">
+                                    <span class="reply-username">${post.username}</span>
+                                    <span class="reply-date">${date}</span>
+                                    ${solutionBadge}
+                                </div>
+                                <div style="display:flex; gap:10px; align-items:center;">
+                                    ${solveBtn}
+                                    <button class="like-btn ${post.is_liked ? 'liked' : ''}" onclick="toggleLike(${post.id}, this)">
+                                        <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i> <span>${post.likes_count}</span>
+                                    </button>
+                                    ${controls}
+                                </div>
+                            </div>
+                            <div class="topic-content-text" style="font-size:14px;">${formatContent(post.content)}</div>
                         </div>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            ${solveBtn}
-                            <button class="like-btn ${post.is_liked ? 'liked' : ''}" onclick="toggleLike(${post.id}, this)">
-                                <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i> <span>${post.likes_count}</span>
-                            </button>
-                            ${controls}
-                        </div>
-                    </div>
-                    <div class="topic-content-text" style="font-size:14px;">${formatContent(post.content)}</div>
-                </div>
-            </div>`;
-        container.insertAdjacentHTML('beforeend', html);
-    });
-}
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
 
         function closeTopic() {
             currentTopicId = null;
@@ -797,6 +927,138 @@
             } catch(e) { console.error(e); }
         }
 
+        // === 11. ЛАЙКИ ===
+        async function toggleLike(postId, btn) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!user) { alert("Войдите, чтобы ставить лайки"); return; }
+
+            const icon = btn.querySelector('i');
+            const countSpan = btn.querySelector('span');
+            let currentCount = parseInt(countSpan.innerText);
+            const isLiked = btn.classList.contains('liked');
+
+            btn.classList.toggle('liked');
+            icon.className = isLiked ? 'far fa-heart' : 'fas fa-heart'; 
+            countSpan.innerText = isLiked ? currentCount - 1 : currentCount + 1;
+
+            try {
+                const res = await fetch('/api/forum/like', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ post_id: postId, user_id: user.id })
+                });
+                const data = await res.json();
+                
+                if(!data.success) {
+                    btn.classList.toggle('liked');
+                    countSpan.innerText = currentCount;
+                    alert("Ошибка лайка");
+                } else {
+                    countSpan.innerText = data.count;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // === 12. ЛУЧШИЙ ОТВЕТ ===
+        async function markSolution(topicId, postId, btn) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!confirm("Отметить этот ответ как решение?")) return;
+
+            try {
+                const res = await fetch('/api/forum/solve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic_id: topicId, post_id: postId, user_id: user.id })
+                });
+                
+                if(res.ok) {
+                    openTopic(topicId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || "Ошибка");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // === 13. УВЕДОМЛЕНИЯ (МУЛЬТИЯЗЫЧНЫЕ) ===
+        async function checkNotifications() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!user) return;
+
+            const t = forumTranslations[currentLang];
+
+            try {
+                const res = await fetch(`/api/user/notifications?user_id=${user.id}`);
+                const data = await res.json();
+                
+                const badge = document.getElementById('notif-badge');
+                const list = document.getElementById('notif-list');
+                
+                if (data.unread_count > 0) {
+                    badge.innerText = data.unread_count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+
+                if (data.notifications.length > 0) {
+                    list.innerHTML = data.notifications.map(n => {
+                        let icon = 'fa-bell';
+                        let color = '#ccc';
+                        let text = '';
+
+                        // Формируем текст уведомления на текущем языке
+                        if(n.type === 'reply') { 
+                            icon = 'fa-reply'; color = '#3498db'; 
+                            text = t.n_reply.replace('{user}', n.sender_name).replace('{topic}', n.topic_title);
+                        }
+                        if(n.type === 'like') { 
+                            icon = 'fa-heart'; color = '#e74c3c'; 
+                            text = t.n_like.replace('{topic}', n.topic_title);
+                        }
+                        if(n.type === 'solve') { 
+                            icon = 'fa-check-circle'; color = '#2ecc71'; 
+                            text = t.n_solve;
+                        }
+
+                        return `
+                        <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="openTopic(${n.topic_id})">
+                            <div class="notif-icon" style="color:${color}"><i class="fas ${icon}"></i></div>
+                            <div class="notif-content">
+                                ${text}
+                                <div class="notif-time">${new Date(n.created_at).toLocaleTimeString()}</div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                } else {
+                    list.innerHTML = `<div style="padding:20px; text-align:center; color:#777; font-size:13px;">${t.n_empty}</div>`;
+                }
+            } catch(e) { console.error("Notif error", e); }
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notif-dropdown');
+            dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                markAllRead();
+            }
+        }
+
+        async function markAllRead() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!user) return;
+            
+            document.getElementById('notif-badge').classList.add('hidden');
+            
+            await fetch('/api/user/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: user.id })
+            });
+        }
+
+        setInterval(checkNotifications, 30000);
+
         // === ИНИЦИАЛИЗАЦИЯ ===
         window.onload = function() {
             const user = localStorage.getItem('user');
@@ -805,134 +1067,6 @@
                 try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); }
             }
         }
-        // === 11. ЛАЙКИ ===
-async function toggleLike(postId, btn) {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if(!user) { alert("Войдите, чтобы ставить лайки"); return; }
-
-    // Оптимистичный UI (сразу меняем вид, не дожидаясь сервера)
-    const icon = btn.querySelector('i');
-    const countSpan = btn.querySelector('span');
-    let currentCount = parseInt(countSpan.innerText);
-    const isLiked = btn.classList.contains('liked');
-
-    // Визуально переключаем сразу
-    btn.classList.toggle('liked');
-    icon.className = isLiked ? 'far fa-heart' : 'fas fa-heart'; // far - пустое, fas - полное
-    countSpan.innerText = isLiked ? currentCount - 1 : currentCount + 1;
-
-    try {
-        const res = await fetch('/api/forum/like', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ post_id: postId, user_id: user.id })
-        });
-        const data = await res.json();
-        
-        // Если сервер вернул ошибку, откатываем назад
-        if(!data.success) {
-            btn.classList.toggle('liked');
-            countSpan.innerText = currentCount;
-            alert("Ошибка лайка");
-        } else {
-            // Синхронизируем точное число с сервером
-            countSpan.innerText = data.count;
-        }
-    } catch(e) { console.error(e); }
-}
-
-// === 12. ЛУЧШИЙ ОТВЕТ ===
-async function markSolution(topicId, postId, btn) {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if(!confirm("Отметить этот ответ как решение?")) return;
-
-    try {
-        const res = await fetch('/api/forum/solve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic_id: topicId, post_id: postId, user_id: user.id })
-        });
-        
-        if(res.ok) {
-            // Перезагружаем тему, чтобы увидеть изменения
-            openTopic(topicId);
-        } else {
-            const data = await res.json();
-            alert(data.error || "Ошибка");
-        }
-    } catch(e) { console.error(e); }
-}
-
-// === 13. УВЕДОМЛЕНИЯ ===
-async function checkNotifications() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if(!user) return;
-
-    try {
-        const res = await fetch(`/api/user/notifications?user_id=${user.id}`);
-        const data = await res.json();
-        
-        const badge = document.getElementById('notif-badge');
-        const list = document.getElementById('notif-list');
-        
-        // 1. Обновляем бейдж
-        if (data.unread_count > 0) {
-            badge.innerText = data.unread_count;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
-
-        // 2. Рендерим список
-        if (data.notifications.length > 0) {
-            list.innerHTML = data.notifications.map(n => {
-                let icon = 'fa-bell';
-                let color = '#ccc';
-                let text = '';
-
-                if(n.type === 'reply') { icon = 'fa-reply'; color = '#3498db'; text = `<b>${n.sender_name}</b> ответил в теме "${n.topic_title}"`; }
-                if(n.type === 'like') { icon = 'fa-heart'; color = '#e74c3c'; text = `Кто-то оценил ваш пост в "${n.topic_title}"`; }
-                if(n.type === 'solve') { icon = 'fa-check-circle'; color = '#2ecc71'; text = `Ваш ответ отмечен как решение!`; }
-
-                return `
-                <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="openTopic(${n.topic_id})">
-                    <div class="notif-icon" style="color:${color}"><i class="fas ${icon}"></i></div>
-                    <div class="notif-content">
-                        ${text}
-                        <div class="notif-time">${new Date(n.created_at).toLocaleTimeString()}</div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-    } catch(e) { console.error("Notif error", e); }
-}
-
-function toggleNotifications() {
-    const dropdown = document.getElementById('notif-dropdown');
-    dropdown.classList.toggle('hidden');
-    if (!dropdown.classList.contains('hidden')) {
-        markAllRead(); // Читаем при открытии
-    }
-}
-
-async function markAllRead() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if(!user) return;
-    
-    // Визуально скрываем бейдж сразу
-    document.getElementById('notif-badge').classList.add('hidden');
-    
-    await fetch('/api/user/notifications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id })
-    });
-}
-
-// Запускаем проверку раз в 30 секунд
-setInterval(checkNotifications, 30000);
-// И при загрузке
-window.addEventListener('load', checkNotifications);
     </script>
 </body>
 </html>
