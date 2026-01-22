@@ -263,14 +263,15 @@
         };
 
         function toggleLanguage() {
-            const langs = ['ru', 'en', 'ka'];
-            let idx = langs.indexOf(currentLang);
-            currentLang = langs[(idx + 1) % langs.length];
-            localStorage.setItem('forumLanguage', currentLang);
-            applyTranslations();
-            loadTopics();
-            checkNotifications(); 
-        }
+    const langs = ['ru', 'en', 'ka'];
+    let idx = langs.indexOf(currentLang);
+    currentLang = langs[(idx + 1) % langs.length];
+    localStorage.setItem('forumLanguage', currentLang);
+    document.getElementById('current-lang').innerText = currentLang.toUpperCase(); // ← ДОБАВЛЕНА
+    applyTranslations();
+    loadTopics();
+    checkNotifications(); 
+}
 
         function applyTranslations() {
             const t = forumTranslations[currentLang];
