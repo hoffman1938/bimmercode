@@ -343,6 +343,126 @@
 .stat-mini span { font-size: 14px; font-weight: bold; color: white; }
 .stat-mini small { font-size: 11px; color: var(--text-secondary); }
 
+/* === ПРОСМОТР ТЕМЫ (Topic View) === */
+.topic-view-container {
+    animation: fadeIn 0.3s ease;
+}
+
+.topic-header-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+    position: relative;
+    border-left: 4px solid var(--accent-color);
+}
+
+.topic-meta-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.topic-author-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.topic-full-title {
+    font-size: 24px;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.topic-content-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #e2e8f0;
+    white-space: pre-wrap; /* Сохраняет абзацы */
+}
+
+/* Комментарии */
+.replies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.reply-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.reply-avatar {
+    width: 40px;
+    height: 40px;
+    background: #1e293b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.reply-body {
+    flex: 1;
+}
+
+.reply-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.reply-username {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.reply-date {
+    color: var(--text-secondary);
+}
+
+/* Форма ответа */
+.reply-form-container {
+    position: sticky;
+    bottom: 20px;
+    background: rgba(18, 20, 28, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s;
+}
+.back-link:hover { color: white; transform: translateX(-5px); }
+
 /* === МОБИЛЬНАЯ АДАПТИВНОСТЬ === */
 @media (max-width: 900px) {
     .forum-layout {

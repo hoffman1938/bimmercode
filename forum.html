@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BMW Community Forum</title>
     
-    <!-- Preload critical resources -->
-    <link rel="preload" href="/css/forum.css" as="style" />
+    <link rel="preload" href="./css/forum.css" as="style" />
     
-    <!-- Styles -->
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="/css/forum.css" />
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/forum.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="shortcut icon" href="/icons/ico.svg" type="image/x-icon">
+    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
 
     <style>
         .modal-overlay {
@@ -31,6 +29,15 @@
         .close-btn { background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; }
         .close-btn:hover { color: white; }
         select.form-input option { background: #151922; color: white; }
+        
+        /* Стили для картинок в постах */
+        .topic-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid var(--glass-border);
+            display: block;
+        }
     </style>
 </head>
 <body class="bmw-pattern">
@@ -104,8 +111,10 @@
             <aside class="sidebar">
                 <div class="sidebar-card">
                     <div class="user-mini-profile">
-                        <div class="avatar-large"><i class="fas fa-user"></i></div>
-                        <h3 id="sidebar-username" style="color: white; margin-bottom: 5px;">Guest</h3>
+                        <div class="avatar-large" style="cursor: pointer;" onclick="openProfile()">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3 id="sidebar-username" style="color: white; margin-bottom: 5px; cursor: pointer;" onclick="openProfile()">Guest</h3>
                         <p id="user-role" style="color: #94a3b8; font-size: 13px;" data-i18n="roleMember">Участник клуба</p>
                         
                         <div class="user-stats-grid">
@@ -144,6 +153,31 @@
                     </div>
                 </div>
             </section>
+
+            <section id="single-topic-view" class="hidden">
+                <div class="back-link" onclick="closeTopic()">
+                    <i class="fas fa-arrow-left"></i> Назад к списку
+                </div>
+                
+                <div id="topic-detail-container"></div>
+                
+                <div id="replies-container" class="replies-list"></div>
+                
+                <div class="reply-form-container">
+                    <form id="replyForm" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="editor-btn" onclick="triggerUpload('reply-input')">
+                                <i class="fas fa-image"></i>
+                            </button>
+                            <input type="text" id="reply-input" class="form-input" placeholder="Написать комментарий..." autocomplete="off" required>
+                            <button type="submit" class="btn-create" style="width: auto; padding: 0 20px;">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
         </div>
     </main>
 
@@ -168,15 +202,59 @@
                     <input type="text" id="topic-title" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" data-i18n="modalContent">Описание</label>
-                    <textarea id="topic-content" class="form-input" style="min-height: 120px" required></textarea>
+                    <label class="form-label">Описание</label>
+                    
+                    <div class="editor-toolbar" style="background:rgba(255,255,255,0.05); padding:5px; border-radius:5px 5px 0 0; border:1px solid var(--glass-border); border-bottom:none; display:flex; gap:10px;">
+                        <button type="button" class="editor-btn" onclick="triggerUpload('topic-content')" title="Добавить фото">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <div style="font-size:11px; color:#777; align-self:center;">Поддерживается Markdown</div>
+                    </div>
+                    
+                    <textarea id="topic-content" class="form-input" style="min-height: 120px; border-radius:0 0 5px 5px; margin-top:0;" required></textarea>
                 </div>
                 <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="modalPublish">Опубликовать</button>
             </form>
         </div>
     </div>
 
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-glass" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Мой профиль</h3>
+                <button onclick="closeProfile()" class="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div style="text-align:center; margin-bottom:20px;">
+                <div class="avatar-large" style="margin: 0 auto 10px; width: 80px; height: 80px; font-size: 30px;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 id="profile-username" style="color:white; margin:0;">Username</h2>
+                <div class="info-badge" id="profile-role" style="margin-top:5px;">User</div>
+            </div>
+
+            <form id="profileForm">
+                <div class="form-group">
+                    <label class="form-label">Мой BMW</label>
+                    <input type="text" id="profile-car" class="form-input" placeholder="Например: E90 335i">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">О себе</label>
+                    <textarea id="profile-bio" class="form-input" placeholder="Пару слов о вас..." style="min-height: 80px;"></textarea>
+                </div>
+                <button type="submit" class="form-submit btn-primary" style="width:100%">Сохранить</button>
+            </form>
+        </div>
+    </div>
+
+    <input type="file" id="global-file-input" accept="image/*" style="display: none;">
+
     <script>
+        // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
+        let currentLang = 'ru';
+        let currentTopicId = null;
+        let currentTargetInputId = null;
+
         // === 1. МУЛЬТИЯЗЫЧНОСТЬ ===
         const forumTranslations = {
             ru: {
@@ -185,9 +263,7 @@
                 roleMember: "Участник клуба", statPosts: "Посты", statLikes: "Лайки",
                 navOverview: "Обзор", navPopular: "Популярное", navLogout: "Выход",
                 forumTitle: "Форум сообщества", btnNewTopic: "Новая тема",
-                // Модальное окно
                 modalTitle: "Создать тему", modalCategory: "Категория", modalSubject: "Заголовок", modalContent: "Описание", modalPublish: "Опубликовать",
-                // Динамический контент
                 cat_engine: "Двигатель и Трансмиссия", cat_chassis: "Ходовая и Тормоза", cat_coding: "Кодирование", cat_general: "Общие вопросы",
                 lbl_replies: "Ответы", lbl_author: "Автор"
             },
@@ -197,9 +273,7 @@
                 roleMember: "Club Member", statPosts: "Posts", statLikes: "Likes",
                 navOverview: "Overview", navPopular: "Popular", navLogout: "Logout",
                 forumTitle: "Community Forum", btnNewTopic: "New Topic",
-                // Modal
                 modalTitle: "Create Topic", modalCategory: "Category", modalSubject: "Subject", modalContent: "Content", modalPublish: "Publish",
-                // Content
                 cat_engine: "Engine & Transmission", cat_chassis: "Chassis & Brakes", cat_coding: "Coding & Software", cat_general: "General",
                 lbl_replies: "Replies", lbl_author: "Author"
             },
@@ -209,15 +283,11 @@
                 roleMember: "კლუბის წევრი", statPosts: "პოსტები", statLikes: "მოწონება",
                 navOverview: "მიმოხილვა", navPopular: "პოპულარული", navLogout: "გასვლა",
                 forumTitle: "საზოგადოების ფორუმი", btnNewTopic: "ახალი თემა",
-                // Modal
                 modalTitle: "თემის შექმნა", modalCategory: "კატეგორია", modalSubject: "სათაური", modalContent: "შინაარსი", modalPublish: "გამოქვეყნება",
-                // Content
                 cat_engine: "ძრავი და გადაცემათა კოლოფი", cat_chassis: "სავალი ნაწილი", cat_coding: "კოდირება", cat_general: "ზოგადი",
                 lbl_replies: "პასუხი", lbl_author: "ავტორი"
             }
         };
-
-        let currentLang = 'ru';
 
         function toggleLanguage() {
             const langs = ['ru', 'en', 'ka'];
@@ -225,7 +295,7 @@
             currentLang = langs[(idx + 1) % langs.length];
             document.getElementById('current-lang').innerText = currentLang.toUpperCase();
             applyTranslations();
-            loadTopics(); // Перерисовать темы на новом языке
+            loadTopics();
         }
 
         function applyTranslations() {
@@ -234,13 +304,12 @@
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.innerText = t[key];
             });
-            // Перевод опций селекта
             const options = document.getElementById('topic-category').options;
             options[0].text = t.cat_engine; options[1].text = t.cat_chassis;
             options[2].text = t.cat_coding; options[3].text = t.cat_general;
         }
 
-        // === 2. ЛОГИКА АВТОРИЗАЦИИ ===
+        // === 2. АВТОРИЗАЦИЯ ===
         function switchTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
@@ -298,14 +367,25 @@
             btn.textContent = forumTranslations[currentLang].regBtn;
         });
 
-        // === 3. ЛОГИКА ФОРУМА (ТЕМЫ) ===
+        // === 3. ОСНОВНАЯ ЛОГИКА ФОРУМА ===
         function showForum(user) {
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('forum-content').classList.remove('hidden');
             document.getElementById('sidebar-username').innerText = user.username;
-            loadTopics(); // Загружаем темы при входе
+            loadTopics();
         }
 
+        function logout() { localStorage.removeItem('user'); location.reload(); }
+
+        // === 4. ФОРМАТИРОВАНИЕ ТЕКСТА (КАРТИНКИ) ===
+        function formatContent(text) {
+            if (!text) return '';
+            // Превращаем ![Image](url) в тег <img>
+            let formatted = text.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="topic-image">');
+            return formatted;
+        }
+
+        // === 5. ЗАГРУЗКА ТЕМ ===
         async function loadTopics() {
             const container = document.getElementById('topics-container');
             const t = forumTranslations[currentLang];
@@ -320,10 +400,9 @@
                     return;
                 }
 
-                container.innerHTML = ''; // Очистка
+                container.innerHTML = ''; 
                 topics.forEach(topic => {
                     const date = new Date(topic.created_at).toLocaleDateString();
-                    // Иконка
                     let icon = 'fa-comments';
                     let catName = t.cat_general;
                     if(topic.category === 'engine') { icon = 'fa-cogs'; catName = t.cat_engine; }
@@ -331,13 +410,13 @@
                     if(topic.category === 'coding') { icon = 'fa-laptop-code'; catName = t.cat_coding; }
 
                     const html = `
-                    <div class="topic-card" onclick="alert('Open topic: ${topic.id}')">
+                    <div class="topic-card" onclick="openTopic(${topic.id})">
                         <div class="topic-main">
                             <div class="topic-icon"><i class="fas ${icon}"></i></div>
                             <div class="topic-info">
                                 <span style="font-size:10px; color:var(--accent-color); text-transform:uppercase;">${catName}</span>
                                 <h3 style="margin-top:2px;">${topic.title}</h3>
-                                <p>${topic.content.substring(0, 80)}...</p>
+                                <p>${formatContent(topic.content.substring(0, 80))}...</p>
                                 <div style="font-size:11px; color:#555; margin-top:5px;">
                                     ${t.lbl_author}: <span style="color:white">${topic.username}</span> • ${date}
                                 </div>
@@ -355,7 +434,102 @@
             }
         }
 
-        // === 4. СОЗДАНИЕ ТЕМЫ ===
+        // === 6. ПРОСМОТР ТЕМЫ И ОТВЕТЫ ===
+        async function openTopic(id) {
+            currentTopicId = id;
+            document.querySelector('.forum-feed').classList.add('hidden');
+            document.getElementById('single-topic-view').classList.remove('hidden');
+            
+            const container = document.getElementById('topic-detail-container');
+            const repliesContainer = document.getElementById('replies-container');
+            container.innerHTML = '<div class="skeleton" style="height:150px;"></div>';
+            repliesContainer.innerHTML = '';
+
+            try {
+                const res = await fetch(`/api/forum/topic?id=${id}`);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                
+                const t = data.topic;
+                const date = new Date(t.created_at).toLocaleDateString() + ' ' + new Date(t.created_at).toLocaleTimeString().slice(0,5);
+
+                container.innerHTML = `
+                    <div class="topic-header-card">
+                        <div class="topic-meta-header">
+                            <div class="topic-author-badge"><i class="fas fa-user"></i> ${t.username}</div>
+                            <div><i class="fas fa-eye"></i> ${t.views} &nbsp;•&nbsp; ${date}</div>
+                        </div>
+                        <h1 class="topic-full-title">${t.title}</h1>
+                        <div class="topic-content-text">${formatContent(t.content)}</div>
+                    </div>
+                    <h3 style="margin-bottom:15px; color:#94a3b8; font-size:14px;">Ответы (${data.posts.length})</h3>
+                `;
+
+                renderReplies(data.posts);
+                window.scrollTo(0,0);
+            } catch (e) {
+                alert("Ошибка загрузки: " + e.message);
+                closeTopic();
+            }
+        }
+
+        function renderReplies(posts) {
+            const container = document.getElementById('replies-container');
+            container.innerHTML = '';
+            if (posts.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Пока нет ответов.</div>';
+                return;
+            }
+            posts.forEach(post => {
+                const date = new Date(post.created_at).toLocaleDateString();
+                const initial = post.username.charAt(0).toUpperCase();
+                const html = `
+                    <div class="reply-card">
+                        <div class="reply-avatar">${initial}</div>
+                        <div class="reply-body">
+                            <div class="reply-header">
+                                <span class="reply-username">${post.username}</span>
+                                <span class="reply-date">${date}</span>
+                            </div>
+                            <div class="topic-content-text" style="font-size:14px;">${formatContent(post.content)}</div>
+                        </div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        function closeTopic() {
+            currentTopicId = null;
+            document.querySelector('.forum-feed').classList.remove('hidden');
+            document.getElementById('single-topic-view').classList.add('hidden');
+        }
+
+        document.getElementById('replyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentTopicId) return;
+            const input = document.getElementById('reply-input');
+            const content = input.value;
+            const user = JSON.parse(localStorage.getItem('user'));
+            const btn = e.target.querySelector('button[type="submit"]');
+            const oldIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const res = await fetch('/api/forum/topic', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic_id: currentTopicId, user_id: user.id, username: user.username, content: content
+                    })
+                });
+                if (res.ok) {
+                    input.value = '';
+                    openTopic(currentTopicId);
+                } else { alert('Ошибка отправки'); }
+            } catch (err) { console.error(err); }
+            btn.innerHTML = oldIcon;
+        });
+
+        // === 7. СОЗДАНИЕ ТЕМЫ ===
         const modal = document.getElementById('new-topic-modal');
         function openModal() { modal.classList.add('active'); }
         function closeModal() { modal.classList.remove('active'); }
@@ -364,11 +538,9 @@
             e.preventDefault();
             const btn = e.target.querySelector('button'); 
             btn.textContent = '...';
-            
             const user = JSON.parse(localStorage.getItem('user'));
             const data = {
-                user_id: user.id,
-                username: user.username,
+                user_id: user.id, username: user.username,
                 category: document.getElementById('topic-category').value,
                 title: document.getElementById('topic-title').value,
                 content: document.getElementById('topic-content').value
@@ -379,19 +551,95 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                
                 if (res.ok) {
                     closeModal();
                     document.getElementById('createTopicForm').reset();
-                    loadTopics(); // Обновляем ленту
-                } else {
-                    alert('Error creating topic');
-                }
+                    loadTopics();
+                } else { alert('Error creating topic'); }
             } catch (err) { console.error(err); }
             btn.textContent = forumTranslations[currentLang].modalPublish;
         });
 
-        // Initialization
+        // === 8. ЛОГИКА ПРОФИЛЯ ===
+        const profileModal = document.getElementById('profile-modal');
+
+        async function openProfile() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!user) return;
+            profileModal.classList.add('active');
+            
+            try {
+                const res = await fetch(`/api/user/profile?id=${user.id}`);
+                const data = await res.json();
+                document.getElementById('profile-username').innerText = data.username;
+                document.getElementById('profile-role').innerText = data.role;
+                document.getElementById('profile-car').value = data.car_model || '';
+                document.getElementById('profile-bio').value = data.bio || '';
+            } catch(e) { console.error(e); }
+        }
+
+        function closeProfile() { profileModal.classList.remove('active'); }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = JSON.parse(localStorage.getItem('user'));
+            const btn = e.target.querySelector('button');
+            btn.innerText = 'Сохранение...';
+            const data = {
+                id: user.id, car_model: document.getElementById('profile-car').value,
+                bio: document.getElementById('profile-bio').value
+            };
+            try {
+                const res = await fetch('/api/user/profile', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) {
+                    alert('Профиль обновлен!');
+                    closeProfile();
+                }
+            } catch(e) { alert('Ошибка'); }
+            btn.innerText = 'Сохранить';
+        });
+
+        // === 9. ЗАГРУЗКА ФОТО ===
+        function triggerUpload(inputId) {
+            currentTargetInputId = inputId;
+            document.getElementById('global-file-input').click();
+        }
+
+        document.getElementById('global-file-input').addEventListener('change', async function(e) {
+            if (this.files.length === 0) return;
+            const file = this.files[0];
+            const targetInput = document.getElementById(currentTargetInputId);
+            
+            const originalPlaceholder = targetInput.placeholder;
+            targetInput.value += `\n[Загрузка фото: ${file.name}...]`;
+            targetInput.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                targetInput.value = targetInput.value.replace(`\n[Загрузка фото: ${file.name}...]`, '');
+                
+                if (res.ok) {
+                    const markdown = `\n![Image](${data.url})\n`;
+                    targetInput.value += markdown;
+                } else { alert('Ошибка загрузки: ' + data.error); }
+            } catch (err) {
+                alert('Ошибка сети');
+                targetInput.value = targetInput.value.replace(`\n[Загрузка фото: ${file.name}...]`, '');
+            } finally {
+                targetInput.disabled = false;
+                targetInput.focus();
+                this.value = '';
+            }
+        });
+
+        // === ИНИЦИАЛИЗАЦИЯ ===
         window.onload = function() {
             const user = localStorage.getItem('user');
             applyTranslations();
@@ -399,8 +647,6 @@
                 try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); }
             }
         }
-
-        function logout() { localStorage.removeItem('user'); location.reload(); }
     </script>
 </body>
 </html>
