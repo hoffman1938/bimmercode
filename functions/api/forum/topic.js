@@ -6,7 +6,7 @@ export async function onRequest(context) {
   // === 1. ПОЛУЧЕНИЕ ТЕМЫ (GET) ===
   if (request.method === "GET") {
     const topicId = url.searchParams.get("id");
-    const currentUserId = url.searchParams.get("user_id"); // ID текущего пользователя для проверки лайков
+    const currentUserId = url.searchParams.get("user_id"); // ID текущего пользователя
 
     if (!topicId) {
       return new Response(JSON.stringify({ error: "ID required" }), { status: 400 });
@@ -20,8 +20,7 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: "Topic not found" }), { status: 404 });
       }
 
-      // 2. Получаем ответы + Инфо о лайках
-      // Мы используем подзапросы (subqueries) чтобы посчитать лайки и проверить лайкнул ли юзер
+      // 2. Получаем ответы + Лайки + Статус "Решение"
       const query = `
         SELECT 
           p.*,
@@ -33,10 +32,10 @@ export async function onRequest(context) {
       `;
       
       const { results: posts } = await db.prepare(query)
-        .bind(currentUserId || 0, topicId) // Если user_id нет, передаем 0
+        .bind(currentUserId || 0, topicId)
         .all();
 
-      // 3. Увеличиваем счетчик просмотров (асинхронно, не ждем завершения)
+      // 3. Увеличиваем счетчик просмотров
       await db.prepare("UPDATE topics SET views = views + 1 WHERE id = ?").bind(topicId).run();
 
       return new Response(JSON.stringify({ topic, posts }), { status: 200 });
@@ -59,6 +58,19 @@ export async function onRequest(context) {
         "INSERT INTO posts (topic_id, user_id, username, content) VALUES (?, ?, ?, ?)"
       ).bind(data.topic_id, data.user_id, data.username, data.content).run();
 
+      // --- СОЗДАНИЕ УВЕДОМЛЕНИЯ ОБ ОТВЕТЕ ---
+      // Узнаем, кто автор темы
+      const topic = await db.prepare("SELECT user_id, title FROM topics WHERE id = ?").bind(data.topic_id).first();
+      
+      // Если тема существует и отвечает НЕ сам автор темы
+      if (topic && topic.user_id !== parseInt(data.user_id)) {
+        await db.prepare(`
+          INSERT INTO notifications (user_id, sender_id, sender_name, type, topic_id, topic_title)
+          VALUES (?, ?, ?, 'reply', ?, ?)
+        `).bind(topic.user_id, data.user_id, data.username, data.topic_id, topic.title).run();
+      }
+      // ---------------------------------------
+
       return new Response(JSON.stringify({ success: true }), { status: 201 });
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message }), { status: 500 });
@@ -74,10 +86,12 @@ export async function onRequest(context) {
     }
 
     try {
-      // Сначала удаляем все ответы к этой теме
+      // Удаляем ответы
       await db.prepare("DELETE FROM posts WHERE topic_id = ?").bind(topicId).run();
-      // Затем удаляем саму тему
+      // Удаляем тему
       await db.prepare("DELETE FROM topics WHERE id = ?").bind(topicId).run();
+      // Удаляем уведомления, связанные с темой (чтобы не было битых ссылок)
+      await db.prepare("DELETE FROM notifications WHERE topic_id = ?").bind(topicId).run();
       
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (e) {
