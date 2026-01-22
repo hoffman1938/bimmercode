@@ -45,6 +45,41 @@ async function onRequestPost2(context) {
 }
 __name(onRequestPost2, "onRequestPost2");
 __name2(onRequestPost2, "onRequestPost");
+async function onRequest(context) {
+  const { request, env } = context;
+  const db = env.DB;
+  if (request.method === "GET") {
+    try {
+      const { results } = await db.prepare(`
+        SELECT t.*, COUNT(p.id) as reply_count 
+        FROM topics t 
+        LEFT JOIN posts p ON p.topic_id = t.id 
+        GROUP BY t.id 
+        ORDER BY t.created_at DESC
+      `).all();
+      return new Response(JSON.stringify(results), { status: 200 });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+  }
+  if (request.method === "POST") {
+    try {
+      const data = await request.json();
+      if (!data.title || !data.content || !data.user_id) {
+        return new Response(JSON.stringify({ error: "\u0417\u0430\u043F\u043E\u043B\u043D\u0438\u0442\u0435 \u0432\u0441\u0435 \u043F\u043E\u043B\u044F" }), { status: 400 });
+      }
+      const result = await db.prepare(
+        "INSERT INTO topics (user_id, username, category, title, content) VALUES (?, ?, ?, ?, ?)"
+      ).bind(data.user_id, data.username, data.category, data.title, data.content).run();
+      return new Response(JSON.stringify({ success: true, id: result.meta.last_row_id }), { status: 201 });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+  }
+  return new Response("Method not allowed", { status: 405 });
+}
+__name(onRequest, "onRequest");
+__name2(onRequest, "onRequest");
 var routes = [
   {
     routePath: "/api/auth/login",
@@ -59,6 +94,13 @@ var routes = [
     method: "POST",
     middlewares: [],
     modules: [onRequestPost2]
+  },
+  {
+    routePath: "/api/forum/topics",
+    mountPath: "/api/forum",
+    method: "",
+    middlewares: [],
+    modules: [onRequest]
   }
 ];
 function lexer(str) {

@@ -8,8 +8,26 @@
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="./css/forum.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="shortcut icon" href="/icons/ico.svg" type="image/x-icon" />
-    <link rel="icon" type="image/svg+xml" href="/icons/ico.svg" />
+    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
+
+    <style>
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
+            z-index: 2000; backdrop-filter: blur(5px); opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-glass {
+            background: #151922; border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 30px; width: 90%; max-width: 500px; box-shadow: 0 0 40px rgba(0, 102, 179, 0.2);
+            transform: scale(0.9); transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-glass { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: white; }
+        .close-btn { background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; }
+        .close-btn:hover { color: white; }
+        select.form-input option { background: #151922; color: white; }
+    </style>
 </head>
 <body class="bmw-pattern">
     
@@ -101,9 +119,6 @@
                     <nav class="nav-menu">
                         <a href="#" class="nav-item active"><i class="fas fa-th-large"></i> <span data-i18n="navOverview">Обзор</span></a>
                         <a href="#" class="nav-item"><i class="fas fa-fire"></i> <span data-i18n="navPopular">Популярное</span></a>
-                        <a href="#" class="nav-item"><i class="fas fa-wrench"></i> <span data-i18n="navRepair">Ремонт</span></a>
-                        <a href="#" class="nav-item"><i class="fas fa-code"></i> <span data-i18n="navCoding">Кодирование</span></a>
-                        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
                         <button onclick="logout()" class="nav-item" style="background:none; border:none; width:100%; cursor:pointer; text-align: left; padding-left: 15px;">
                             <i class="fas fa-sign-out-alt" style="color: #e74c3c;"></i> <span data-i18n="navLogout">Выход</span>
                         </button>
@@ -114,150 +129,87 @@
             <section class="forum-feed">
                 <div class="forum-header-actions">
                     <h1 class="page-title" data-i18n="forumTitle">Форум сообщества</h1>
-                    <button class="btn-create">
+                    <button class="btn-create" onclick="openModal()">
                         <i class="fas fa-plus"></i> <span data-i18n="btnNewTopic">Новая тема</span>
                     </button>
                 </div>
 
-                <div class="category-group">
-                    <div class="group-title" data-i18n="catTech">Техническая часть</div>
-                    
-                    <div class="topic-card">
-                        <div class="topic-main">
-                            <div class="topic-icon"><i class="fas fa-cogs"></i></div>
-                            <div class="topic-info">
-                                <h3 data-i18n="topicEngineTitle">Двигатель и Трансмиссия</h3>
-                                <p data-i18n="topicEngineDesc">Обсуждение проблем с N20, B48, N55 и ZF коробками.</p>
-                            </div>
-                        </div>
-                        <div class="topic-stats">
-                            <div class="stat-mini"><span>124</span><small data-i18n="labelTopics">Темы</small></div>
-                            <div class="stat-mini"><span>1.2k</span><small data-i18n="labelPosts">Посты</small></div>
-                        </div>
-                    </div>
-
-                    <div class="topic-card">
-                        <div class="topic-main">
-                            <div class="topic-icon"><i class="fas fa-car-crash"></i></div>
-                            <div class="topic-info">
-                                <h3 data-i18n="topicChassisTitle">Ходовая и Тормоза</h3>
-                                <p data-i18n="topicChassisDesc">Рычаги, стойки, скрипы и выбор колодок.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="category-group">
-                    <div class="group-title" data-i18n="catSoft">Софт и Кодирование</div>
-                    <div class="topic-card">
-                        <div class="topic-main">
-                            <div class="topic-icon" style="color: #2ecc71;"><i class="fas fa-laptop-code"></i></div>
-                            <div class="topic-info">
-                                <h3 data-i18n="topicCodingTitle">Кодирование</h3>
-                                <p data-i18n="topicCodingDesc">BimmerCode, E-Sys, скрытые функции.</p>
-                            </div>
-                        </div>
+                <div id="topics-container">
+                    <div style="text-align: center; padding: 40px; color: #6f9bd1;">
+                        <i class="fas fa-circle-notch fa-spin"></i> Loading...
                     </div>
                 </div>
             </section>
         </div>
     </main>
 
+    <div id="new-topic-modal" class="modal-overlay">
+        <div class="modal-glass">
+            <div class="modal-header">
+                <h3 data-i18n="modalTitle">Создать тему</h3>
+                <button onclick="closeModal()" class="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="createTopicForm">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="modalCategory">Категория</label>
+                    <select id="topic-category" class="form-input">
+                        <option value="engine">Engine & Trans</option>
+                        <option value="chassis">Chassis & Brakes</option>
+                        <option value="coding">Coding & Software</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="modalSubject">Заголовок</label>
+                    <input type="text" id="topic-title" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="modalContent">Описание</label>
+                    <textarea id="topic-content" class="form-input" style="min-height: 120px" required></textarea>
+                </div>
+                <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="modalPublish">Опубликовать</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         // === 1. МУЛЬТИЯЗЫЧНОСТЬ ===
         const forumTranslations = {
             ru: {
-                brandName: "BMW Сообщество",
-                homeBtn: "Главная",
-                loginTab: "Вход",
-                regTab: "Регистрация",
-                emailLabel: "Email",
-                passLabel: "Пароль",
-                userLabel: "Никнейм",
-                loginBtn: "Войти",
-                regBtn: "Создать аккаунт",
-                roleMember: "Участник клуба",
-                statPosts: "Посты",
-                statLikes: "Лайки",
-                navOverview: "Обзор",
-                navPopular: "Популярное",
-                navRepair: "Ремонт",
-                navCoding: "Кодирование",
-                navLogout: "Выход",
-                forumTitle: "Форум сообщества",
-                btnNewTopic: "Новая тема",
-                catTech: "Техническая часть",
-                topicEngineTitle: "Двигатель и Трансмиссия",
-                topicEngineDesc: "Обсуждение проблем с N20, B48, N55 и ZF коробками.",
-                topicChassisTitle: "Ходовая и Тормоза",
-                topicChassisDesc: "Рычаги, стойки, скрипы и выбор колодок.",
-                catSoft: "Софт и Кодирование",
-                topicCodingTitle: "Кодирование",
-                topicCodingDesc: "BimmerCode, E-Sys, скрытые функции.",
-                labelTopics: "Темы",
-                labelPosts: "Посты"
+                brandName: "BMW Сообщество", homeBtn: "Главная", loginTab: "Вход", regTab: "Регистрация",
+                emailLabel: "Email", passLabel: "Пароль", userLabel: "Никнейм", loginBtn: "Войти", regBtn: "Создать аккаунт",
+                roleMember: "Участник клуба", statPosts: "Посты", statLikes: "Лайки",
+                navOverview: "Обзор", navPopular: "Популярное", navLogout: "Выход",
+                forumTitle: "Форум сообщества", btnNewTopic: "Новая тема",
+                // Модальное окно
+                modalTitle: "Создать тему", modalCategory: "Категория", modalSubject: "Заголовок", modalContent: "Описание", modalPublish: "Опубликовать",
+                // Динамический контент
+                cat_engine: "Двигатель и Трансмиссия", cat_chassis: "Ходовая и Тормоза", cat_coding: "Кодирование", cat_general: "Общие вопросы",
+                lbl_replies: "Ответы", lbl_author: "Автор"
             },
             en: {
-                brandName: "BMW Community",
-                homeBtn: "Home",
-                loginTab: "Login",
-                regTab: "Register",
-                emailLabel: "Email",
-                passLabel: "Password",
-                userLabel: "Username",
-                loginBtn: "Log In",
-                regBtn: "Create Account",
-                roleMember: "Club Member",
-                statPosts: "Posts",
-                statLikes: "Likes",
-                navOverview: "Overview",
-                navPopular: "Popular",
-                navRepair: "Repair",
-                navCoding: "Coding",
-                navLogout: "Logout",
-                forumTitle: "Community Forum",
-                btnNewTopic: "New Topic",
-                catTech: "Technical Section",
-                topicEngineTitle: "Engine & Transmission",
-                topicEngineDesc: "Discussions regarding N20, B48, N55 engines and ZF gearboxes.",
-                topicChassisTitle: "Chassis & Brakes",
-                topicChassisDesc: "Suspension arms, struts, noises and brake pads.",
-                catSoft: "Software & Coding",
-                topicCodingTitle: "Coding",
-                topicCodingDesc: "BimmerCode, E-Sys, hidden features.",
-                labelTopics: "Topics",
-                labelPosts: "Posts"
+                brandName: "BMW Community", homeBtn: "Home", loginTab: "Login", regTab: "Register",
+                emailLabel: "Email", passLabel: "Password", userLabel: "Username", loginBtn: "Log In", regBtn: "Create Account",
+                roleMember: "Club Member", statPosts: "Posts", statLikes: "Likes",
+                navOverview: "Overview", navPopular: "Popular", navLogout: "Logout",
+                forumTitle: "Community Forum", btnNewTopic: "New Topic",
+                // Modal
+                modalTitle: "Create Topic", modalCategory: "Category", modalSubject: "Subject", modalContent: "Content", modalPublish: "Publish",
+                // Content
+                cat_engine: "Engine & Transmission", cat_chassis: "Chassis & Brakes", cat_coding: "Coding & Software", cat_general: "General",
+                lbl_replies: "Replies", lbl_author: "Author"
             },
             ka: {
-                brandName: "BMW კლუბი",
-                homeBtn: "მთავარი",
-                loginTab: "შესვლა",
-                regTab: "რეგისტრაცია",
-                emailLabel: "ელ-ფოსტა",
-                passLabel: "პაროლი",
-                userLabel: "მეტსახელი",
-                loginBtn: "შესვლა",
-                regBtn: "ანგარიშის შექმნა",
-                roleMember: "კლუბის წევრი",
-                statPosts: "პოსტები",
-                statLikes: "მოწონება",
-                navOverview: "მიმოხილვა",
-                navPopular: "პოპულარული",
-                navRepair: "შეკეთება",
-                navCoding: "კოდირება",
-                navLogout: "გასვლა",
-                forumTitle: "საზოგადოების ფორუმი",
-                btnNewTopic: "ახალი თემა",
-                catTech: "ტექნიკური განყოფილება",
-                topicEngineTitle: "ძრავი და გადაცემათა კოლოფი",
-                topicEngineDesc: "დისკუსიები N20, B48, N55 ძრავებზე და ZF კოლოფებზე.",
-                topicChassisTitle: "სავალი ნაწილი და მუხრუჭები",
-                topicChassisDesc: "სამკლავები, ამორტიზატორები, ხუნდები.",
-                catSoft: "პროგრამები და კოდირება",
-                topicCodingTitle: "კოდირება",
-                topicCodingDesc: "BimmerCode, E-Sys, ფარული ფუნქციები.",
-                labelTopics: "თემები",
-                labelPosts: "პოსტები"
+                brandName: "BMW კლუბი", homeBtn: "მთავარი", loginTab: "შესვლა", regTab: "რეგისტრაცია",
+                emailLabel: "ელ-ფოსტა", passLabel: "პაროლი", userLabel: "მეტსახელი", loginBtn: "შესვლა", regBtn: "ანგარიშის შექმნა",
+                roleMember: "კლუბის წევრი", statPosts: "პოსტები", statLikes: "მოწონება",
+                navOverview: "მიმოხილვა", navPopular: "პოპულარული", navLogout: "გასვლა",
+                forumTitle: "საზოგადოების ფორუმი", btnNewTopic: "ახალი თემა",
+                // Modal
+                modalTitle: "თემის შექმნა", modalCategory: "კატეგორია", modalSubject: "სათაური", modalContent: "შინაარსი", modalPublish: "გამოქვეყნება",
+                // Content
+                cat_engine: "ძრავი და გადაცემათა კოლოფი", cat_chassis: "სავალი ნაწილი", cat_coding: "კოდირება", cat_general: "ზოგადი",
+                lbl_replies: "პასუხი", lbl_author: "ავტორი"
             }
         };
 
@@ -267,12 +219,9 @@
             const langs = ['ru', 'en', 'ka'];
             let idx = langs.indexOf(currentLang);
             currentLang = langs[(idx + 1) % langs.length];
-            
-            // Обновляем текст кнопки
             document.getElementById('current-lang').innerText = currentLang.toUpperCase();
-            
-            // Применяем переводы
             applyTranslations();
+            loadTopics(); // Перерисовать темы на новом языке
         }
 
         function applyTranslations() {
@@ -281,21 +230,16 @@
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.innerText = t[key];
             });
-            
-            // Обновляем плейсхолдеры
-            if (currentLang === 'ka') {
-                document.getElementById('login-email').placeholder = "el-fosta@magaliti.com";
-                document.getElementById('reg-username').placeholder = "BMW_Fan_Geo";
-            } else {
-                document.getElementById('login-email').placeholder = "email@example.com";
-            }
+            // Перевод опций селекта
+            const options = document.getElementById('topic-category').options;
+            options[0].text = t.cat_engine; options[1].text = t.cat_chassis;
+            options[2].text = t.cat_coding; options[3].text = t.cat_general;
         }
 
         // === 2. ЛОГИКА АВТОРИЗАЦИИ ===
         function switchTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            
             if (tab === 'login') {
                 document.querySelectorAll('.auth-tab')[0].classList.add('active');
                 document.getElementById('loginForm').classList.add('active');
@@ -305,96 +249,154 @@
             }
         }
 
-        // Обработка Входа (Login)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            const originalText = btn.textContent;
-            btn.textContent = '...';
-
-            const data = {
-                email: document.getElementById('login-email').value,
-                password: document.getElementById('login-password').value
-            };
-
+            const btn = e.target.querySelector('button'); btn.textContent = '...';
             try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('login-email').value,
+                        password: document.getElementById('login-password').value
+                    })
                 });
-                const result = await response.json();
-
-                if (response.ok) {
+                const result = await res.json();
+                if (res.ok) {
                     localStorage.setItem('user', JSON.stringify(result.user));
                     showForum(result.user);
-                } else {
-                    document.getElementById('login-message').innerText = result.error || "Ошибка";
-                }
-            } catch (err) {
-                document.getElementById('login-message').innerText = "Ошибка сети";
-            }
-            btn.textContent = originalText;
+                } else { document.getElementById('login-message').innerText = result.error; }
+            } catch (err) { document.getElementById('login-message').innerText = "Network Error"; }
+            btn.textContent = forumTranslations[currentLang].loginBtn;
         });
 
-        // Обработка Регистрации (Register)
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            const originalText = btn.textContent;
-            btn.textContent = '...';
-            
-            const data = {
-                username: document.getElementById('reg-username').value,
-                email: document.getElementById('reg-email').value,
-                password: document.getElementById('reg-password').value
-            };
-
+            const btn = e.target.querySelector('button'); btn.textContent = '...';
             try {
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('reg-username').value,
+                        email: document.getElementById('reg-email').value,
+                        password: document.getElementById('reg-password').value
+                    })
                 });
-                
-                if (response.ok) {
+                if (res.ok) {
                     document.getElementById('reg-message').style.color = '#2ecc71';
-                    document.getElementById('reg-message').innerText = "OK! Login now.";
-                    setTimeout(() => {
-                        document.getElementById('reg-message').innerText = "";
-                        switchTab('login');
-                    }, 1500);
+                    document.getElementById('reg-message').innerText = "OK!";
+                    setTimeout(() => switchTab('login'), 1000);
                 } else {
-                    const result = await response.json();
+                    const result = await res.json();
                     document.getElementById('reg-message').style.color = '#e74c3c';
                     document.getElementById('reg-message').innerText = result.error;
                 }
             } catch (err) { console.error(err); }
-            btn.textContent = originalText;
+            btn.textContent = forumTranslations[currentLang].regBtn;
         });
 
-        // Инициализация
-        window.onload = function() {
-            // Проверка пользователя
-            const user = localStorage.getItem('user');
-            if (user) {
-                try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); }
-            }
-            // Установка языка по умолчанию
-            applyTranslations();
-        }
-
+        // === 3. ЛОГИКА ФОРУМА (ТЕМЫ) ===
         function showForum(user) {
-            document.getElementById('auth-section').classList.add('hidden'); // Убираем анимацию fadeInUp
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('forum-content').classList.remove('hidden');
             document.getElementById('sidebar-username').innerText = user.username;
+            loadTopics(); // Загружаем темы при входе
         }
 
-        function logout() {
-            localStorage.removeItem('user');
-            location.reload();
+        async function loadTopics() {
+            const container = document.getElementById('topics-container');
+            const t = forumTranslations[currentLang];
+            
+            try {
+                const res = await fetch('/api/forum/topics');
+                if (!res.ok) throw new Error('API Error');
+                const topics = await res.json();
+
+                if (topics.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;">No topics yet.</div>`;
+                    return;
+                }
+
+                container.innerHTML = ''; // Очистка
+                topics.forEach(topic => {
+                    const date = new Date(topic.created_at).toLocaleDateString();
+                    // Иконка
+                    let icon = 'fa-comments';
+                    let catName = t.cat_general;
+                    if(topic.category === 'engine') { icon = 'fa-cogs'; catName = t.cat_engine; }
+                    if(topic.category === 'chassis') { icon = 'fa-car-crash'; catName = t.cat_chassis; }
+                    if(topic.category === 'coding') { icon = 'fa-laptop-code'; catName = t.cat_coding; }
+
+                    const html = `
+                    <div class="topic-card" onclick="alert('Open topic: ${topic.id}')">
+                        <div class="topic-main">
+                            <div class="topic-icon"><i class="fas ${icon}"></i></div>
+                            <div class="topic-info">
+                                <span style="font-size:10px; color:var(--accent-color); text-transform:uppercase;">${catName}</span>
+                                <h3 style="margin-top:2px;">${topic.title}</h3>
+                                <p>${topic.content.substring(0, 80)}...</p>
+                                <div style="font-size:11px; color:#555; margin-top:5px;">
+                                    ${t.lbl_author}: <span style="color:white">${topic.username}</span> • ${date}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="topic-stats">
+                            <div class="stat-mini"><span>${topic.reply_count || 0}</span><small>${t.lbl_replies}</small></div>
+                        </div>
+                    </div>`;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<div style="text-align:center; color:#e74c3c;">Failed to load topics.</div>`;
+            }
         }
+
+        // === 4. СОЗДАНИЕ ТЕМЫ ===
+        const modal = document.getElementById('new-topic-modal');
+        function openModal() { modal.classList.add('active'); }
+        function closeModal() { modal.classList.remove('active'); }
+
+        document.getElementById('createTopicForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button'); 
+            btn.textContent = '...';
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            const data = {
+                user_id: user.id,
+                username: user.username,
+                category: document.getElementById('topic-category').value,
+                title: document.getElementById('topic-title').value,
+                content: document.getElementById('topic-content').value
+            };
+
+            try {
+                const res = await fetch('/api/forum/topics', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    closeModal();
+                    document.getElementById('createTopicForm').reset();
+                    loadTopics(); // Обновляем ленту
+                } else {
+                    alert('Error creating topic');
+                }
+            } catch (err) { console.error(err); }
+            btn.textContent = forumTranslations[currentLang].modalPublish;
+        });
+
+        // Initialization
+        window.onload = function() {
+            const user = localStorage.getItem('user');
+            applyTranslations();
+            if (user) {
+                try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); }
+            }
+        }
+
+        function logout() { localStorage.removeItem('user'); location.reload(); }
     </script>
 </body>
 </html>
