@@ -508,7 +508,9 @@
             repliesContainer.innerHTML = '';
 
             try {
-                const res = await fetch(`/api/forum/topic?id=${id}`);
+                const user = JSON.parse(localStorage.getItem('user'));
+                const userIdParam = user ? `&user_id=${user.id}` : '';
+                const res = await fetch(`/api/forum/topic?id=${id}${userIdParam}`);
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
                 
@@ -575,24 +577,33 @@
                         </div>
                     `;
                 }
+// Логика лайка
+        const likeClass = post.is_liked ? 'liked' : '';
+        const heartIcon = post.is_liked ? 'fas fa-heart' : 'far fa-heart';
 
-                const html = `
-                    <div class="reply-card">
-                        <div class="reply-avatar">${initial}</div>
-                        <div class="reply-body">
-                            <div class="reply-header">
-                                <div>
-                                    <span class="reply-username">${post.username}</span>
-                                    <span class="reply-date">${date}</span>
-                                </div>
-                                ${controls}
-                            </div>
-                            <div class="topic-content-text" style="font-size:14px;">${formatContent(post.content)}</div>
+        const html = `
+            <div class="reply-card">
+                <div class="reply-avatar">${initial}</div>
+                <div class="reply-body">
+                    <div class="reply-header">
+                        <div>
+                            <span class="reply-username">${post.username}</span>
+                            <span class="reply-date">${date}</span>
                         </div>
-                    </div>`;
-                container.insertAdjacentHTML('beforeend', html);
-            });
-        }
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button class="like-btn ${likeClass}" onclick="toggleLike(${post.id}, this)">
+                                <i class="${heartIcon}"></i> <span>${post.likes_count}</span>
+                            </button>
+                            ${controls}
+                        </div>
+                    </div>
+                    <div class="topic-content-text" style="font-size:14px;">${formatContent(post.content)}</div>
+                </div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+    });
+}
+        
 
         function closeTopic() {
             currentTopicId = null;
@@ -763,6 +774,41 @@
                 try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); }
             }
         }
+        // === 11. ЛАЙКИ ===
+async function toggleLike(postId, btn) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if(!user) { alert("Войдите, чтобы ставить лайки"); return; }
+
+    // Оптимистичный UI (сразу меняем вид, не дожидаясь сервера)
+    const icon = btn.querySelector('i');
+    const countSpan = btn.querySelector('span');
+    let currentCount = parseInt(countSpan.innerText);
+    const isLiked = btn.classList.contains('liked');
+
+    // Визуально переключаем сразу
+    btn.classList.toggle('liked');
+    icon.className = isLiked ? 'far fa-heart' : 'fas fa-heart'; // far - пустое, fas - полное
+    countSpan.innerText = isLiked ? currentCount - 1 : currentCount + 1;
+
+    try {
+        const res = await fetch('/api/forum/like', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ post_id: postId, user_id: user.id })
+        });
+        const data = await res.json();
+        
+        // Если сервер вернул ошибку, откатываем назад
+        if(!data.success) {
+            btn.classList.toggle('liked');
+            countSpan.innerText = currentCount;
+            alert("Ошибка лайка");
+        } else {
+            // Синхронизируем точное число с сервером
+            countSpan.innerText = data.count;
+        }
+    } catch(e) { console.error(e); }
+}
     </script>
 </body>
 </html>
