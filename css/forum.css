@@ -32,6 +32,34 @@
     top: 100px; /* Прилипает при скролле */
 }
 
+/* Кнопки управления (удалить/редактировать) */
+.post-controls {
+    display: flex;
+    gap: 10px;
+    opacity: 0.6;
+    transition: 0.2s;
+}
+.post-controls:hover { opacity: 1; }
+
+.control-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px;
+    color: var(--text-secondary);
+    transition: 0.2s;
+}
+.control-btn:hover { color: white; transform: scale(1.1); }
+.control-btn.delete:hover { color: #e74c3c; } /* Красный при наведении */
+.control-btn.edit:hover { color: #f1c40f; }   /* Желтый при наведении */
+
+/* Чтобы кнопки были справа в шапке поста */
+.reply-header, .topic-meta-header {
+    align-items: center; 
+    /* justify-content уже стоит space-between */
+}
+
 .user-mini-profile {
     text-align: center;
     border-bottom: 1px solid var(--glass-border);
