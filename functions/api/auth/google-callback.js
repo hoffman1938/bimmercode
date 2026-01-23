@@ -3,24 +3,9 @@ import { generateId } from '../../../lib/utils.js';
 import { generateToken } from '../../../lib/jwt.js';
 
 const TRANSLATIONS = {
-  en: {
-    invalid_state: "Invalid OAuth state",
-    token_exchange_failed: "Failed to exchange token",
-    user_info_failed: "Failed to get user info",
-    error: "Google authentication error"
-  },
-  ru: {
-    invalid_state: "Неверный OAuth state",
-    token_exchange_failed: "Ошибка при обмене токена",
-    user_info_failed: "Ошибка при получении данных пользователя",
-    error: "Ошибка Google аутентификации"
-  },
-  ka: {
-    invalid_state: "არასწორი OAuth state",
-    token_exchange_failed: "მოხდა შეცდომა token-ის გაცვლის დროს",
-    user_info_failed: "მოხდა შეცდომა მომხმარებელი ინფოს მიღებისას",
-    error: "Google აუთენტიფიკაციის შეცდომა"
-  }
+  en: { invalid_state: "Invalid OAuth state", token_exchange_failed: "Failed to exchange token", user_info_failed: "Failed to get user info", error: "Google authentication error" },
+  ru: { invalid_state: "Неверный OAuth state", token_exchange_failed: "Ошибка при обмене токена", user_info_failed: "Ошибка при получении данных пользователя", error: "Ошибка Google аутентификации" },
+  ka: { invalid_state: "არასწორი OAuth state", token_exchange_failed: "მოხდა შეცდომა token-ის გაცვლის დროს", user_info_failed: "მოხდა შეცდომა მომხმარებელი ინფოს მიღებისას", error: "Google აუთენტიფიკაციის შეცდომა" }
 };
 
 function t(key, lang = 'en') {
@@ -30,12 +15,14 @@ function t(key, lang = 'en') {
 function decodeJWT(token) {
   try {
     const parts = token.split('.');
-    if (parts.length !== 3) return null;
+    if (parts.length !== 3) {
+      console.error('JWT parts wrong:', parts.length);
+      return null;
+    }
     
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString('utf-8')
-    );
-    return payload;
+    // ✅ ИСПРАВЛЕНО: Более безопасный парсинг
+    const payload = atob(parts[1]);
+    return JSON.parse(payload);
   } catch (e) {
     console.error('JWT decode error:', e);
     return null;
@@ -49,19 +36,18 @@ export async function onRequestPost(context) {
     const env = context.env;
     const db = env.DB;
 
+    console.log('Google callback received, credential length:', credential?.length);
+
     if (!credential) {
-      return new Response(JSON.stringify({ 
-        error: t('invalid_state', language) 
-      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: t('invalid_state', language) }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     // Decode JWT from Google
     const payload = decodeJWT(credential);
     
     if (!payload || !payload.sub) {
-      return new Response(JSON.stringify({ 
-        error: t('invalid_state', language) 
-      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      console.error('JWT decode failed or no sub');
+      return new Response(JSON.stringify({ error: t('invalid_state', language) }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     const googleUser = {
@@ -71,6 +57,8 @@ export async function onRequestPost(context) {
       picture: payload.picture,
       email_verified: payload.email_verified
     };
+
+    console.log('Google user:', googleUser.email, googleUser.id);
 
     // Check if user exists
     let user = await db.prepare(
@@ -86,6 +74,8 @@ export async function onRequestPost(context) {
       // Create new user
       const userId = generateId();
       const username = googleUser.email.split('@')[0] + '_' + generateId().substring(0, 4);
+
+      console.log('Creating new user:', username);
 
       await db.prepare(
         `INSERT INTO users 
@@ -130,8 +120,6 @@ export async function onRequestPost(context) {
 
   } catch (error) {
     console.error('Google callback error:', error);
-    return new Response(JSON.stringify({ 
-      error: "Internal server error: " + error.message 
-    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ error: "Internal server error: " + error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
