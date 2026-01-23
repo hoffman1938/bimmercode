@@ -341,32 +341,52 @@
 
         function applyTranslations() {
             const t = forumTranslations[currentLang];
+            
             // Текст
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.innerText = t[key];
             });
-            // Категории
-            const options = document.getElementById('topic-category').options;
-            if(options.length > 0) {
-                options[0].text = t.cat_engine; options[1].text = t.cat_chassis;
-                options[2].text = t.cat_coding; options[3].text = t.cat_general;
-            }
-            document.getElementById('current-lang').innerText = currentLang.toUpperCase();
+            
+            // Current language
+            const langEl = document.getElementById('current-lang');
+            if(langEl) langEl.innerText = currentLang.toUpperCase();
 
-            // Плейсхолдеры
-            document.getElementById('forum-search').placeholder = t.ph_search;
-            document.getElementById('reply-input').placeholder = t.ph_reply;
-            document.getElementById('profile-car').placeholder = t.ph_car;
-            document.getElementById('profile-bio').placeholder = t.ph_bio;
-            document.getElementById('topic-title').placeholder = t.ph_topic_title;
-            document.getElementById('topic-content').placeholder = t.ph_topic_desc;
+            // Категории (только если element существует)
+            const categorySelect = document.getElementById('topic-category');
+            if(categorySelect && categorySelect.options && categorySelect.options.length > 0) {
+                categorySelect.options[0].text = t.cat_engine; 
+                categorySelect.options[1].text = t.cat_chassis;
+                categorySelect.options[2].text = t.cat_coding; 
+                categorySelect.options[3].text = t.cat_general;
+            }
+
+            // Плейсхолдеры (только если element существует)
+            const forumSearch = document.getElementById('forum-search');
+            if(forumSearch) forumSearch.placeholder = t.ph_search;
+            
+            const replyInput = document.getElementById('reply-input');
+            if(replyInput) replyInput.placeholder = t.ph_reply;
+            
+            const profileCar = document.getElementById('profile-car');
+            if(profileCar) profileCar.placeholder = t.ph_car;
+            
+            const profileBio = document.getElementById('profile-bio');
+            if(profileBio) profileBio.placeholder = t.ph_bio;
+            
+            const topicTitle = document.getElementById('topic-title');
+            if(topicTitle) topicTitle.placeholder = t.ph_topic_title;
+            
+            const topicContent = document.getElementById('topic-content');
+            if(topicContent) topicContent.placeholder = t.ph_topic_desc;
 
             // Уведомления (статичный текст)
             const notifHeader = document.getElementById('notif-header-title');
             if(notifHeader) notifHeader.innerText = t.n_header;
+            
             const notifReadBtn = document.getElementById('notif-read-all-btn');
             if(notifReadBtn) notifReadBtn.innerText = t.n_read_all;
+            
             const emptyMsg = document.getElementById('notif-empty-msg');
             if(emptyMsg) emptyMsg.innerText = t.n_empty;
         }
