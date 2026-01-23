@@ -491,6 +491,295 @@ function updateChatUI() {
 }
 
 // ==========================================
+// GOOGLE OAUTH & AUTHENTICATION
+// ==========================================
+
+// Инициализируй Google Identity Services
+function initializeGoogleAuth() {
+  google.accounts.id.initialize({
+    client_id: 'ТВЙ_GOOGLE_CLIENT_ID', // ЗАМЕНИ НА ТВОЙ CLIENT ID
+    callback: handleGoogleCallback
+  });
+}
+
+// Обработчик для кнопки Google Sign In
+function handleGoogleSignIn() {
+  google.accounts.id.renderButton(
+    document.createElement('div'),
+    { theme: 'outline', size: 'large' }
+  );
+
+  google.accounts.id.prompt((notification) => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      // Если prompt не показан, показываем выбор аккаунта
+      google.accounts.id.renderButton(
+        document.querySelector('.btn-google'),
+        { theme: 'outline', size: 'large', width: '100%' }
+      );
+    }
+  });
+}
+
+// Callback от Google с ID token
+async function handleGoogleCallback(response) {
+  const loadingMsg = document.getElementById('login-message') || document.getElementById('reg-message');
+  
+  if (loadingMsg) {
+    loadingMsg.textContent = 'Signing in...';
+    loadingMsg.style.color = '#6f9bd1';
+  }
+
+  try {
+    // Отправляем ID token на наш backend
+    const res = await fetch('/api/auth/google-callback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        credential: response.credential,
+        language: currentLanguage
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success && data.token) {
+      // Сохраняем токен и данные пользователя
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      if (loadingMsg) {
+        loadingMsg.textContent = 'Login successful! Redirecting...';
+        loadingMsg.style.color = '#2ecc71';
+      }
+
+      // Перенаправляем на форум через 500ms
+      setTimeout(() => {
+        location.reload();
+      }, 500);
+    } else {
+      if (loadingMsg) {
+        loadingMsg.textContent = data.error || 'Authentication failed';
+        loadingMsg.style.color = '#e74c3c';
+      }
+    }
+  } catch (error) {
+    console.error('Google auth error:', error);
+    if (loadingMsg) {
+      loadingMsg.textContent = 'Authentication error: ' + error.message;
+      loadingMsg.style.color = '#e74c3c';
+    }
+  }
+}
+
+// ОБРАБОТЧИКИ ФОРМ ЛОГИНА И РЕГИСТРАЦИИ
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  const messageDiv = document.getElementById('login-message');
+
+  messageDiv.textContent = 'Logging in...';
+  messageDiv.style.color = '#6f9bd1';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, language: currentLanguage })
+    });
+
+    const data = await res.json();
+
+    if (data.success && data.token) {
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      messageDiv.textContent = 'Login successful! Redirecting...';
+      messageDiv.style.color = '#2ecc71';
+
+      setTimeout(() => {
+        location.reload();
+      }, 500);
+    } else {
+      messageDiv.textContent = data.error || 'Login failed';
+      messageDiv.style.color = '#e74c3c';
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    messageDiv.textContent = 'Error: ' + error.message;
+    messageDiv.style.color = '#e74c3c';
+  }
+});
+
+document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const username = document.getElementById('reg-username').value;
+  const email = document.getElementById('reg-email').value;
+  const password = document.getElementById('reg-password').value;
+  const messageDiv = document.getElementById('reg-message');
+
+  // Простая валидация пароля
+  if (password.length < 8) {
+    messageDiv.textContent = 'Password must be at least 8 characters';
+    messageDiv.style.color = '#e74c3c';
+    return;
+  }
+
+  messageDiv.textContent = 'Creating account...';
+  messageDiv.style.color = '#6f9bd1';
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, username, language: currentLanguage })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      messageDiv.textContent = 'Registration successful! Check your email to verify your account.';
+      messageDiv.style.color = '#2ecc71';
+      document.getElementById('registerForm').reset();
+
+      // Автоматически переключаемся на логин
+      setTimeout(() => {
+        switchTab('login');
+      }, 2000);
+    } else {
+      messageDiv.textContent = data.error || 'Registration failed';
+      messageDiv.style.color = '#e74c3c';
+    }
+  } catch (error) {
+    console.error('Register error:', error);
+    messageDiv.textContent = 'Error: ' + error.message;
+    messageDiv.style.color = '#e74c3c';
+  }
+});
+
+// ПРОВЕРКА АВТОРИЗАЦИИ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
+function checkAuthOnLoad() {
+  const token = localStorage.getItem('authToken');
+  const user = localStorage.getItem('user');
+
+  if (token && user) {
+    // Пользователь авторизован, скрываем форму, показываем форум
+    const authSection = document.getElementById('auth-section');
+    const forumContent = document.getElementById('forum-content');
+
+    if (authSection) authSection.classList.add('hidden');
+    if (forumContent) forumContent.classList.remove('hidden');
+
+    const userData = JSON.parse(user);
+    document.getElementById('sidebar-username').textContent = userData.username || 'User';
+
+    // Загружаем данные форума
+    loadForumTopics();
+    loadNotifications();
+  }
+}
+
+// LOGOUT ФУНКЦИЯ
+function logout() {
+  if (confirm('Are you sure you want to logout?')) {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    location.reload();
+  }
+}
+
+// PROTECT API ЗАПРОСЫ - добавь Authorization header
+async function protectedFetch(endpoint, options = {}) {
+  const token = localStorage.getItem('authToken');
+
+  if (!token) {
+    window.location.href = window.location.pathname + '?logout=true';
+    return null;
+  }
+
+  const headers = {
+    ...options.headers,
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+
+  const response = await fetch(endpoint, {
+    ...options,
+    headers
+  });
+
+  // Если токен истёк (401), логаутим
+  if (response.status === 401) {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.reload();
+    return null;
+  }
+
+  return response;
+}
+
+// ИНИЦИАЛИЗАЦИЯ
+document.addEventListener('DOMContentLoaded', () => {
+  initializeGoogleAuth();
+  checkAuthOnLoad();
+  
+  // Обновляем текст кнопок Google в зависимости от языка
+  updateGoogleButtonText();
+});
+
+// ЛОКАЛИЗАЦИЯ GOOGLE КНОПОК
+function updateGoogleButtonText() {
+  const googleSignInText = document.getElementById('googleSignInText');
+  const googleSignUpText = document.getElementById('googleSignUpText');
+  
+  const translations = {
+    en: { signIn: 'Sign in with Google', signUp: 'Sign up with Google' },
+    ru: { signIn: 'Войти через Google', signUp: 'Зарегистрироваться через Google' },
+    ka: { signIn: 'შესვლა Google-ის მეშვეობით', signUp: 'რეგისტრაცია Google-ის მეშვეობით' }
+  };
+
+  const text = translations[currentLanguage];
+  if (googleSignInText) googleSignInText.textContent = text.signIn;
+  if (googleSignUpText) googleSignUpText.textContent = text.signUp;
+}
+
+// Когда меняется язык, обновляем текст Google кнопок
+const originalToggleLanguage = window.toggleLanguage;
+window.toggleLanguage = function() {
+  if (originalToggleLanguage) originalToggleLanguage();
+  updateGoogleButtonText();
+};
+
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: отправка запросов к API с токеном
+async function apiCall(method, endpoint, body = null) {
+  const token = localStorage.getItem('authToken');
+
+  const options = {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  };
+
+  if (body) options.body = JSON.stringify(body);
+
+  const response = await fetch(endpoint, options);
+
+  if (response.status === 401) {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.reload();
+    return null;
+  }
+
+  return response.json();
+}
+
+// ==========================================
 // 4. MAIN LOGIC (INIT & SEARCH)
 // ==========================================
 
