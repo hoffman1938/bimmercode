@@ -234,9 +234,19 @@
     padding: 0 15px;
     margin-top: 15px;
     width: 100%;
-    border-radius: 0; /* Убираем скругления контейнера на мобильных для экономии места */
-    border-left: none;
-    border-right: none;
+    
+    /* --- ФИКС ДЛЯ IPHONE (Убираем серую пелену) --- */
+    border-radius: 0;
+    border: none !important;
+    
+    /* Делаем главный контейнер полностью прозрачным на мобильных, 
+       чтобы был виден 3D фон */
+    background: transparent !important; 
+    box-shadow: none !important;
+    
+    /* Отключаем тяжелый эффект размытия для контейнера на моб */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important; 
   }
 
   #code-detail {
