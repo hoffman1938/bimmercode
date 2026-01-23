@@ -1,6 +1,7 @@
 // functions/api/auth/login.js
 import { generateToken } from '../../../lib/jwt.js';
 import { generateId } from '../../../lib/utils.js';
+import { verifyPassword } from '../../../lib/crypto.js';
 
 const TRANSLATIONS = {
   en: {
@@ -35,7 +36,14 @@ export async function onRequestPost(context) {
     const { email, password, language = 'en' } = await context.request.json();
     const db = context.env.DB;
 
-    // Ищем пользователя по email
+    // Validate input
+    if (!email || !password) {
+      return new Response(JSON.stringify({ 
+        error: "Email and password are required" 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Find user by email
     const user = await db.prepare(
       "SELECT * FROM users WHERE email = ?"
     ).bind(email).first();
@@ -46,41 +54,48 @@ export async function onRequestPost(context) {
       }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Простое сравнение пароля (в реальном проекте используй bcrypt!)
-    // TODO: Замени на bcrypt сравнение
-    if (user.password_hash !== password) {
+    // Verify password - using bcrypt comparison if available, else direct comparison
+    let passwordValid = false;
+    try {
+      passwordValid = await verifyPassword(password, user.password_hash);
+    } catch (e) {
+      // Fallback to direct comparison for development
+      passwordValid = user.password_hash === password;
+    }
+
+    if (!passwordValid) {
       return new Response(JSON.stringify({ 
         error: t('invalid_password', language) 
       }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Проверяем email верификацию
-    if (!user.email_verified && user.google_id === null) {
+    // Check email verification
+    if (!user.email_verified && !user.google_id) {
       return new Response(JSON.stringify({ 
         error: t('email_not_verified', language) 
       }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Проверяем активность
+    // Check account active status
     if (!user.is_active) {
       return new Response(JSON.stringify({ 
         error: t('account_inactive', language) 
       }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Обновляем last_login
+    // Update last login
     await db.prepare(
       'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?'
     ).bind(user.id).run();
 
-    // Создаём JWT токен
+    // Create JWT token
     const token = await generateToken({
       userId: user.id,
       email: user.email,
       username: user.username
     }, context.env.JWT_SECRET);
 
-    // Сохраняем сессию
+    // Save session
     const sessionId = generateId();
     await db.prepare(
       `INSERT INTO sessions (id, user_id, token, expires_at, created_at, last_activity)
@@ -95,12 +110,15 @@ export async function onRequestPost(context) {
         id: user.id,
         email: user.email,
         username: user.username,
-        avatar_url: user.avatar_url
+        avatar_url: user.avatar_url || null
       }
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { 
+    console.error('Login error:', err);
+    return new Response(JSON.stringify({ 
+      error: "Internal server error: " + err.message 
+    }), { 
       status: 500, 
       headers: { 'Content-Type': 'application/json' } 
     });

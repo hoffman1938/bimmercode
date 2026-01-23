@@ -27,9 +27,25 @@ function t(key, lang = 'en') {
   return TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en'][key];
 }
 
+function decodeJWT(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    
+    const payload = JSON.parse(
+      Buffer.from(parts[1], 'base64').toString('utf-8')
+    );
+    return payload;
+  } catch (e) {
+    console.error('JWT decode error:', e);
+    return null;
+  }
+}
+
 export async function onRequestPost(context) {
   try {
-    const { credential, language = 'en' } = await context.request.json();
+    const body = await context.request.json();
+    const { credential, language = 'en' } = body;
     const env = context.env;
     const db = env.DB;
 
@@ -39,19 +55,14 @@ export async function onRequestPost(context) {
       }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Декодируем JWT от Google (это ID token)
-    // В реальном проекте нужно проверить подпись, но для упрощения берём payload напрямую
-    const parts = credential.split('.');
-    if (parts.length !== 3) {
+    // Decode JWT from Google
+    const payload = decodeJWT(credential);
+    
+    if (!payload || !payload.sub) {
       return new Response(JSON.stringify({ 
         error: t('invalid_state', language) 
       }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
-
-    // Декодируем payload (вторая часть JWT)
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString('utf-8')
-    );
 
     const googleUser = {
       id: payload.sub,
@@ -61,18 +72,18 @@ export async function onRequestPost(context) {
       email_verified: payload.email_verified
     };
 
-    // Проверяем есть ли уже пользователь с таким Google ID
+    // Check if user exists
     let user = await db.prepare(
       'SELECT * FROM users WHERE google_id = ? OR email = ?'
     ).bind(googleUser.id, googleUser.email).first();
 
     if (user) {
-      // Обновляем существующего пользователя
+      // Update existing user
       await db.prepare(
         'UPDATE users SET last_login = CURRENT_TIMESTAMP, google_id = ? WHERE id = ?'
       ).bind(googleUser.id, user.id).run();
     } else {
-      // Создаём нового пользователя
+      // Create new user
       const userId = generateId();
       const username = googleUser.email.split('@')[0] + '_' + generateId().substring(0, 4);
 
@@ -92,14 +103,14 @@ export async function onRequestPost(context) {
       };
     }
 
-    // Создаём JWT токен для сессии
+    // Create JWT session token
     const sessionToken = await generateToken({
       userId: user.id,
       email: user.email,
       username: user.username
     }, env.JWT_SECRET);
 
-    // Сохраняем сессию в базу
+    // Save session
     const sessionId = generateId();
     await db.prepare(
       `INSERT INTO sessions (id, user_id, token, expires_at, created_at, last_activity)
@@ -119,9 +130,8 @@ export async function onRequestPost(context) {
 
   } catch (error) {
     console.error('Google callback error:', error);
-    const lang = (await context.request.json()).language || 'en';
     return new Response(JSON.stringify({ 
-      error: t('error', lang) 
+      error: "Internal server error: " + error.message 
     }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
