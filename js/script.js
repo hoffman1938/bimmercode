@@ -497,7 +497,7 @@ function updateChatUI() {
 // Инициализируй Google Identity Services
 function initializeGoogleAuth() {
   google.accounts.id.initialize({
-    client_id: 'ТВЙ_GOOGLE_CLIENT_ID', // ЗАМЕНИ НА ТВОЙ CLIENT ID
+    client_id: '855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com', // ЗАМЕНИ НА ТВОЙ CLIENT ID
     callback: handleGoogleCallback
   });
 }
