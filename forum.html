@@ -123,14 +123,27 @@
                         </div>
                     </div>
                     <nav class="nav-menu">
-                        <a href="#" class="nav-item active" onclick="filterCategory('all', this)"><i class="fas fa-th-large"></i> <span data-i18n="navOverview">Overview</span></a>
-                        <a href="#" class="nav-item" onclick="filterCategory('all', this)"><i class="fas fa-fire"></i> <span data-i18n="navPopular">Popular</span></a>
-                        <a href="#" class="nav-item" onclick="filterCategory('engine', this)"><i class="fas fa-cogs"></i> <span data-i18n="cat_engine">Engine</span></a>
-                        <a href="#" class="nav-item" onclick="filterCategory('chassis', this)"><i class="fas fa-car-crash"></i> <span data-i18n="cat_chassis">Chassis</span></a>
-                        <a href="#" class="nav-item" onclick="filterCategory('coding', this)"><i class="fas fa-laptop-code"></i> <span data-i18n="cat_coding">Coding</span></a>
-                        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
-                        <button onclick="logout()" class="nav-item" style="background:none; border:none; width:100%; cursor:pointer; text-align: left; padding-left: 15px;"><i class="fas fa-sign-out-alt" style="color: #e74c3c;"></i> <span data-i18n="navLogout">Logout</span></button>
-                    </nav>
+                        <a href="vin.html" class="nav-item">
+    <i class="fas fa-barcode"></i> <span>VIN Decoder</span>
+</a>
+    <a href="index.html" class="nav-item" style="color: #6f9bd1; border: 1px solid rgba(111, 155, 209, 0.2); background: rgba(111, 155, 209, 0.05);">
+        <i class="fas fa-microchip"></i> <span data-i18n="navDiagnostics">Diagnostics</span>
+    </a>
+
+    <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+
+    <a href="#" class="nav-item active" onclick="filterCategory('all', this)"><i class="fas fa-th-large"></i> <span data-i18n="navOverview">Overview</span></a>
+    <a href="#" class="nav-item" onclick="filterCategory('all', this)"><i class="fas fa-fire"></i> <span data-i18n="navPopular">Popular</span></a>
+    
+    <a href="#" class="nav-item" onclick="filterCategory('engine', this)"><i class="fas fa-cogs"></i> <span data-i18n="cat_engine">Engine</span></a>
+    <a href="#" class="nav-item" onclick="filterCategory('chassis', this)"><i class="fas fa-car-crash"></i> <span data-i18n="cat_chassis">Chassis</span></a>
+    <a href="#" class="nav-item" onclick="filterCategory('coding', this)"><i class="fas fa-laptop-code"></i> <span data-i18n="cat_coding">Coding</span></a>
+    
+    <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+    <button onclick="logout()" class="nav-item" style="background:none; border:none; width:100%; cursor:pointer; text-align: left; padding-left: 15px;">
+        <i class="fas fa-sign-out-alt" style="color: #e74c3c;"></i> <span data-i18n="navLogout">Logout</span>
+    </button>
+</nav>
                 </div>
             </aside>
 
@@ -210,6 +223,7 @@
         // === ПЕРЕВОДЫ (ПОЛНЫЕ) ===
         const forumTranslations = {
             ru: {
+                navDiagnostics: "Диагностика (Поиск кодов)",
                 brandName: "BMW Сообщество", homeBtn: "Главная", loginTab: "Вход", regTab: "Регистрация",
                 emailLabel: "Email", passLabel: "Пароль", userLabel: "Никнейм", loginBtn: "Войти", regBtn: "Создать аккаунт",
                 roleMember: "Участник клуба", statPosts: "Посты", statLikes: "Лайки",
@@ -227,6 +241,7 @@
                 n_reply: "<b>{user}</b> ответил в теме \"{topic}\"", n_like: "Кто-то оценил ваш пост в \"{topic}\"", n_solve: "Ваш ответ отмечен как решение!"
             },
             en: {
+                navDiagnostics: "Diagnostics (Code Search)",
                 brandName: "BMW Community", homeBtn: "Home", loginTab: "Login", regTab: "Register",
                 emailLabel: "Email", passLabel: "Password", userLabel: "Username", loginBtn: "Log In", regBtn: "Create Account",
                 roleMember: "Club Member", statPosts: "Posts", statLikes: "Likes",
@@ -244,6 +259,7 @@
                 n_reply: "<b>{user}</b> replied in \"{topic}\"", n_like: "Someone liked your post in \"{topic}\"", n_solve: "Your answer marked as solution!"
             },
             ka: {
+                navDiagnostics: "დიაგნოსტიკა (კოდები)",
                 brandName: "BMW კლუბი", homeBtn: "მთავარი", loginTab: "შესვლა", regTab: "რეგისტრაცია",
                 emailLabel: "ელ-ფოსტა", passLabel: "პაროლი", userLabel: "მეტსახელი", loginBtn: "შესვლა", regBtn: "ანგარიშის შექმნა",
                 roleMember: "კლუბის წევრი", statPosts: "პოსტები", statLikes: "მოწონება",
