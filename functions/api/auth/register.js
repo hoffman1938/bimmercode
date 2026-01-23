@@ -1,32 +1,118 @@
 // functions/api/auth/register.js
+import { generateId } from '../../../lib/utils.js';
+import { hashPassword } from '../../../lib/crypto.js';
+import { sendVerificationEmail } from '../../../lib/email.js';
+
+const TRANSLATIONS = {
+  en: {
+    missing_data: "Missing required fields",
+    invalid_email: "Invalid email format",
+    email_exists: "Email already registered",
+    username_taken: "Username already taken",
+    weak_password: "Password must be at least 8 characters",
+    registration_success: "Registration successful. Check your email to verify.",
+    error: "Registration error"
+  },
+  ru: {
+    missing_data: "Заполните все поля",
+    invalid_email: "Неверный формат email",
+    email_exists: "Email уже зарегистрирован",
+    username_taken: "Имя пользователя уже занято",
+    weak_password: "Пароль должен быть минимум 8 символов",
+    registration_success: "Регистрация успешна. Проверьте email для подтверждения.",
+    error: "Ошибка регистрации"
+  },
+  ka: {
+    missing_data: "შეავსეთ ყველა ველი",
+    invalid_email: "არასწორი ელფოსტის ფორმატი",
+    email_exists: "ეს ელფოსტა უკვე დაფიქსირებულია",
+    username_taken: "ეს მომხმარებელი სახელი უკვე დაკავებულია",
+    weak_password: "პაროლი უნდა იყოს მინიმუმ 8 სიმბოლო",
+    registration_success: "რეგისტრაცია წარმატებული. შეამოწმეთ ელფოსტა დასადასტურებლად.",
+    error: "რეგისტრაციის შეცდომა"
+  }
+};
+
+function t(key, lang = 'en') {
+  return TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en'][key];
+}
+
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
 
 export async function onRequestPost(context) {
   try {
-    // 1. Получаем данные от пользователя
-    const { email, password, username } = await context.request.json();
-    const db = context.env.DB; // Доступ к базе D1
+    const { email, password, username, language = 'en' } = await context.request.json();
+    const db = context.env.DB;
 
-    // 2. Простая валидация
+    // Валидация данных
     if (!email || !password || !username) {
-      return new Response(JSON.stringify({ error: "Missing data" }), { status: 400 });
+      return new Response(JSON.stringify({ 
+        error: t('missing_data', language) 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // 3. ПРЕДУПРЕЖДЕНИЕ: В реальном проекте пароли нужно хешировать!
-    // Для примера сохраняем как есть (но в продакшене используйте bcryptjs)
-    // const passwordHash = await hashPassword(password); 
-    
-    // 4. Записываем в базу
-    const result = await db.prepare(
-      "INSERT INTO users (email, password_hash, username) VALUES (?, ?, ?)"
-    ).bind(email, password, username).run();
-
-    if (!result.success) {
-      return new Response(JSON.stringify({ error: "User already exists" }), { status: 409 });
+    if (!validateEmail(email)) {
+      return new Response(JSON.stringify({ 
+        error: t('invalid_email', language) 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    return new Response(JSON.stringify({ message: "User created!" }), { status: 201 });
+    if (password.length < 8) {
+      return new Response(JSON.stringify({ 
+        error: t('weak_password', language) 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Проверяем дублирование email
+    const existingEmail = await db.prepare(
+      "SELECT id FROM users WHERE email = ?"
+    ).bind(email).first();
+
+    if (existingEmail) {
+      return new Response(JSON.stringify({ 
+        error: t('email_exists', language) 
+      }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Проверяем дублирование username
+    const existingUsername = await db.prepare(
+      "SELECT id FROM users WHERE username = ?"
+    ).bind(username).first();
+
+    if (existingUsername) {
+      return new Response(JSON.stringify({ 
+        error: t('username_taken', language) 
+      }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Создаём пользователя
+    const userId = generateId();
+    const passwordHash = await hashPassword(password);
+    const verificationToken = generateId();
+
+    await db.prepare(
+      `INSERT INTO users 
+       (id, email, username, password_hash, verification_token, email_verified, created_at, is_active)
+       VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, 1)`
+    ).bind(userId, email, username, passwordHash, verificationToken).run();
+
+    // Отправляем письмо верификации
+    const verificationLink = `${context.env.APP_URL}/forum.html?verify_token=${verificationToken}`;
+    await sendVerificationEmail(email, verificationLink, language, context.env);
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: t('registration_success', language),
+      user_id: userId
+    }), { status: 201, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    console.error('Registration error:', err);
+    return new Response(JSON.stringify({ 
+      error: t('error', (await context.request.json()).language || 'en') 
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
