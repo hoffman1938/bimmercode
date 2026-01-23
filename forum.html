@@ -397,6 +397,9 @@
         async function handleLogin(e) {
             e.preventDefault();
             const msgEl = document.getElementById('login-message');
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
             msgEl.style.color = '#6f9bd1';
             msgEl.innerText = 'Signing in...';
             
@@ -405,14 +408,16 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: document.getElementById('login-email').value,
-                        password: document.getElementById('login-password').value,
+                        email: email,
+                        password: password,
                         language: currentLang
                     })
                 });
-                const result = await res.json();
                 
-                if (res.ok && result.token) {
+                const result = await res.json();
+                console.log('Login response:', res.status, result);
+                
+                if (res.ok && result.token && result.user) {
                     const userData = {
                         id: result.user.id,
                         email: result.user.email,
@@ -423,14 +428,17 @@
                     localStorage.setItem('user', JSON.stringify(userData));
                     msgEl.style.color = '#2ecc71';
                     msgEl.innerText = '✓ Login successful!';
+                    document.getElementById('login-email').value = '';
+                    document.getElementById('login-password').value = '';
                     setTimeout(() => showForum(result.user), 500);
                 } else {
                     msgEl.style.color = '#e74c3c';
-                    msgEl.innerText = result.error || 'Login failed';
+                    msgEl.innerText = result.error || `Login failed (${res.status})`;
+                    console.log('Login failed:', email, res.status);
                 }
             } catch (err) {
                 msgEl.style.color = '#e74c3c';
-                msgEl.innerText = 'Error: ' + err.message;
+                msgEl.innerText = 'Network error: ' + err.message;
                 console.error('Login error:', err);
             }
         }
@@ -438,6 +446,10 @@
         async function handleRegister(e) {
             e.preventDefault();
             const msgEl = document.getElementById('reg-message');
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            
             msgEl.style.color = '#6f9bd1';
             msgEl.innerText = 'Creating account...';
             
@@ -446,26 +458,31 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        username: document.getElementById('reg-username').value,
-                        email: document.getElementById('reg-email').value,
-                        password: document.getElementById('reg-password').value,
+                        username: username,
+                        email: email,
+                        password: password,
                         language: currentLang
                     })
                 });
-                const result = await res.json();
                 
-                if (res.ok) {
+                const result = await res.json();
+                console.log('Register response:', res.status, result);
+                
+                if (res.ok || res.status === 201) {
                     msgEl.style.color = '#2ecc71';
-                    msgEl.innerText = result.message || '✓ Registration successful! Check email to verify.';
+                    msgEl.innerText = result.message || '✓ Account created! Check email to verify.';
                     document.getElementById('registerForm').reset();
                     setTimeout(() => switchTab('login'), 2000);
+                } else if (res.status === 409) {
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.innerText = 'Email or username already exists';
                 } else {
                     msgEl.style.color = '#e74c3c';
-                    msgEl.innerText = result.error || 'Registration failed';
+                    msgEl.innerText = result.error || `Registration failed (${res.status})`;
                 }
             } catch (err) {
                 msgEl.style.color = '#e74c3c';
-                msgEl.innerText = 'Error: ' + err.message;
+                msgEl.innerText = 'Network error: ' + err.message;
                 console.error('Register error:', err);
             }
         }
@@ -822,6 +839,12 @@
                 msgEl.innerText = 'Signing in with Google...';
             }
 
+            if (!response.credential) {
+                if (msgEl) msgEl.innerText = 'No credential from Google';
+                console.error('No credential from Google');
+                return;
+            }
+
             try {
                 const res = await fetch('/api/auth/google-callback', {
                     method: 'POST',
@@ -833,8 +856,9 @@
                 });
 
                 const data = await res.json();
+                console.log('Google callback response:', res.status, data);
 
-                if (res.ok && data.token) {
+                if (res.ok && data.token && data.user) {
                     const userData = {
                         id: data.user.id,
                         email: data.user.email,
@@ -852,13 +876,14 @@
                 } else {
                     if (msgEl) {
                         msgEl.style.color = '#e74c3c';
-                        msgEl.innerText = data.error || 'Google auth failed';
+                        msgEl.innerText = data.error || `Google auth failed (${res.status})`;
                     }
+                    console.log('Google auth failed:', res.status, data);
                 }
             } catch (err) {
                 if (msgEl) {
                     msgEl.style.color = '#e74c3c';
-                    msgEl.innerText = 'Error: ' + err.message;
+                    msgEl.innerText = 'Network error: ' + err.message;
                 }
                 console.error('Google callback error:', err);
             }
