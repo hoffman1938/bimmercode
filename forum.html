@@ -384,46 +384,87 @@
             }
         }
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        // === AUTH HANDLERS ===
+        function setupAuthHandlers() {
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+        }
+
+        async function handleLogin(e) {
             e.preventDefault();
+            const msgEl = document.getElementById('login-message');
+            msgEl.style.color = '#6f9bd1';
+            msgEl.innerText = 'Signing in...';
+            
             try {
                 const res = await fetch('/api/auth/login', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: document.getElementById('login-email').value,
-                        password: document.getElementById('login-password').value
+                        password: document.getElementById('login-password').value,
+                        language: currentLang
                     })
                 });
                 const result = await res.json();
-                if (res.ok) {
-                    localStorage.setItem('user', JSON.stringify(result.user));
-                    showForum(result.user);
-                } else { document.getElementById('login-message').innerText = result.error; }
-            } catch (err) { document.getElementById('login-message').innerText = "Error"; }
-        });
+                
+                if (res.ok && result.token) {
+                    const userData = {
+                        id: result.user.id,
+                        email: result.user.email,
+                        username: result.user.username,
+                        avatar_url: result.user.avatar_url || null,
+                        token: result.token
+                    };
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    msgEl.style.color = '#2ecc71';
+                    msgEl.innerText = '✓ Login successful!';
+                    setTimeout(() => showForum(result.user), 500);
+                } else {
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.innerText = result.error || 'Login failed';
+                }
+            } catch (err) {
+                msgEl.style.color = '#e74c3c';
+                msgEl.innerText = 'Error: ' + err.message;
+                console.error('Login error:', err);
+            }
+        }
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        async function handleRegister(e) {
             e.preventDefault();
+            const msgEl = document.getElementById('reg-message');
+            msgEl.style.color = '#6f9bd1';
+            msgEl.innerText = 'Creating account...';
+            
             try {
                 const res = await fetch('/api/auth/register', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         username: document.getElementById('reg-username').value,
                         email: document.getElementById('reg-email').value,
-                        password: document.getElementById('reg-password').value
+                        password: document.getElementById('reg-password').value,
+                        language: currentLang
                     })
                 });
+                const result = await res.json();
+                
                 if (res.ok) {
-                    document.getElementById('reg-message').style.color = '#2ecc71';
-                    document.getElementById('reg-message').innerText = "OK!";
-                    setTimeout(() => switchTab('login'), 1000);
+                    msgEl.style.color = '#2ecc71';
+                    msgEl.innerText = result.message || '✓ Registration successful! Check email to verify.';
+                    document.getElementById('registerForm').reset();
+                    setTimeout(() => switchTab('login'), 2000);
                 } else {
-                    const result = await res.json();
-                    document.getElementById('reg-message').style.color = '#e74c3c';
-                    document.getElementById('reg-message').innerText = result.error;
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.innerText = result.error || 'Registration failed';
                 }
-            } catch (err) { console.error(err); }
-        });
+            } catch (err) {
+                msgEl.style.color = '#e74c3c';
+                msgEl.innerText = 'Error: ' + err.message;
+                console.error('Register error:', err);
+            }
+        }
 
         // === ОСНОВА ===
         function showForum(user) {
@@ -752,14 +793,99 @@
         }
         setInterval(checkNotifications, 5000); // 5 сек для Live
 
+        // === GOOGLE AUTH HANDLERS ===
+        function handleGoogleSignIn() {
+            if (typeof google === 'undefined') {
+                alert('Google Sign-In is not available');
+                return;
+            }
+            google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                    console.log('Google Sign-In prompt not displayed');
+                }
+            });
+        }
+
+        async function handleGoogleCallback(response) {
+            const activeForm = document.querySelector('.auth-form.active');
+            const msgEl = activeForm ? activeForm.querySelector('[id$="-message"]') : document.getElementById('login-message');
+            
+            if (msgEl) {
+                msgEl.style.color = '#6f9bd1';
+                msgEl.innerText = 'Signing in with Google...';
+            }
+
+            try {
+                const res = await fetch('/api/auth/google-callback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        credential: response.credential,
+                        language: currentLang
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.token) {
+                    const userData = {
+                        id: data.user.id,
+                        email: data.user.email,
+                        username: data.user.username,
+                        avatar_url: data.user.avatar_url || null,
+                        token: data.token
+                    };
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    
+                    if (msgEl) {
+                        msgEl.style.color = '#2ecc71';
+                        msgEl.innerText = '✓ Welcome!';
+                    }
+                    setTimeout(() => showForum(data.user), 500);
+                } else {
+                    if (msgEl) {
+                        msgEl.style.color = '#e74c3c';
+                        msgEl.innerText = data.error || 'Google auth failed';
+                    }
+                }
+            } catch (err) {
+                if (msgEl) {
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.innerText = 'Error: ' + err.message;
+                }
+                console.error('Google callback error:', err);
+            }
+        }
+
         // === START ===
         window.onload = function() {
-            const user = localStorage.getItem('user');
-            applyTranslations(); 
-            if (user) { try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); } }
-        }
+            // Check if user already logged in
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    showForum(user);
+                    return;
+                } catch(e) {
+                    localStorage.removeItem('user');
+                }
+            }
+
+            // Apply translations to auth screen
+            applyTranslations();
+
+            // Setup auth form handlers
+            setupAuthHandlers();
+
+            // Init Google Auth
+            if (typeof google !== 'undefined') {
+                google.accounts.id.initialize({
+                    client_id: '855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com',
+                    callback: handleGoogleCallback
+                });
+            }
+        };
     </script>
     <script src="./js/live.js"></script>
-    <script src="./js/script.js"></script>
 </body>
 </html>

@@ -47,7 +47,7 @@ export async function onRequestPost(context) {
     const { email, password, username, language = 'en' } = await context.request.json();
     const db = context.env.DB;
 
-    // Валидация данных
+    // Validate data
     if (!email || !password || !username) {
       return new Response(JSON.stringify({ 
         error: t('missing_data', language) 
@@ -66,7 +66,7 @@ export async function onRequestPost(context) {
       }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Проверяем дублирование email
+    // Check duplicate email
     const existingEmail = await db.prepare(
       "SELECT id FROM users WHERE email = ?"
     ).bind(email).first();
@@ -77,7 +77,7 @@ export async function onRequestPost(context) {
       }), { status: 409, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Проверяем дублирование username
+    // Check duplicate username
     const existingUsername = await db.prepare(
       "SELECT id FROM users WHERE username = ?"
     ).bind(username).first();
@@ -88,7 +88,7 @@ export async function onRequestPost(context) {
       }), { status: 409, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Создаём пользователя
+    // Create user
     const userId = generateId();
     const passwordHash = await hashPassword(password);
     const verificationToken = generateId();
@@ -99,9 +99,14 @@ export async function onRequestPost(context) {
        VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, 1)`
     ).bind(userId, email, username, passwordHash, verificationToken).run();
 
-    // Отправляем письмо верификации
-    const verificationLink = `${context.env.APP_URL}/forum.html?verify_token=${verificationToken}`;
-    await sendVerificationEmail(email, verificationLink, language, context.env);
+    // Send verification email
+    try {
+      const verificationLink = `${context.env.APP_URL}/forum.html?verify_token=${verificationToken}`;
+      await sendVerificationEmail(email, verificationLink, language, context.env);
+    } catch (emailErr) {
+      console.error('Email send error:', emailErr);
+      // Continue anyway - email might fail but registration is complete
+    }
 
     return new Response(JSON.stringify({
       success: true,
@@ -112,7 +117,7 @@ export async function onRequestPost(context) {
   } catch (err) {
     console.error('Registration error:', err);
     return new Response(JSON.stringify({ 
-      error: t('error', (await context.request.json()).language || 'en') 
+      error: "Internal server error: " + err.message 
     }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
