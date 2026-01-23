@@ -504,20 +504,20 @@ function initializeGoogleAuth() {
 
 // Обработчик для кнопки Google Sign In
 function handleGoogleSignIn() {
-  google.accounts.id.renderButton(
-    document.createElement('div'),
-    { theme: 'outline', size: 'large' }
-  );
+  console.log('Google Sign In clicked');
+  
+  if (typeof google === 'undefined') {
+    alert('Google Sign-In is not available');
+    return;
+  }
 
-  google.accounts.id.prompt((notification) => {
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      // Если prompt не показан, показываем выбор аккаунта
-      google.accounts.id.renderButton(
-        document.querySelector('.btn-google'),
-        { theme: 'outline', size: 'large', width: '100%' }
-      );
-    }
-  });
+  try {
+    google.accounts.id.prompt((notification) => {
+      console.log('Prompt:', notification);
+    });
+  } catch (e) {
+    console.error('Error:', e);
+  }
 }
 
 // Callback от Google с ID token
@@ -990,6 +990,99 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+// Настройка слушателей для форм
+function setupLoginForm() {
+  const loginForm = document.getElementById('loginForm');
+  if (!loginForm) return;
 
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const messageDiv = document.getElementById('login-message');
+
+    if (messageDiv) messageDiv.textContent = 'Logging in...';
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, language: currentLanguage || 'en' })
+      });
+      const data = await res.json();
+      
+      if (data.success && data.token) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        if (messageDiv) messageDiv.textContent = 'Login successful!';
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        if (messageDiv) messageDiv.textContent = data.error || 'Login failed';
+      }
+    } catch (error) {
+      if (messageDiv) messageDiv.textContent = 'Error: ' + error.message;
+    }
+  });
+}
+
+function setupRegisterForm() {
+  const registerForm = document.getElementById('registerForm');
+  if (!registerForm) return;
+
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('reg-username').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const messageDiv = document.getElementById('reg-message');
+
+    if (password.length < 8) {
+      if (messageDiv) messageDiv.textContent = 'Password must be 8+ chars';
+      return;
+    }
+
+    if (messageDiv) messageDiv.textContent = 'Creating account...';
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, username, language: currentLanguage || 'en' })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        if (messageDiv) messageDiv.textContent = 'Check your email!';
+        registerForm.reset();
+      } else {
+        if (messageDiv) messageDiv.textContent = data.error || 'Registration failed';
+      }
+    } catch (error) {
+      if (messageDiv) messageDiv.textContent = 'Error: ' + error.message;
+    }
+  });
+}
+
+function initAuthSystem() {
+  console.log('Initializing auth...');
+  
+  if (typeof google !== 'undefined') {
+    google.accounts.id.initialize({
+      client_id: '855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com',
+      callback: handleGoogleCallback
+    });
+  }
+  
+  setupLoginForm();
+  setupRegisterForm();
+  checkAuthOnLoad();
+}
+
+// Запусти при загрузке
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAuthSystem);
+} else {
+  initAuthSystem();
+}
 // Запускаем
 init();
