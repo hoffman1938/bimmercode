@@ -352,43 +352,27 @@
             const langEl = document.getElementById('current-lang');
             if(langEl) langEl.innerText = currentLang.toUpperCase();
 
-            // Категории (только если element существует)
+            // Категории - с безопасными проверками
             const categorySelect = document.getElementById('topic-category');
-            if(categorySelect && categorySelect.options && categorySelect.options.length > 0) {
-                categorySelect.options[0].text = t.cat_engine; 
-                categorySelect.options[1].text = t.cat_chassis;
-                categorySelect.options[2].text = t.cat_coding; 
-                categorySelect.options[3].text = t.cat_general;
+            if(categorySelect && categorySelect.options) {
+                if(categorySelect.options.length > 0) categorySelect.options[0].text = t.cat_engine;
+                if(categorySelect.options.length > 1) categorySelect.options[1].text = t.cat_chassis;
+                if(categorySelect.options.length > 2) categorySelect.options[2].text = t.cat_coding;
+                if(categorySelect.options.length > 3) categorySelect.options[3].text = t.cat_general;
             }
 
-            // Плейсхолдеры (только если element существует)
-            const forumSearch = document.getElementById('forum-search');
-            if(forumSearch) forumSearch.placeholder = t.ph_search;
-            
-            const replyInput = document.getElementById('reply-input');
-            if(replyInput) replyInput.placeholder = t.ph_reply;
-            
-            const profileCar = document.getElementById('profile-car');
-            if(profileCar) profileCar.placeholder = t.ph_car;
-            
-            const profileBio = document.getElementById('profile-bio');
-            if(profileBio) profileBio.placeholder = t.ph_bio;
-            
-            const topicTitle = document.getElementById('topic-title');
-            if(topicTitle) topicTitle.placeholder = t.ph_topic_title;
-            
-            const topicContent = document.getElementById('topic-content');
-            if(topicContent) topicContent.placeholder = t.ph_topic_desc;
+            // Плейсхолдеры
+            if(document.getElementById('forum-search')) document.getElementById('forum-search').placeholder = t.ph_search;
+            if(document.getElementById('reply-input')) document.getElementById('reply-input').placeholder = t.ph_reply;
+            if(document.getElementById('profile-car')) document.getElementById('profile-car').placeholder = t.ph_car;
+            if(document.getElementById('profile-bio')) document.getElementById('profile-bio').placeholder = t.ph_bio;
+            if(document.getElementById('topic-title')) document.getElementById('topic-title').placeholder = t.ph_topic_title;
+            if(document.getElementById('topic-content')) document.getElementById('topic-content').placeholder = t.ph_topic_desc;
 
-            // Уведомления (статичный текст)
-            const notifHeader = document.getElementById('notif-header-title');
-            if(notifHeader) notifHeader.innerText = t.n_header;
-            
-            const notifReadBtn = document.getElementById('notif-read-all-btn');
-            if(notifReadBtn) notifReadBtn.innerText = t.n_read_all;
-            
-            const emptyMsg = document.getElementById('notif-empty-msg');
-            if(emptyMsg) emptyMsg.innerText = t.n_empty;
+            // Уведомления
+            if(document.getElementById('notif-header-title')) document.getElementById('notif-header-title').innerText = t.n_header;
+            if(document.getElementById('notif-read-all-btn')) document.getElementById('notif-read-all-btn').innerText = t.n_read_all;
+            if(document.getElementById('notif-empty-msg')) document.getElementById('notif-empty-msg').innerText = t.n_empty;
         }
 
         // === АВТОРИЗАЦИЯ ===
@@ -819,11 +803,14 @@
                 alert('Google Sign-In is not available');
                 return;
             }
-            google.accounts.id.prompt((notification) => {
-                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                    console.log('Google Sign-In prompt not displayed');
-                }
-            });
+            try {
+                google.accounts.id.renderButton(
+                    document.querySelector('[onclick="handleGoogleSignIn()"]'),
+                    { theme: 'outline', size: 'large' }
+                );
+            } catch(e) {
+                console.log('Google button render failed:', e);
+            }
         }
 
         async function handleGoogleCallback(response) {
