@@ -1892,3 +1892,92 @@ footer {
   font-size: clamp(1.5rem, 5vw, 2.5rem); /* Резиновый размер шрифта */
 }
 
+
+/* --- FAVORITES (SAVED CODES) --- */
+
+/* Кнопка "Звезда" внутри карточки кода */
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.2); /* Серый по умолчанию */
+  transition: transform 0.2s, color 0.2s;
+  padding: 5px 10px;
+  z-index: 5; /* Чтобы клик не открывал саму карточку */
+}
+
+.star-btn:hover {
+  transform: scale(1.2);
+}
+
+.star-btn.active {
+  color: #f1c40f; /* Желтый, когда сохранено */
+  text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+}
+
+/* Модальное окно избранного (похоже на auth-modal, но проще) */
+.favorites-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.favorites-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.favorites-content {
+  background: #121418;
+  border: 1px solid rgba(255,255,255,0.1);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.favorites-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.favorites-header h3 {
+  margin: 0;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.favorites-body {
+  padding: 10px;
+  overflow-y: auto;
+}
+
+/* Пустое состояние */
+.empty-favs {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+.empty-favs i {
+  font-size: 40px;
+  margin-bottom: 15px;
+  opacity: 0.3;
+}

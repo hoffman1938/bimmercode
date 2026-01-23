@@ -22,6 +22,9 @@ let chatOpen = false;
 // UI Text Translations
 const translations = {
   en: {
+    savedBtn: "Saved",
+    savedTitle: "Saved Codes",
+    emptySaved: "You haven't saved any codes yet.",
     forumBtn: "Forum",
     searchPlaceholder: "Enter DTC code (e.g. 102613) or P-code...",
     emptyStateMessage: "BMW Diagnostic Database",
@@ -41,6 +44,9 @@ const translations = {
     chatPlaceholder: "Describe issue (e.g. 'smoke', 'misfire')...",
   },
   ru: {
+    savedBtn: "Избранное",
+    savedTitle: "Избранные коды",
+    emptySaved: "Вы еще не сохранили ни одного кода.",
     forumBtn: "Форум",
     searchPlaceholder: "Введите код ошибки (напр. 102613)...",
     emptyStateMessage: "База диагностики BMW",
@@ -60,6 +66,9 @@ const translations = {
     chatPlaceholder: "Опишите проблему (напр. 'дым', 'троит')...",
   },
   ka: {
+    savedBtn: "შენახული",
+    savedTitle: "შენახული კოდები",
+    emptySaved: "თქვენ ჯერ არ შეგინახავთ კოდები.",
     forumBtn: "ფორუმი",
     searchPlaceholder: "შეიყვანეთ კოდი (მაგ. 102613)...",
     emptyStateMessage: "BMW დიაგნოსტიკური ბაზა",
@@ -157,6 +166,85 @@ function displayCodeDetail(code) {
       </div>
     </div>
   `;
+}
+
+// --- FAVORITES LOGIC ---
+
+// Переключить состояние (Сохранить/Удалить)
+window.toggleFavorite = function(event, codeId) {
+    if(event) event.stopPropagation(); // Чтобы не открывалась детальная страница
+
+    let favorites = JSON.parse(localStorage.getItem('bmwFavorites')) || [];
+    
+    if (favorites.includes(codeId)) {
+        favorites = favorites.filter(id => id !== codeId); // Удалить
+    } else {
+        favorites.push(codeId); // Добавить
+    }
+
+    localStorage.setItem('bmwFavorites', JSON.stringify(favorites));
+
+    // Перерисовать результаты поиска, чтобы обновить звездочки
+    handleSearch(); 
+    // Если открыто модальное окно избранного, обновить его тоже
+    renderFavoritesList();
+}
+
+// Открыть/Закрыть модальное окно
+window.toggleFavoritesModal = function() {
+    const modal = document.getElementById('favorites-modal');
+    modal.classList.toggle('active');
+    
+    if (modal.classList.contains('active')) {
+        renderFavoritesList();
+    }
+}
+
+// Отрисовка списка внутри модального окна
+function renderFavoritesList() {
+    const list = document.getElementById('favorites-list');
+    const favorites = JSON.parse(localStorage.getItem('bmwFavorites')) || [];
+    const t = translations[currentLanguage];
+
+    list.innerHTML = "";
+
+    if (favorites.length === 0) {
+        list.innerHTML = `
+            <div class="empty-favs">
+                <i class="far fa-folder-open"></i>
+                <p>${t.emptySaved}</p>
+            </div>`;
+        return;
+    }
+
+    // Находим полные объекты кодов по ID
+    const savedCodes = bmwCodes.filter(c => favorites.includes(c.code));
+
+    savedCodes.forEach(code => {
+        const div = document.createElement('div');
+        div.className = 'code-item'; // Используем те же стили, что и в поиске
+        div.style.marginBottom = '10px';
+        
+        div.innerHTML = `
+          <div style="flex: 1;" onclick="toggleFavoritesModal(); displayCodeDetail(selectedCodeRef)">
+            <div class="code-header">
+              <span class="code-identifier" style="color:#0066b3">${code.code}</span>
+              <span class="code-title" style="font-size:14px">${code.title[currentLanguage]}</span>
+            </div>
+          </div>
+          <button class="star-btn active" onclick="toggleFavorite(null, '${code.code}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        `;
+        
+        // Хак для клика
+        div.querySelector('div[style*="flex: 1"]').onclick = () => {
+            toggleFavoritesModal();
+            displayCodeDetail(code);
+        };
+
+        list.appendChild(div);
+    });
 }
 
 /* --- GLOBAL CLOSE FUNCTION --- */
@@ -492,30 +580,45 @@ function handleSearch() {
 
 function renderResults(codes) {
   resultsContainer.innerHTML = "";
+  // Получаем список сохраненных ID
+  const favorites = JSON.parse(localStorage.getItem('bmwFavorites')) || [];
 
   codes.forEach((code) => {
     const el = document.createElement("div");
     el.className = "code-item";
+
+    // Проверяем, сохранен ли код
+    const isFav = favorites.includes(code.code);
+    const starClass = isFav ? "active" : "";
 
     let severityColor = "#f1c40f"; 
     if (code.severity === "High" || code.severity === "Critical") severityColor = "#e74c3c";
     if (code.severity === "Low") severityColor = "#2ecc71";
 
     el.innerHTML = `
-      <div style="flex: 1;">
-        <div class="code-header">
-          <span class="code-identifier" style="color:${severityColor}">${code.code}</span>
-          <span class="code-title">${code.title[currentLanguage]}</span>
-        </div>
-        <div class="code-meta">
-          <i class="fas fa-microchip"></i> ${code.category} &nbsp;•&nbsp; 
-          <span style="color:${severityColor}">${code.severity}</span>
-        </div>
+      <div style="display:flex; align-items:center; width:100%;">
+          <div style="flex: 1;" onclick="displayCodeDetail(selectedCodeRef)">
+            <div class="code-header">
+              <span class="code-identifier" style="color:${severityColor}">${code.code}</span>
+              <span class="code-title">${code.title[currentLanguage]}</span>
+            </div>
+            <div class="code-meta">
+              <i class="fas fa-microchip"></i> ${code.category} &nbsp;•&nbsp; 
+              <span style="color:${severityColor}">${code.severity}</span>
+            </div>
+          </div>
+          
+          <button class="star-btn ${starClass}" onclick="toggleFavorite(event, '${code.code}')">
+            <i class="fas fa-star"></i>
+          </button>
+          
+          <i class="fas fa-chevron-right" style="margin-left:10px; opacity:0.5;"></i>
       </div>
-      <i class="fas fa-chevron-right"></i>
     `;
 
-    el.addEventListener("click", () => displayCodeDetail(code));
+    // Хак, чтобы передать объект code в onclick
+    el.querySelector('div[style*="flex: 1"]').onclick = () => displayCodeDetail(code);
+
     resultsContainer.appendChild(el);
   });
 }

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./css/forum.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         /* Стили остались те же, сократил для краткости */
@@ -99,6 +100,12 @@
                     <div class="form-group"><label class="form-label" data-i18n="passLabel">Password</label><input type="password" id="login-password" class="form-input" required></div>
                     <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="loginBtn">Log In</button>
                     <div id="login-message" style="margin-top:15px; color: #e74c3c; text-align: center; font-size: 13px;"></div>
+                    <div id="g_id_onload"
+     data-client_id="ВАШ_CLIENT_ID_ИЗ_GOOGLE_CONSOLE"
+     data-callback="handleGoogleCredentialResponse"
+     data-auto_select="false">
+</div>
+<div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
                 </form>
                 <form id="registerForm" class="auth-form">
                     <div class="form-group"><label class="form-label" data-i18n="userLabel">Username</label><input type="text" id="reg-username" class="form-input" required></div>
@@ -106,6 +113,12 @@
                     <div class="form-group"><label class="form-label" data-i18n="passLabel">Password</label><input type="password" id="reg-password" class="form-input" required></div>
                     <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="regBtn">Create Account</button>
                     <div id="reg-message" style="margin-top:15px; text-align: center; font-size: 13px;"></div>
+                    <div id="g_id_onload"
+     data-client_id="ВАШ_CLIENT_ID_ИЗ_GOOGLE_CONSOLE"
+     data-callback="handleGoogleCredentialResponse"
+     data-auto_select="false">
+</div>
+<div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
                 </form>
             </div>
         </div>
@@ -709,5 +722,6 @@
             if (user) { try { showForum(JSON.parse(user)); } catch(e) { localStorage.removeItem('user'); } }
         }
     </script>
+    <script src="./js/live.js"></script>
 </body>
 </html>

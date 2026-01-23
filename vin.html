@@ -12,6 +12,7 @@
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <style>
         .vin-hero { text-align: center; margin: 80px 0 40px; }
         .vin-hero h1 { font-size: 3rem; background: linear-gradient(45deg, #fff, #6f9bd1); background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
@@ -21,6 +22,7 @@
             background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
             border-radius: 50px; padding: 5px; display: flex;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3); backdrop-filter: blur(10px);
+            z-index: 10;
         }
         .vin-search-box input {
             flex: 1; background: none; border: none; color: white; 
@@ -31,6 +33,40 @@
             padding: 0 30px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
         .vin-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 102, 179, 0.4); }
+
+        /* --- ИСТОРИЯ ПОИСКА (НОВОЕ) --- */
+        .history-container {
+            max-width: 600px; margin: 20px auto 0; text-align: left;
+            display: none; /* Скрыт по умолчанию */
+            animation: fadeIn 0.5s ease;
+        }
+        .history-label {
+            font-size: 12px; color: #94a3b8; margin-bottom: 10px; padding-left: 15px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .history-list {
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 13px;
+            color: #ccc;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .history-item:hover {
+            background: rgba(0, 102, 179, 0.2);
+            border-color: #0066b3;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .history-item i { font-size: 10px; opacity: 0.5; }
+        .history-item span { font-weight: 600; color: white; }
 
         /* Результаты */
         #vin-result { margin-top: 50px; display: none; animation: fadeIn 0.5s ease; padding-bottom: 50px;}
@@ -53,7 +89,7 @@
         .spec-info h4 { color: #94a3b8; font-size: 11px; text-transform: uppercase; margin-bottom: 3px; }
         .spec-info div { color: white; font-size: 14px; font-weight: bold; line-height: 1.2; }
 
-        /* Внешние ссылки (Сделали ярче) */
+        /* Внешние ссылки */
         .external-links {
             max-width: 800px; margin: 40px auto 0; text-align: center;
             background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
@@ -62,7 +98,6 @@
         .external-links h3 { color: white; margin-bottom: 10px; font-size: 20px; }
         .ext-btn-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 25px; }
         
-        /* Яркие кнопки */
         .ext-btn {
             background: linear-gradient(135deg, #0066b3 0%, #004e8a 100%);
             border: none; padding: 15px 30px; border-radius: 50px; 
@@ -117,6 +152,12 @@
         <div class="vin-search-box">
             <input type="text" id="vin-input" placeholder="WBA..." maxlength="17">
             <button class="vin-btn" onclick="decodeVin()" data-i18n="btnCheck">CHECK</button>
+        </div>
+
+        <div id="history-container" class="history-container">
+            <div class="history-label" data-i18n="lblHistory">Recent Checks</div>
+            <div class="history-list" id="history-list">
+                </div>
         </div>
 
         <div id="loader" class="loader"><i class="fas fa-circle-notch fa-spin"></i> <span data-i18n="loading">Checking database...</span></div>
@@ -193,7 +234,7 @@
         </div>
     </main>
      <footer>
-      <p>BMW DTC Bot © 2025 • All BMW codes and series supported</p>
+      <p>BMW DTC Bot © 2026 • All BMW codes and series supported</p>
       <p><small>BMW is a registered trademark of Bayerische Motoren Werke AG. This site is not affiliated with BMW AG.</small></p>
     </footer>
 
