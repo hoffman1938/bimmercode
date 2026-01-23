@@ -10,6 +10,7 @@ const translations = {
         vinSubtitle: "Enter 17-digit VIN to check technical specs.",
         btnCheck: "CHECK",
         loading: "Checking global database...",
+        lblHistory: "Recent Checks",
         
         lblModel: "Model",
         lblYear: "Year",
@@ -35,6 +36,7 @@ const translations = {
         vinSubtitle: "Введите 17 знаков VIN для проверки характеристик.",
         btnCheck: "ПРОВЕРИТЬ",
         loading: "Поиск в базе данных...",
+        lblHistory: "Недавние проверки",
         
         lblModel: "Модель",
         lblYear: "Год",
@@ -60,6 +62,7 @@ const translations = {
         vinSubtitle: "შეიყვანეთ 17 ნიშნა VIN კოდი მონაცემების გასაგებად.",
         btnCheck: "შემოწმება",
         loading: "მიმდინარეობს ძებნა...",
+        lblHistory: "ბოლო შემოწმებები",
         
         lblModel: "მოდელი",
         lblYear: "წელი",
@@ -80,48 +83,82 @@ const translations = {
     }
 };
 
-// Функция обновления языка
+// --- ФУНКЦИИ ИСТОРИИ ---
+function loadHistory() {
+    const history = JSON.parse(localStorage.getItem('vinHistory')) || [];
+    const container = document.getElementById('history-container');
+    const list = document.getElementById('history-list');
+
+    if (history.length === 0) {
+        if(container) container.style.display = 'none';
+        return;
+    }
+
+    if(container) container.style.display = 'block';
+    if(list) {
+        list.innerHTML = '';
+        history.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <i class="fas fa-history"></i>
+                <span>${item.title}</span>
+                <small style="opacity:0.6">${item.vin.substring(0, 5)}...</small>
+            `;
+            div.onclick = () => {
+                document.getElementById('vin-input').value = item.vin;
+                decodeVin();
+            };
+            list.appendChild(div);
+        });
+    }
+}
+
+function saveToHistory(vin, title) {
+    let history = JSON.parse(localStorage.getItem('vinHistory')) || [];
+    history = history.filter(h => h.vin !== vin);
+    history.unshift({ vin, title });
+    if (history.length > 4) history = history.slice(0, 4);
+    localStorage.setItem('vinHistory', JSON.stringify(history));
+    loadHistory();
+}
+
+// --- ЯЗЫК ---
 function updateLanguage() {
     const t = translations[currentLanguage];
-    
-    // Кнопка в хедере
     const langBtnSpan = document.querySelector('#language-toggle span');
     const langLabels = { en: "EN", ru: "RU", ka: "KA" };
     if(langBtnSpan) langBtnSpan.innerText = langLabels[currentLanguage];
 
-    // Все элементы с data-i18n
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (t[key]) el.innerText = t[key];
     });
 
-    // Плейсхолдер
     const vinInput = document.getElementById('vin-input');
-    if(vinInput) {
-        vinInput.placeholder = "WBA..."; 
-    }
+    if(vinInput) vinInput.placeholder = "WBA..."; 
 }
 
-// Переключатель языка
-document.getElementById('language-toggle').addEventListener('click', () => {
-    const langs = ['en', 'ru', 'ka'];
-    let idx = langs.indexOf(currentLanguage);
-    currentLanguage = langs[(idx + 1) % langs.length];
-    
-    // Сохраняем, чтобы работало на форуме
-    localStorage.setItem('forumLanguage', currentLanguage);
-    updateLanguage();
-});
+if(document.getElementById('language-toggle')) {
+    document.getElementById('language-toggle').addEventListener('click', () => {
+        const langs = ['en', 'ru', 'ka'];
+        let idx = langs.indexOf(currentLanguage);
+        currentLanguage = langs[(idx + 1) % langs.length];
+        localStorage.setItem('forumLanguage', currentLanguage);
+        updateLanguage();
+    });
+}
 
-// Инициализация при загрузке
+// Инициализация
 window.addEventListener('DOMContentLoaded', () => {
     updateLanguage();
+    loadHistory();
 });
 
-// Логика декодирования (без изменений в логике, только UI)
+// Логика декодирования
 async function decodeVin() {
     const vinInput = document.getElementById('vin-input');
-    const vin = vinInput.value.trim();
+    const vin = vinInput.value.trim().toUpperCase(); 
     const resultDiv = document.getElementById('vin-result');
     const loader = document.getElementById('loader');
 
@@ -144,8 +181,8 @@ async function decodeVin() {
         };
 
         const make = getVal("Make");
-        if (make.toUpperCase() !== 'BMW' && make.toUpperCase() !== 'MINI') {
-            alert("Not a BMW VIN.");
+        if (make.toUpperCase().indexOf('BMW') === -1 && make.toUpperCase().indexOf('MINI') === -1) {
+            alert("Not a BMW VIN (Found: " + make + ")");
             loader.style.display = 'none';
             return;
         }
@@ -165,6 +202,7 @@ async function decodeVin() {
         const plantCountry = getVal("Plant Country");
         const weight = getVal("Gross Vehicle Weight Rating From");
 
+        // UI
         document.getElementById('car-title').innerText = `${year} BMW ${model}`;
         document.getElementById('res-model').innerText = model;
         document.getElementById('res-year').innerText = year;
@@ -188,21 +226,40 @@ async function decodeVin() {
         document.getElementById('res-plant').innerText = plantCity;
         document.getElementById('res-weight').innerText = weight;
 
-        // Ссылки на внешние декодеры
         document.getElementById('link-mdecoder').href = `https://www.mdecoder.com/decode/${vin}`;
         document.getElementById('link-bimmerwork').href = `https://bimmer.work/`; 
 
+        const shortTitle = `${year} ${model}`;
+        saveToHistory(vin, shortTitle);
+
+        // --- СОХРАНЕНИЕ КОНТЕКСТА ДЛЯ AI ЧАТА ---
+        window.currentCarContext = {
+            model: `BMW ${model}`,
+            year: year,
+            engine: engineL !== '-' ? `${engineL}L` : 'Engine',
+            chassis: series,
+            vin: vin
+        };
+        
+        // Обновляем чат, если он открыт
+        if (typeof window.updateChatContext === 'function') {
+            window.updateChatContext();
+        }
+
         loader.style.display = 'none';
         resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     } catch (e) {
         console.error(e);
         loader.style.display = 'none';
-        alert("Error connecting to database.");
+        alert("Connection error. Please try again.");
     }
 }
 
 // Enter key
-document.getElementById('vin-input').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') decodeVin();
-});
+if(document.getElementById('vin-input')) {
+    document.getElementById('vin-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') decodeVin();
+    });
+}

@@ -74,6 +74,10 @@
     gap: 0;
   }
 
+  .btn-create {
+    width: 50%;
+  }
+
   .stat-mini {
     flex-direction: row; /* Цифра и подпись в одну строку */
     gap: 6px;
@@ -384,7 +388,6 @@
   
   .btn-create {
     justify-content: center; /* Кнопка "Создать тему" по центру */
-    width: 100%;
   }
 
   .topic-header-card {
