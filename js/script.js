@@ -146,18 +146,19 @@ google.accounts.id.renderButton(btnContainer, { theme: "filled_blue", size: "lar
 }
 
 
+// Найти и заменить функцию window.handleGoogleCredentialResponse:
+
 window.handleGoogleCredentialResponse = async function(response) {
     try {
         console.log("Google Auth: Sending token to server...");
         
-        // 1. ОТПРАВЛЯЕМ ТОКЕН НА СЕРВЕР
-        // Это самое важное! Без этого база данных останется пустой.
+        // 1. ОТПРАВЛЯЕМ ТОКЕН НА БЭКЕНД (Самое важное!)
         const res = await fetch('/api/auth/google-callback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 credential: response.credential,
-                language: currentLanguage || 'en'
+                language: window.currentLanguage || 'en'
             })
         });
 
@@ -167,19 +168,17 @@ window.handleGoogleCredentialResponse = async function(response) {
             throw new Error(data.error || 'Server registration failed');
         }
 
-        console.log("User successfully saved in DB:", data.user);
+        console.log("User logged in:", data.user);
 
-        // 2. Сохраняем пользователя, которого вернул сервер (с правильным ID из базы)
-        // ВАЖНО: Обновляем глобальный state
-        if (window.state) window.state.user = data.user;
+        // 2. Сохраняем пользователя, который пришел С СЕРВЕРА
+        window.state.user = data.user;
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // 3. Закрываем модалку и обновляем страницу
-        if(typeof window.toggleAuthModal === 'function') {
-            const modal = document.getElementById('auth-modal');
-            if(modal && !modal.classList.contains('hidden')) window.toggleAuthModal();
-        }
+        // 3. Закрываем модалку
+        const modal = document.getElementById('auth-modal');
+        if(modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
         
+        // 4. Перезагружаем страницу, чтобы обновился хедер
         window.location.reload(); 
 
     } catch (e) {
