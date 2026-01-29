@@ -6,13 +6,14 @@
     <title>BMW Professional Community</title>
     
     <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
-        /* --- СТРОГИЙ СТИЛЬ ФОРУМА (ВРЕМЕННО ЗДЕСЬ, ПОТОМ ВЫНЕСЕМ) --- */
+        /* Стили форума (временно здесь) */
         :root {
             --f-bg: #0b0d11;
             --f-panel: #151922;
@@ -21,178 +22,119 @@
             --f-text: #e0e0e0;
             --f-text-muted: #8b9bb4;
         }
-
         body { background-color: var(--f-bg); font-family: 'Inter', sans-serif; }
         
-        /* Layout */
         .forum-wrapper {
             max-width: 1200px;
-            margin: 80px auto 40px;
+            margin: 100px auto 40px; /* Отступ сверху под хедер */
             display: grid;
             grid-template-columns: 260px 1fr;
             gap: 25px;
             padding: 0 15px;
         }
 
-        /* Sidebar (Categories) */
-        .f-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .f-card {
-            background: var(--f-panel);
-            border: 1px solid var(--f-border);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .cat-group-title {
-            padding: 12px 15px;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--f-text-muted);
-            background: rgba(0,0,0,0.2);
-            font-weight: 700;
-        }
-
-        .cat-link {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            color: var(--f-text);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            transition: 0.2s;
-            font-size: 13px;
-        }
+        /* Sidebar */
+        .f-card { background: var(--f-panel); border: 1px solid var(--f-border); border-radius: 8px; overflow: hidden; margin-bottom: 20px;}
+        .cat-group-title { padding: 12px 15px; font-size: 11px; text-transform: uppercase; color: var(--f-text-muted); background: rgba(0,0,0,0.2); font-weight: 700; }
+        .cat-link { display: flex; align-items: center; padding: 10px 15px; color: var(--f-text); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.2s; font-size: 13px; }
         .cat-link:hover, .cat-link.active { background: rgba(0, 102, 179, 0.1); color: var(--f-accent); border-left: 3px solid var(--f-accent); }
         .cat-link i { width: 25px; color: var(--f-text-muted); }
         .cat-link:hover i { color: var(--f-accent); }
 
-        /* Main Content */
-        .f-main { display: flex; flex-direction: column; gap: 20px; }
-
-        /* Header Actions */
-        .f-actions { display: flex; justify-content: space-between; align-items: center; }
+        /* Main */
+        .f-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
         .page-title { font-size: 20px; font-weight: 600; color: white; margin: 0; }
         
-        .btn-new-topic {
-            background: var(--f-accent);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: 500;
-            font-size: 13px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
+        .btn-new-topic { background: var(--f-accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 500; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-new-topic:hover { background: #005699; }
 
-        /* Topic List (Table Style) */
-        .topic-list-header {
-            display: grid;
-            grid-template-columns: 1fr 100px 100px 180px;
-            padding: 12px 20px;
-            background: rgba(255,255,255,0.03);
-            border-bottom: 1px solid var(--f-border);
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--f-text-muted);
-        }
-
-        .topic-row {
-            display: grid;
-            grid-template-columns: 1fr 100px 100px 180px;
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--f-border);
-            align-items: center;
-            transition: 0.2s;
-            cursor: pointer;
-        }
+        /* Table */
+        .topic-list-header { display: grid; grid-template-columns: 1fr 100px 100px 180px; padding: 12px 20px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--f-border); font-size: 11px; text-transform: uppercase; color: var(--f-text-muted); }
+        .topic-row { display: grid; grid-template-columns: 1fr 100px 100px 180px; padding: 15px 20px; border-bottom: 1px solid var(--f-border); align-items: center; transition: 0.2s; cursor: pointer; }
         .topic-row:hover { background: rgba(255,255,255,0.02); }
-        
-        .t-main { display: flex; flex-direction: column; gap: 4px; }
-        .t-title { font-size: 15px; font-weight: 500; color: white; text-decoration: none; }
-        .t-meta { font-size: 12px; color: var(--f-text-muted); display: flex; gap: 10px; }
+        .t-title { font-size: 15px; font-weight: 500; color: white; }
+        .t-meta { font-size: 12px; color: var(--f-text-muted); display: flex; gap: 10px; margin-top: 4px;}
         .t-tag { background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 3px; font-size: 10px; color: #ccc; }
-        
         .t-stat { text-align: center; font-size: 13px; color: #ccc; }
         .t-stat small { display: block; font-size: 10px; color: var(--f-text-muted); }
-        
         .t-last { font-size: 12px; color: #ccc; text-align: right; }
         .t-last-date { color: var(--f-text-muted); font-size: 11px; }
 
-        /* Mobile */
         @media (max-width: 768px) {
-            .forum-wrapper { grid-template-columns: 1fr; margin-top: 60px; }
-            .topic-list-header { display: none; }
-            .topic-row { grid-template-columns: 1fr auto; gap: 10px; }
-            .t-stat:nth-child(2), .t-stat:nth-child(3) { display: none; } /* Скрываем статистику на моб */
-            .f-sidebar { display: none; } /* Пока скроем меню на моб */
+            .forum-wrapper { grid-template-columns: 1fr; margin-top: 80px; }
+            .topic-list-header, .t-stat, .f-sidebar { display: none; } /* Упрощение для моб */
+            .topic-row { grid-template-columns: 1fr auto; }
         }
     </style>
 </head>
-<body>
+<body class="bmw-pattern">
 
-    <header style="position:fixed; top:0; width:100%; z-index:1000; background: rgba(11, 13, 17, 0.95); border-bottom: 1px solid var(--f-border); backdrop-filter:blur(10px);">
-        <div style="max-width:1200px; margin:0 auto; padding:0 15px; height:60px; display:flex; align-items:center; justify-content:space-between;">
-            <a href="index.html" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:white;">
-                <img src="./assets/icons/ico.svg" width="32" alt="Logo">
-                <span style="font-weight:600; font-size:18px;">BMW Community</span>
-            </a>
-            
-            <div style="display:flex; align-items:center; gap:15px;">
-                <button id="lang-switch" class="btn-icon" style="color:var(--f-text-muted); background:none; border:none; cursor:pointer;">EN</button>
-                
-                <div id="auth-container">
-                    <button onclick="window.location.href='login.html'" class="btn-new-topic" style="background:#333;">Login</button>
-                </div>
-            </div>
-        </div>
+    <div id="webgl-container" style="position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.5;"></div>
+
+    <header>
+      <div class="logo-container">
+        <a class="main_logo_refr" href="index.html">
+          <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+               <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
+               <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+               <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+               <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+               <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+            </svg>
+          </div>
+          <h1>BMW DTC Bot</h1>
+        </a>
+      </div>
+      <div class="controls">
+        <button id="language-toggle" class="btn">
+            <i class="fas fa-globe"></i> <span>EN</span>
+        </button>
+        
+        <button class="btn" onclick="toggleFavoritesModal()">
+            <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
+        </button>
+        
+        <button id="auth-btn" class="btn" onclick="toggleAuthModal()">
+            <i class="fas fa-user"></i> <span>Login</span>
+        </button>
+      </div>
     </header>
 
     <div class="forum-wrapper">
         
         <aside class="f-sidebar">
             <div class="f-card" id="user-mini-card" style="display:none; padding:15px; text-align:center;">
-                <div style="width:60px; height:60px; background:#222; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; color:#555;">
-                    <i class="fas fa-user"></i>
+                <div style="width:50px; height:50px; background:#222; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-user" style="color:#666"></i>
                 </div>
                 <div style="font-weight:600; color:white;" id="side-username">User</div>
-                <div style="font-size:11px; color:var(--f-text-muted);">Member</div>
+                <div style="font-size:11px; color:var(--f-text-muted);">Online</div>
             </div>
 
             <div class="f-card">
-                <div class="cat-group-title" data-i18n="nav_main">Main</div>
-                <a href="#" class="cat-link active"><i class="fas fa-stream"></i> <span data-i18n="nav_all">All Topics</span></a>
-                <a href="#" class="cat-link"><i class="fas fa-fire"></i> <span data-i18n="nav_popular">Popular</span></a>
-                <a href="#" class="cat-link"><i class="fas fa-check-circle"></i> <span data-i18n="nav_solved">Solved</span></a>
+                <div class="cat-group-title">Main</div>
+                <a href="#" class="cat-link active" onclick="filterCat('all')"><i class="fas fa-stream"></i> All Topics</a>
+                <a href="#" class="cat-link" onclick="filterCat('news')"><i class="fas fa-bullhorn"></i> News</a>
+                <a href="#" class="cat-link" onclick="filterCat('general')"><i class="fas fa-comments"></i> General</a>
             </div>
 
             <div class="f-card">
-                <div class="cat-group-title" data-i18n="nav_tech">Technical</div>
+                <div class="cat-group-title">Technical</div>
                 <a href="#" class="cat-link" onclick="filterCat('engines')"><i class="fas fa-cogs"></i> Engines</a>
-                <a href="#" class="cat-link" onclick="filterCat('chassis')"><i class="fas fa-car-crash"></i> Chassis & Brakes</a>
+                <a href="#" class="cat-link" onclick="filterCat('chassis')"><i class="fas fa-car-crash"></i> Chassis</a>
                 <a href="#" class="cat-link" onclick="filterCat('electronics')"><i class="fas fa-microchip"></i> Electronics</a>
-                <a href="#" class="cat-link" onclick="filterCat('coding')"><i class="fas fa-laptop-code"></i> Coding & SW</a>
+                <a href="#" class="cat-link" onclick="filterCat('coding')"><i class="fas fa-laptop-code"></i> Coding</a>
             </div>
         </aside>
 
         <section class="f-main">
-            
             <div class="f-actions">
-                <h1 class="page-title" data-i18n="page_title">Recent Discussions</h1>
+                <h1 class="page-title">Community Discussions</h1>
                 <div style="display:flex; gap:10px;">
                     <input type="text" placeholder="Search forum..." style="background:var(--f-panel); border:1px solid var(--f-border); color:white; padding:8px 12px; border-radius:4px; font-size:13px; outline:none;">
                     <button class="btn-new-topic" onclick="openNewTopicModal()">
-                        <i class="fas fa-plus"></i> <span data-i18n="btn_new">New Topic</span>
+                        <i class="fas fa-plus"></i> <span>New Topic</span>
                     </button>
                 </div>
             </div>
@@ -206,89 +148,57 @@
                 </div>
                 
                 <div id="topics-container">
-                    <div style="padding:40px; text-align:center; color:var(--f-text-muted);">
-                        <i class="fas fa-circle-notch fa-spin"></i> Loading topics...
                     </div>
-                </div>
             </div>
-
         </section>
     </div>
-<div id="new-topic-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
-    <div class="f-card" style="width: 100%; max-width: 600px; padding: 25px; border: 1px solid var(--f-border); background: #151922;">
-        <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
-            <h2 style="margin:0; color:white;">Create New Topic</h2>
-            <button onclick="closeNewTopicModal()" style="background:none; border:none; color:#888; font-size:20px; cursor:pointer;"><i class="fas fa-times"></i></button>
-        </div>
 
-        <div style="display:flex; flex-direction:column; gap: 15px;">
-            <div>
-                <label style="color:#888; font-size:12px; display:block; margin-bottom:5px;">Category</label>
-                <select id="nt-category" style="width:100%; padding:10px; background:#0b0d11; border:1px solid #333; color:white; border-radius:4px;">
-                    </select>
+    <div id="new-topic-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div class="f-card" style="width: 100%; max-width: 600px; padding: 25px; background: #151922; border: 1px solid #333;">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
+                <h2 style="margin:0; color:white;">Create New Topic</h2>
+                <button onclick="closeNewTopicModal()" style="background:none; border:none; color:#888; cursor:pointer;"><i class="fas fa-times"></i></button>
             </div>
-
-            <div>
-                <label style="color:#888; font-size:12px; display:block; margin-bottom:5px;">Title</label>
-                <input type="text" id="nt-title" placeholder="Briefly describe your issue..." style="width:100%; padding:10px; background:#0b0d11; border:1px solid #333; color:white; border-radius:4px; box-sizing: border-box;">
-            </div>
-
-            <div>
-                <label style="color:#888; font-size:12px; display:block; margin-bottom:5px;">Content (Supports basic text)</label>
-                <textarea id="nt-content" rows="8" placeholder="Provide details, error codes, car model..." style="width:100%; padding:10px; background:#0b0d11; border:1px solid #333; color:white; border-radius:4px; box-sizing: border-box; resize: vertical;"></textarea>
-            </div>
-
-            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                <button onclick="closeNewTopicModal()" style="padding:10px 20px; background:none; border:1px solid #333; color:#ccc; border-radius:4px; cursor:pointer;">Cancel</button>
-                <button onclick="submitNewTopic()" class="btn-new-topic">Post Topic</button>
+            <div style="display:flex; flex-direction:column; gap: 15px;">
+                <div>
+                    <label style="color:#888; font-size:12px;">Category</label>
+                    <select id="nt-category" style="width:100%; padding:10px; background:#0b0d11; border:1px solid #333; color:white; border-radius:4px;"></select>
+                </div>
+                <div>
+                    <label style="color:#888; font-size:12px;">Title</label>
+                    <input type="text" id="nt-title" style="width:100%; padding:10px; background:#0b0d11; border:1px solid #333; color:white; border-radius:4px; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="color:#888; font-size:12px;">Content</label>
+                    <textarea id="nt-content" rows="6" style="width:100%; padding:10px; background:#0b0d11; border:1px solid #333; color:white; border-radius:4px; box-sizing:border-box;"></textarea>
+                </div>
+                <button onclick="submitNewTopic()" class="btn-new-topic btn-new-topic-submit" style="justify-content:center;">Post Topic</button>
             </div>
         </div>
     </div>
-</div>
-    <script>
-        // ВРЕМЕННЫЙ СКРИПТ ДЛЯ ОТЛАДКИ (ПОТОМ ВЫНЕСЕМ В forum.js)
-        document.addEventListener('DOMContentLoaded', () => {
-            loadTopics();
-            checkAuth();
-        });
 
-        async function loadTopics() {
-            // Здесь будет запрос к вашему новому API
-            // const res = await fetch('/api/topics'); 
-            // Пока заглушка чтобы вы видели дизайн
-            const mockTopics = [
-                { title: "N54 Misfire Cylinder 5 under load", author: "BimmerFan", date: "2 min ago", replies: 12, views: 340, cat: "Engines" },
-                { title: "Best ENET cable for E-Sys?", author: "CoderX", date: "1 hour ago", replies: 5, views: 120, cat: "Coding" },
-                { title: "Suspension squeak over bumps (F30)", author: "DriftKing", date: "Yesterday", replies: 0, views: 45, cat: "Chassis" },
-            ];
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="auth-glass-card">
+            <button class="close-btn" style="position:absolute; top:15px; right:15px;" onclick="toggleAuthModal()"><i class="fas fa-times"></i></button>
+            <div id="g_id_onload" data-client_id="855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com" data-callback="handleGoogleCredentialResponse"></div>
+            <div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue"></div>
+        </div>
+    </div>
 
-            const container = document.getElementById('topics-container');
-            container.innerHTML = '';
+    <div id="favorites-modal" class="favorites-modal">
+        <div class="favorites-content">
+            <div class="favorites-header">
+                <h3><i class="fas fa-star" style="color:#f1c40f"></i> Saved Codes</h3>
+                <button class="close-button" onclick="toggleFavoritesModal()" style="background:none; border:none; color:white;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="favorites-body" id="favorites-list"></div>
+        </div>
+    </div>
 
-            mockTopics.forEach(t => {
-                container.innerHTML += `
-                <div class="topic-row">
-                    <div class="t-main">
-                        <div class="t-title">${t.title}</div>
-                        <div class="t-meta">
-                            <span class="t-tag">${t.cat}</span>
-                            <span>by ${t.author}</span>
-                        </div>
-                    </div>
-                    <div class="t-stat">${t.replies} <small>replies</small></div>
-                    <div class="t-stat">${t.views} <small>views</small></div>
-                    <div class="t-last">
-                        <div>${t.author}</div>
-                        <div class="t-last-date">${t.date}</div>
-                    </div>
-                </div>`;
-            });
-        }
+    <footer><p>BMW DTC Bot © 2026</p></footer>
 
-        function checkAuth() {
-            // Проверка JWT
-        }
-    </script>
-    <script defer src="./js/forum.js"></script>
+    <script src="./js/script.js"></script> 
+    <script src="./js/forum.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </body>
 </html>
