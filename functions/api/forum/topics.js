@@ -11,10 +11,11 @@ export async function onRequest(context) {
       const category = url.searchParams.get("category");
       const search = url.searchParams.get("search");
       
+      // Базовый запрос
       let query = `
         SELECT t.*, u.username, u.avatar_url 
         FROM topics t
-        JOIN users u ON t.user_id = u.id
+        LEFT JOIN users u ON t.user_id = u.id
       `;
       
       const params = [];
@@ -39,12 +40,17 @@ export async function onRequest(context) {
 
       const { results } = await db.prepare(query).bind(...params).all();
 
-      return new Response(JSON.stringify(results), {
+      // Если результатов нет, возвращаем пустой массив, а не null/error
+      return new Response(JSON.stringify(results || []), {
         headers: { "Content-Type": "application/json" }
       });
 
     } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+      // Возвращаем текст ошибки в JSON, чтобы видеть её в консоли, но не крашить 500
+      return new Response(JSON.stringify({ error: e.message, stack: e.stack }), { 
+        status: 200, // Отдаем 200, чтобы фронтенд обработал ответ
+        headers: { "Content-Type": "application/json" }
+      });
     }
   }
 
@@ -53,13 +59,10 @@ export async function onRequest(context) {
     try {
       const data = await request.json();
       
-      // Валидация
       if (!data.title || !data.content || !data.category_slug || !data.user_id) {
         return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
       }
 
-      // Генерируем slug (ссылку) из заголовка
-      // Пример: "Engine Noise" -> "engine-noise-178f8a"
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substr(2, 6);
 
       const result = await db.prepare(
