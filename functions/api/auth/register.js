@@ -1,6 +1,6 @@
 // functions/api/auth/register.js
-import { generateId } from '../../../lib/utils.js';
-import { hashPassword } from '../../../lib/crypto.js';
+import { generateId } from '../../lib/utils.js';
+import { hashPassword } from '../../lib/crypto.js';
 import { sendVerificationEmail } from '../../lib/email.js';
 
 

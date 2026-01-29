@@ -1,5 +1,12 @@
 #:schema node_modules/wrangler/config-schema.json
 
 name = "bimmercode"
-type = "javascript"
+main = "functions/index.js"
 compatibility_date = "2026-01-29"
+
+[build]
+command = ""
+cwd = "./"
+
+[assets]
+directory = "."
