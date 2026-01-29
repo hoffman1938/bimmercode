@@ -8,7 +8,7 @@ export async function onRequest(context) {
   if (request.method === "GET") {
     try {
       const category = url.searchParams.get("category");
-      const lang = url.searchParams.get("lang") || 'en'; // Фильтр по языку интерфейса
+      const lang = url.searchParams.get("lang") || 'en';
       const limit = 50;
 
       let query = `
@@ -31,6 +31,7 @@ export async function onRequest(context) {
       const { results } = await db.prepare(query).bind(...params).all();
       return new Response(JSON.stringify(results || []), { status: 200 });
     } catch (e) {
+      console.error("GET Topics Error:", e);
       return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
   }
@@ -47,26 +48,57 @@ export async function onRequest(context) {
       // Генерация Slug
       const slug = data.title
         .toLowerCase()
-        .replace(/[^a-z0-9а-яё]/g, '-') // Разрешаем кириллицу в slug для SEO? Лучше транслит, но пока так
+        .replace(/[^a-z0-9а-яё]/g, '-')
         .replace(/-+/g, '-')
         .replace(/(^-|-$)/g, '') + '-' + Math.random().toString(36).substring(2, 6);
 
-      // Вставка темы
-      const res = await db.prepare(
-        `INSERT INTO topics (slug, category_slug, user_id, title, content, lang, status) 
-         VALUES (?, ?, ?, ?, ?, ?, 'open')`
+      // ВАЖНО: Вставляем тему БЕЗ явного указания 'open' в VALUES
+      // Статус должен иметь DEFAULT значение в таблице или вставляться отдельно
+      const insertTopicResult = await db.prepare(
+        `INSERT INTO topics (slug, category_slug, user_id, title, content, lang, status, created_at, last_activity_at) 
+         VALUES (?, ?, ?, ?, ?, ?, 'open', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
       ).bind(slug, data.category_slug, data.user_id, data.title, data.content, data.lang || 'en').run();
 
-      // Вставка первого поста (дублируем контент в таблицу posts для удобства, или оставляем только в topics)
-      // В нашей схеме контент есть в topics, но логичнее иметь его и как пост #1 для рендеринга
-      // Пока оставим просто в topics, как в старом коде, или можно добавить в posts:
-      await db.prepare(
-        `INSERT INTO posts (topic_id, user_id, content) VALUES (?, ?, ?)`
-      ).bind(res.meta.last_row_id, data.user_id, data.content).run();
+      if (!insertTopicResult.success) {
+        throw new Error("Failed to insert topic into database");
+      }
 
-      return new Response(JSON.stringify({ success: true, slug: slug }), { status: 201 });
+      // Получаем ID только что созданной темы
+      // В D1 используем LAST_INSERT_ROWID() через отдельный запрос
+      const topicIdResult = await db.prepare(
+        `SELECT id FROM topics WHERE slug = ? ORDER BY created_at DESC LIMIT 1`
+      ).bind(slug).first();
+
+      if (!topicIdResult) {
+        throw new Error("Could not retrieve created topic ID");
+      }
+
+      const topicId = topicIdResult.id;
+
+      // Вставляем первый пост (содержимое темы как пост #1)
+      // Это облегчит рендеринг в topic-view.js
+      const insertPostResult = await db.prepare(
+        `INSERT INTO posts (topic_id, user_id, content, created_at) 
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP)`
+      ).bind(topicId, data.user_id, data.content).run();
+
+      if (!insertPostResult.success) {
+        console.warn("Warning: Post insertion had issues, but topic created");
+      }
+
+      // Обновляем счетчик ответов (первый пост уже в posts)
+      await db.prepare(
+        `UPDATE topics SET reply_count = 1 WHERE id = ?`
+      ).bind(topicId).run();
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        slug: slug,
+        topicId: topicId
+      }), { status: 201, headers: { 'Content-Type': 'application/json' } });
 
     } catch (e) {
+      console.error("POST Topics Error:", e);
       return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
   }

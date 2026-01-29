@@ -3,11 +3,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     initAuthForum();
     loadCategories();
-    // Читаем язык из localStorage (установленный переключателем) или дефолтный
     const currentLang = localStorage.getItem('forumLanguage') || 'en';
     loadTopics('all', '', currentLang);
     
-    // Вешаем слушатель на переключатель языка (если он меняется в хедере)
     window.addEventListener('storage', (e) => {
         if (e.key === 'forumLanguage') {
             window.location.reload();
@@ -21,21 +19,20 @@ function initAuthForum() {
     const sideCard = document.getElementById('user-mini-card');
     const sideName = document.getElementById('side-username');
     const sideAvatar = document.getElementById('user-avatar-display');
-    const sideStats = document.querySelector('.user-stats-grid'); // Нужно добавить класс в HTML
 
     if (user && sideCard) {
         sideCard.style.display = 'block';
         sideName.textContent = user.username;
         
-        // Показываем машину юзера в сайдбаре
         let carInfo = "No car selected";
         if (user.bmw && user.bmw.chassis) {
             carInfo = `${user.bmw.chassis} ${user.bmw.model}`;
         }
         
-        // Вставляем инфо под именем
         const carDiv = document.createElement('div');
-        carDiv.style.color = '#0066b3'; carDiv.style.fontSize = '12px'; carDiv.style.marginBottom = '10px';
+        carDiv.style.color = '#0066b3'; 
+        carDiv.style.fontSize = '12px'; 
+        carDiv.style.marginBottom = '10px';
         carDiv.innerHTML = `<i class="fas fa-car"></i> ${carInfo} <a href="profile.html" style="color:#666; margin-left:5px;"><i class="fas fa-cog"></i></a>`;
         sideName.after(carDiv);
 
@@ -57,16 +54,14 @@ async function loadCategories() {
         
         if (!categories || categories.error) return;
 
-        // Очищаем старые ссылки (кроме заголовков, если хотим сохранить структуру)
-        // Для простоты перерисуем меню полностью
         navMenu.innerHTML = `<div class="group-title">Menu</div>
-             <a href="#" class="nav-item active" onclick="filterCat('all')"><i class="fas fa-stream"></i> All Topics</a>`;
+             <a href="#" class="nav-item active" onclick="filterCat('all'); return false;"><i class="fas fa-stream"></i> All Topics</a>`;
 
         categories.forEach(cat => {
             const link = document.createElement('a');
             link.className = 'nav-item';
             link.href = '#';
-            link.onclick = (e) => { e.preventDefault(); filterCat(cat.slug, e.currentTarget); };
+            link.onclick = (e) => { e.preventDefault(); filterCat(cat.slug, link); };
             link.innerHTML = `<i class="fas ${cat.icon_class || 'fa-folder'}"></i> ${cat.title}`;
             navMenu.appendChild(link);
         });
@@ -79,7 +74,7 @@ async function loadCategories() {
 window.filterCat = function(slug, element) {
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     if (element) element.classList.add('active');
-    else document.querySelector('.nav-item').classList.add('active'); // Fallback for 'all'
+    else document.querySelector('.nav-item').classList.add('active');
     
     const lang = localStorage.getItem('forumLanguage') || 'en';
     loadTopics(slug, '', lang);
@@ -120,12 +115,6 @@ function renderTopics(topics) {
     }
 
     container.innerHTML = topics.map(topic => {
-        // Форматируем инфо о машине автора
-        let authorCar = '';
-        // API возвращает данные юзера, присоединенные к топику. 
-        // В SQL запросе мы не вытаскивали bmw поля, давайте добавим их в topics.js API или проверим что есть
-        // Предположим пока, что есть role и reputation
-        
         return `
         <div class="topic-card" onclick="window.location.href='topic.html?id=${topic.id}'">
             <div class="topic-main">
@@ -151,9 +140,6 @@ function renderTopics(topics) {
     `}).join('');
 }
 
-// Остальные функции модалок (openNewTopicModal, submitNewTopic) остаются как были,
-// но при submitNewTopic добавьте lang: localStorage.getItem('forumLanguage') в тело запроса.
-
 window.openNewTopicModal = function() {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
@@ -162,54 +148,97 @@ window.openNewTopicModal = function() {
     }
     const modal = document.getElementById('new-topic-modal');
     modal.classList.remove('hidden');
-    
-    // Загрузка категорий в селект
     loadCategoriesForSelect();
 }
 
 async function loadCategoriesForSelect() {
     const select = document.getElementById('nt-category');
-    if (select.children.length > 0) return; // Уже загружено
+    if (select.children.length > 0) return;
     
     const lang = localStorage.getItem('forumLanguage') || 'en';
-    const res = await fetch(`/api/forum/categories?lang=${lang}`);
-    const cats = await res.json();
-    
-    cats.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.slug;
-        opt.textContent = c.title;
-        select.appendChild(opt);
-    });
+    try {
+        const res = await fetch(`/api/forum/categories?lang=${lang}`);
+        const cats = await res.json();
+        
+        cats.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.slug;
+            opt.textContent = c.title;
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        console.error("Failed to load categories for select", e);
+    }
+}
+
+window.closeNewTopicModal = function() {
+    const modal = document.getElementById('new-topic-modal');
+    modal.classList.add('hidden');
 }
 
 window.submitNewTopic = async function() {
-    // ... (код получения значений) ...
-    const title = document.getElementById('nt-title').value;
-    const content = document.getElementById('nt-content').value;
+    const title = document.getElementById('nt-title').value.trim();
+    const content = document.getElementById('nt-content').value.trim();
     const category = document.getElementById('nt-category').value;
     const user = JSON.parse(localStorage.getItem('user'));
     const lang = localStorage.getItem('forumLanguage') || 'en';
 
-    // ... (валидация) ...
+    // Валидация
+    if (!title || !content) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    if (!category) {
+        alert('Please select a category');
+        return;
+    }
+
+    const btn = document.querySelector('.btn-new-topic-submit');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
 
     try {
         const res = await fetch('/api/forum/topics', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                title, content, category_slug: category, 
-                user_id: user.id, 
-                lang: lang // ВАЖНО: Отправляем язык
+                title: title,
+                content: content,
+                category_slug: category,
+                user_id: user.id,
+                lang: lang
             })
         });
-        // ... (обработка успеха) ...
-        window.location.reload();
-    } catch(e) { console.error(e); }
+
+        const result = await res.json();
+
+        if (!res.ok) {
+            throw new Error(result.error || 'Failed to create topic');
+        }
+
+        if (result.success) {
+            alert('Topic created successfully!');
+            window.location.href = `topic.html?id=${result.topicId}`;
+        } else {
+            alert('Error: ' + (result.error || 'Unknown error'));
+        }
+    } catch(e) {
+        console.error('Topic creation error:', e);
+        alert('Error: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
 }
 
 // Utils
-function escapeHtml(text) { if(!text) return ''; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function escapeHtml(text) { 
+    if(!text) return ''; 
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
+}
+
 function timeAgo(dateString) {
     const date = new Date(dateString);
     const seconds = Math.floor((new Date() - date) / 1000);
