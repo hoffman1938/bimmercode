@@ -1,124 +1,86 @@
 // functions/api/auth/register.js
 import { generateId } from '../../../lib/utils.js';
 import { hashPassword } from '../../../lib/crypto.js';
-import { sendVerificationEmail } from '../../../lib/email.js';
 
-
-const TRANSLATIONS = {
-  en: {
-    missing_data: "Missing required fields",
-    invalid_email: "Invalid email format",
-    email_exists: "Email already registered",
-    username_taken: "Username already taken",
-    weak_password: "Password must be at least 8 characters",
-    registration_success: "Registration successful. Check your email to verify.",
-    error: "Registration error"
-  },
-  ru: {
-    missing_data: "Заполните все поля",
-    invalid_email: "Неверный формат email",
-    email_exists: "Email уже зарегистрирован",
-    username_taken: "Имя пользователя уже занято",
-    weak_password: "Пароль должен быть минимум 8 символов",
-    registration_success: "Регистрация успешна. Проверьте email для подтверждения.",
-    error: "Ошибка регистрации"
-  },
-  ka: {
-    missing_data: "შეავსეთ ყველა ველი",
-    invalid_email: "არასწორი ელფოსტის ფორმატი",
-    email_exists: "ეს ელფოსტა უკვე დაფიქსირებულია",
-    username_taken: "ეს მომხმარებელი სახელი უკვე დაკავებულია",
-    weak_password: "პაროლი უნდა იყოს მინიმუმ 8 სიმბოლო",
-    registration_success: "რეგისტრაცია წარმატებული. შეამოწმეთ ელფოსტა დასადასტურებლად.",
-    error: "რეგისტრაციის შეცდომა"
+export default {
+  async fetch(request, env, ctx) {
+    return handleRegister(request, env, ctx);
   }
 };
 
-function t(key, lang = 'en') {
-  return TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en'][key];
-}
+async function handleRegister(request, env, ctx) {
+  // Только POST
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { 
+      status: 405,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
 
-function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-}
-
-export async function onRequestPost(context) {
   try {
-    const { email, password, username, language = 'en' } = await context.request.json();
-    const db = context.env.DB;
+    const { email, password, username, language = 'en' } = await request.json();
+    const db = env.DB;
 
-    // Validate data
+    // Валидация
     if (!email || !password || !username) {
-      return new Response(JSON.stringify({ 
-        error: t('missing_data', language) 
-      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: "Missing fields" }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
-
-    if (!validateEmail(email)) {
-      return new Response(JSON.stringify({ 
-        error: t('invalid_email', language) 
-      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-    }
-
     if (password.length < 8) {
-      return new Response(JSON.stringify({ 
-        error: t('weak_password', language) 
-      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: "Password too short (min 8 chars)" }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    // Check duplicate email
-    const existingEmail = await db.prepare(
-      "SELECT id FROM users WHERE email = ?"
-    ).bind(email).first();
-
-    if (existingEmail) {
-      return new Response(JSON.stringify({ 
-        error: t('email_exists', language) 
-      }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    // Проверка дубликатов
+    const exists = await db.prepare(
+      "SELECT id FROM users WHERE email = ? OR username = ?"
+    ).bind(email, username).first();
+    
+    if (exists) {
+      return new Response(JSON.stringify({ error: "Email or Username already taken" }), { 
+        status: 409,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    // Check duplicate username
-    const existingUsername = await db.prepare(
-      "SELECT id FROM users WHERE username = ?"
-    ).bind(username).first();
-
-    if (existingUsername) {
-      return new Response(JSON.stringify({ 
-        error: t('username_taken', language) 
-      }), { status: 409, headers: { 'Content-Type': 'application/json' } });
-    }
-
-    // Create user
+    // Создание пользователя
     const userId = generateId();
     const passwordHash = await hashPassword(password);
-    const verificationToken = generateId();
-
-    await db.prepare(
+    
+    // Вставляем в таблицу users
+    const insertResult = await db.prepare(
       `INSERT INTO users 
-       (id, email, username, password_hash, verification_token, email_verified, created_at, is_active)
-       VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, 1)`
-    ).bind(userId, email, username, passwordHash, verificationToken).run();
+       (id, email, username, password_hash, locale, created_at, is_active, role, reputation)
+       VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 1, 'user', 0)`
+    ).bind(userId, email, username, passwordHash, language).run();
 
-    // Send verification email
-    try {
-      const verificationLink = `${context.env.APP_URL}/forum.html?verify_token=${verificationToken}`;
-      await sendVerificationEmail(email, verificationLink, language, context.env);
-    } catch (emailErr) {
-      console.error('Email send error:', emailErr);
-      // Continue anyway - email might fail but registration is complete
+    if (!insertResult.success) {
+      throw new Error("Failed to create user");
     }
 
     return new Response(JSON.stringify({
       success: true,
-      message: t('registration_success', language),
+      message: "Registration successful",
       user_id: userId
-    }), { status: 201, headers: { 'Content-Type': 'application/json' } });
+    }), { 
+      status: 201, 
+      headers: { 'Content-Type': 'application/json' }
+    });
 
   } catch (err) {
-    console.error('Registration error:', err);
-    return new Response(JSON.stringify({ 
-      error: "Internal server error: " + err.message 
-    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    console.error('Register error:', err);
+    return new Response(JSON.stringify({ error: err.message }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
+}
+
+// Поддержка onRequest API (если используется старая версия)
+export async function onRequest(context) {
+  return handleRegister(context.request, context.env, context);
 }
