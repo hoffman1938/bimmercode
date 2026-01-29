@@ -5,17 +5,16 @@ export async function onRequest(context) {
   const db = env.DB;
   const url = new URL(request.url);
 
-  // === 1. ПОЛУЧЕНИЕ ТЕМ (GET) ===
+  // === 1. ПОЛУЧЕНИЕ СПИСКА ТЕМ ===
   if (request.method === "GET") {
     try {
       const category = url.searchParams.get("category");
       const search = url.searchParams.get("search");
-      
-      // Базовый запрос
+
       let query = `
         SELECT t.*, u.username, u.avatar_url 
-        FROM topics t
-        LEFT JOIN users u ON t.user_id = u.id
+        FROM topics t 
+        LEFT JOIN users u ON t.user_id = u.id 
       `;
       
       const params = [];
@@ -36,45 +35,46 @@ export async function onRequest(context) {
         query += " WHERE " + conditions.join(" AND ");
       }
 
-      query += " ORDER BY t.last_activity_at DESC LIMIT 50";
+      query += " ORDER BY t.created_at DESC LIMIT 50";
 
       const { results } = await db.prepare(query).bind(...params).all();
-
-      // Если результатов нет, возвращаем пустой массив, а не null/error
-      return new Response(JSON.stringify(results || []), {
-        headers: { "Content-Type": "application/json" }
-      });
-
+      
+      return new Response(JSON.stringify(results || []), { status: 200 });
     } catch (e) {
-      // Возвращаем текст ошибки в JSON, чтобы видеть её в консоли, но не крашить 500
-      return new Response(JSON.stringify({ error: e.message, stack: e.stack }), { 
-        status: 200, // Отдаем 200, чтобы фронтенд обработал ответ
-        headers: { "Content-Type": "application/json" }
-      });
+      return new Response(JSON.stringify({ error: e.message }), { status: 200 }); // Не падать с 500
     }
   }
 
-  // === 2. СОЗДАНИЕ ТЕМЫ (POST) ===
+  // === 2. СОЗДАНИЕ ТЕМЫ (FIXED) ===
   if (request.method === "POST") {
     try {
       const data = await request.json();
       
-      if (!data.title || !data.content || !data.category_slug || !data.user_id) {
-        return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+      // Валидация
+      if (!data.title || !data.content || !data.user_id || !data.category_slug) {
+        return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
       }
 
-      const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substr(2, 6);
+      // Генерируем slug: "My Topic Title" -> "my-topic-title-x7z9"
+      const slug = data.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') + '-' + Math.random().toString(36).substring(2, 6);
 
+      // Вставляем в БД (Используем правильные имена колонок!)
       const result = await db.prepare(
-        `INSERT INTO topics (slug, category_slug, user_id, title, content, created_at, last_activity_at) 
-         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+        `INSERT INTO topics (slug, category_slug, user_id, title, content, created_at, last_activity_at, views, reply_count) 
+         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0, 0)`
       ).bind(slug, data.category_slug, data.user_id, data.title, data.content).run();
 
-      if (!result.success) throw new Error("DB Insert failed");
+      if (!result.success) {
+        throw new Error("Failed to insert into database");
+      }
 
       return new Response(JSON.stringify({ success: true, slug: slug }), { status: 201 });
 
     } catch (e) {
+      console.error("Create topic error:", e);
       return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
   }

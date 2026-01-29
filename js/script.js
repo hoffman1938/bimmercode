@@ -145,24 +145,47 @@ google.accounts.id.renderButton(btnContainer, { theme: "filled_blue", size: "lar
     } catch (e) { console.error(e); }
 }
 
-window.handleGoogleCredentialResponse = function(response) {
+// js/script.js - Обновленная функция входа
+
+window.handleGoogleCredentialResponse = async function(response) {
     try {
-        const base64Url = response.credential.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-
-        const payload = JSON.parse(jsonPayload);
-        const user = { id: payload.sub, username: payload.name, email: payload.email, avatar: payload.picture };
-
-        localStorage.setItem('user', JSON.stringify(user));
+        console.log("Sending token to backend...");
         
-        const modal = document.getElementById('auth-modal');
-        if(modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
+        // 1. Отправляем токен на наш бэкенд для верификации и сохранения в БД
+        const res = await fetch('/api/auth/google-callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                credential: response.credential,
+                language: window.currentLanguage || 'en'
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error || 'Server registration failed');
+        }
+
+        // 2. Бэкенд вернул правильного пользователя из БД
+        console.log("User logged in/registered:", data.user);
+
+        // 3. Сохраняем и обновляем
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Закрываем модалку
+        if(window.closeAuthModal) window.closeAuthModal();
+        else {
+            const modal = document.getElementById('auth-modal');
+            if(modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
+        }
         
         window.location.reload(); 
-    } catch (e) { alert("Google Auth Failed"); }
+
+    } catch (e) {
+        console.error("Auth process error:", e);
+        alert("Authentication Failed: " + e.message);
+    }
 };
 
 // ==========================================
