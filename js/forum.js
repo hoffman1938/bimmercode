@@ -19,6 +19,7 @@ function initAuthForum() {
     const sideCard = document.getElementById('user-mini-card');
     const sideName = document.getElementById('side-username');
     const sideAvatar = document.getElementById('user-avatar-display');
+    const authBtn = document.getElementById('auth-btn');
 
     if (user && sideCard) {
         sideCard.style.display = 'block';
@@ -40,8 +41,29 @@ function initAuthForum() {
             const imgUrl = user.avatar_url || './assets/icons/default-avatar.png';
             sideAvatar.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
         }
+
+        // Обновляем кнопку авторизации
+        if (authBtn) {
+            authBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> <span>${user.username}</span>`;
+            authBtn.onclick = logoutUser;
+            authBtn.style.opacity = "1";
+        }
+    } else {
+        // Юзер не авторизован
+        if (authBtn) {
+            authBtn.innerHTML = `<i class="fas fa-user"></i> <span>Login</span>`;
+            authBtn.onclick = toggleAuthModal;
+        }
     }
 }
+
+window.logoutUser = function() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('authToken');
+        window.location.reload();
+    }
+};
 
 // === КАТЕГОРИИ ===
 async function loadCategories() {
@@ -143,6 +165,7 @@ function renderTopics(topics) {
 window.openNewTopicModal = function() {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
+        alert('Please login to create a topic');
         if(window.toggleAuthModal) window.toggleAuthModal();
         return;
     }
@@ -174,6 +197,10 @@ async function loadCategoriesForSelect() {
 window.closeNewTopicModal = function() {
     const modal = document.getElementById('new-topic-modal');
     modal.classList.add('hidden');
+    
+    // Очищаем форму
+    document.getElementById('nt-title').value = '';
+    document.getElementById('nt-content').value = '';
 }
 
 window.submitNewTopic = async function() {
@@ -219,7 +246,7 @@ window.submitNewTopic = async function() {
         }
 
         if (result.success) {
-            alert('Topic created successfully!');
+            closeNewTopicModal();
             window.location.href = `topic.html?id=${result.topicId}`;
         } else {
             alert('Error: ' + (result.error || 'Unknown error'));
@@ -246,4 +273,42 @@ function timeAgo(dateString) {
     if (seconds < 3600) return Math.floor(seconds/60) + "m ago";
     if (seconds < 86400) return Math.floor(seconds/3600) + "h ago";
     return Math.floor(seconds/86400) + "d ago";
+}
+
+window.toggleFavoritesModal = function() {
+    const modal = document.getElementById('favorites-modal');
+    if (!modal) return;
+    
+    const isHidden = modal.style.display === 'none' || modal.style.display === '';
+    modal.style.display = isHidden ? 'flex' : 'none';
+    
+    if (isHidden) {
+        loadFavorites();
+    }
+}
+
+function loadFavorites() {
+    const favorites = JSON.parse(localStorage.getItem('bmwFavorites')) || [];
+    const list = document.getElementById('favorites-list');
+    
+    if (favorites.length === 0) {
+        list.innerHTML = '<p style="color:#999;">No saved codes yet.</p>';
+        return;
+    }
+    
+    list.innerHTML = favorites.map(code => `
+        <div style="padding:10px; border-bottom:1px solid #333;">
+            <strong>${code}</strong>
+            <button style="margin-left:10px; cursor:pointer;" onclick="removeFavorite('${code}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+window.removeFavorite = function(code) {
+    let favorites = JSON.parse(localStorage.getItem('bmwFavorites')) || [];
+    favorites = favorites.filter(c => c !== code);
+    localStorage.setItem('bmwFavorites', JSON.stringify(favorites));
+    loadFavorites();
 }

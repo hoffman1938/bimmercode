@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('user'));
     
     if (!user) {
-        window.location.href = 'index.html';
+        alert('Please login first');
+        window.location.href = 'forum.html';
         return;
     }
 
@@ -22,11 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Логаут
     document.getElementById('logout-btn').addEventListener('click', () => {
-        localStorage.removeItem('user');
-        window.location.href = 'index.html';
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
+            window.location.href = 'forum.html';
+        }
     });
 
-    // Сохранение
+    // Сохранение профиля
     document.getElementById('profile-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('button');
@@ -43,14 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // Для запроса нужен токен сессии. Предполагаем, что он был сохранен при логине
-            // В login.js мы сохраняли token в ответе, но надо проверить сохранили ли мы его в localStorage
-            // ВАЖНО: В script.js в handleGoogleCredentialResponse мы сохраняли весь объект user. 
-            // Давайте предположим, что token лежит в localStorage.getItem('authToken') или внутри user. 
-            // *Правка*: login.js возвращает `token` отдельно. Нужно убедиться, что script.js его сохраняет.
+            // Получаем токен из localStorage
+            const token = localStorage.getItem('authToken');
             
-            // Получаем токен из localStorage (если вы обновили логику логина, см. ниже)
-            const token = localStorage.getItem('authToken'); 
+            if (!token) {
+                throw new Error('Session expired. Please login again.');
+            }
 
             const res = await fetch('/api/user/update', {
                 method: 'POST',
@@ -63,9 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await res.json();
             
+            if (!res.ok) {
+                throw new Error(result.error || 'Failed to update profile');
+            }
+
             if (result.success) {
                 // Обновляем локальное хранилище
                 const newUser = { ...user, ...result.user };
+                
                 // Восстанавливаем структуру bmw объекта для фронта
                 newUser.bmw = {
                     model: result.user.bmw_model,
@@ -74,17 +81,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 
                 localStorage.setItem('user', JSON.stringify(newUser));
-                
-                // Если сменили язык, сохраняем настройку форума
                 localStorage.setItem('forumLanguage', updatedData.locale);
                 
-                alert('Profile updated!');
+                alert('✓ Profile updated successfully!');
                 window.location.reload();
             } else {
-                alert('Error: ' + result.error);
+                throw new Error(result.error || 'Unknown error occurred');
             }
         } catch (err) {
-            alert('Failed to save');
+            alert('Error: ' + err.message);
             console.error(err);
         } finally {
             btn.textContent = originalText;

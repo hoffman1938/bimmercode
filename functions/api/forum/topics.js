@@ -52,8 +52,7 @@ export async function onRequest(context) {
         .replace(/-+/g, '-')
         .replace(/(^-|-$)/g, '') + '-' + Math.random().toString(36).substring(2, 6);
 
-      // ВАЖНО: Вставляем тему БЕЗ явного указания 'open' в VALUES
-      // Статус должен иметь DEFAULT значение в таблице или вставляться отдельно
+      // ВСТАВЛЯЕМ ТЕМУ
       const insertTopicResult = await db.prepare(
         `INSERT INTO topics (slug, category_slug, user_id, title, content, lang, status, created_at, last_activity_at) 
          VALUES (?, ?, ?, ?, ?, ?, 'open', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
@@ -64,7 +63,6 @@ export async function onRequest(context) {
       }
 
       // Получаем ID только что созданной темы
-      // В D1 используем LAST_INSERT_ROWID() через отдельный запрос
       const topicIdResult = await db.prepare(
         `SELECT id FROM topics WHERE slug = ? ORDER BY created_at DESC LIMIT 1`
       ).bind(slug).first();
@@ -76,7 +74,6 @@ export async function onRequest(context) {
       const topicId = topicIdResult.id;
 
       // Вставляем первый пост (содержимое темы как пост #1)
-      // Это облегчит рендеринг в topic-view.js
       const insertPostResult = await db.prepare(
         `INSERT INTO posts (topic_id, user_id, content, created_at) 
          VALUES (?, ?, ?, CURRENT_TIMESTAMP)`
