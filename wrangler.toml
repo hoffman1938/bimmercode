@@ -1,15 +1,60 @@
-name = "bimmercode" # <--- ДОБАВЬТЕ ЭТУ СТРОКУ (замените на точное имя проекта в Cloudflare)
+# wrangler.toml
+# Cloudflare Pages + Workers конфигурация для BMW Forum
+# Проект: bimmercode
+
+name = "bimmercode"
 pages_build_output_dir = "./"
 compatibility_date = "2024-01-29"
 
-# Если у вас там есть настройки D1, оставьте их ниже
+# ============================================
+# !! КРИТИЧНО !! Environment Variables
+# ============================================
+[env.production]
+vars = { 
+  JWT_SECRET = "f69bf44f802dde0e9f67c2e8189adc1d597b86a882d6753d07ac423624d726d8",
+  ENVIRONMENT = "production"
+}
+
+[env.development]
+vars = {
+  JWT_SECRET = "f69bf44f802dde0e9f67c2e8189adc1d597b86a882d6753d07ac423624d726d8",
+  ENVIRONMENT = "development"
+}
+
+# ============================================
+# D1 Database Binding
+# ============================================
 [[d1_databases]]
 binding = "DB"
-database_name = "bmw-db" # Ваше название базы
-database_id = "6e997484-ee10-48d1-a4d6-78d95216721f" # Ваш ID базы
+database_name = "bmw-db"
+database_id = "6e997484-ee10-48d1-a4d6-78d95216721f"
 
-[env.production]
-vars = { JWT_SECRET = "f69bf44f802dde0e9f67c2e8189adc1d597b86a882d6753d07ac423624d726d8" }
+# ============================================
+# Routes (для Workers функций)
+# ============================================
+[[routes]]
+pattern = "*/api/*"
+zone_name = "bimmercodes.net"
 
-[env.development]  
-vars = { JWT_SECRET = "f69bf44f802dde0e9f67c2e8189adc1d597b86a882d6753d07ac423624d726d8" }
+[[routes]]
+pattern = "localhost:*/api/*"
+custom_domain = true
+
+# ============================================
+# Build Configuration
+# ============================================
+[build]
+command = "npm run build"
+cwd = "./"
+
+# ============================================
+# Observability
+# ============================================
+[observability]
+enabled = true
+
+# ============================================
+# Limits
+# ============================================
+[limits]
+cpu_milliseconds = 50000
