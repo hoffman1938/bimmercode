@@ -140,7 +140,7 @@ function initGoogleAuth() {
         });
         const btnContainer = document.querySelector(".g_id_signin");
         if (btnContainer) {
-            google.accounts.id.renderButton(btnContainer, { theme: "filled_blue", size: "large", width: "100%" });
+google.accounts.id.renderButton(btnContainer, { theme: "filled_blue", size: "large" });
         }
     } catch (e) { console.error(e); }
 }
