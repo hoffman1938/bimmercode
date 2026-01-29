@@ -152,7 +152,7 @@ window.handleGoogleCredentialResponse = async function(response) {
     try {
         console.log("Google Auth: Sending token to server...");
         
-        // 1. ОТПРАВЛЯЕМ ТОКЕН НА БЭКЕНД (Самое важное!)
+        // 1. ОТПРАВЛЯЕМ ТОКЕН НА БЭКЕНД
         const res = await fetch('/api/auth/google-callback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -170,15 +170,24 @@ window.handleGoogleCredentialResponse = async function(response) {
 
         console.log("User logged in:", data.user);
 
-        // 2. Сохраняем пользователя, который пришел С СЕРВЕРА
+        // === ВАЖНЫЕ ИЗМЕНЕНИЯ НИЖЕ ===
+        
+        // 2. Сохраняем ТОКЕН (нужен для редактирования профиля)
+        if (data.token) {
+            localStorage.setItem('authToken', data.token);
+        }
+
+        // 3. Сохраняем данные пользователя
         window.state.user = data.user;
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // 3. Закрываем модалку
+        // ==============================
+        
+        // 4. Закрываем модалку
         const modal = document.getElementById('auth-modal');
         if(modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
         
-        // 4. Перезагружаем страницу, чтобы обновился хедер
+        // 5. Перезагружаем страницу
         window.location.reload(); 
 
     } catch (e) {
@@ -629,3 +638,54 @@ function init3DBackground() {
   animate();
   window.addEventListener("resize", () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 }
+
+// ==========================================
+// 9. ОБЫЧНЫЙ ВХОД (EMAIL + PASSWORD)
+// ==========================================
+
+// Функция для вызова при нажатии кнопки "Login" в форме
+window.handleEmailLogin = async function(event) {
+    if (event) event.preventDefault();
+    
+    const emailInput = document.getElementById('auth-email');
+    const passInput = document.getElementById('auth-password');
+    const btn = document.getElementById('btn-email-login');
+    
+    if (!emailInput || !passInput) return; // Если полей нет в HTML
+    
+    const email = emailInput.value.trim();
+    const password = passInput.value.trim();
+    
+    if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+    }
+
+    // Блокируем кнопку
+    const oldText = btn ? btn.innerText : 'Login';
+    if(btn) { btn.innerText = "Wait..."; btn.disabled = true; }
+
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "Login failed");
+
+        // === СОХРАНЕНИЕ ТОКЕНА И ЮЗЕРА ===
+        if (data.token) localStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.state.user = data.user;
+
+        // Перезагрузка
+        window.location.reload();
+
+    } catch (e) {
+        alert("Error: " + e.message);
+        if(btn) { btn.innerText = oldText; btn.disabled = false; }
+    }
+};
