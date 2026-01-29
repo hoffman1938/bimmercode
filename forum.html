@@ -13,58 +13,10 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
-        /* Стили форума (временно здесь) */
-        :root {
-            --f-bg: #0b0d11;
-            --f-panel: #151922;
-            --f-border: #2a2f3a;
-            --f-accent: #0066b3;
-            --f-text: #e0e0e0;
-            --f-text-muted: #8b9bb4;
-        }
-        body { background-color: var(--f-bg); font-family: 'Inter', sans-serif; }
-        
-        .forum-wrapper {
-            max-width: 1200px;
-            margin: 100px auto 40px; /* Отступ сверху под хедер */
-            display: grid;
-            grid-template-columns: 260px 1fr;
-            gap: 25px;
-            padding: 0 15px;
-        }
-
-        /* Sidebar */
-        .f-card { background: var(--f-panel); border: 1px solid var(--f-border); border-radius: 8px; overflow: hidden; margin-bottom: 20px;}
-        .cat-group-title { padding: 12px 15px; font-size: 11px; text-transform: uppercase; color: var(--f-text-muted); background: rgba(0,0,0,0.2); font-weight: 700; }
-        .cat-link { display: flex; align-items: center; padding: 10px 15px; color: var(--f-text); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.2s; font-size: 13px; }
-        .cat-link:hover, .cat-link.active { background: rgba(0, 102, 179, 0.1); color: var(--f-accent); border-left: 3px solid var(--f-accent); }
-        .cat-link i { width: 25px; color: var(--f-text-muted); }
-        .cat-link:hover i { color: var(--f-accent); }
-
-        /* Main */
-        .f-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
-        .page-title { font-size: 20px; font-weight: 600; color: white; margin: 0; }
-        
-        .btn-new-topic { background: var(--f-accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 500; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .btn-new-topic:hover { background: #005699; }
-
-        /* Table */
-        .topic-list-header { display: grid; grid-template-columns: 1fr 100px 100px 180px; padding: 12px 20px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--f-border); font-size: 11px; text-transform: uppercase; color: var(--f-text-muted); }
-        .topic-row { display: grid; grid-template-columns: 1fr 100px 100px 180px; padding: 15px 20px; border-bottom: 1px solid var(--f-border); align-items: center; transition: 0.2s; cursor: pointer; }
-        .topic-row:hover { background: rgba(255,255,255,0.02); }
-        .t-title { font-size: 15px; font-weight: 500; color: white; }
-        .t-meta { font-size: 12px; color: var(--f-text-muted); display: flex; gap: 10px; margin-top: 4px;}
-        .t-tag { background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 3px; font-size: 10px; color: #ccc; }
-        .t-stat { text-align: center; font-size: 13px; color: #ccc; }
-        .t-stat small { display: block; font-size: 10px; color: var(--f-text-muted); }
-        .t-last { font-size: 12px; color: #ccc; text-align: right; }
-        .t-last-date { color: var(--f-text-muted); font-size: 11px; }
-
-        @media (max-width: 768px) {
-            .forum-wrapper { grid-template-columns: 1fr; margin-top: 80px; }
-            .topic-list-header, .t-stat, .f-sidebar { display: none; } /* Упрощение для моб */
-            .topic-row { grid-template-columns: 1fr auto; }
-        }
+        /* Инлайн-фиксы для гарантии отображения */
+        .hidden { display: none !important; }
+        .modal-overlay { display: none; } /* По умолчанию скрыто */
+        .modal-overlay.active { display: flex; } /* Класс active будет включать flex */
     </style>
 </head>
 <body class="bmw-pattern">
@@ -123,7 +75,6 @@
                 <div class="cat-group-title">Technical</div>
                 <a href="#" class="cat-link" onclick="filterCat('engines')"><i class="fas fa-cogs"></i> Engines</a>
                 <a href="#" class="cat-link" onclick="filterCat('chassis')"><i class="fas fa-car-crash"></i> Chassis</a>
-                <a href="#" class="cat-link" onclick="filterCat('electronics')"><i class="fas fa-microchip"></i> Electronics</a>
                 <a href="#" class="cat-link" onclick="filterCat('coding')"><i class="fas fa-laptop-code"></i> Coding</a>
             </div>
         </aside>
@@ -132,7 +83,8 @@
             <div class="f-actions">
                 <h1 class="page-title">Community Discussions</h1>
                 <div style="display:flex; gap:10px;">
-                    <input type="text" placeholder="Search forum..." style="background:var(--f-panel); border:1px solid var(--f-border); color:white; padding:8px 12px; border-radius:4px; font-size:13px; outline:none;">
+                    <input type="text" id="forum-search" placeholder="Search forum..." style="background:var(--f-panel); border:1px solid var(--f-border); color:white; padding:8px 12px; border-radius:4px; font-size:13px; outline:none;">
+                    
                     <button class="btn-new-topic" onclick="openNewTopicModal()">
                         <i class="fas fa-plus"></i> <span>New Topic</span>
                     </button>
@@ -153,7 +105,7 @@
         </section>
     </div>
 
-    <div id="new-topic-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div id="new-topic-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
         <div class="f-card" style="width: 100%; max-width: 600px; padding: 25px; background: #151922; border: 1px solid #333;">
             <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
                 <h2 style="margin:0; color:white;">Create New Topic</h2>
@@ -177,9 +129,10 @@
         </div>
     </div>
 
-    <div id="auth-modal" class="modal-overlay hidden">
-        <div class="auth-glass-card">
-            <button class="close-btn" style="position:absolute; top:15px; right:15px;" onclick="toggleAuthModal()"><i class="fas fa-times"></i></button>
+    <div id="auth-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2001; justify-content: center; align-items: center;">
+        <div class="auth-glass-card" style="position:relative;">
+            <button class="close-btn" style="position:absolute; top:15px; right:15px;" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+            <h3 style="text-align:center; color:white; margin-bottom:20px;">Login / Register</h3>
             <div id="g_id_onload" data-client_id="855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com" data-callback="handleGoogleCredentialResponse"></div>
             <div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue"></div>
         </div>

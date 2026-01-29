@@ -18,7 +18,7 @@ let selectedCode = null;
 let chatOpen = false;
 
 // Состояние пользователя
-const state = {
+window.state = {
     user: JSON.parse(localStorage.getItem('user')) || null
 };
 
@@ -64,7 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Загрузка данных (Только если есть элемент поиска)
     if (searchInput) {
         initSearchData(); // Загружаем JSON
-        searchInput.addEventListener("input", handleSearch);
+        // Мы проверяем, существует ли элемент, перед тем как вешать событие
+if (searchInput) {
+    searchInput.addEventListener("input", handleSearch);
+}
     }
     
     // 2. Язык
@@ -102,8 +105,8 @@ async function initSearchData() {
 window.toggleAuthModal = function() {
     const modal = document.getElementById('auth-modal');
     if (modal) {
-        modal.classList.toggle('hidden');
-        modal.style.display = modal.classList.contains('hidden') ? 'none' : 'flex';
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
     }
 }
 
