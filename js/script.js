@@ -139,76 +139,10 @@ function toggleAuthModal() {
     }
 }
 
+
 function initGoogleAuth() {
-    // Google Auth removed - using Email/Password instead
-    console.log('Email/Password authentication is enabled');
+    console.log('✓ Email/Password authentication enabled');
 }
-
-
-// Найти и заменить функцию window.handleGoogleCredentialResponse:
-
-window.handleGoogleCredentialResponse = async function(response) {
-    try {
-        console.log("Google Auth: Received credential, sending to server...");
-        
-        if (!response || !response.credential) {
-            throw new Error("No credential in response");
-        }
-        
-        // 1. ОТПРАВЛЯЕМ ТОКЕН НА БЭКЕНД
-        const res = await fetch('/api/auth/google-callback', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                credential: response.credential,
-                language: currentLanguage || 'en'  // Используем глобальную переменную
-            })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            console.error("Server response error:", data);
-            throw new Error(data.details || data.error || 'Server registration failed');
-        }
-
-        if (!data.success) {
-            throw new Error(data.error || 'Authentication failed');
-        }
-
-        console.log("✓ User logged in successfully:", data.user);
-
-        // === СОХРАНЕНИЕ ДАННЫХ ===
-        
-        // 2. Сохраняем ТОКЕН (нужен для редактирования профиля и API запросов)
-        if (data.token) {
-            localStorage.setItem('authToken', data.token);
-            console.log("✓ Token saved");
-        }
-
-        // 3. Сохраняем данные пользователя в localStorage
-        window.state.user = data.user;
-        localStorage.setItem('user', JSON.stringify(data.user));
-        console.log("✓ User data saved to localStorage");
-        
-        // 4. Закрываем модалку авторизации
-        const modal = document.getElementById('auth-modal');
-        if(modal) { 
-            modal.classList.add('hidden'); 
-            modal.style.display = 'none'; 
-        }
-        
-        // 5. Показываем успешное сообщение и перезагружаем
-        console.log("✓ Authentication complete, reloading page...");
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
-
-    } catch (e) {
-        console.error("❌ Auth process error:", e);
-        alert("Authentication Failed:\n" + e.message + "\n\nПожалуйста, попробуйте еще раз.");
-    }
-};
 
 // ==========================================
 // 4. ЯЗЫК

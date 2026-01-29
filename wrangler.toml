@@ -7,3 +7,9 @@ compatibility_date = "2024-01-29"
 binding = "DB"
 database_name = "bmw-db" # Ваше название базы
 database_id = "6e997484-ee10-48d1-a4d6-78d95216721f" # Ваш ID базы
+
+[env.production]
+vars = { JWT_SECRET = "f69bf44f802dde0e9f67c2e8189adc1d597b86a882d6753d07ac423624d726d8" }
+
+[env.development]  
+vars = { JWT_SECRET = "f69bf44f802dde0e9f67c2e8189adc1d597b86a882d6753d07ac423624d726d8" }
