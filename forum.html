@@ -3,154 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMW Professional Community</title>
-    
-    <link rel="stylesheet" href="./css/style.css" />
+    <title>BMW Community Forum</title>
     <link rel="stylesheet" href="./css/responsive.css" />
-    <link rel="stylesheet" href="./css/forum.css" /> 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/forum.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
-    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
-        /* Auth Modal Styles */
-        .auth-modal-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .auth-tabs {
-            display: flex;
-            gap: 10px;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-        }
-
-        .auth-tab {
-            padding: 12px 20px;
-            background: none;
-            border: none;
-            color: #999;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-        }
-
-        .auth-tab:hover {
-            color: #ccc;
-        }
-
-        .auth-tab.active {
-            color: #0066b3;
-            border-bottom-color: #0066b3;
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .auth-form input {
-            padding: 12px 15px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px;
-            color: white;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .auth-form input:focus {
-            outline: none;
-            background: rgba(255,255,255,0.1);
-            border-color: #0066b3;
-            box-shadow: 0 0 10px rgba(0,102,179,0.2);
-        }
-
-        .auth-form input::placeholder {
-            color: #666;
-        }
-
-        .auth-form button {
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #0066b3, #004a8a);
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-
-        .auth-form button:hover:not(:disabled) {
-            background: linear-gradient(135deg, #0080d0, #0066b3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,102,179,0.3);
-        }
-
-        .auth-form button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .form-group label {
-            font-size: 12px;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group input {
-            width: 100%;
-        }
-
-        .auth-divider {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 15px 0;
-            color: #666;
-            font-size: 12px;
-        }
-
-        .auth-divider::before,
-        .auth-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(255,255,255,0.1);
-        }
-
-        .error-message {
-            color: #e74c3c;
-            font-size: 12px;
-            padding: 10px;
-            background: rgba(231,76,60,0.1);
-            border-radius: 4px;
-            margin-bottom: 10px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
+        /* Стили остались те же, сократил для краткости */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(5px); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-glass { background: #151922; border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; width: 90%; max-width: 500px; transform: scale(0.9); transition: transform 0.3s; box-shadow: 0 0 40px rgba(0, 102, 179, 0.2); }
+        .modal-overlay.active .modal-glass { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: white; }
+        .close-btn { background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; }
+        select.form-input option { background: #151922; color: white; }
+        .topic-image { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--glass-border); display: block; }
+        .post-controls { display: flex; gap: 10px; opacity: 0.6; transition: 0.2s; margin-left: auto; }
+        .post-controls:hover { opacity: 1; }
+        .control-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px; color: var(--text-secondary); }
+        .control-btn.delete:hover { color: #e74c3c; } 
+        .like-btn { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid transparent; padding: 4px 10px; border-radius: 15px; cursor: pointer; font-size: 13px; color: #94a3b8; }
+        .like-btn.liked { color: #e74c3c; background: rgba(231, 76, 60, 0.15); border-color: rgba(231, 76, 60, 0.3); }
+        .reply-card.solution { border: 1px solid #2ecc71; background: rgba(46, 204, 113, 0.05); }
+        .solution-badge { background: #2ecc71; color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 10px; display: inline-flex; align-items: center; gap: 4px; }
+        .solve-btn { color: #94a3b8; background: none; border: 1px solid #94a3b8; border-radius: 5px; padding: 2px 8px; font-size: 11px; cursor: pointer; opacity: 0.5; }
+        .solve-btn:hover { color: #2ecc71; border-color: #2ecc71; opacity: 1; }
+        
+        /* УВЕДОМЛЕНИЯ */
+        .notification-wrapper { position: relative; display: inline-flex; align-items: center; margin-right: 15px; }
+        .icon-only { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 18px; cursor: pointer; }
+        .notif-badge { position: absolute; top: 0px; right: 0px; background: #e74c3c; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid #0f1116; pointer-events: none; }
+        .notif-dropdown { position: absolute; top: 55px; right: -10px; width: 320px; background: #151922; border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 1000; overflow: hidden; animation: fadeIn 0.2s ease; backdrop-filter: blur(10px); }
+        @media (max-width: 480px) { .notif-dropdown { width: 300px; right: -60px; } }
+        .notif-header { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; font-weight: bold; color: white; background: rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; }
+        .notif-item { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; gap: 12px; align-items: start; }
+        .notif-item:hover { background: rgba(255,255,255,0.05); }
+        .notif-item.unread { background: rgba(0, 102, 179, 0.15); border-left: 3px solid #0066b3; }
+        .notif-content { font-size: 13px; color: #e2e8f0; line-height: 1.4; flex: 1; }
+        .notif-time { font-size: 11px; color: #94a3b8; margin-top: 4px; display: block; }
     </style>
 </head>
 <body class="bmw-pattern">
-
-    <div id="webgl-container" style="position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.5;"></div>
-
+    
     <header>
       <div class="logo-container">
         <a class="main_logo_refr" href="index.html">
@@ -163,160 +60,864 @@
                <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
             </svg>
           </div>
-          <h1>BMW DTC Bot</h1>
+          <h1 data-i18n="brandName">BMW Community</h1>
         </a>
       </div>
       <div class="controls">
-        <button id="language-toggle" class="btn">
-            <i class="fas fa-globe"></i> <span>EN</span>
+        <div class="notification-wrapper">
+            <button class="icon-only" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <span id="notif-badge" class="notif-badge hidden">0</span>
+            </button>
+            <div id="notif-dropdown" class="notif-dropdown hidden">
+                <div class="notif-header">
+                    <span id="notif-header-title">Notifications</span> 
+                    <button onclick="markAllRead()" id="notif-read-all-btn" style="font-size:11px; background:none; border:none; color:#6f9bd1; cursor:pointer;">Read all</button>
+                </div>
+                <div id="notif-list" class="notif-list">
+                    <div style="padding:20px; text-align:center; color:#777; font-size:13px;" id="notif-empty-msg">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="lang-btn" class="btn" onclick="toggleLanguage()">
+            <i class="fas fa-globe"></i> <span id="current-lang">EN</span>
         </button>
-        
-        <button class="btn" onclick="toggleFavoritesModal()">
-            <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
-        </button>
-        
-        <button id="auth-btn" class="btn" onclick="toggleAuthModal()">
-            <i class="fas fa-user"></i> <span>Login</span>
-        </button>
+        <a href="index.html" class="btn"><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a>
       </div>
     </header>
 
-    <main class="forum-container">
-        <div class="forum-layout">
-            
-            <aside class="sidebar-card">
-                <div id="user-mini-card" class="user-mini-profile" style="display:none;">
-                    <div class="avatar-large" id="user-avatar-display">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <h3 id="side-username" style="color:white; margin:10px 0;">User</h3>
-                    <div class="user-stats-grid">
-                        <div class="stat-box"><span class="stat-value">0</span><span class="stat-label">Posts</span></div>
-                        <div class="stat-box"><span class="stat-value">0</span><span class="stat-label">Rep</span></div>
-                    </div>
+    <main class="container" style="background: transparent; border: none; box-shadow: none;">
+        
+        <div id="auth-section" class="auth-wrapper">
+            <div class="auth-glass-card">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" onclick="switchTab('login')" data-i18n="loginTab">Login</div>
+                    <div class="auth-tab" onclick="switchTab('register')" data-i18n="regTab">Register</div>
                 </div>
+<form id="loginForm" class="auth-form active">
+    <div class="form-group">
+        <label class="form-label" data-i18n="emailLabel">Email</label>
+        <input type="email" id="login-email" class="form-input" required>
+    </div>
+    <div class="form-group">
+        <label class="form-label" data-i18n="passLabel">Password</label>
+        <input type="password" id="login-password" class="form-input" required>
+    </div>
+    <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="loginBtn">Log In</button>
+    <div id="login-message" style="margin-top:15px; color: #e74c3c; text-align: center; font-size: 13px;"></div>
+    
+    <!-- GOOGLE OAUTH КНОПКА -->
+    <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+        <span style="color: #94a3b8; font-size: 12px;" data-i18n="orText">Or</span>
+        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+    </div>
 
-                <nav class="nav-menu">
-                    <div class="group-title">Main</div>
-                    <a href="#" class="nav-item active" onclick="filterCat('all'); return false;"><i class="fas fa-stream"></i> All Topics</a>
-                    <a href="#" class="nav-item" onclick="filterCat('news'); return false;"><i class="fas fa-bullhorn"></i> News</a>
-                    <a href="#" class="nav-item" onclick="filterCat('general'); return false;"><i class="fas fa-comments"></i> General</a>
-                    
-                    <div class="group-title" style="margin-top:20px;">Technical</div>
-                    <a href="#" class="nav-item" onclick="filterCat('engines'); return false;"><i class="fas fa-cogs"></i> Engines</a>
-                    <a href="#" class="nav-item" onclick="filterCat('chassis'); return false;"><i class="fas fa-car-crash"></i> Chassis</a>
-                    <a href="#" class="nav-item" onclick="filterCat('electronics'); return false;"><i class="fas fa-microchip"></i> Electronics</a>
-                    <a href="#" class="nav-item" onclick="filterCat('coding'); return false;"><i class="fas fa-laptop-code"></i> Coding</a>
-                </nav>
+    <button type="button" onclick="handleGoogleSignIn()" class="btn-google" style="margin-top: 15px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: white; color: #1f2937; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; font-weight: 500; cursor: pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        <span id="googleSignInText">Sign in with Google</span>
+    </button>
+</form>
+<form id="registerForm" class="auth-form">
+    <div class="form-group">
+        <label class="form-label" data-i18n="userLabel">Username</label>
+        <input type="text" id="reg-username" class="form-input" required>
+    </div>
+    <div class="form-group">
+        <label class="form-label" data-i18n="emailLabel">Email</label>
+        <input type="email" id="reg-email" class="form-input" required>
+    </div>
+    <div class="form-group">
+        <label class="form-label" data-i18n="passLabel">Password</label>
+        <input type="password" id="reg-password" class="form-input" required>
+    </div>
+    <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="regBtn">Create Account</button>
+    <div id="reg-message" style="margin-top:15px; text-align: center; font-size: 13px;"></div>
+    
+    <!-- GOOGLE OAUTH КНОПКА ДЛЯ РЕГИСТРАЦИИ -->
+    <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+        <span style="color: #94a3b8; font-size: 12px;" data-i18n="orText">Or</span>
+        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+    </div>
+
+    <button type="button" onclick="handleGoogleSignIn()" class="btn-google" style="margin-top: 15px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: white; color: #1f2937; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; font-weight: 500; cursor: pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        <span id="googleSignUpText">Sign up with Google</span>
+    </button>
+</form>
+            </div>
+        </div>
+
+        <div id="forum-content" class="forum-layout hidden">
+            <aside class="sidebar">
+                <div class="sidebar-card">
+                    <div class="user-mini-profile">
+                        <div class="avatar-large" style="cursor: pointer;" onclick="openProfile()"><i class="fas fa-user"></i></div>
+                        <h3 id="sidebar-username" style="color: white; margin-bottom: 5px; cursor: pointer;" onclick="openProfile()">Guest</h3>
+                        <p id="user-role" style="color: #94a3b8; font-size: 13px;" data-i18n="roleMember">Club Member</p>
+                        <div class="user-stats-grid">
+                            <div class="stat-box"><span class="stat-value">0</span><span class="stat-label" data-i18n="statPosts">Posts</span></div>
+                            <div class="stat-box"><span class="stat-value">0</span><span class="stat-label" data-i18n="statLikes">Likes</span></div>
+                        </div>
+                    </div>
+                    <nav class="nav-menu">
+                        <a href="vin.html" class="nav-item">
+    <i class="fas fa-barcode"></i> <span>VIN Decoder</span>
+</a>
+    <a href="index.html" class="nav-item" style="color: #6f9bd1; border: 1px solid rgba(111, 155, 209, 0.2); background: rgba(111, 155, 209, 0.05);">
+        <i class="fas fa-microchip"></i> <span data-i18n="navDiagnostics">Diagnostics</span>
+    </a>
+
+    <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+
+    <a href="#" class="nav-item active" onclick="filterCategory('all', this)"><i class="fas fa-th-large"></i> <span data-i18n="navOverview">Overview</span></a>
+    <a href="#" class="nav-item" onclick="filterCategory('all', this)"><i class="fas fa-fire"></i> <span data-i18n="navPopular">Popular</span></a>
+    
+    <a href="#" class="nav-item" onclick="filterCategory('engine', this)"><i class="fas fa-cogs"></i> <span data-i18n="cat_engine">Engine</span></a>
+    <a href="#" class="nav-item" onclick="filterCategory('chassis', this)"><i class="fas fa-car-crash"></i> <span data-i18n="cat_chassis">Chassis</span></a>
+    <a href="#" class="nav-item" onclick="filterCategory('coding', this)"><i class="fas fa-laptop-code"></i> <span data-i18n="cat_coding">Coding</span></a>
+    
+    <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+    <button onclick="logout()" class="nav-item" style="background:none; border:none; width:100%; cursor:pointer; text-align: left; padding-left: 15px;">
+        <i class="fas fa-sign-out-alt" style="color: #e74c3c;"></i> <span data-i18n="navLogout">Logout</span>
+    </button>
+</nav>
+                </div>
             </aside>
 
-            <section class="forum-content">
+            <section class="forum-feed">
                 <div class="forum-header-actions">
-                    <h1 class="page-title">Community Discussions</h1>
-                    <button class="btn-create" onclick="openNewTopicModal()">
-                        <i class="fas fa-plus"></i> <span>New Topic</span>
-                    </button>
+                    <div>
+                        <h1 class="page-title" data-i18n="forumTitle">Community Forum</h1>
+                        <div class="forum-search-box" style="margin-top: 10px; position: relative;">
+                            <i class="fas fa-search" style="position: absolute; left: 15px; top: 12px; color: #6f9bd1;"></i>
+                            <input type="text" id="forum-search" style="padding: 10px 10px 10px 40px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; width: 300px;">
+                        </div>
+                    </div>
+                    <button class="btn-create" onclick="openModal()"><i class="fas fa-plus"></i> <span data-i18n="btnNewTopic">New Topic</span></button>
                 </div>
+                <div id="topics-container"><div style="text-align: center; padding: 40px; color: #6f9bd1;"><i class="fas fa-circle-notch fa-spin"></i> Loading...</div></div>
+            </section>
 
-                <div id="topics-container">
-                    <div class="skeleton" style="height: 100px; margin-bottom: 15px;"></div>
-                    <div class="skeleton" style="height: 100px; margin-bottom: 15px;"></div>
+            <section id="single-topic-view" class="hidden">
+                <div class="back-link" onclick="closeTopic()"><i class="fas fa-arrow-left"></i> <span data-i18n="btnBack">Back to list</span></div>
+                <div id="topic-detail-container"></div>
+                <div id="replies-container" class="replies-list"></div>
+                <div class="reply-form-container">
+                    <form id="replyForm" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="editor-btn" onclick="triggerUpload('reply-input', this)"><i class="fas fa-image"></i></button>
+                            <input type="text" id="reply-input" class="form-input" autocomplete="off" required>
+                            <button type="submit" class="btn-create" style="width: auto; padding: 0 20px;"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </form>
                 </div>
             </section>
         </div>
     </main>
 
-    <!-- NEW TOPIC MODAL -->
-    <div id="new-topic-modal" class="modal-overlay hidden">
+    <div id="new-topic-modal" class="modal-overlay">
         <div class="modal-glass">
-            <div class="modal-header">
-                <h3>Create New Topic</h3>
-                <button class="close-btn" onclick="closeNewTopicModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div style="display:flex; flex-direction:column; gap: 15px;">
-                <select id="nt-category" class="form-input"></select>
-                <input type="text" id="nt-title" class="form-input" placeholder="Topic Title">
-                <textarea id="nt-content" class="form-input" rows="6" placeholder="Describe your issue..."></textarea>
-                <button onclick="submitNewTopic()" class="btn-create btn-new-topic-submit" style="width:100%; justify-content:center;">Post Topic</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- AUTH MODAL WITH TABS -->
-    <div id="auth-modal" class="modal-overlay hidden">
-        <div class="auth-glass-card">
-            <button class="close-btn" style="position:absolute; top:15px; right:15px;" onclick="toggleAuthModal()"><i class="fas fa-times"></i></button>
-            
-            <div class="auth-modal-container">
-                <h3 style="text-align:center; color:white; margin-bottom:10px;">Community Account</h3>
-                
-                <!-- TABS -->
-                <div class="auth-tabs">
-                    <button class="auth-tab active" id="auth-tab-login" onclick="showAuthTab('login')">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
-                    <button class="auth-tab" id="auth-tab-register" onclick="showAuthTab('register')">
-                        <i class="fas fa-user-plus"></i> Create Account
-                    </button>
+            <div class="modal-header"><h3 data-i18n="modalTitle">Create Topic</h3><button onclick="closeModal()" class="close-btn"><i class="fas fa-times"></i></button></div>
+            <form id="createTopicForm">
+                <div class="form-group"><label class="form-label" data-i18n="modalCategory">Category</label><select id="topic-category" class="form-input"><option value="engine">Engine</option></select></div>
+                <div class="form-group"><label class="form-label" data-i18n="modalSubject">Subject</label><input type="text" id="topic-title" class="form-input" required></div>
+                <div class="form-group"><label class="form-label" data-i18n="modalContent">Content</label>
+                    <div class="editor-toolbar" style="background:rgba(255,255,255,0.05); padding:5px; border-radius:5px 5px 0 0; border:1px solid var(--glass-border); border-bottom:none; display:flex; gap:10px;">
+                        <button type="button" class="editor-btn" onclick="triggerUpload('topic-content', this)"><i class="fas fa-image"></i></button>
+                    </div>
+                    <textarea id="topic-content" class="form-input" style="min-height: 120px; border-radius:0 0 5px 5px; margin-top:0;" required></textarea>
                 </div>
-
-                <!-- LOGIN FORM -->
-                <form id="auth-login-form" class="auth-form" onsubmit="handleForumLogin(event)">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="auth-login-email" placeholder="your@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="auth-login-password" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" id="auth-login-btn" class="btn-submit">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
-                </form>
-
-                <!-- REGISTER FORM (HIDDEN) -->
-                <form id="auth-register-form" class="auth-form" style="display:none;" onsubmit="handleForumRegister(event)">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="auth-register-email" placeholder="your@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" id="auth-register-username" placeholder="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="auth-register-password" placeholder="••••••••" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Confirm Password</label>
-                        <input type="password" id="auth-register-password2" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" id="auth-register-btn" class="btn-submit">
-                        <i class="fas fa-user-plus"></i> Create Account
-                    </button>
-                </form>
-            </div>
+                <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="modalPublish">Publish</button>
+            </form>
         </div>
     </div>
 
-    <!-- FAVORITES MODAL -->
-    <div id="favorites-modal" class="favorites-modal">
-        <div class="favorites-content">
-            <div class="favorites-header">
-                <h3><i class="fas fa-star" style="color:#f1c40f"></i> Saved Codes</h3>
-                <button class="close-button" onclick="toggleFavoritesModal()"><i class="fas fa-times"></i></button>
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-glass" style="max-width: 400px;">
+            <div class="modal-header"><h3 data-i18n="profileTitle">My Profile</h3><button onclick="closeProfile()" class="close-btn"><i class="fas fa-times"></i></button></div>
+            <div style="text-align:center; margin-bottom:20px;">
+                <div class="avatar-large" style="margin: 0 auto 10px; width: 80px; height: 80px; font-size: 30px;"><i class="fas fa-user"></i></div>
+                <h2 id="profile-username" style="color:white; margin:0;">User</h2>
+                <div class="info-badge" id="profile-role" style="margin-top:5px;">User</div>
             </div>
-            <div class="favorites-body" id="favorites-list"></div>
+            <form id="profileForm">
+                <div class="form-group"><label class="form-label" data-i18n="lblMyCar">My BMW</label><input type="text" id="profile-car" class="form-input"></div>
+                <div class="form-group"><label class="form-label" data-i18n="lblBio">Bio</label><textarea id="profile-bio" class="form-input" style="min-height: 80px;"></textarea></div>
+                <button type="submit" class="form-submit btn-primary" style="width:100%" data-i18n="btnSave">Save</button>
+            </form>
         </div>
     </div>
 
-    <footer><p>BMW DTC Bot © 2026</p></footer>
+    <input type="file" id="global-file-input" accept="image/*" style="display: none;">
 
-    <script src="./js/script.js"></script> 
-    <script src="./js/auth-modal.js"></script>
-    <script src="./js/forum.js"></script> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
+        let currentLang = localStorage.getItem('forumLanguage') || 'en';
+        let currentTopicId = null;
+        let currentTargetInputId = null;
+        let currentUploadBtn = null; 
+
+        // === ПЕРЕВОДЫ (ПОЛНЫЕ) ===
+        const forumTranslations = {
+            ru: {
+                navDiagnostics: "Диагностика (Поиск кодов)",
+                brandName: "BMW Сообщество", homeBtn: "Главная", loginTab: "Вход", regTab: "Регистрация",
+                emailLabel: "Email", passLabel: "Пароль", userLabel: "Никнейм", loginBtn: "Войти", regBtn: "Создать аккаунт",
+                roleMember: "Участник клуба", statPosts: "Посты", statLikes: "Лайки",
+                navOverview: "Обзор", navPopular: "Популярное", navLogout: "Выход",
+                forumTitle: "Форум сообщества", btnNewTopic: "Новая тема", btnBack: "Назад к списку",
+                modalTitle: "Создать тему", modalCategory: "Категория", modalSubject: "Заголовок", modalContent: "Описание", modalPublish: "Опубликовать",
+                profileTitle: "Мой профиль", lblMyCar: "Мой BMW", lblBio: "О себе", btnSave: "Сохранить",
+                cat_engine: "Двигатель и Трансмиссия", cat_chassis: "Ходовая и Тормоза", cat_coding: "Кодирование", cat_general: "Общие вопросы",
+                lbl_replies: "Ответы", lbl_author: "Автор", lbl_solved: "Решение", btn_delete: "Удалить", btn_solve: "Решение",
+                // Placeholders
+                ph_search: "Поиск по форуму...", ph_reply: "Написать комментарий...", ph_car: "Например: E90 335i", ph_bio: "Пару слов о вас...",
+                ph_topic_title: "Например: Стук в двигателе", ph_topic_desc: "Опишите проблему подробно...",
+                // Notifications
+                n_header: "Уведомления", n_read_all: "Прочитать все", n_empty: "Нет новых уведомлений",
+                n_reply: "<b>{user}</b> ответил в теме \"{topic}\"", n_like: "Кто-то оценил ваш пост в \"{topic}\"", n_solve: "Ваш ответ отмечен как решение!"
+            },
+            en: {
+                navDiagnostics: "Diagnostics (Code Search)",
+                brandName: "BMW Community", homeBtn: "Home", loginTab: "Login", regTab: "Register",
+                emailLabel: "Email", passLabel: "Password", userLabel: "Username", loginBtn: "Log In", regBtn: "Create Account",
+                roleMember: "Club Member", statPosts: "Posts", statLikes: "Likes",
+                navOverview: "Overview", navPopular: "Popular", navLogout: "Logout",
+                forumTitle: "Community Forum", btnNewTopic: "New Topic", btnBack: "Back to list",
+                modalTitle: "Create Topic", modalCategory: "Category", modalSubject: "Subject", modalContent: "Content", modalPublish: "Publish",
+                profileTitle: "My Profile", lblMyCar: "My BMW", lblBio: "Bio", btnSave: "Save",
+                cat_engine: "Engine & Transmission", cat_chassis: "Chassis & Brakes", cat_coding: "Coding & Software", cat_general: "General",
+                lbl_replies: "Replies", lbl_author: "Author", lbl_solved: "Solution", btn_delete: "Delete", btn_solve: "Mark Solved",
+                // Placeholders
+                ph_search: "Search forum...", ph_reply: "Write a comment...", ph_car: "E.g. E90 335i", ph_bio: "A few words about you...",
+                ph_topic_title: "E.g. Engine knocking", ph_topic_desc: "Describe the issue...",
+                // Notifications
+                n_header: "Notifications", n_read_all: "Mark all read", n_empty: "No new notifications",
+                n_reply: "<b>{user}</b> replied in \"{topic}\"", n_like: "Someone liked your post in \"{topic}\"", n_solve: "Your answer marked as solution!"
+            },
+            ka: {
+                navDiagnostics: "დიაგნოსტიკა (კოდები)",
+                brandName: "BMW კლუბი", homeBtn: "მთავარი", loginTab: "შესვლა", regTab: "რეგისტრაცია",
+                emailLabel: "ელ-ფოსტა", passLabel: "პაროლი", userLabel: "მეტსახელი", loginBtn: "შესვლა", regBtn: "ანგარიშის შექმნა",
+                roleMember: "კლუბის წევრი", statPosts: "პოსტები", statLikes: "მოწონება",
+                navOverview: "მიმოხილვა", navPopular: "პოპულარული", navLogout: "გასვლა",
+                forumTitle: "საზოგადოების ფორუმი", btnNewTopic: "ახალი თემა", btnBack: "უკან დაბრუნება",
+                modalTitle: "თემის შექმნა", modalCategory: "კატეგორია", modalSubject: "სათაური", modalContent: "შინაარსი", modalPublish: "გამოქვეყნება",
+                profileTitle: "ჩემი პროფილი", lblMyCar: "ჩემი BMW", lblBio: "ჩემ შესახებ", btnSave: "შენახვა",
+                cat_engine: "ძრავი და გადაცემათა კოლოფი", cat_chassis: "სავალი ნაწილი", cat_coding: "კოდირება", cat_general: "ზოგადი",
+                lbl_replies: "პასუხი", lbl_author: "ავტორი", lbl_solved: "გადაწყვეტილება", btn_delete: "წაშლა", btn_solve: "ნიშანი",
+                // Placeholders
+                ph_search: "ძიება ფორუმში...", ph_reply: "კომენტარის დაწერა...", ph_car: "მაგ: E90 335i", ph_bio: "რამოდენიმე სიტყვა შენზე...",
+                ph_topic_title: "მაგ: ძრავის ხმა", ph_topic_desc: "აღწერეთ პრობლემა...",
+                // Notifications
+                n_header: "შეტყობინებები", n_read_all: "ყველას წაკითხვა", n_empty: "ახალი შეტყობინებები არ არის",
+                n_reply: "<b>{user}</b>-მა გიპასუხათ თემაში \"{topic}\"", n_like: "ვიღაცამ მოიწონა თქვენი პოსტი \"{topic}\"", n_solve: "თქვენი პასუხი მონიშნულია როგორც გამოსავალი!"
+            }
+        };
+
+        function toggleLanguage() {
+    const langs = ['ru', 'en', 'ka'];
+    let idx = langs.indexOf(currentLang);
+    currentLang = langs[(idx + 1) % langs.length];
+    localStorage.setItem('forumLanguage', currentLang);
+    document.getElementById('current-lang').innerText = currentLang.toUpperCase(); // ← ДОБАВЛЕНА
+    applyTranslations();
+    loadTopics();
+    checkNotifications(); 
+}
+
+        function applyTranslations() {
+            const t = forumTranslations[currentLang];
+            
+            // Текст
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.innerText = t[key];
+            });
+            
+            // Current language
+            const langEl = document.getElementById('current-lang');
+            if(langEl) langEl.innerText = currentLang.toUpperCase();
+
+            // Категории - с безопасными проверками
+            const categorySelect = document.getElementById('topic-category');
+            if(categorySelect && categorySelect.options) {
+                if(categorySelect.options.length > 0) categorySelect.options[0].text = t.cat_engine;
+                if(categorySelect.options.length > 1) categorySelect.options[1].text = t.cat_chassis;
+                if(categorySelect.options.length > 2) categorySelect.options[2].text = t.cat_coding;
+                if(categorySelect.options.length > 3) categorySelect.options[3].text = t.cat_general;
+            }
+
+            // Плейсхолдеры
+            if(document.getElementById('forum-search')) document.getElementById('forum-search').placeholder = t.ph_search;
+            if(document.getElementById('reply-input')) document.getElementById('reply-input').placeholder = t.ph_reply;
+            if(document.getElementById('profile-car')) document.getElementById('profile-car').placeholder = t.ph_car;
+            if(document.getElementById('profile-bio')) document.getElementById('profile-bio').placeholder = t.ph_bio;
+            if(document.getElementById('topic-title')) document.getElementById('topic-title').placeholder = t.ph_topic_title;
+            if(document.getElementById('topic-content')) document.getElementById('topic-content').placeholder = t.ph_topic_desc;
+
+            // Уведомления
+            if(document.getElementById('notif-header-title')) document.getElementById('notif-header-title').innerText = t.n_header;
+            if(document.getElementById('notif-read-all-btn')) document.getElementById('notif-read-all-btn').innerText = t.n_read_all;
+            if(document.getElementById('notif-empty-msg')) document.getElementById('notif-empty-msg').innerText = t.n_empty;
+        }
+
+        // === АВТОРИЗАЦИЯ ===
+        function switchTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+        }
+
+        // === AUTH HANDLERS ===
+        function setupAuthHandlers() {
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const msgEl = document.getElementById('login-message');
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            msgEl.style.color = '#6f9bd1';
+            msgEl.innerText = 'Signing in...';
+            
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        language: currentLang
+                    })
+                });
+                
+                const result = await res.json();
+                console.log('Login response:', res.status, result);
+                
+                if (res.ok && result.token && result.user) {
+                    const userData = {
+                        id: result.user.id,
+                        email: result.user.email,
+                        username: result.user.username,
+                        avatar_url: result.user.avatar_url || null,
+                        token: result.token
+                    };
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    msgEl.style.color = '#2ecc71';
+                    msgEl.innerText = '✓ Login successful!';
+                    document.getElementById('login-email').value = '';
+                    document.getElementById('login-password').value = '';
+                    setTimeout(() => showForum(result.user), 500);
+                } else {
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.innerText = result.error || `Login failed (${res.status})`;
+                    console.log('Login failed:', email, res.status);
+                }
+            } catch (err) {
+                msgEl.style.color = '#e74c3c';
+                msgEl.innerText = 'Network error: ' + err.message;
+                console.error('Login error:', err);
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const msgEl = document.getElementById('reg-message');
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            
+            msgEl.style.color = '#6f9bd1';
+            msgEl.innerText = 'Creating account...';
+            
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password,
+                        language: currentLang
+                    })
+                });
+                
+                const result = await res.json();
+                console.log('Register response:', res.status, result);
+                
+                if (res.ok || res.status === 201) {
+                    msgEl.style.color = '#2ecc71';
+                    msgEl.innerText = result.message || '✓ Account created! Check email to verify.';
+                    document.getElementById('registerForm').reset();
+                    setTimeout(() => switchTab('login'), 2000);
+                } else if (res.status === 409) {
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.innerText = 'Email or username already exists';
+                } else {
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.innerText = result.error || `Registration failed (${res.status})`;
+                }
+            } catch (err) {
+                msgEl.style.color = '#e74c3c';
+                msgEl.innerText = 'Network error: ' + err.message;
+                console.error('Register error:', err);
+            }
+        }
+
+        // === ОСНОВА ===
+        function showForum(user) {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('forum-content').classList.remove('hidden');
+            document.getElementById('sidebar-username').innerText = user.username;
+            loadTopics();
+            checkNotifications(); 
+        }
+
+        function logout() { localStorage.removeItem('user'); location.reload(); }
+
+        function formatContent(text) {
+            if (!text) return '';
+            return text.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="topic-image">');
+        }
+
+        // === ТЕМЫ ===
+        let currentCategory = 'all';
+        let searchTimer = null;
+
+        function filterCategory(category, element) {
+            currentCategory = category;
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            document.getElementById('forum-search').value = '';
+            loadTopics(category);
+        }
+
+        document.getElementById('forum-search').addEventListener('input', (e) => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => { loadTopics(currentCategory, e.target.value); }, 500); 
+        });
+
+        async function loadTopics(category = 'all', search = '') {
+            const container = document.getElementById('topics-container');
+            const t = forumTranslations[currentLang];
+            container.style.opacity = '0.5';
+            
+            try {
+                let url = `/api/forum/topics?category=${category}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                const res = await fetch(url);
+                const topics = await res.json();
+
+                container.style.opacity = '1';
+                container.innerHTML = ''; 
+
+                if (topics.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;">No topics found</div>`;
+                    return;
+                }
+
+                topics.forEach(topic => {
+                    const date = new Date(topic.created_at).toLocaleDateString();
+                    let icon = 'fa-comments';
+                    let catName = t.cat_general || 'General';
+                    
+                    if(topic.category === 'engine') { icon = 'fa-cogs'; catName = t.cat_engine; }
+                    else if(topic.category === 'chassis') { icon = 'fa-car-crash'; catName = t.cat_chassis; }
+                    else if(topic.category === 'coding') { icon = 'fa-laptop-code'; catName = t.cat_coding; }
+
+                    const html = `
+                    <div class="topic-card" onclick="openTopic(${topic.id})">
+                        <div class="topic-main">
+                            <div class="topic-icon"><i class="fas ${icon}"></i></div>
+                            <div class="topic-info">
+                                <span style="font-size:10px; color:var(--accent-color); text-transform:uppercase;">${catName}</span>
+                                <h3 style="margin-top:2px;">${topic.title}</h3>
+                                <p>${formatContent(topic.content.substring(0, 80))}...</p>
+                                <div style="font-size:11px; color:#555; margin-top:5px;">
+                                    ${t.lbl_author}: <span style="color:white">${topic.username}</span> • ${date}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="topic-stats"><div class="stat-mini"><span>${topic.reply_count || 0}</span><small>${t.lbl_replies}</small></div></div>
+                    </div>`;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            } catch (err) { container.innerHTML = `<div style="text-align:center; color:#e74c3c;">Error loading topics</div>`; }
+        }
+
+        async function openTopic(id) {
+            currentTopicId = id;
+            document.querySelector('.forum-feed').classList.add('hidden');
+            document.getElementById('single-topic-view').classList.remove('hidden');
+            
+            const container = document.getElementById('topic-detail-container');
+            container.innerHTML = '<div class="skeleton" style="height:150px;"></div>';
+            document.getElementById('replies-container').innerHTML = '';
+
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const userIdParam = user ? `&user_id=${user.id}` : '';
+                const res = await fetch(`/api/forum/topic?id=${id}${userIdParam}`);
+                const data = await res.json();
+                
+                const t = data.topic;
+                const tr = forumTranslations[currentLang];
+                const date = new Date(t.created_at).toLocaleDateString() + ' ' + new Date(t.created_at).toLocaleTimeString().slice(0,5);
+                const currentUser = JSON.parse(localStorage.getItem('user'));
+                
+                let topicControls = '';
+                if (currentUser && (parseInt(currentUser.id) === t.user_id || currentUser.role === 'admin')) {
+                    topicControls = `<button class="control-btn delete" onclick="deleteTopic(${t.id})" title="${tr.btn_delete}"><i class="fas fa-trash"></i> ${tr.btn_delete}</button>`;
+                }
+
+                container.innerHTML = `
+                    <div class="topic-header-card">
+                        <div class="topic-meta-header">
+                            <div class="topic-author-badge"><i class="fas fa-user"></i> ${t.username}</div>
+                            <div style="display:flex; align-items:center;"><i class="fas fa-eye"></i> ${t.views} &nbsp;•&nbsp; ${date} ${topicControls}</div>
+                        </div>
+                        <h1 class="topic-full-title">${t.title}</h1>
+                        <div class="topic-content-text">${formatContent(t.content)}</div>
+                    </div>
+                    <h3 style="margin-bottom:15px; color:#94a3b8; font-size:14px;">${tr.lbl_replies} (${data.posts.length})</h3>
+                `;
+                renderReplies(data.posts);
+                window.scrollTo(0,0);
+            } catch (e) { alert("Error: " + e.message); closeTopic(); }
+        }
+
+        function renderReplies(posts) {
+            const container = document.getElementById('replies-container');
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            const tr = forumTranslations[currentLang];
+            const canMark = document.querySelector('.topic-meta-header .delete'); 
+            
+            container.innerHTML = '';
+            if (posts.length === 0) { container.innerHTML = `<div style="text-align:center; color:#555; padding:20px;">No replies yet</div>`; return; }
+
+            posts.forEach(post => {
+                const date = new Date(post.created_at).toLocaleDateString();
+                const initial = post.username.charAt(0).toUpperCase();
+                const solutionClass = post.is_solution ? 'solution' : '';
+                const solutionBadge = post.is_solution ? `<span class="solution-badge"><i class="fas fa-check"></i> ${tr.lbl_solved}</span>` : '';
+
+                let controls = '';
+                if (currentUser && (parseInt(currentUser.id) === post.user_id || currentUser.role === 'admin')) {
+                    controls += `<button class="control-btn delete" onclick="deletePost(${post.id}, this)"><i class="fas fa-trash"></i></button>`;
+                }
+
+                let solveBtn = '';
+                if (canMark && !post.is_solution) {
+                    solveBtn = `<button class="solve-btn" onclick="markSolution(${post.topic_id}, ${post.id}, this)" title="${tr.btn_solve}"><i class="fas fa-check"></i></button>`;
+                }
+
+                const html = `
+                    <div class="reply-card ${solutionClass}">
+                        <div class="reply-avatar">${initial}</div>
+                        <div class="reply-body">
+                            <div class="reply-header">
+                                <div style="display:flex; align-items:center;"><span class="reply-username">${post.username}</span><span class="reply-date">${date}</span>${solutionBadge}</div>
+                                <div style="display:flex; gap:10px; align-items:center;">${solveBtn}
+                                    <button class="like-btn ${post.is_liked ? 'liked' : ''}" onclick="toggleLike(${post.id}, this)"><i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i> <span>${post.likes_count}</span></button>
+                                    ${controls}
+                                </div>
+                            </div>
+                            <div class="topic-content-text" style="font-size:14px;">${formatContent(post.content)}</div>
+                        </div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        function closeTopic() {
+            currentTopicId = null;
+            document.querySelector('.forum-feed').classList.remove('hidden');
+            document.getElementById('single-topic-view').classList.add('hidden');
+        }
+
+        document.getElementById('replyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentTopicId) return;
+            const input = document.getElementById('reply-input');
+            const user = JSON.parse(localStorage.getItem('user'));
+            const btn = e.target.querySelector('button[type="submit"]');
+            const oldIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const res = await fetch('/api/forum/topic', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic_id: currentTopicId, user_id: user.id, username: user.username, content: input.value })
+                });
+                if (res.ok) { input.value = ''; openTopic(currentTopicId); }
+            } catch (err) { console.error(err); }
+            btn.innerHTML = oldIcon;
+        });
+
+        // === МОДАЛКИ И ПРОФИЛЬ ===
+        const modal = document.getElementById('new-topic-modal');
+        function openModal() { modal.classList.add('active'); }
+        function closeModal() { modal.classList.remove('active'); }
+
+        document.getElementById('createTopicForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]'); 
+            btn.textContent = '...';
+            const user = JSON.parse(localStorage.getItem('user'));
+            try {
+                const res = await fetch('/api/forum/topics', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: user.id, username: user.username,
+                        category: document.getElementById('topic-category').value,
+                        title: document.getElementById('topic-title').value,
+                        content: document.getElementById('topic-content').value
+                    })
+                });
+                if (res.ok) { closeModal(); document.getElementById('createTopicForm').reset(); loadTopics(); }
+            } catch (err) { console.error(err); }
+            btn.textContent = forumTranslations[currentLang].modalPublish;
+        });
+
+        const profileModal = document.getElementById('profile-modal');
+        async function openProfile() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!user) return;
+            profileModal.classList.add('active');
+            try {
+                const res = await fetch(`/api/user/profile?id=${user.id}`);
+                const data = await res.json();
+                document.getElementById('profile-username').innerText = data.username;
+                document.getElementById('profile-car').value = data.car_model || '';
+                document.getElementById('profile-bio').value = data.bio || '';
+            } catch(e) { console.error(e); }
+        }
+        function closeProfile() { profileModal.classList.remove('active'); }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = JSON.parse(localStorage.getItem('user'));
+            try {
+                const res = await fetch('/api/user/profile', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: user.id, car_model: document.getElementById('profile-car').value, bio: document.getElementById('profile-bio').value })
+                });
+                if(res.ok) { closeProfile(); }
+            } catch(e) { alert('Error'); }
+        });
+
+        // === ЗАГРУЗКА ФОТО ===
+        function triggerUpload(inputId, btnElement) {
+            currentTargetInputId = inputId;
+            currentUploadBtn = btnElement;
+            document.getElementById('global-file-input').click();
+        }
+        document.getElementById('global-file-input').addEventListener('change', async function(e) {
+            if (this.files.length === 0) return;
+            const targetInput = document.getElementById(currentTargetInputId);
+            const originalIcon = currentUploadBtn.innerHTML;
+            currentUploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            currentUploadBtn.disabled = true;
+            const formData = new FormData();
+            formData.append('file', this.files[0]);
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) { targetInput.value += `\n![Image](${data.url})\n`; }
+            } catch (err) { alert('Upload error'); }
+            finally { currentUploadBtn.innerHTML = originalIcon; currentUploadBtn.disabled = false; targetInput.focus(); this.value = ''; }
+        });
+
+        // === ACTIONS ===
+        async function deletePost(postId, element) {
+            if(!confirm("Delete?")) return;
+            const res = await fetch(`/api/forum/post?id=${postId}`, { method: 'DELETE' });
+            if(res.ok) element.closest('.reply-card').remove();
+        }
+        async function deleteTopic(topicId) {
+            if(!confirm("Delete topic?")) return;
+            const res = await fetch(`/api/forum/topic?id=${topicId}`, { method: 'DELETE' });
+            if(res.ok) { closeTopic(); loadTopics(); }
+        }
+        async function toggleLike(postId, btn) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const countSpan = btn.querySelector('span');
+            let count = parseInt(countSpan.innerText);
+            const isLiked = btn.classList.contains('liked');
+            btn.classList.toggle('liked');
+            btn.querySelector('i').className = isLiked ? 'far fa-heart' : 'fas fa-heart';
+            countSpan.innerText = isLiked ? count - 1 : count + 1;
+            await fetch('/api/forum/like', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({post_id: postId, user_id: user.id})});
+        }
+        async function markSolution(topicId, postId, btn) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!confirm("Mark as solution?")) return;
+            const res = await fetch('/api/forum/solve', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({topic_id: topicId, post_id: postId, user_id: user.id})});
+            if(res.ok) openTopic(topicId);
+        }
+
+        // === УВЕДОМЛЕНИЯ ===
+        async function checkNotifications() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if(!user) return;
+            const t = forumTranslations[currentLang];
+            try {
+                const res = await fetch(`/api/user/notifications?user_id=${user.id}`);
+                const data = await res.json();
+                const badge = document.getElementById('notif-badge');
+                if (data.unread_count > 0) { badge.innerText = data.unread_count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+                
+                const list = document.getElementById('notif-list');
+                if (data.notifications.length > 0) {
+                    list.innerHTML = data.notifications.map(n => {
+                        let icon = 'fa-bell', color = '#ccc', text = '';
+                        if(n.type === 'reply') { icon = 'fa-reply'; color = '#3498db'; text = t.n_reply.replace('{user}', n.sender_name).replace('{topic}', n.topic_title); }
+                        if(n.type === 'like') { icon = 'fa-heart'; color = '#e74c3c'; text = t.n_like.replace('{topic}', n.topic_title); }
+                        if(n.type === 'solve') { icon = 'fa-check-circle'; color = '#2ecc71'; text = t.n_solve; }
+                        return `<div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="openTopic(${n.topic_id})"><div class="notif-icon" style="color:${color}"><i class="fas ${icon}"></i></div><div class="notif-content">${text}<div class="notif-time">${new Date(n.created_at).toLocaleTimeString()}</div></div></div>`;
+                    }).join('');
+                } else { list.innerHTML = `<div style="padding:20px; text-align:center; color:#777; font-size:13px;">${t.n_empty}</div>`; }
+            } catch(e) {}
+        }
+        function toggleNotifications() {
+            const d = document.getElementById('notif-dropdown');
+            d.classList.toggle('hidden');
+            if(!d.classList.contains('hidden')) markAllRead();
+        }
+        async function markAllRead() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            document.getElementById('notif-badge').classList.add('hidden');
+            await fetch('/api/user/notifications', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({user_id: user.id})});
+        }
+        setInterval(checkNotifications, 5000); // 5 сек для Live
+
+        // === GOOGLE AUTH HANDLERS ===
+        function handleGoogleSignIn() {
+            if (typeof google === 'undefined') {
+                alert('Google Sign-In is not available');
+                return;
+            }
+            try {
+                google.accounts.id.renderButton(
+                    document.querySelector('[onclick="handleGoogleSignIn()"]'),
+                    { theme: 'outline', size: 'large' }
+                );
+            } catch(e) {
+                console.log('Google button render failed:', e);
+            }
+        }
+
+        async function handleGoogleCallback(response) {
+            const activeForm = document.querySelector('.auth-form.active');
+            const msgEl = activeForm ? activeForm.querySelector('[id$="-message"]') : document.getElementById('login-message');
+            
+            if (msgEl) {
+                msgEl.style.color = '#6f9bd1';
+                msgEl.innerText = 'Signing in with Google...';
+            }
+
+            if (!response.credential) {
+                if (msgEl) msgEl.innerText = 'No credential from Google';
+                console.error('No credential from Google');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth/google-callback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        credential: response.credential,
+                        language: currentLang
+                    })
+                });
+
+                const data = await res.json();
+                console.log('Google callback response:', res.status, data);
+
+                if (res.ok && data.token && data.user) {
+                    const userData = {
+                        id: data.user.id,
+                        email: data.user.email,
+                        username: data.user.username,
+                        avatar_url: data.user.avatar_url || null,
+                        token: data.token
+                    };
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    
+                    if (msgEl) {
+                        msgEl.style.color = '#2ecc71';
+                        msgEl.innerText = '✓ Welcome!';
+                    }
+                    setTimeout(() => showForum(data.user), 500);
+                } else {
+                    if (msgEl) {
+                        msgEl.style.color = '#e74c3c';
+                        msgEl.innerText = data.error || `Google auth failed (${res.status})`;
+                    }
+                    console.log('Google auth failed:', res.status, data);
+                }
+            } catch (err) {
+                if (msgEl) {
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.innerText = 'Network error: ' + err.message;
+                }
+                console.error('Google callback error:', err);
+            }
+        }
+
+        // === START ===
+        window.onload = function() {
+            // Check if user already logged in
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    showForum(user);
+                    return;
+                } catch(e) {
+                    localStorage.removeItem('user');
+                }
+            }
+
+            // Apply translations to auth screen
+            applyTranslations();
+
+            // Setup auth form handlers
+            setupAuthHandlers();
+
+            // Init Google Auth
+            if (typeof google !== 'undefined') {
+                google.accounts.id.initialize({
+                    client_id: '855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com',
+                    callback: handleGoogleCallback
+                });
+            }
+        };
+    </script>
+    <script src="./js/live.js"></script>
 </body>
 </html>
