@@ -140,27 +140,8 @@ function toggleAuthModal() {
 }
 
 function initGoogleAuth() {
-    if (typeof google === 'undefined' || !google.accounts) {
-        console.warn("Google API not loaded yet");
-        return;
-    }
-    
-    try {
-        google.accounts.id.initialize({
-            client_id: "855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com",
-            callback: window.handleGoogleCredentialResponse
-        });
-        
-        const btnContainer = document.querySelector(".g_id_signin");
-        if (btnContainer) {
-            google.accounts.id.renderButton(btnContainer, { 
-                theme: "filled_blue", 
-                size: "large" 
-            });
-        }
-    } catch (e) { 
-        console.error("Google Auth Init Error:", e); 
-    }
+    // Google Auth removed - using Email/Password instead
+    console.log('Email/Password authentication is enabled');
 }
 
 
