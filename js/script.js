@@ -145,19 +145,19 @@ google.accounts.id.renderButton(btnContainer, { theme: "filled_blue", size: "lar
     } catch (e) { console.error(e); }
 }
 
-// js/script.js - Обновленная функция входа
 
 window.handleGoogleCredentialResponse = async function(response) {
     try {
-        console.log("Sending token to backend...");
+        console.log("Google Auth: Sending token to server...");
         
-        // 1. Отправляем токен на наш бэкенд для верификации и сохранения в БД
+        // 1. ОТПРАВЛЯЕМ ТОКЕН НА СЕРВЕР
+        // Это самое важное! Без этого база данных останется пустой.
         const res = await fetch('/api/auth/google-callback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 credential: response.credential,
-                language: window.currentLanguage || 'en'
+                language: currentLanguage || 'en'
             })
         });
 
@@ -167,17 +167,17 @@ window.handleGoogleCredentialResponse = async function(response) {
             throw new Error(data.error || 'Server registration failed');
         }
 
-        // 2. Бэкенд вернул правильного пользователя из БД
-        console.log("User logged in/registered:", data.user);
+        console.log("User successfully saved in DB:", data.user);
 
-        // 3. Сохраняем и обновляем
+        // 2. Сохраняем пользователя, которого вернул сервер (с правильным ID из базы)
+        // ВАЖНО: Обновляем глобальный state
+        if (window.state) window.state.user = data.user;
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Закрываем модалку
-        if(window.closeAuthModal) window.closeAuthModal();
-        else {
+        // 3. Закрываем модалку и обновляем страницу
+        if(typeof window.toggleAuthModal === 'function') {
             const modal = document.getElementById('auth-modal');
-            if(modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
+            if(modal && !modal.classList.contains('hidden')) window.toggleAuthModal();
         }
         
         window.location.reload(); 
