@@ -1,12 +1,1 @@
-#:schema node_modules/wrangler/config-schema.json
-
-name = "bimmercode"
-main = "functions/index.js"
-compatibility_date = "2026-01-29"
-
-[build]
-command = ""
-cwd = "./"
-
-[assets]
-directory = "."
+pages_build_output_dir = "/" 
