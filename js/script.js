@@ -116,33 +116,51 @@ window.logout = function() {
 }
 
 function checkUserSession() {
-    const authBtn = document.getElementById('auth-btn'); 
-    if (!authBtn) return;
+    const user = JSON.parse(localStorage.getItem('user'));
+    const authBtn = document.getElementById('auth-btn');
+    
+    if (user && authBtn) {
+        authBtn.innerHTML = `<i class="fas fa-check-circle" style="color:#2ecc71;"></i> <span>${user.username}</span>`;
+        authBtn.style.opacity = "0.7";
+    }
+}
 
-    if (state.user) {
-        authBtn.onclick = null;
-        authBtn.innerHTML = `
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:14px; font-weight:600;">${state.user.username}</span>
-                <img src="${state.user.avatar || './assets/icons/default-avatar.png'}" 
-                     style="width:28px; height:28px; border-radius:50%; border:1px solid rgba(255,255,255,0.2);">
-                <i class="fas fa-sign-out-alt" style="margin-left:5px; font-size:12px; opacity:0.7; cursor:pointer;" onclick="logout()"></i>
-            </div>`;
+function toggleAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    if (!modal) return;
+    
+    const isHidden = modal.classList.contains('hidden');
+    if (isHidden) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    } else {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
     }
 }
 
 function initGoogleAuth() {
-    if (typeof google === 'undefined' || !google.accounts) return;
+    if (typeof google === 'undefined' || !google.accounts) {
+        console.warn("Google API not loaded yet");
+        return;
+    }
+    
     try {
         google.accounts.id.initialize({
             client_id: "855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com",
             callback: window.handleGoogleCredentialResponse
         });
+        
         const btnContainer = document.querySelector(".g_id_signin");
         if (btnContainer) {
-google.accounts.id.renderButton(btnContainer, { theme: "filled_blue", size: "large" });
+            google.accounts.id.renderButton(btnContainer, { 
+                theme: "filled_blue", 
+                size: "large" 
+            });
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Google Auth Init Error:", e); 
+    }
 }
 
 
@@ -150,7 +168,11 @@ google.accounts.id.renderButton(btnContainer, { theme: "filled_blue", size: "lar
 
 window.handleGoogleCredentialResponse = async function(response) {
     try {
-        console.log("Google Auth: Sending token to server...");
+        console.log("Google Auth: Received credential, sending to server...");
+        
+        if (!response || !response.credential) {
+            throw new Error("No credential in response");
+        }
         
         // 1. ОТПРАВЛЯЕМ ТОКЕН НА БЭКЕНД
         const res = await fetch('/api/auth/google-callback', {
@@ -158,41 +180,52 @@ window.handleGoogleCredentialResponse = async function(response) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 credential: response.credential,
-                language: window.currentLanguage || 'en'
+                language: currentLanguage || 'en'  // Используем глобальную переменную
             })
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-            throw new Error(data.error || 'Server registration failed');
+            console.error("Server response error:", data);
+            throw new Error(data.details || data.error || 'Server registration failed');
         }
 
-        console.log("User logged in:", data.user);
+        if (!data.success) {
+            throw new Error(data.error || 'Authentication failed');
+        }
 
-        // === ВАЖНЫЕ ИЗМЕНЕНИЯ НИЖЕ ===
+        console.log("✓ User logged in successfully:", data.user);
+
+        // === СОХРАНЕНИЕ ДАННЫХ ===
         
-        // 2. Сохраняем ТОКЕН (нужен для редактирования профиля)
+        // 2. Сохраняем ТОКЕН (нужен для редактирования профиля и API запросов)
         if (data.token) {
             localStorage.setItem('authToken', data.token);
+            console.log("✓ Token saved");
         }
 
-        // 3. Сохраняем данные пользователя
+        // 3. Сохраняем данные пользователя в localStorage
         window.state.user = data.user;
         localStorage.setItem('user', JSON.stringify(data.user));
+        console.log("✓ User data saved to localStorage");
         
-        // ==============================
-        
-        // 4. Закрываем модалку
+        // 4. Закрываем модалку авторизации
         const modal = document.getElementById('auth-modal');
-        if(modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
+        if(modal) { 
+            modal.classList.add('hidden'); 
+            modal.style.display = 'none'; 
+        }
         
-        // 5. Перезагружаем страницу
-        window.location.reload(); 
+        // 5. Показываем успешное сообщение и перезагружаем
+        console.log("✓ Authentication complete, reloading page...");
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
 
     } catch (e) {
-        console.error("Auth process error:", e);
-        alert("Authentication Failed: " + e.message);
+        console.error("❌ Auth process error:", e);
+        alert("Authentication Failed:\n" + e.message + "\n\nПожалуйста, попробуйте еще раз.");
     }
 };
 
