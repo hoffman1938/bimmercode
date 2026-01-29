@@ -1,9 +1,0 @@
-name = "bimmercode" # <--- ДОБАВЬТЕ ЭТУ СТРОКУ (замените на точное имя проекта в Cloudflare)
-pages_build_output_dir = "./"
-compatibility_date = "2024-01-29"
-
-# Если у вас там есть настройки D1, оставьте их ниже
-[[d1_databases]]
-binding = "DB"
-database_name = "bmw-db" # Ваше название базы
-database_id = "6e997484-ee10-48d1-a4d6-78d95216721f" # Ваш ID базы
