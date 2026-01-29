@@ -2,33 +2,6 @@
 import { generateId } from '../../../lib/utils.js';
 import { generateToken } from '../../../lib/jwt.js';
 
-const TRANSLATIONS = {
-  en: { invalid_state: "Invalid OAuth state", token_exchange_failed: "Failed to exchange token", user_info_failed: "Failed to get user info", error: "Google authentication error" },
-  ru: { invalid_state: "Неверный OAuth state", token_exchange_failed: "Ошибка при обмене токена", user_info_failed: "Ошибка при получении данных пользователя", error: "Ошибка Google аутентификации" },
-  ka: { invalid_state: "არასწორი OAuth state", token_exchange_failed: "მოხდა შეცდომა token-ის გაცვლის დროს", user_info_failed: "მოხდა შეცდომა მომხმარებელი ინფოს მიღებისას", error: "Google აუთენტიფიკაციის შეცდომა" }
-};
-
-function t(key, lang = 'en') {
-  return TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en'][key];
-}
-
-function decodeJWT(token) {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      console.error('JWT parts wrong:', parts.length);
-      return null;
-    }
-    
-    // ✅ ИСПРАВЛЕНО: Более безопасный парсинг
-    const payload = atob(parts[1]);
-    return JSON.parse(payload);
-  } catch (e) {
-    console.error('JWT decode error:', e);
-    return null;
-  }
-}
-
 export async function onRequestPost(context) {
   try {
     const body = await context.request.json();
@@ -36,90 +9,93 @@ export async function onRequestPost(context) {
     const env = context.env;
     const db = env.DB;
 
-    console.log('Google callback received, credential length:', credential?.length);
-
     if (!credential) {
-      return new Response(JSON.stringify({ error: t('invalid_state', language) }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: "No credential provided" }), { status: 400 });
     }
 
-    // Decode JWT from Google
-    const payload = decodeJWT(credential);
+    // Декодируем JWT от Google
+    const parts = credential.split('.');
+    const payload = JSON.parse(atob(parts[1]));
     
     if (!payload || !payload.sub) {
-      console.error('JWT decode failed or no sub');
-      return new Response(JSON.stringify({ error: t('invalid_state', language) }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: "Invalid Google token" }), { status: 400 });
     }
 
     const googleUser = {
       id: payload.sub,
       email: payload.email,
       name: payload.name,
-      picture: payload.picture,
-      email_verified: payload.email_verified
+      picture: payload.picture
     };
 
-    console.log('Google user:', googleUser.email, googleUser.id);
-
-    // Check if user exists
+    // 1. Проверяем, есть ли такой юзер
     let user = await db.prepare(
       'SELECT * FROM users WHERE google_id = ? OR email = ?'
     ).bind(googleUser.id, googleUser.email).first();
 
     if (user) {
-      // Update existing user
+      // ОБНОВЛЕНИЕ: Если юзер есть, обновляем дату входа и аватар
+      // Если google_id еще не был привязан (регистрация по email), привязываем сейчас
       await db.prepare(
-        'UPDATE users SET last_login = CURRENT_TIMESTAMP, google_id = ? WHERE id = ?'
-      ).bind(googleUser.id, user.id).run();
-    } else {
-      // Create new user
-      const userId = generateId();
-      const username = googleUser.email.split('@')[0] + '_' + generateId().substring(0, 4);
+        'UPDATE users SET last_login = CURRENT_TIMESTAMP, google_id = ?, avatar_url = ? WHERE id = ?'
+      ).bind(googleUser.id, googleUser.picture, user.id).run();
+      
+      // Обновляем объект user для возврата на фронт (берем актуальные данные)
+      user = await db.prepare('SELECT * FROM users WHERE id = ?').bind(user.id).first();
 
-      console.log('Creating new user:', username);
+    } else {
+      // СОЗДАНИЕ: Юзера нет, создаем нового по НОВОЙ СХЕМЕ
+      const userId = generateId();
+      // Генерируем уникальный никнейм из email
+      let baseUsername = googleUser.email.split('@')[0];
+      // Очищаем от спецсимволов
+      baseUsername = baseUsername.replace(/[^a-zA-Z0-9]/g, '');
+      const username = baseUsername + '_' + Math.floor(Math.random() * 1000);
 
       await db.prepare(
         `INSERT INTO users 
-         (id, email, username, google_id, avatar_url, email_verified, last_login, is_active, created_at)
-         VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP)`
-      ).bind(userId, googleUser.email, username, googleUser.id, googleUser.picture).run();
+         (id, email, username, google_id, avatar_url, locale, role, reputation, is_active, email_verified, created_at, last_login)
+         VALUES (?, ?, ?, ?, ?, ?, 'user', 0, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+      ).bind(userId, googleUser.email, username, googleUser.id, googleUser.picture, language).run();
 
-      user = {
-        id: userId,
-        email: googleUser.email,
-        username: username,
-        google_id: googleUser.id,
-        avatar_url: googleUser.picture,
-        email_verified: true
-      };
+      // Получаем созданного юзера
+      user = await db.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
     }
 
-    // Create JWT session token
+    // 2. Создаем сессию и токен
     const sessionToken = await generateToken({
       userId: user.id,
-      email: user.email,
-      username: user.username
+      role: user.role
     }, env.JWT_SECRET);
 
-    // Save session
     const sessionId = generateId();
     await db.prepare(
-      `INSERT INTO sessions (id, user_id, token, expires_at, created_at, last_activity)
-       VALUES (?, ?, ?, datetime('now', '+30 days'), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+      `INSERT INTO sessions (id, user_id, token, expires_at)
+       VALUES (?, ?, ?, datetime('now', '+30 days'))`
     ).bind(sessionId, user.id, sessionToken).run();
 
+    // 3. Формируем ответ для фронтенда
     return new Response(JSON.stringify({
       success: true,
-      token: sessionToken,
+      token: sessionToken, // ЭТОТ ТОКЕН ВАЖЕН для localStorage
       user: {
         id: user.id,
         email: user.email,
         username: user.username,
-        avatar_url: user.avatar_url
+        avatar_url: user.avatar_url,
+        role: user.role,
+        reputation: user.reputation,
+        locale: user.locale,
+        bmw: {
+            model: user.bmw_model,
+            chassis: user.bmw_chassis,
+            engine: user.bmw_engine
+        }
       }
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (error) {
-    console.error('Google callback error:', error);
-    return new Response(JSON.stringify({ error: "Internal server error: " + error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    console.error('Google Auth Error:', error);
+    return new Response(JSON.stringify({ error: "Server error: " + error.message }), { status: 500 });
   }
 }
