@@ -230,7 +230,10 @@
     </style>
   </head>
   <body class="bmw-pattern">
-    <div id="webgl-container"></div>
+    <div
+      id="webgl-container"
+      style="position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.5"
+    ></div>
 
     <header>
       <div class="logo-container">
@@ -260,10 +263,6 @@
         </button>
         <a href="index.html" class="btn"
           ><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a
-        >
-        <a href="forum.html" class="hidden btn"
-          ><i class="fas fa-comments"></i>
-          <span data-i18n="forumBtn">Forum</span></a
         >
       </div>
     </header>
@@ -433,81 +432,39 @@
 
     <script src="./js/vin.js"></script>
     <script>
-      const container = document.getElementById("webgl-container");
-
-      // 1. Создаем сцену с туманом (как на главной)
+      // Легкий фон (тот же самый)
       const scene = new THREE.Scene();
-      // Добавляем туман, чтобы частицы плавно исчезали в темноте (цвет #050507)
-      scene.fog = new THREE.FogExp2(0x050507, 0.002);
-
       const camera = new THREE.PerspectiveCamera(
         75,
         window.innerWidth / window.innerHeight,
         0.1,
         1000,
       );
-      // Позиция камеры чуть дальше, как в script.js
-      camera.position.z = 30;
-
-      const renderer = new THREE.WebGLRenderer({
-        alpha: true,
-        antialias: true,
-      });
+      const renderer = new THREE.WebGLRenderer({ alpha: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio); // Для четкости на Retina (Mac)
-      container.appendChild(renderer.domElement);
+      document
+        .getElementById("webgl-container")
+        .appendChild(renderer.domElement);
 
-      // 2. Геометрия и материал (более качественные)
       const geometry = new THREE.BufferGeometry();
-      const count = 1200; // Больше частиц (было 600)
+      const count = 600;
       const pos = new Float32Array(count * 3);
-
-      // Распределяем частицы шире
-      for (let i = 0; i < count * 3; i++) {
-        pos[i] = (Math.random() - 0.5) * 80;
-      }
-
+      for (let i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * 60;
       geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-
       const material = new THREE.PointsMaterial({
-        size: 0.15,
+        size: 0.12,
         color: 0x0066b3,
-        transparent: true,
-        opacity: 0.8,
       });
-
       const mesh = new THREE.Points(geometry, material);
       scene.add(mesh);
+      camera.position.z = 25;
 
-      // 3. Добавляем реакцию на мышь
-      let mouseX = 0;
-      let mouseY = 0;
-      document.addEventListener("mousemove", (event) => {
-        mouseX = event.clientX / window.innerWidth - 0.5;
-        mouseY = event.clientY / window.innerHeight - 0.5;
-      });
-
-      // 4. Анимация
-      const clock = new THREE.Clock();
       function animate() {
         requestAnimationFrame(animate);
-        const elapsedTime = clock.getElapsedTime();
-
-        // Вращение как на главной
-        mesh.rotation.y = elapsedTime * 0.05;
-        mesh.rotation.x = mouseY * 0.5;
-        mesh.rotation.y += mouseX * 0.05;
-
+        mesh.rotation.y += 0.001;
         renderer.render(scene, camera);
       }
       animate();
-
-      // Адаптив при изменении окна
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
     </script>
   </body>
 </html>
