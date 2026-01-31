@@ -37,21 +37,21 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html,
-body {
+html {
   width: 100%;
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
+  height: -webkit-fill-available;
+  background-color: var(--bg-deep);
 }
 
 body {
   font-family: "Inter", sans-serif;
-  background-color: var(--bg-deep);
+  overflow-x: hidden;
+  background-color: transparent;
   color: var(--text-main);
   display: flex;
   flex-direction: column;
   line-height: 1.5;
+  min-height: 100vh;
 }
 
 /* Custom Scrollbar */
@@ -66,12 +66,6 @@ body {
   border-radius: 4px;
 }
 
-/* Backgrounds */
-.bmw-pattern {
-  background: radial-gradient(circle at 50% -20%, #1a2a44 0%, #0a0a0b 60%);
-  background-attachment: fixed; /* Фикс фона при скролле */
-}
-
 #webgl-container {
   position: fixed;
   top: 0;
@@ -79,7 +73,8 @@ body {
   width: 100%;
   height: 100%;
   z-index: -1;
-  pointer-events: none; /* Чтобы клики проходили сквозь канвас */
+  /* Вставляем градиент сюда. Так как блок fixed, фон тоже будет fixed */
+  background: radial-gradient(circle at 50% -20%, #1a2a44 0%, #050507 70%);
 }
 
 /* --- HEADER --- */
@@ -502,7 +497,7 @@ main.container {
 
 /* Empty State */
 .message-container {
-  text-align: center;
+  text-align: -webkit-center;
   padding: 60px 20px;
   background: var(--glass-bg);
   border-radius: var(--radius-xl);

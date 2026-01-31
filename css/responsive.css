@@ -157,7 +157,7 @@
 
   /* 5. VIN PAGE MOBILE FIXES */
   .vin-hero h1 {
-    font-size: 2rem;
+    font-size: 2rem !important;
   }
 
   /* Сброс стилей контейнера поиска */
