@@ -13,7 +13,7 @@ const languageToggle = document.getElementById("language-toggle");
 
 // App State
 // Читаем язык из памяти или ставим 'en' по умолчанию
-let currentLanguage = localStorage.getItem('forumLanguage') || 'en';
+let currentLanguage = localStorage.getItem("forumLanguage") || "en";
 let isDarkMode = true;
 let bmwCodes = [];
 let selectedCode = null;
@@ -103,16 +103,24 @@ function displayCodeDetail(code) {
   window.scrollTo(0, 0);
 
   // Безопасная проверка данных
-  const engine = code.engineCodes && code.engineCodes.length > 0 ? code.engineCodes[0] : "All";
+  const engine =
+    code.engineCodes && code.engineCodes.length > 0
+      ? code.engineCodes[0]
+      : "All";
   const category = code.category || "General";
   const pCodes = code.pCodes || [];
-  const solutions = code.solutions && code.solutions[lang] ? code.solutions[lang] : [];
-  const description = code.description && code.description[lang] ? code.description[lang] : "No description available";
+  const solutions =
+    code.solutions && code.solutions[lang] ? code.solutions[lang] : [];
+  const description =
+    code.description && code.description[lang]
+      ? code.description[lang]
+      : "No description available";
 
   const partsQuery = `BMW ${engine} ${category} parts RealOEM`;
   const catsQuery = `BMW ${engine} запчасти`;
 
-  const pCodeHtml = pCodes.length > 0
+  const pCodeHtml =
+    pCodes.length > 0
       ? `<div class="alt-code-badge">${t.obdLabel} <span>${pCodes.join(", ")}</span></div>`
       : "";
 
@@ -171,61 +179,61 @@ function displayCodeDetail(code) {
 // --- FAVORITES LOGIC ---
 
 // Переключить состояние (Сохранить/Удалить)
-window.toggleFavorite = function(event, codeId) {
-    if(event) event.stopPropagation(); // Чтобы не открывалась детальная страница
+window.toggleFavorite = function (event, codeId) {
+  if (event) event.stopPropagation(); // Чтобы не открывалась детальная страница
 
-    let favorites = JSON.parse(localStorage.getItem('bmwFavorites')) || [];
-    
-    if (favorites.includes(codeId)) {
-        favorites = favorites.filter(id => id !== codeId); // Удалить
-    } else {
-        favorites.push(codeId); // Добавить
-    }
+  let favorites = JSON.parse(localStorage.getItem("bmwFavorites")) || [];
 
-    localStorage.setItem('bmwFavorites', JSON.stringify(favorites));
+  if (favorites.includes(codeId)) {
+    favorites = favorites.filter((id) => id !== codeId); // Удалить
+  } else {
+    favorites.push(codeId); // Добавить
+  }
 
-    // Перерисовать результаты поиска, чтобы обновить звездочки
-    handleSearch(); 
-    // Если открыто модальное окно избранного, обновить его тоже
-    renderFavoritesList();
-}
+  localStorage.setItem("bmwFavorites", JSON.stringify(favorites));
+
+  // Перерисовать результаты поиска, чтобы обновить звездочки
+  handleSearch();
+  // Если открыто модальное окно избранного, обновить его тоже
+  renderFavoritesList();
+};
 
 // Открыть/Закрыть модальное окно
-window.toggleFavoritesModal = function() {
-    const modal = document.getElementById('favorites-modal');
-    modal.classList.toggle('active');
-    
-    if (modal.classList.contains('active')) {
-        renderFavoritesList();
-    }
-}
+window.toggleFavoritesModal = function () {
+  const modal = document.getElementById("favorites-modal");
+  modal.classList.toggle("active");
+
+  if (modal.classList.contains("active")) {
+    renderFavoritesList();
+  }
+};
 
 // Отрисовка списка внутри модального окна
 function renderFavoritesList() {
-    const list = document.getElementById('favorites-list');
-    const favorites = JSON.parse(localStorage.getItem('bmwFavorites')) || [];
-    const t = translations[currentLanguage];
+  const list = document.getElementById("favorites-list");
+  const favorites = JSON.parse(localStorage.getItem("bmwFavorites")) || [];
+  const t = translations[currentLanguage];
 
-    list.innerHTML = "";
+  list.innerHTML = "";
 
-    if (favorites.length === 0) {
-        list.innerHTML = `
+  if (favorites.length === 0) {
+    list.innerHTML = `
             <div class="empty-favs">
                 <i class="far fa-folder-open"></i>
                 <p>${t.emptySaved}</p>
             </div>`;
-        return;
-    }
+    return;
+  }
 
-    // Находим полные объекты кодов по ID
-    const savedCodes = bmwCodes.filter(c => favorites.includes(c.code));
+  // Находим полные объекты кодов по ID
+  const savedCodes = bmwCodes.filter((c) => favorites.includes(c.code));
 
-    savedCodes.forEach(code => {
-        const div = document.createElement('div');
-        div.className = 'code-item'; // Используем те же стили, что и в поиске
-        div.style.marginBottom = '10px';
-        
-        div.innerHTML = `
+  savedCodes.forEach((code) => {
+    const div = document.createElement("div");
+    div.className = "code-item"; // Используем те же стили, что и в поиске
+    div.style.marginBottom = "10px";
+
+    div.innerHTML = `
           <div style="flex: 1;" onclick="toggleFavoritesModal(); displayCodeDetail(selectedCodeRef)">
             <div class="code-header">
               <span class="code-identifier" style="color:#0066b3">${code.code}</span>
@@ -236,15 +244,15 @@ function renderFavoritesList() {
             <i class="fas fa-trash"></i>
           </button>
         `;
-        
-        // Хак для клика
-        div.querySelector('div[style*="flex: 1"]').onclick = () => {
-            toggleFavoritesModal();
-            displayCodeDetail(code);
-        };
 
-        list.appendChild(div);
-    });
+    // Хак для клика
+    div.querySelector('div[style*="flex: 1"]').onclick = () => {
+      toggleFavoritesModal();
+      displayCodeDetail(code);
+    };
+
+    list.appendChild(div);
+  });
 }
 
 /* --- GLOBAL CLOSE FUNCTION --- */
@@ -306,7 +314,9 @@ function initWizard() {
   `;
   document.body.insertAdjacentHTML("beforeend", wizardHTML);
 
-  document.getElementById("chat-input").addEventListener("keypress", function (event) {
+  document
+    .getElementById("chat-input")
+    .addEventListener("keypress", function (event) {
       if (event.key === "Enter") {
         event.preventDefault();
         handleUserMessage();
@@ -343,7 +353,7 @@ function sendBotGreeting() {
   showQuickChips();
 }
 
-window.handleUserMessage = function() {
+window.handleUserMessage = function () {
   const input = document.getElementById("chat-input");
   const text = input.value.trim();
   if (!text) return;
@@ -359,31 +369,50 @@ window.handleUserMessage = function() {
   setTimeout(() => {
     analyzeRequest(text);
   }, 1000);
-}
+};
 
 function analyzeRequest(query) {
   const indicator = document.getElementById("typing-indicator");
   indicator.style.display = "none";
   const lang = currentLanguage;
 
-  const terms = query.toLowerCase().split(" ").filter((t) => t.length > 2);
+  const terms = query
+    .toLowerCase()
+    .split(" ")
+    .filter((t) => t.length > 2);
   if (terms.length === 0 && query.length > 0) terms.push(query.toLowerCase());
 
   let matches = bmwCodes.map((code) => {
     let score = 0;
     if (code.code.toLowerCase().includes(query.toLowerCase())) score += 100;
-    if (code.pCodes && code.pCodes.some((p) => p.toLowerCase().includes(query.toLowerCase()))) score += 100;
+    if (
+      code.pCodes &&
+      code.pCodes.some((p) => p.toLowerCase().includes(query.toLowerCase()))
+    )
+      score += 100;
 
     terms.forEach((term) => {
-      if (code.title[lang] && code.title[lang].toLowerCase().includes(term)) score += 10;
-      if (code.description[lang] && code.description[lang].toLowerCase().includes(term)) score += 5;
-      if (code.solutions[lang] && code.solutions[lang].join(" ").toLowerCase().includes(term)) score += 3;
+      if (code.title[lang] && code.title[lang].toLowerCase().includes(term))
+        score += 10;
+      if (
+        code.description[lang] &&
+        code.description[lang].toLowerCase().includes(term)
+      )
+        score += 5;
+      if (
+        code.solutions[lang] &&
+        code.solutions[lang].join(" ").toLowerCase().includes(term)
+      )
+        score += 3;
       if (code.title.en.toLowerCase().includes(term)) score += 2;
     });
     return { code, score };
   });
 
-  const results = matches.filter((m) => m.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
+  const results = matches
+    .filter((m) => m.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
 
   if (results.length > 0) {
     const phrases = {
@@ -416,7 +445,10 @@ function analyzeRequest(query) {
       };
       resultsDiv.appendChild(btn);
     });
-    chatBody.insertBefore(resultsDiv, document.getElementById("typing-indicator"));
+    chatBody.insertBefore(
+      resultsDiv,
+      document.getElementById("typing-indicator"),
+    );
   } else {
     const notFound = {
       en: "I couldn't find exact matches in my database. Try using keywords like 'Turbo', 'Misfire', 'Sensor' or a specific code.",
@@ -446,9 +478,18 @@ function showQuickChips() {
   const lang = currentLanguage;
 
   const chipsData = [
-    { label: { en: "Engine Misfire", ru: "Троит мотор", ka: "ძრავის ძაგძაგი" }, query: "misfire" },
-    { label: { en: "Boost Pressure", ru: "Нет наддува", ka: "ტურბო წნევა" }, query: "boost pressure" },
-    { label: { en: "Battery", ru: "Аккумулятор", ka: "აკუმულატორი" }, query: "battery" },
+    {
+      label: { en: "Engine Misfire", ru: "Троит мотор", ka: "ძრავის ძაგძაგი" },
+      query: "misfire",
+    },
+    {
+      label: { en: "Boost Pressure", ru: "Нет наддува", ka: "ტურბო წნევა" },
+      query: "boost pressure",
+    },
+    {
+      label: { en: "Battery", ru: "Аккумулятор", ka: "აკუმულატორი" },
+      query: "battery",
+    },
   ];
 
   const chipsDiv = document.createElement("div");
@@ -477,7 +518,8 @@ function updateChatUI() {
   const inputEl = document.getElementById("chat-input");
 
   if (titleEl) titleEl.innerText = t.chatTitle;
-  if (statusEl) statusEl.innerHTML = `<div class="status-dot"></div> ${t.chatStatus}`;
+  if (statusEl)
+    statusEl.innerHTML = `<div class="status-dot"></div> ${t.chatStatus}`;
   if (inputEl) inputEl.placeholder = t.chatPlaceholder;
 
   const chatBody = document.getElementById("chat-body");
@@ -491,295 +533,6 @@ function updateChatUI() {
 }
 
 // ==========================================
-// GOOGLE OAUTH & AUTHENTICATION
-// ==========================================
-
-// Инициализируй Google Identity Services
-function initializeGoogleAuth() {
-  google.accounts.id.initialize({
-    client_id: '855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com', // ЗАМЕНИ НА ТВОЙ CLIENT ID
-    callback: handleGoogleCallback
-  });
-}
-
-// Обработчик для кнопки Google Sign In
-function handleGoogleSignIn() {
-  console.log('Google Sign In clicked');
-  
-  if (typeof google === 'undefined') {
-    alert('Google Sign-In is not available');
-    return;
-  }
-
-  try {
-    google.accounts.id.prompt((notification) => {
-      console.log('Prompt:', notification);
-    });
-  } catch (e) {
-    console.error('Error:', e);
-  }
-}
-
-// Callback от Google с ID token
-async function handleGoogleCallback(response) {
-  const loadingMsg = document.getElementById('login-message') || document.getElementById('reg-message');
-  
-  if (loadingMsg) {
-    loadingMsg.textContent = 'Signing in...';
-    loadingMsg.style.color = '#6f9bd1';
-  }
-
-  try {
-    // Отправляем ID token на наш backend
-    const res = await fetch('/api/auth/google-callback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        credential: response.credential,
-        language: currentLanguage
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.success && data.token) {
-      // Сохраняем токен и данные пользователя
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      if (loadingMsg) {
-        loadingMsg.textContent = 'Login successful! Redirecting...';
-        loadingMsg.style.color = '#2ecc71';
-      }
-
-      // Перенаправляем на форум через 500ms
-      setTimeout(() => {
-        location.reload();
-      }, 500);
-    } else {
-      if (loadingMsg) {
-        loadingMsg.textContent = data.error || 'Authentication failed';
-        loadingMsg.style.color = '#e74c3c';
-      }
-    }
-  } catch (error) {
-    console.error('Google auth error:', error);
-    if (loadingMsg) {
-      loadingMsg.textContent = 'Authentication error: ' + error.message;
-      loadingMsg.style.color = '#e74c3c';
-    }
-  }
-}
-
-// ОБРАБОТЧИКИ ФОРМ ЛОГИНА И РЕГИСТРАЦИИ
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-  const messageDiv = document.getElementById('login-message');
-
-  messageDiv.textContent = 'Logging in...';
-  messageDiv.style.color = '#6f9bd1';
-
-  try {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, language: currentLanguage })
-    });
-
-    const data = await res.json();
-
-    if (data.success && data.token) {
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      messageDiv.textContent = 'Login successful! Redirecting...';
-      messageDiv.style.color = '#2ecc71';
-
-      setTimeout(() => {
-        location.reload();
-      }, 500);
-    } else {
-      messageDiv.textContent = data.error || 'Login failed';
-      messageDiv.style.color = '#e74c3c';
-    }
-  } catch (error) {
-    console.error('Login error:', error);
-    messageDiv.textContent = 'Error: ' + error.message;
-    messageDiv.style.color = '#e74c3c';
-  }
-});
-
-document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const username = document.getElementById('reg-username').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
-  const messageDiv = document.getElementById('reg-message');
-
-  // Простая валидация пароля
-  if (password.length < 8) {
-    messageDiv.textContent = 'Password must be at least 8 characters';
-    messageDiv.style.color = '#e74c3c';
-    return;
-  }
-
-  messageDiv.textContent = 'Creating account...';
-  messageDiv.style.color = '#6f9bd1';
-
-  try {
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, username, language: currentLanguage })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      messageDiv.textContent = 'Registration successful! Check your email to verify your account.';
-      messageDiv.style.color = '#2ecc71';
-      document.getElementById('registerForm').reset();
-
-      // Автоматически переключаемся на логин
-      setTimeout(() => {
-        switchTab('login');
-      }, 2000);
-    } else {
-      messageDiv.textContent = data.error || 'Registration failed';
-      messageDiv.style.color = '#e74c3c';
-    }
-  } catch (error) {
-    console.error('Register error:', error);
-    messageDiv.textContent = 'Error: ' + error.message;
-    messageDiv.style.color = '#e74c3c';
-  }
-});
-
-// ПРОВЕРКА АВТОРИЗАЦИИ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
-function checkAuthOnLoad() {
-  const token = localStorage.getItem('authToken');
-  const user = localStorage.getItem('user');
-
-  if (token && user) {
-    // Пользователь авторизован, скрываем форму, показываем форум
-    const authSection = document.getElementById('auth-section');
-    const forumContent = document.getElementById('forum-content');
-
-    if (authSection) authSection.classList.add('hidden');
-    if (forumContent) forumContent.classList.remove('hidden');
-
-    const userData = JSON.parse(user);
-    document.getElementById('sidebar-username').textContent = userData.username || 'User';
-
-    // Загружаем данные форума
-    loadForumTopics();
-    loadNotifications();
-  }
-}
-
-// LOGOUT ФУНКЦИЯ
-function logout() {
-  if (confirm('Are you sure you want to logout?')) {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    location.reload();
-  }
-}
-
-// PROTECT API ЗАПРОСЫ - добавь Authorization header
-async function protectedFetch(endpoint, options = {}) {
-  const token = localStorage.getItem('authToken');
-
-  if (!token) {
-    window.location.href = window.location.pathname + '?logout=true';
-    return null;
-  }
-
-  const headers = {
-    ...options.headers,
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
-
-  const response = await fetch(endpoint, {
-    ...options,
-    headers
-  });
-
-  // Если токен истёк (401), логаутим
-  if (response.status === 401) {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    window.location.reload();
-    return null;
-  }
-
-  return response;
-}
-
-// ИНИЦИАЛИЗАЦИЯ
-document.addEventListener('DOMContentLoaded', () => {
-  initializeGoogleAuth();
-  checkAuthOnLoad();
-  
-  // Обновляем текст кнопок Google в зависимости от языка
-  updateGoogleButtonText();
-});
-
-// ЛОКАЛИЗАЦИЯ GOOGLE КНОПОК
-function updateGoogleButtonText() {
-  const googleSignInText = document.getElementById('googleSignInText');
-  const googleSignUpText = document.getElementById('googleSignUpText');
-  
-  const translations = {
-    en: { signIn: 'Sign in with Google', signUp: 'Sign up with Google' },
-    ru: { signIn: 'Войти через Google', signUp: 'Зарегистрироваться через Google' },
-    ka: { signIn: 'შესვლა Google-ის მეშვეობით', signUp: 'რეგისტრაცია Google-ის მეშვეობით' }
-  };
-
-  const text = translations[currentLanguage];
-  if (googleSignInText) googleSignInText.textContent = text.signIn;
-  if (googleSignUpText) googleSignUpText.textContent = text.signUp;
-}
-
-// Когда меняется язык, обновляем текст Google кнопок
-const originalToggleLanguage = window.toggleLanguage;
-window.toggleLanguage = function() {
-  if (originalToggleLanguage) originalToggleLanguage();
-  updateGoogleButtonText();
-};
-
-// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: отправка запросов к API с токеном
-async function apiCall(method, endpoint, body = null) {
-  const token = localStorage.getItem('authToken');
-
-  const options = {
-    method: method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    }
-  };
-
-  if (body) options.body = JSON.stringify(body);
-
-  const response = await fetch(endpoint, options);
-
-  if (response.status === 401) {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    window.location.reload();
-    return null;
-  }
-
-  return response.json();
-}
-
-// ==========================================
 // 4. MAIN LOGIC (INIT & SEARCH)
 // ==========================================
 
@@ -790,17 +543,37 @@ async function init() {
       bmwCodes = getMockData();
     }
     // 2. Пытаемся подгрузить JSON (если есть)
-     const response = await fetch("../data/codes.json");
-    if (response.ok) { const data = await response.json(); bmwCodes = [...bmwCodes, ...data.codes]; }
+    const response = await fetch("../data/codes.json");
+    if (response.ok) {
+      const data = await response.json();
+      bmwCodes = [...bmwCodes, ...data.codes];
+    }
 
     setupEventListeners();
     updateLanguage();
+
+    // Инициализация 3D фона и Чата
+    init3DBackground();
+    initWizard();
+
+    // --- ПЕРЕНЕСЕНО СНИЗУ: Микроанимации кнопок ---
+    document.querySelectorAll(".btn").forEach((btn) => {
+      btn.addEventListener("mousedown", () => {
+        btn.style.transform = "scale(0.95)";
+      });
+      btn.addEventListener("mouseup", () => {
+        btn.style.transform = "scale(1)";
+      });
+    });
   } catch (error) {
     console.warn("Init error", error);
     setupEventListeners();
     updateLanguage();
   }
 }
+
+// Запускаем
+document.addEventListener("DOMContentLoaded", init);
 
 function setupEventListeners() {
   searchInput.addEventListener("input", handleSearch);
@@ -810,7 +583,7 @@ function setupEventListeners() {
     let idx = langs.indexOf(currentLanguage);
     currentLanguage = langs[(idx + 1) % langs.length];
 
-    localStorage.setItem('forumLanguage', currentLanguage);
+    localStorage.setItem("forumLanguage", currentLanguage);
 
     updateLanguage();
 
@@ -825,16 +598,16 @@ function updateLanguage() {
   const langLabels = { en: "EN", ru: "RU", ka: "KA" };
   const span = languageToggle.querySelector("span");
   if (span) span.textContent = langLabels[currentLanguage];
-  
-  const text = translations[currentLanguage];
-  const forumBtn = document.getElementById("forum-btn-text");
-  if (forumBtn) forumBtn.textContent = text.forumBtn;
 
+  const text = translations[currentLanguage];
   searchInput.placeholder = text.searchPlaceholder;
 
-  document.querySelector("#empty-state .message").textContent = text.emptyStateMessage;
-  document.querySelector("#empty-state .sub-message").textContent = text.emptyStateSubMessage;
-  document.querySelector("#no-results .message").textContent = text.noResultsMessage;
+  document.querySelector("#empty-state .message").textContent =
+    text.emptyStateMessage;
+  document.querySelector("#empty-state .sub-message").textContent =
+    text.emptyStateSubMessage;
+  document.querySelector("#no-results .message").textContent =
+    text.noResultsMessage;
   document.querySelector("footer p").textContent = text.footer;
 }
 
@@ -852,7 +625,7 @@ function handleSearch() {
     (c) =>
       c.code.toLowerCase().includes(term) ||
       c.title[currentLanguage].toLowerCase().includes(term) ||
-      (c.pCodes && c.pCodes.some((p) => p.toLowerCase().includes(term)))
+      (c.pCodes && c.pCodes.some((p) => p.toLowerCase().includes(term))),
   );
 
   if (filtered.length === 0) {
@@ -870,7 +643,7 @@ function handleSearch() {
 function renderResults(codes) {
   resultsContainer.innerHTML = "";
   // Получаем список сохраненных ID
-  const favorites = JSON.parse(localStorage.getItem('bmwFavorites')) || [];
+  const favorites = JSON.parse(localStorage.getItem("bmwFavorites")) || [];
 
   codes.forEach((code) => {
     const el = document.createElement("div");
@@ -880,8 +653,9 @@ function renderResults(codes) {
     const isFav = favorites.includes(code.code);
     const starClass = isFav ? "active" : "";
 
-    let severityColor = "#f1c40f"; 
-    if (code.severity === "High" || code.severity === "Critical") severityColor = "#e74c3c";
+    let severityColor = "#f1c40f";
+    if (code.severity === "High" || code.severity === "Critical")
+      severityColor = "#e74c3c";
     if (code.severity === "Low") severityColor = "#2ecc71";
 
     el.innerHTML = `
@@ -906,7 +680,8 @@ function renderResults(codes) {
     `;
 
     // Хак, чтобы передать объект code в onclick
-    el.querySelector('div[style*="flex: 1"]').onclick = () => displayCodeDetail(code);
+    el.querySelector('div[style*="flex: 1"]').onclick = () =>
+      displayCodeDetail(code);
 
     resultsContainer.appendChild(el);
   });
@@ -924,7 +699,12 @@ function init3DBackground() {
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x050507, 0.002);
 
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000,
+  );
   camera.position.z = 30;
 
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -940,8 +720,16 @@ function init3DBackground() {
     posArray[i] = (Math.random() - 0.5) * 80;
   }
 
-  particlesGeometry.setAttribute("position", new THREE.BufferAttribute(posArray, 3));
-  const material = new THREE.PointsMaterial({ size: 0.15, color: 0x0066b3, transparent: true, opacity: 0.8 });
+  particlesGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(posArray, 3),
+  );
+  const material = new THREE.PointsMaterial({
+    size: 0.15,
+    color: 0x0066b3,
+    transparent: true,
+    opacity: 0.8,
+  });
   const particlesMesh = new THREE.Points(particlesGeometry, material);
   scene.add(particlesMesh);
 
@@ -969,120 +757,3 @@ function init3DBackground() {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  init3DBackground();
-  initWizard();
-  
-  // Микроанимации кнопок
-  document.querySelectorAll(".btn").forEach((btn) => {
-    btn.addEventListener("mousedown", () => { btn.style.transform = "scale(0.95)"; });
-    btn.addEventListener("mouseup", () => { btn.style.transform = "scale(1)"; });
-  });
-
-  // Анимация при скролле
-  window.addEventListener("scroll", () => {
-    document.querySelectorAll(".code-item").forEach((item) => {
-      const rect = item.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.8) {
-        item.style.transform = `translateY(${Math.sin(rect.top / 50) * 5}px)`;
-      }
-    });
-  });
-});
-// Настройка слушателей для форм
-function setupLoginForm() {
-  const loginForm = document.getElementById('loginForm');
-  if (!loginForm) return;
-
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const messageDiv = document.getElementById('login-message');
-
-    if (messageDiv) messageDiv.textContent = 'Logging in...';
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, language: currentLanguage || 'en' })
-      });
-      const data = await res.json();
-      
-      if (data.success && data.token) {
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        if (messageDiv) messageDiv.textContent = 'Login successful!';
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        if (messageDiv) messageDiv.textContent = data.error || 'Login failed';
-      }
-    } catch (error) {
-      if (messageDiv) messageDiv.textContent = 'Error: ' + error.message;
-    }
-  });
-}
-
-function setupRegisterForm() {
-  const registerForm = document.getElementById('registerForm');
-  if (!registerForm) return;
-
-  registerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('reg-username').value;
-    const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    const messageDiv = document.getElementById('reg-message');
-
-    if (password.length < 8) {
-      if (messageDiv) messageDiv.textContent = 'Password must be 8+ chars';
-      return;
-    }
-
-    if (messageDiv) messageDiv.textContent = 'Creating account...';
-
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username, language: currentLanguage || 'en' })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        if (messageDiv) messageDiv.textContent = 'Check your email!';
-        registerForm.reset();
-      } else {
-        if (messageDiv) messageDiv.textContent = data.error || 'Registration failed';
-      }
-    } catch (error) {
-      if (messageDiv) messageDiv.textContent = 'Error: ' + error.message;
-    }
-  });
-}
-
-function initAuthSystem() {
-  console.log('Initializing auth...');
-  
-  if (typeof google !== 'undefined') {
-    google.accounts.id.initialize({
-      client_id: '855371837949-nsnfceo82efbfb5hmdks9ifrs0ra07vv.apps.googleusercontent.com',
-      callback: handleGoogleCallback
-    });
-  }
-  
-  setupLoginForm();
-  setupRegisterForm();
-  checkAuthOnLoad();
-}
-
-// Запусти при загрузке
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAuthSystem);
-} else {
-  initAuthSystem();
-}
-// Запускаем
-init();
