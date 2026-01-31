@@ -495,6 +495,46 @@ main.container {
   text-align: -webkit-center;
 }
 
+/* Карточка результата поиска внутри чата */
+.chat-result-link {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.chat-result-link:hover {
+  background: rgba(0, 102, 179, 0.2); /* Подсветка BMW Blue */
+  border-color: var(--bmw-blue);
+  transform: translateX(5px);
+}
+
+.chat-result-code {
+  font-family: "Exo 2", sans-serif;
+  font-weight: 700;
+  color: var(--bmw-sky);
+  font-size: 15px;
+  margin-bottom: 3px;
+}
+
+/* Стрелочка в карточке */
+.chat-result-link i {
+  color: var(--text-muted);
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+.chat-result-link:hover i {
+  color: white;
+  transform: translateX(3px);
+}
 /* Empty State */
 .message-container {
   text-align: -webkit-center;
