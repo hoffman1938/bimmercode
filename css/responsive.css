@@ -1,542 +1,282 @@
-/* =========================================
-   RESPONSIVE.CSS
-   Адаптация для всех устройств (Mobile, Tablet, Desktop)
-   ========================================= */
+/* ==========================================================================
+   RESPONSIVE.CSS (Mobile Only Overrides)
+   Fixed: Header Buttons & VIN Input Adaptability
+   ========================================================================== */
 
-/* --- Tablet Landscape / Small Laptops (до 1024px) --- */
+/* --- TABLETS & SMALL LAPTOPS (Max 1024px) --- */
 @media (max-width: 1024px) {
-  .forum-container,
   main.container {
     width: 95%;
-    max-width: 960px;
+    margin-top: 20px;
+  }
+
+  /* Чат чуть компактнее */
+  .chat-window {
+    width: 360px;
+    height: 550px;
+    bottom: 100px;
+    right: 20px;
   }
 }
 
-/* --- Tablet Portrait / Large Phones (до 900px) --- */
-@media (max-width: 900px) {
-  /* Форум: Сайдбар уходит наверх или вниз */
-  .forum-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: 15px;
-  }
-
-  .sidebar-card {
-    position: static; /* Убираем "липкость" */
-    width: 100%;
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .user-stats-grid {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Статистика в 2 колонки */
-    gap: 10px;
-  }
-
-  .nav-menu {
-    flex-direction: row;
-    width: 100%;
-    overflow-x: auto; /* Горизонтальная прокрутка, если не влезает */
-    padding-bottom: 5px;
-    margin-top: 15px;
-    justify-content: flex-start;
-    gap: 10px;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .nav-item {
-    white-space: nowrap; /* Текст не переносится */
-    flex-shrink: 0;
-    background: rgba(255,255,255,0.03); /* Подложка для кнопок */
-  }
-}
-
-/* --- Tablets & Large Mobile (до 768px) --- */
+/* --- MOBILE DEVICES (Max 768px) --- */
 @media (max-width: 768px) {
-  /* Header Fixes */
+  /* 1. HEADER FIX (Кнопки не вылезают) */
   header {
+    height: auto;
+    min-height: 60px;
     padding: 10px 15px;
-    height: 60px; /* Уменьшаем высоту хедера */
-  }
-
-  .topic-stats {
-    width: 100%;
-    margin-left: 0;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05); /* Линия разделитель */
-    display: flex;
-    justify-content: space-between; /* Распределяем по краям */
-    gap: 0;
-  }
-
-  .btn-create {
-    width: 50%;
-  }
-
-  .stat-mini {
-    flex-direction: row; /* Цифра и подпись в одну строку */
-    gap: 6px;
-    align-items: baseline;
-  }
-
-  .stat-mini span {
-    font-size: 15px;
-  }
-
-  .topic-main {
-    width: 100%;
-    align-items: flex-start; /* Иконка и текст сверху */
-  }
-
-  .topic-icon {
-    flex-shrink: 0; /* Иконка не сжимается */
-  }
-
-  .topic-card {
-    flex-direction: column; /* Элементы друг под другом */
-    align-items: flex-start;
-    padding: 15px;
-    gap: 15px;
-  }
-
-   .controls {
-    gap: 0!important;
-  }
-
-  .forum-header-actions {
-    align-items: center!important;
-  }
-
-.vin-btn {
-    padding: 0 10px!important;
-}
-
-#results-container {
-    gap: 10px; /* Чуть меньше отступы между карточками */
-    padding-bottom: 80px; /* Чтобы нижний бар или клавиатура не перекрывали последний элемент */
-  }
-
-  .severity-low, 
-  .severity-medium, 
-  .severity-high {
-    font-size: 11px;
-    padding: 2px 8px;
-    white-space: nowrap; /* Текст бейджа не переносится */
-  }
-
-  .code-title {
-    font-size: 14px;
-    line-height: 1.4;
-    color: #eee;
-    /* Обрезаем длинный текст описания (опционально) */
-    display: -webkit-box;
-    line-clamp: 2; /* Максимум 2 строки */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-/* Стрелка справа */
-  .code-item i.fa-chevron-right, 
-  .code-arrow {
-    grid-column: 2 / 3; /* Вторая колонка */
-    grid-row: 1 / 3; /* Растягиваем на обе строки по высоте */
-    align-self: center; /* Центруем по вертикали */
-    font-size: 18px;
-    padding-left: 10px;
-    color: var(--bmw-blue);
-    opacity: 0.5;
-  }
-
-.code-meta {
-    font-size: 12px;
-    margin-top: 5px;
-    opacity: 0.7;
-  }
-  .code-info {
-    grid-column: 1 / 2; /* Занимает левую часть во второй строке */
-    width: 100%;
-    min-width: 0; /* Важно! Позволяет тексту сокращаться троеточием */
-  }
-
-  .code-item h3 {
-    font-size: 18px; /* Чуть меньше шрифт кода */
-    margin: 0;
-  }
-
-  .code-item {
-    display: grid; /* Используем Grid для более точного контроля */
-    grid-template-columns: 1fr auto; /* Текст слева, стрелка справа */
-    grid-template-rows: auto auto; /* Две строки: Заголовок и Инфо */
-    align-items: start;
-    padding: 15px;
-    gap: 8px 15px; /* Отступы между строками и колонками */
-    height: auto; /* Разрешаем карточке расти по высоте */
-  }
-
-  .code-header {
-    grid-column: 1 / -1; /* Заголовок на всю ширину (или 1 / 2 если хотите стрелку справа от заголовка) */
-    display: flex;
-    flex-wrap: wrap; /* Если бейдж не влезает, он перенесется */
-    align-items: center;
+    padding-top: calc(10px + env(safe-area-inset-top));
+    flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 5px;
   }
 
-  /* Скрываем длинный текст в кнопках хедера, оставляем иконки */
-  .header-controls .btn span {
-    display: none; 
-  }
-  
-  .header-controls .btn {
-    padding: 8px 12px; /* Компактные кнопки */
-    font-size: 16px; /* Увеличиваем иконку, раз текста нет */
-  }
-
-  .logo svg {
+  .logo {
     width: 36px;
     height: 36px;
   }
 
-  .detail-header {
-    margin-bottom: 0!important;
-  }
-
-  .detail-header h2 {
-    font-size: 24px;
-  }
-  
-  .header-title-wrapper {
-    padding: 0 10px;
-  }
-
-  /* Поиск на главной */
-  #search-input {
-    padding: 15px 20px;
+  /* Убираем длинный заголовок, оставляем место для кнопок */
+  .logo-container h1 {
     font-size: 16px;
+    display: none; /* Скрываем текст заголовка, чтобы кнопки влезли */
   }
 
-  /* Детали кода */
-  .tag-grid {
-    grid-template-columns: 1fr;
+  .controls {
+    gap: 8px;
+    margin-left: auto; /* Прижимаем кнопки вправо */
+  }
+
+  /* ПРЕВРАЩЕНИЕ КНОПОК В ИКОНКИ (Fix overflow) */
+  .controls .btn {
+    padding: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    justify-content: center;
+    font-size: 0 !important; /* ХАК: Скрываем весь текст (даже без span) */
+    gap: 0;
+  }
+
+  /* Восстанавливаем размер иконки, так как родитель font-size: 0 */
+  .controls .btn i {
+    font-size: 18px !important;
+    margin: 0;
+  }
+
+  /* Специально для кнопки языка, где текст внутри span */
+  .controls .btn span {
+    display: none;
+  }
+
+  /* 2. SEARCH BAR */
+  #search-container {
+    margin-top: 15px;
+  }
+
+  #search-input {
+    height: 50px;
+    font-size: 16px; /* 16px отключает зум в iOS */
+    padding-left: 20px;
+    border-radius: 25px;
+  }
+
+  /* 3. RESULT CARDS (Вертикальный стек) */
+  .code-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    padding-right: 50px;
+    gap: 8px;
+  }
+
+  .code-item > div[style*="flex: 1"] {
+    width: 100%;
+  }
+
+  .code-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .code-identifier {
+    font-size: 18px;
+  }
+  .code-title {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .star-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fa-chevron-right {
+    display: none;
+  }
+
+  /* 4. DETAIL VIEW */
+  #code-detail {
+    padding: 20px;
+    border-radius: 0;
+    margin: 0 -5%;
+    width: 110%;
+    border: none;
+    border-top: 1px solid var(--glass-border);
+    min-height: 80vh;
+  }
+
+  .detail-header {
+    flex-direction: column;
     gap: 15px;
   }
-  
+  .header-title-wrapper h2 {
+    font-size: 24px;
+    word-break: break-all;
+  }
   .parts-buttons {
     flex-direction: column;
   }
-
   .btn-part {
     width: 100%;
+    height: 48px;
   }
 
-  main.container {
-    padding: 0 15px;
-    margin-top: 15px;
-    width: 100%;
-    
-    /* --- ФИКС ДЛЯ IPHONE (Убираем серую пелену) --- */
-    border-radius: 0;
+  /* 5. VIN PAGE MOBILE FIXES (INPUT FIX) */
+  .vin-hero h1 {
+    font-size: 2rem !important;
+  }
+
+  /* Жесткий сброс стилей для контейнера поиска */
+  .vin-search-box {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 8px !important;
+    border-radius: 24px !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important; /* Важно: чтобы паддинги не рвали экран */
+    height: auto !important;
+  }
+
+  /* Исправление поля ввода */
+  .vin-search-box input {
+    width: 100% !important;
+    min-width: 0 !important; /* CSS Flex fix */
+    text-align: center;
     border: none !important;
-    
-    /* Делаем главный контейнер полностью прозрачным на мобильных, 
-       чтобы был виден 3D фон */
-    background: transparent !important; 
-    box-shadow: none !important;
-    
-    /* Отключаем тяжелый эффект размытия для контейнера на моб */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin: 0 !important;
+    padding: 15px !important;
+    border-radius: 20px !important;
+    font-size: 18px !important; /* Крупный текст */
+    background: transparent !important;
   }
 
-  #code-detail {
-    padding: 20px;
+  .vin-btn {
+    width: 100% !important;
+    height: 50px !important;
+    border-radius: 20px !important;
+    margin: 0 !important;
   }
-}
 
-/* --- Mobile Landscape / Medium Phones (до 600px) --- */
-@media (max-width: 600px) {
-  /* Критическое исправление шапки */
-  header {
-    justify-content: space-between;
+  /* Сетка характеристик */
+  .specs-grid {
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
+    width: 100%;
   }
 
-  .forum-welcome {
+  .spec-card {
     flex-direction: column;
     text-align: center;
-    padding: 20px 15px;
+    align-items: center;
+    padding: 15px 10px;
   }
 
-  .forum-welcome-text h3 {
-    font-size: 20px;
+  .ext-btn-grid {
+    flex-direction: column;
   }
-
-  .forum-auth-buttons {
+  .ext-btn {
     width: 100%;
     justify-content: center;
-    margin-top: 15px;
   }
 
+  /* 6. FULLSCREEN CHAT */
   .chat-window {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
     bottom: 0;
-    width: 100% !important;
-    height: 100% !important;
-    /* Фикс для мобильных браузеров (адресная строка) */
-    height: 100vh; 
-    height: -webkit-fill-available; 
-    border-radius: 0 !important; /* Убираем скругления углов */
+    right: 0;
+    left: 0;
+    top: 0;
+    border-radius: 0;
     border: none;
-    transform: none !important; /* Убираем анимацию масштабирования, она ломает фиксацию */
+    z-index: 9999;
+    transform: translateY(110%);
     display: flex;
-    flex-direction: column; /* Жесткая структура: Шапка - Тело - Футер */
-    z-index: 99999; /* Поверх всего */
-    background: #121418; /* Сплошной цвет фона (убираем прозрачность для читаемости) */
+    flex-direction: column;
   }
 
   .chat-window.active {
-    opacity: 1;
-    pointer-events: all;
-    transform: none;
+    transform: translateY(0);
   }
 
   .chat-header {
-    flex-shrink: 0; /* Не сжимать шапку */
-    padding: 15px;
-    background: #0f1116; /* Чуть темнее */
-  }
-
-  .chat-close-mobile {
-    display: block; /* Показываем только на мобильном */
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    padding: 5px;
-    cursor: pointer;
-  }
-
-  .chat-body {
-    flex: 1; /* Занимает все свободное место */
-    overflow-y: auto; /* Прокрутка только здесь */
-    -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
-    padding: 15px;
-    overscroll-behavior: contain; /* Чтобы скролл не передавался странице */
-  }
-
-  .chat-footer {
-    flex-shrink: 0; /* Не сжимать футер */
-    background: #0f1116;
-    padding: 10px 15px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
-  }
-
-  .chat-input {
-    font-size: 16px !important; /* Фикс: отключает авто-зум на iPhone при клике */
-    padding: 12px;
-  }
-
-  .logo-container {
-    flex-shrink: 0; /* Логотип не сплющивается */
-  }
-
-  h1 {
-    font-size: 1rem; /* Уменьшаем шрифт заголовка */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Если текст длинный, ставим троеточие */
-    max-width: 150px; /* Ограничиваем ширину заголовка */
-  }
-
-  .header-controls {
-    gap: 8px;
+    padding-top: calc(15px + env(safe-area-inset-top));
     flex-shrink: 0;
   }
 
-  /* Форум адаптив */
-  .topic-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  
-  .topic-stats {
-    width: 100%;
-    margin-left: 0;
-    justify-content: space-between;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-  }
-  
-  .topic-main { 
-    width: 100%; 
-  }
-  
-  .forum-header-actions {
-    flex-direction: column;
-    gap: 15px;
-    align-items: stretch;
-  }
-  
-  .btn-create {
-    justify-content: center; /* Кнопка "Создать тему" по центру */
+  .chat-footer {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    background: #121418;
+    flex-shrink: 0;
   }
 
-  .topic-header-card {
-    padding: 15px;
-  }
-
-  .topic-full-title {
-    font-size: 20px; /* Уменьшаем заголовок темы */
-    line-height: 1.3;
-  }
-
-  .topic-meta-header {
-    flex-direction: column; /* Автор и дата друг под другом */
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .reply-header {
-    flex-wrap: wrap; /* Чтобы дата переносилась, если имя длинное */
-    gap: 5px;
-  }
-
-  .reply-avatar {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-    margin-bottom: 5px;
-  }
-
-  .post-controls {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(0,0,0,0.5); /* Фон, чтобы текст не сливался */
-    border-radius: 8px;
-    padding: 2px 5px;
-  }
-
-  .reply-form-container {
-    padding: 10px;
-    bottom: 0; /* Приклеиваем к самому низу */
-    border-radius: 12px 12px 0 0;
-  }
-
-  .reply-card {
-    flex-direction: column; /* Аватар сверху, текст снизу */
-    padding: 15px;
-    gap: 10px;
-  }
-
-  /* Адаптация страницы VIN */
-  .message-container {
-    padding: 40px 15px;
-  }
-  
-  .message-container i {
-    font-size: 36px;
-  }
-  
-  .message {
-    font-size: 1rem;
-  }
-  
-  /* Input поля (VIN ввод) */
-  .form-input {
-    font-size: 16px; /* Чтобы iOS не зумил инпут */
-    padding: 10px;
-  }
-
-}
-
-/* --- Small Mobile (до 480px) --- */
-@media (max-width: 480px) {
-  /* Еще более компактная шапка */
-  header {
-    padding: 10px;
-  }
-  
-  .logo {
-    width: 32px;
-    height: 32px;
-    margin-right: 5px;
-    padding: 5px;
-  }
-  .code-meta {
-    display: none; 
-  }
-  .logo svg {
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Скрываем текст заголовка полностью на очень узких экранах, оставляем лого */
-  h1 {
-    display: none; 
-  }
-  
-  /* Чат бот на весь экран */
-  .chat-window {
-    width: 100%;
-    height: 100%;
-    bottom: 0;
-    right: 0;
-    border-radius: 0;
-    z-index: 10000;
-  }
-  
   .wizard-fab {
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
     bottom: 20px;
     right: 20px;
   }
+}
 
-  /* Адаптация карточек кодов */
-  .code-item {
-    padding: 12px;
-  }
-  
-  .code-item h3 {
-    font-size: 16px;
-  }
-  
-  .code-arrow {
-    display: none; /* Убираем стрелку на мобильных */
+/* --- SMALL MOBILE (iPhone SE, < 400px) --- */
+@media (max-width: 400px) {
+  .logo-container h1 {
+    display: none;
   }
 
-  /* Модальные окна на весь экран */
-  .auth-container, .modal-glass {
-    width: 100%;
+  /* Еще компактнее */
+  .controls .btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .specs-grid {
+    grid-template-columns: 1fr;
+  } /* Одна колонка для узких экранов */
+}
+
+/* --- LANDSCAPE --- */
+@media (max-height: 500px) and (orientation: landscape) {
+  header {
+    position: relative;
+  }
+  .chat-window {
     height: 100%;
-    max-width: none;
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    top: 0;
   }
-}
-
-/* --- Special Fix for VIN Page Tables/Results --- */
-/* Если результаты VIN чека выводятся таблицей */
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-table {
-  width: 100%;
-  min-width: 500px; /* Чтобы таблица не сжималась слишком сильно */
-  border-collapse: collapse;
 }
