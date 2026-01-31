@@ -1,134 +1,254 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BMW VIN Decoder</title>
 
     <link rel="stylesheet" href="./css/responsive.css" />
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/forum.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
-    
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="shortcut icon"
+      href="./assets/icons/ico.svg"
+      type="image/x-icon"
+    />
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
-        .vin-hero { text-align: center; margin: 80px 0 40px; }
-        .vin-hero h1 { font-size: 3rem; background: linear-gradient(45deg, #fff, #6f9bd1); background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-        
-        .vin-search-box {
-            max-width: 600px; margin: 0 auto; position: relative;
-            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
-            border-radius: 50px; padding: 5px; display: flex;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3); backdrop-filter: blur(10px);
-            z-index: 10;
-        }
-        .vin-search-box input {
-            flex: 1; background: none; border: none; color: white; 
-            font-size: 18px; padding: 15px 25px; outline: none; text-transform: uppercase; letter-spacing: 2px;
-        }
-        .vin-btn {
-            background: var(--accent-color); border: none; border-radius: 40px;
-            padding: 0 30px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
-        }
-        .vin-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 102, 179, 0.4); }
+      .vin-hero {
+        text-align: center;
+        margin: 80px 0 40px;
+      }
+      .vin-hero h1 {
+        font-size: 3rem;
+        background: linear-gradient(45deg, #fff, #6f9bd1);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+      }
 
-        /* --- ИСТОРИЯ ПОИСКА (НОВОЕ) --- */
-        .history-container {
-            max-width: 600px; margin: 20px auto 0; text-align: left;
-            display: none; /* Скрыт по умолчанию */
-            animation: fadeIn 0.5s ease;
-        }
-        .history-label {
-            font-size: 12px; color: #94a3b8; margin-bottom: 10px; padding-left: 15px; text-transform: uppercase; letter-spacing: 1px;
-        }
-        .history-list {
-            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
-        }
-        .history-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 8px 15px;
-            font-size: 13px;
-            color: #ccc;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .history-item:hover {
-            background: rgba(0, 102, 179, 0.2);
-            border-color: #0066b3;
-            color: white;
-            transform: translateY(-2px);
-        }
-        .history-item i { font-size: 10px; opacity: 0.5; }
-        .history-item span { font-weight: 600; color: white; }
+      .vin-search-box {
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        border-radius: 50px;
+        padding: 5px;
+        display: flex;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        z-index: 10;
+      }
+      .vin-search-box input {
+        flex: 1;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        padding: 15px 25px;
+        outline: none;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .vin-btn {
+        background: var(--accent-color);
+        border: none;
+        border-radius: 40px;
+        padding: 0 30px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .vin-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(0, 102, 179, 0.4);
+      }
 
-        /* Результаты */
-        #vin-result { margin-top: 50px; display: none; animation: fadeIn 0.5s ease; padding-bottom: 50px;}
-        
-        .specs-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 15px; max-width: 1000px; margin: 0 auto 30px;
-        }
-        
-        .spec-card {
-            background: rgba(21, 25, 34, 0.8); border: 1px solid var(--glass-border);
-            border-radius: 12px; padding: 15px; backdrop-filter: blur(5px);
-            display: flex; align-items: center; gap: 15px;
-        }
-        .spec-icon {
-            width: 40px; height: 40px; background: rgba(0, 102, 179, 0.15);
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; color: var(--accent-color); flex-shrink: 0;
-        }
-        .spec-info h4 { color: #94a3b8; font-size: 11px; text-transform: uppercase; margin-bottom: 3px; }
-        .spec-info div { color: white; font-size: 14px; font-weight: bold; line-height: 1.2; }
+      /* --- ИСТОРИЯ ПОИСКА (НОВОЕ) --- */
+      .history-container {
+        max-width: 600px;
+        margin: 20px auto 0;
+        text-align: left;
+        display: none; /* Скрыт по умолчанию */
+        animation: fadeIn 0.5s ease;
+      }
+      .history-label {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 10px;
+        padding-left: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .history-list {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .history-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 8px 15px;
+        font-size: 13px;
+        color: #ccc;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .history-item:hover {
+        background: rgba(0, 102, 179, 0.2);
+        border-color: #0066b3;
+        color: white;
+        transform: translateY(-2px);
+      }
+      .history-item i {
+        font-size: 10px;
+        opacity: 0.5;
+      }
+      .history-item span {
+        font-weight: 600;
+        color: white;
+      }
 
-        /* Внешние ссылки */
-        .external-links {
-            max-width: 800px; margin: 40px auto 0; text-align: center;
-            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
-            border-radius: 20px; padding: 30px;
-        }
-        .external-links h3 { color: white; margin-bottom: 10px; font-size: 20px; }
-        .ext-btn-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 25px; }
-        
-        .ext-btn {
-            background: linear-gradient(135deg, #0066b3 0%, #004e8a 100%);
-            border: none; padding: 15px 30px; border-radius: 50px; 
-            color: white; text-decoration: none; font-weight: bold;
-            display: flex; align-items: center; gap: 10px; transition: 0.3s; 
-            font-size: 15px; box-shadow: 0 5px 15px rgba(0, 102, 179, 0.3);
-        }
-        .ext-btn:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 25px rgba(0, 102, 179, 0.5); 
-            background: linear-gradient(135deg, #0077d1 0%, #005fa8 100%);
-        }
-        .ext-btn i { font-size: 18px; }
+      /* Результаты */
+      #vin-result {
+        margin-top: 50px;
+        display: none;
+        animation: fadeIn 0.5s ease;
+        padding-bottom: 50px;
+      }
 
-        .loader { display: none; text-align: center; margin-top: 40px; color: var(--accent-color); font-size: 24px; }
+      .specs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        max-width: 1000px;
+        margin: 0 auto 30px;
+      }
+
+      .spec-card {
+        background: rgba(21, 25, 34, 0.8);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 15px;
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .spec-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 102, 179, 0.15);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: var(--accent-color);
+        flex-shrink: 0;
+      }
+      .spec-info h4 {
+        color: #94a3b8;
+        font-size: 11px;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      .spec-info div {
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        line-height: 1.2;
+      }
+
+      /* Внешние ссылки */
+      .external-links {
+        max-width: 800px;
+        margin: 40px auto 0;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 30px;
+      }
+      .external-links h3 {
+        color: white;
+        margin-bottom: 10px;
+        font-size: 20px;
+      }
+      .ext-btn-grid {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 25px;
+      }
+
+      .ext-btn {
+        background: linear-gradient(135deg, #0066b3 0%, #004e8a 100%);
+        border: none;
+        padding: 15px 30px;
+        border-radius: 50px;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: 0.3s;
+        font-size: 15px;
+        box-shadow: 0 5px 15px rgba(0, 102, 179, 0.3);
+      }
+      .ext-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 102, 179, 0.5);
+        background: linear-gradient(135deg, #0077d1 0%, #005fa8 100%);
+      }
+      .ext-btn i {
+        font-size: 18px;
+      }
+
+      .loader {
+        display: none;
+        text-align: center;
+        margin-top: 40px;
+        color: var(--accent-color);
+        font-size: 24px;
+      }
     </style>
-</head>
-<body class="bmw-pattern">
-    
-    <div id="webgl-container" style="position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.5;"></div>
+  </head>
+  <body class="bmw-pattern">
+    <div id="webgl-container"></div>
 
     <header>
       <div class="logo-container">
         <a class="main_logo_refr" href="index.html">
           <div class="logo">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-               <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
-               <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
-               <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
-               <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
-               <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+              <circle
+                cx="50"
+                cy="50"
+                r="48"
+                stroke="white"
+                stroke-width="4"
+                fill="black"
+              />
+              <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+              <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+              <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+              <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
             </svg>
           </div>
           <h1>BMW VIN Decoder</h1>
@@ -136,133 +256,258 @@
       </div>
       <div class="controls">
         <button id="language-toggle" class="btn">
-            <i class="fas fa-globe"></i> <span>EN</span>
+          <i class="fas fa-globe"></i> <span>EN</span>
         </button>
-        <a href="index.html" class="btn"><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a>
-        <a href="forum.html" class="btn"><i class="fas fa-comments"></i> <span data-i18n="forumBtn">Forum</span></a>
+        <a href="index.html" class="btn"
+          ><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a
+        >
+        <a href="forum.html" class="hidden btn"
+          ><i class="fas fa-comments"></i>
+          <span data-i18n="forumBtn">Forum</span></a
+        >
       </div>
     </header>
 
     <main class="container">
-        <div class="vin-hero">
-            <h1 data-i18n="vinTitle">Decode Your VIN</h1>
-            <p style="color: #94a3b8;" data-i18n="vinSubtitle">Enter 17-digit VIN to check technical specs.</p>
-        </div>
+      <div class="vin-hero">
+        <h1 data-i18n="vinTitle">Decode Your VIN</h1>
+        <p style="color: #94a3b8" data-i18n="vinSubtitle">
+          Enter 17-digit VIN to check technical specs.
+        </p>
+      </div>
 
-        <div class="vin-search-box">
-            <input type="text" id="vin-input" placeholder="WBA..." maxlength="17">
-            <button class="vin-btn" onclick="decodeVin()" data-i18n="btnCheck">CHECK</button>
-        </div>
+      <div class="vin-search-box">
+        <input type="text" id="vin-input" placeholder="WBA..." maxlength="17" />
+        <button class="vin-btn" onclick="decodeVin()" data-i18n="btnCheck">
+          CHECK
+        </button>
+      </div>
 
-        <div id="history-container" class="history-container">
-            <div class="history-label" data-i18n="lblHistory">Recent Checks</div>
-            <div class="history-list" id="history-list">
-                </div>
-        </div>
+      <div id="history-container" class="history-container">
+        <div class="history-label" data-i18n="lblHistory">Recent Checks</div>
+        <div class="history-list" id="history-list"></div>
+      </div>
 
-        <div id="loader" class="loader"><i class="fas fa-circle-notch fa-spin"></i> <span data-i18n="loading">Checking database...</span></div>
+      <div id="loader" class="loader">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span data-i18n="loading">Checking database...</span>
+      </div>
 
-        <div id="vin-result">
-            <h2 style="text-align: center; margin-bottom: 30px; color: white;" id="car-title">BMW Unknown</h2>
-            
-            <div class="specs-grid">
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-car"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblModel">Model</h4><div id="res-model">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-calendar-alt"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblYear">Year</h4><div id="res-year">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-layer-group"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblSeries">Series</h4><div id="res-series">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-shapes"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblBody">Body Type</h4><div id="res-body">-</div></div>
-                </div>
+      <div id="vin-result">
+        <h2
+          style="text-align: center; margin-bottom: 30px; color: white"
+          id="car-title"
+        >
+          BMW Unknown
+        </h2>
 
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-cogs"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblEngine">Engine</h4><div id="res-engine">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-horse-head"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblPower">Power</h4><div id="res-power">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-gas-pump"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblFuel">Fuel</h4><div id="res-fuel">-</div></div>
-                </div>
-                
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-snowflake"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblDrive">Drive</h4><div id="res-drive">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-door-open"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblDoors">Doors</h4><div id="res-doors">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-globe-europe"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblCountry">Country</h4><div id="res-country">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-industry"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblPlant">Factory</h4><div id="res-plant">-</div></div>
-                </div>
-                <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-weight-hanging"></i></div>
-                    <div class="spec-info"><h4 data-i18n="lblWeight">Weight</h4><div id="res-weight">-</div></div>
-                </div>
+        <div class="specs-grid">
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-car"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblModel">Model</h4>
+              <div id="res-model">-</div>
             </div>
-
-            <div class="external-links">
-                <h3 data-i18n="extTitle">Looking for full options list (S-Codes)?</h3>
-                <p style="color:#94a3b8; margin-bottom:20px; font-size:13px;" data-i18n="extText">Our database provides technical specs. To see specific options (M-Sport, Leather, etc.), use these deep decoders:</p>
-                
-                <div class="ext-btn-grid">
-                    <a href="#" id="link-mdecoder" target="_blank" class="ext-btn">
-                        <i class="fas fa-list-ul"></i> <span data-i18n="btnFullOptions">View Full Options List</span>
-                    </a>
-                    <a href="#" id="link-bimmerwork" target="_blank" class="ext-btn" style="background: rgba(255,255,255,0.1); border:1px solid white;">
-                        <i class="fas fa-external-link-alt"></i> bimmer.work
-                    </a>
-                </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblYear">Year</h4>
+              <div id="res-year">-</div>
             </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-layer-group"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblSeries">Series</h4>
+              <div id="res-series">-</div>
+            </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-shapes"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblBody">Body Type</h4>
+              <div id="res-body">-</div>
+            </div>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-cogs"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblEngine">Engine</h4>
+              <div id="res-engine">-</div>
+            </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-horse-head"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblPower">Power</h4>
+              <div id="res-power">-</div>
+            </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-gas-pump"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblFuel">Fuel</h4>
+              <div id="res-fuel">-</div>
+            </div>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-snowflake"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblDrive">Drive</h4>
+              <div id="res-drive">-</div>
+            </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-door-open"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblDoors">Doors</h4>
+              <div id="res-doors">-</div>
+            </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-globe-europe"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblCountry">Country</h4>
+              <div id="res-country">-</div>
+            </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-industry"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblPlant">Factory</h4>
+              <div id="res-plant">-</div>
+            </div>
+          </div>
+          <div class="spec-card">
+            <div class="spec-icon"><i class="fas fa-weight-hanging"></i></div>
+            <div class="spec-info">
+              <h4 data-i18n="lblWeight">Weight</h4>
+              <div id="res-weight">-</div>
+            </div>
+          </div>
         </div>
+
+        <div class="external-links">
+          <h3 data-i18n="extTitle">Looking for full options list (S-Codes)?</h3>
+          <p
+            style="color: #94a3b8; margin-bottom: 20px; font-size: 13px"
+            data-i18n="extText"
+          >
+            Our database provides technical specs. To see specific options
+            (M-Sport, Leather, etc.), use these deep decoders:
+          </p>
+
+          <div class="ext-btn-grid">
+            <a href="#" id="link-mdecoder" target="_blank" class="ext-btn">
+              <i class="fas fa-list-ul"></i>
+              <span data-i18n="btnFullOptions">View Full Options List</span>
+            </a>
+            <a
+              href="#"
+              id="link-bimmerwork"
+              target="_blank"
+              class="ext-btn"
+              style="
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid white;
+              "
+            >
+              <i class="fas fa-external-link-alt"></i> bimmer.work
+            </a>
+          </div>
+        </div>
+      </div>
     </main>
-     <footer>
+    <footer>
       <p>BMW DTC Bot © 2026 • All BMW codes and series supported</p>
-      <p><small>BMW is a registered trademark of Bayerische Motoren Werke AG. This site is not affiliated with BMW AG.</small></p>
+      <p>
+        <small
+          >BMW is a registered trademark of Bayerische Motoren Werke AG. This
+          site is not affiliated with BMW AG.</small
+        >
+      </p>
     </footer>
 
     <script src="./js/vin.js"></script>
     <script>
-        // Легкий фон (тот же самый)
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({alpha:true});
+      const container = document.getElementById("webgl-container");
+
+      // 1. Создаем сцену с туманом (как на главной)
+      const scene = new THREE.Scene();
+      // Добавляем туман, чтобы частицы плавно исчезали в темноте (цвет #050507)
+      scene.fog = new THREE.FogExp2(0x050507, 0.002);
+
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000,
+      );
+      // Позиция камеры чуть дальше, как в script.js
+      camera.position.z = 30;
+
+      const renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio); // Для четкости на Retina (Mac)
+      container.appendChild(renderer.domElement);
+
+      // 2. Геометрия и материал (более качественные)
+      const geometry = new THREE.BufferGeometry();
+      const count = 1200; // Больше частиц (было 600)
+      const pos = new Float32Array(count * 3);
+
+      // Распределяем частицы шире
+      for (let i = 0; i < count * 3; i++) {
+        pos[i] = (Math.random() - 0.5) * 80;
+      }
+
+      geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+
+      const material = new THREE.PointsMaterial({
+        size: 0.15,
+        color: 0x0066b3,
+        transparent: true,
+        opacity: 0.8,
+      });
+
+      const mesh = new THREE.Points(geometry, material);
+      scene.add(mesh);
+
+      // 3. Добавляем реакцию на мышь
+      let mouseX = 0;
+      let mouseY = 0;
+      document.addEventListener("mousemove", (event) => {
+        mouseX = event.clientX / window.innerWidth - 0.5;
+        mouseY = event.clientY / window.innerHeight - 0.5;
+      });
+
+      // 4. Анимация
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const elapsedTime = clock.getElapsedTime();
+
+        // Вращение как на главной
+        mesh.rotation.y = elapsedTime * 0.05;
+        mesh.rotation.x = mouseY * 0.5;
+        mesh.rotation.y += mouseX * 0.05;
+
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // Адаптив при изменении окна
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('webgl-container').appendChild(renderer.domElement);
-        
-        const geometry = new THREE.BufferGeometry();
-        const count = 600;
-        const pos = new Float32Array(count*3);
-        for(let i=0; i<count*3; i++) pos[i] = (Math.random()-0.5)*60;
-        geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        const material = new THREE.PointsMaterial({size:0.12, color: 0x0066b3});
-        const mesh = new THREE.Points(geometry, material);
-        scene.add(mesh);
-        camera.position.z = 25;
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            mesh.rotation.y += 0.001;
-            renderer.render(scene, camera);
-        }
-        animate();
+      });
     </script>
-</body>
+  </body>
 </html>
