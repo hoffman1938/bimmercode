@@ -1,6 +1,6 @@
 /* ==========================================================================
    RESPONSIVE.CSS (Mobile Only Overrides)
-   Fixed: Header Buttons & VIN Input Adaptability
+   Fixed: Full-screen Modal & Input Bugs
    ========================================================================== */
 
 /* --- TABLETS & SMALL LAPTOPS (Max 1024px) --- */
@@ -10,7 +10,6 @@
     margin-top: 20px;
   }
 
-  /* Чат чуть компактнее */
   .chat-window {
     width: 360px;
     height: 550px;
@@ -21,7 +20,7 @@
 
 /* --- MOBILE DEVICES (Max 768px) --- */
 @media (max-width: 768px) {
-  /* 1. HEADER FIX (Кнопки не вылезают) */
+  /* 1. HEADER FIX */
   header {
     height: auto;
     min-height: 60px;
@@ -36,35 +35,33 @@
     height: 36px;
   }
 
-  /* Убираем длинный заголовок, оставляем место для кнопок */
+  /* Скрываем длинный текст */
   .logo-container h1 {
     font-size: 16px;
-    display: none; /* Скрываем текст заголовка, чтобы кнопки влезли */
+    display: none;
   }
 
   .controls {
     gap: 8px;
-    margin-left: auto; /* Прижимаем кнопки вправо */
+    margin-left: auto;
   }
 
-  /* ПРЕВРАЩЕНИЕ КНОПОК В ИКОНКИ (Fix overflow) */
+  /* Иконки вместо кнопок */
   .controls .btn {
     padding: 0;
     width: 44px;
     height: 44px;
     border-radius: 50%;
     justify-content: center;
-    font-size: 0 !important; /* ХАК: Скрываем весь текст (даже без span) */
+    font-size: 0 !important;
     gap: 0;
   }
 
-  /* Восстанавливаем размер иконки, так как родитель font-size: 0 */
   .controls .btn i {
     font-size: 18px !important;
     margin: 0;
   }
 
-  /* Специально для кнопки языка, где текст внутри span */
   .controls .btn span {
     display: none;
   }
@@ -76,12 +73,12 @@
 
   #search-input {
     height: 50px;
-    font-size: 16px; /* 16px отключает зум в iOS */
+    font-size: 16px;
     padding-left: 20px;
     border-radius: 25px;
   }
 
-  /* 3. RESULT CARDS (Вертикальный стек) */
+  /* 3. RESULT CARDS */
   .code-item {
     display: flex;
     flex-direction: column;
@@ -125,15 +122,21 @@
     display: none;
   }
 
-  /* 4. DETAIL VIEW */
+  /* 4. DETAIL VIEW (FULL SCREEN FIX) */
   #code-detail {
-    padding: 20px;
+    /* Трюк для растягивания блока на всю ширину экрана (Full Bleed) */
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+
     border-radius: 0;
-    margin: 0 -5%;
-    width: 110%;
     border: none;
     border-top: 1px solid var(--glass-border);
-    min-height: 80vh;
+    padding: 20px;
+    min-height: 100vh; /* Занимает весь экран */
   }
 
   .detail-header {
@@ -152,12 +155,12 @@
     height: 48px;
   }
 
-  /* 5. VIN PAGE MOBILE FIXES (INPUT FIX) */
+  /* 5. VIN PAGE MOBILE FIXES */
   .vin-hero h1 {
-    font-size: 2rem !important;
+    font-size: 2rem;
   }
 
-  /* Жесткий сброс стилей для контейнера поиска */
+  /* Сброс стилей контейнера поиска */
   .vin-search-box {
     display: flex !important;
     flex-direction: column !important;
@@ -166,21 +169,20 @@
     gap: 10px !important;
     width: 100% !important;
     max-width: 100% !important;
-    box-sizing: border-box !important; /* Важно: чтобы паддинги не рвали экран */
+    box-sizing: border-box !important;
     height: auto !important;
   }
 
-  /* Исправление поля ввода */
   .vin-search-box input {
     width: 100% !important;
-    min-width: 0 !important; /* CSS Flex fix */
+    min-width: 0 !important;
     text-align: center;
     border: none !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
     margin: 0 !important;
     padding: 15px !important;
     border-radius: 20px !important;
-    font-size: 18px !important; /* Крупный текст */
+    font-size: 18px !important;
     background: transparent !important;
   }
 
@@ -191,7 +193,6 @@
     margin: 0 !important;
   }
 
-  /* Сетка характеристик */
   .specs-grid {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
@@ -253,21 +254,18 @@
   }
 }
 
-/* --- SMALL MOBILE (iPhone SE, < 400px) --- */
+/* --- SMALL MOBILE --- */
 @media (max-width: 400px) {
   .logo-container h1 {
     display: none;
   }
-
-  /* Еще компактнее */
   .controls .btn {
     width: 40px;
     height: 40px;
   }
-
   .specs-grid {
     grid-template-columns: 1fr;
-  } /* Одна колонка для узких экранов */
+  }
 }
 
 /* --- LANDSCAPE --- */
