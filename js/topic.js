@@ -223,19 +223,37 @@ async function renderTopicWithTranslation(data) {
 }
 
 // Генерация HTML одного поста
+
 // Внутри js/topic.js
 
 function renderPostHTML(post, isMain, topicAuthorId) {
   const t = topicTranslations[currentTopicLang];
   const isTopicOwner = user && String(topicAuthorId) === String(user.id);
 
+  // Проверка: является ли текущий юзер автором этого поста?
+  const isMyPost = user && String(post.user_id) === String(user.id);
+
   // Определяем язык (по умолчанию EN, если в базе нет)
   const originLang = post.lang ? post.lang.toUpperCase() : "EN";
+
+  // === ИСПРАВЛЕНИЕ АВАТАРКИ ===
+  let avatarHTML;
+  const avatarUrl =
+    post.author_avatar ||
+    (user && user.id === post.user_id ? user.avatar_url : null);
+
+  if (avatarUrl) {
+    avatarHTML = `<img src="${avatarUrl}" class="post-user-avatar" style="object-fit:cover;">`;
+  } else {
+    avatarHTML = `<div class="post-user-avatar">${post.username ? post.username[0].toUpperCase() : "?"}</div>`;
+  }
 
   return `
     <div class="post-card ${post.is_solution ? "solution" : ""}" id="post-${post.id}">
       <div class="post-user-panel">
-        <div class="post-user-avatar">${post.username ? post.username[0].toUpperCase() : "?"}</div>
+        
+        ${avatarHTML}
+        
         <div class="post-username">${escapeHtml(post.username || "User")}</div>
         <div class="user-role-badge">${t.member}</div>
       </div>
@@ -264,6 +282,16 @@ function renderPostHTML(post, isMain, topicAuthorId) {
         </div>
 
         <div class="post-footer-actions">
+          ${
+            isMyPost
+              ? `
+            <button class="btn-action" onclick="deleteItem('post', '${post.id}')" style="color:#e74c3c; border-color:rgba(231,76,60,0.3); margin-right:auto;" title="Delete post">
+                <i class="fas fa-trash"></i>
+            </button>
+          `
+              : '<div style="margin-right:auto;"></div>'
+          }
+
           ${
             !isMain
               ? `
@@ -667,3 +695,27 @@ document.addEventListener("keydown", function (e) {
     }
   }
 });
+
+// В конец js/topic.js
+
+async function deleteItem(type, id) {
+  if (!confirm("Are you sure you want to delete this?")) return;
+
+  const user = JSON.parse(localStorage.getItem("user_data"));
+  try {
+    const res = await fetch("/api/forum/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, id, user_id: user.id }),
+    });
+
+    if (res.ok) {
+      if (type === "topic") window.location.href = "forum.html";
+      else loadTopicData(); // Перезагрузить посты
+    } else {
+      alert("Error deleting item");
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}

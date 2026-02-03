@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-UpPDKN/checked-fetch.js
+// ../.wrangler/tmp/bundle-gxcmZG/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -149,8 +149,38 @@ async function onRequestPost2(context) {
 }
 __name(onRequestPost2, "onRequestPost");
 
-// api/forum/like.js
+// api/forum/delete.js
 async function onRequestPost3(context) {
+  const { request, env } = context;
+  try {
+    const { type, id, user_id } = await request.json();
+    if (type === "post") {
+      const result = await env.DB.prepare(
+        "DELETE FROM posts WHERE id = ? AND user_id = ?"
+      ).bind(id, user_id).run();
+      if (result.meta.changes > 0)
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
+    }
+    if (type === "topic") {
+      await env.DB.prepare("DELETE FROM posts WHERE topic_id = ?").bind(id).run();
+      const result = await env.DB.prepare(
+        "DELETE FROM topics WHERE id = ? AND user_id = ?"
+      ).bind(id, user_id).run();
+      if (result.meta.changes > 0)
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
+    }
+    return new Response(
+      JSON.stringify({ error: "Access denied or not found" }),
+      { status: 403 }
+    );
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+__name(onRequestPost3, "onRequestPost");
+
+// api/forum/like.js
+async function onRequestPost4(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -196,10 +226,10 @@ async function onRequestPost3(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost3, "onRequestPost");
+__name(onRequestPost4, "onRequestPost");
 
 // api/forum/solve.js
-async function onRequestPost4(context) {
+async function onRequestPost5(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -238,7 +268,38 @@ async function onRequestPost4(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost4, "onRequestPost");
+__name(onRequestPost5, "onRequestPost");
+
+// api/user/update.js
+async function onRequestPost6(context) {
+  const { request, env } = context;
+  try {
+    const { id, avatar_url, bio, car_model } = await request.json();
+    if (!id) {
+      return new Response(JSON.stringify({ error: "User ID required" }), {
+        status: 400
+      });
+    }
+    await env.DB.prepare(
+      `
+      UPDATE users 
+      SET 
+        avatar_url = COALESCE(?, avatar_url), 
+        bio = ?, 
+        car_model = ? 
+      WHERE id = ?
+    `
+    ).bind(avatar_url, bio, car_model, id).run();
+    const updatedUser = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
+    return new Response(JSON.stringify({ success: true, user: updatedUser }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+__name(onRequestPost6, "onRequestPost");
 
 // api/forum/topic.js
 async function onRequest(context) {
@@ -259,14 +320,16 @@ async function onRequest(context) {
           status: 404
         });
       let postsQuery = `
-        SELECT 
-          p.*,
-          (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
-          EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) as is_liked
-        FROM posts p 
-        WHERE p.topic_id = ? 
-        ORDER BY p.created_at ASC
-      `;
+  SELECT 
+    p.*,
+    u.avatar_url as author_avatar,  -- \u0414\u043E\u0441\u0442\u0430\u0435\u043C \u0430\u0432\u0430\u0442\u0430\u0440\u043A\u0443 \u0430\u0432\u0442\u043E\u0440\u0430
+    (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
+    EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) as is_liked
+  FROM posts p 
+  LEFT JOIN users u ON p.user_id = u.id -- \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0435\u043C \u0442\u0430\u0431\u043B\u0438\u0446\u0443 \u044E\u0437\u0435\u0440\u043E\u0432
+  WHERE p.topic_id = ? 
+  ORDER BY p.created_at ASC
+`;
       const safeUserId = currentUserId || "guest";
       const { results: posts } = await db.prepare(postsQuery).bind(safeUserId, topicId).all();
       const cleanPosts = posts.map((p) => ({
@@ -439,7 +502,7 @@ async function onRequestGet(context) {
   }
 }
 __name(onRequestGet, "onRequestGet");
-async function onRequestPost5(context) {
+async function onRequestPost7(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -470,7 +533,7 @@ async function onRequestPost5(context) {
     });
   }
 }
-__name(onRequestPost5, "onRequestPost");
+__name(onRequestPost7, "onRequestPost");
 
 // api/upload.js
 async function onRequest3(context) {
@@ -555,18 +618,32 @@ var routes = [
     modules: [onRequestPost2]
   },
   {
-    routePath: "/api/forum/like",
+    routePath: "/api/forum/delete",
     mountPath: "/api/forum",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost3]
   },
   {
-    routePath: "/api/forum/solve",
+    routePath: "/api/forum/like",
     mountPath: "/api/forum",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost4]
+  },
+  {
+    routePath: "/api/forum/solve",
+    mountPath: "/api/forum",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPost5]
+  },
+  {
+    routePath: "/api/user/update",
+    mountPath: "/api/user",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPost6]
   },
   {
     routePath: "/api/forum/topic",
@@ -594,7 +671,7 @@ var routes = [
     mountPath: "/api",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost5]
+    modules: [onRequestPost7]
   },
   {
     routePath: "/api/upload",
@@ -1099,7 +1176,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-UpPDKN/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-gxcmZG/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1131,7 +1208,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-UpPDKN/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-gxcmZG/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

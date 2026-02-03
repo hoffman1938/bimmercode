@@ -432,14 +432,25 @@ function filterTopics(cat) {
   fetchTopics(cat, currentSearchTerm);
 }
 
+// Внутри js/forum.js
+
 function updateSidebarUser() {
   const user = JSON.parse(localStorage.getItem("user_data"));
   const container = document.getElementById("user-sidebar-info");
   const t = forumTranslations[currentForumLang];
+
   if (user && container) {
+    // Проверяем, есть ли ссылка на фото
+    let avatarHTML;
+    if (user.avatar_url) {
+      avatarHTML = `<img src="${user.avatar_url}" class="user-avatar-large" style="object-fit:cover;">`;
+    } else {
+      avatarHTML = `<div class="user-avatar-large">${user.username[0].toUpperCase()}</div>`;
+    }
+
     container.innerHTML = `
       <div class="user-mini-profile">
-        <div class="user-avatar-large">${user.username[0].toUpperCase()}</div>
+        ${avatarHTML}
         <h3 style="color:white; margin-bottom:5px;">${user.username}</h3>
         <p style="color:#aaa; font-size:12px;">${t.member}</p>
       </div>

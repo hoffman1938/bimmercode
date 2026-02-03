@@ -36,8 +36,35 @@
 
 /* === ОБЩИЕ КОМПОНЕНТЫ === */
 
-.forum-panel,
-.sidebar-card {
+/* Исправление кнопки логина в сайдбаре и в топике */
+.sidebar-card .btn,
+#user-sidebar-info .btn {
+  background: linear-gradient(135deg, var(--f-accent-blue), #004a82);
+  border: none;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 102, 179, 0.3);
+  transition: 0.3s;
+}
+
+.sidebar-card .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 102, 179, 0.5);
+}
+
+/* Ссылка Login в тексте */
+#login-to-reply a {
+  color: var(--f-accent-blue);
+  font-weight: bold;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.forum-panel {
   background: var(--f-surface-1);
   border: 1px solid var(--f-border);
   border-radius: 6px;

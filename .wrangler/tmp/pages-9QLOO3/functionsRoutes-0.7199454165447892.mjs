@@ -1,7 +1,9 @@
 import { onRequestPost as __api_auth_login_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/login.js"
 import { onRequestPost as __api_auth_register_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/register.js"
+import { onRequestPost as __api_forum_delete_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/delete.js"
 import { onRequestPost as __api_forum_like_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/like.js"
 import { onRequestPost as __api_forum_solve_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/solve.js"
+import { onRequestPost as __api_user_update_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/user/update.js"
 import { onRequest as __api_forum_topic_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/topic.js"
 import { onRequest as __api_forum_topics_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/topics.js"
 import { onRequestGet as __api_notifications_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications.js"
@@ -25,6 +27,13 @@ export const routes = [
       modules: [__api_auth_register_js_onRequestPost],
     },
   {
+      routePath: "/api/forum/delete",
+      mountPath: "/api/forum",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_forum_delete_js_onRequestPost],
+    },
+  {
       routePath: "/api/forum/like",
       mountPath: "/api/forum",
       method: "POST",
@@ -37,6 +46,13 @@ export const routes = [
       method: "POST",
       middlewares: [],
       modules: [__api_forum_solve_js_onRequestPost],
+    },
+  {
+      routePath: "/api/user/update",
+      mountPath: "/api/user",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_user_update_js_onRequestPost],
     },
   {
       routePath: "/api/forum/topic",

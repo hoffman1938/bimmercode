@@ -3,6 +3,14 @@
 // ==========================================
 
 // DOM Elements
+let cropperImage = new Image();
+let baseScale = 1; // Базовый масштаб (чтобы фото влезло)
+let zoomLevel = 1; // Множитель зума (от слайдера)
+let cropperOffsetX = 0;
+let cropperOffsetY = 0;
+let isDragging = false;
+let startX, startY;
+let isNewImageSelected = false;
 const searchInput = document.getElementById("search-input");
 const resultsContainer = document.getElementById("results-container");
 const emptyState = document.getElementById("empty-state");
@@ -628,6 +636,21 @@ function setupLoginForm() {
 
       if (res.ok) {
         // Сохраняем токен и данные
+        window.dispatchEvent(new Event("auth-success"));
+        window.addEventListener("auth-success", () => {
+          checkAuthStatus(); // Обновит шапку
+          const modal = document.getElementById("auth-modal");
+          if (modal) modal.classList.remove("active");
+
+          // Если мы на странице топика - показываем форму ответа
+          if (document.getElementById("reply-form")) {
+            document.getElementById("reply-form").style.display = "flex";
+            document.getElementById("login-to-reply").style.display = "none";
+          }
+
+          // Если мы на форуме - обновляем сайдбар
+          if (typeof updateSidebarUser === "function") updateSidebarUser();
+        });
         localStorage.setItem("auth_token", data.token);
         localStorage.setItem("user_data", JSON.stringify(data.user));
 
@@ -636,7 +659,6 @@ function setupLoginForm() {
 
         setTimeout(() => {
           toggleAuthModal();
-          checkAuthStatus(); // Обновить кнопку в шапке
         }, 1000);
       } else {
         msg.style.color = "#e74c3c";
@@ -654,28 +676,51 @@ function checkAuthStatus() {
   const user = JSON.parse(localStorage.getItem("user_data"));
   const btnText = document.getElementById("btn-login-text");
   const authBtn = document.getElementById("auth-btn");
+  const icon = authBtn ? authBtn.querySelector("i") : null;
 
   if (token && user) {
-    // Если вошли - показываем имя
     if (btnText) btnText.textContent = user.username;
-    authBtn.onclick = () => {
-      // Тут можно сделать переход в профиль или выход
-      if (confirm("Logout?")) {
-        logout();
-      }
+
+    // Если есть аватарка - ставим её вместо иконки
+    if (user.avatar_url && icon) {
+      // Заменяем иконку <i> на <img>
+      icon.outerHTML = `<img src="${user.avatar_url}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:5px;">`;
+    }
+
+    authBtn.onclick = (e) => {
+      e.preventDefault();
+      toggleProfileModal();
     };
+
+    // Заполнение полей модалки (если открыта)
+    if (document.getElementById("profile-car")) {
+      document.getElementById("profile-car").value = user.car_model || "";
+      document.getElementById("profile-bio").value = user.bio || "";
+
+      // Показываем текущую аватарку в превью
+      const prevImg = document.getElementById("profile-preview-img");
+      if (prevImg && user.avatar_url) {
+        prevImg.src = user.avatar_url;
+      } else if (prevImg) {
+        prevImg.src = `https://ui-avatars.com/api/?name=${user.username}&background=random`;
+      }
+    }
   } else {
-    // Если нет - показываем Login
     if (btnText) btnText.textContent = "Login";
     authBtn.onclick = toggleAuthModal;
   }
 }
 
-function logout() {
+// Глобальная функция выхода
+window.logout = function () {
   localStorage.removeItem("auth_token");
   localStorage.removeItem("user_data");
   location.reload();
-}
+};
+
+// ==========================================
+// 4. MAIN LOGIC (INIT & SEARCH)
+// ==========================================
 
 // ==========================================
 // 4. MAIN LOGIC (INIT & SEARCH)
@@ -683,11 +728,8 @@ function logout() {
 
 async function init() {
   try {
-    // 1. Сначала берем локальные данные из data.js
-    if (typeof getMockData === "function") {
-      bmwCodes = getMockData();
-    }
-    // 2. Пытаемся подгрузить JSON (если есть)
+    // 1. Инициализация (как было)
+    if (typeof getMockData === "function") bmwCodes = getMockData();
     const response = await fetch("../data/codes.json");
     if (response.ok) {
       const data = await response.json();
@@ -701,17 +743,178 @@ async function init() {
     init3DBackground();
     initWizard();
 
-    // --- ПЕРЕНЕСЕНО СНИЗУ: Микроанимации кнопок ---
-    document.querySelectorAll(".btn").forEach((btn) => {
-      btn.addEventListener("mousedown", () => {
-        btn.style.transform = "scale(0.95)";
+    // 2. ЛОГИКА РЕДАКТОРА ФОТО (ИСПРАВЛЕННАЯ)
+    const avatarInput = document.getElementById("avatar-upload");
+    const canvas = document.getElementById("avatar-canvas");
+    const ctx = canvas ? canvas.getContext("2d") : null;
+    const slider = document.getElementById("zoom-slider");
+    const previewContainer = document.getElementById("current-avatar-view");
+    const canvasContainer = document.getElementById("canvas-container");
+    const profileForm = document.getElementById("profile-form");
+
+    // Функция: Сброс и расчет масштаба (ЧТОБЫ НЕ БЫЛО "СЛИШКОМ БЛИЗКО")
+    function resetEditor() {
+      if (!canvas || !cropperImage.width) return;
+
+      // Считаем масштаб, чтобы картинка полностью покрыла круг (object-fit: cover)
+      const scaleX = canvas.width / cropperImage.width;
+      const scaleY = canvas.height / cropperImage.height;
+      // Берем больший масштаб, чтобы не было пустых краев
+      baseScale = Math.max(scaleX, scaleY);
+
+      // Сброс позиций в центр
+      zoomLevel = 1;
+      if (slider) slider.value = 1;
+      cropperOffsetX = 0;
+      cropperOffsetY = 0;
+
+      drawEditor();
+    }
+
+    // Функция: Отрисовка
+    function drawEditor() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Маска круга
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(
+        canvas.width / 2,
+        canvas.height / 2,
+        canvas.width / 2,
+        0,
+        Math.PI * 2,
+        true,
+      );
+      ctx.closePath();
+      ctx.clip();
+
+      // Итоговый размер = Базовый (чтобы влезло) * Зум (от слайдера)
+      const currentScale = baseScale * zoomLevel;
+
+      const imgWidth = cropperImage.width * currentScale;
+      const imgHeight = cropperImage.height * currentScale;
+
+      // Центрирование (0,0 - это центр канваса) + Сдвиг пользователя
+      const centerX = (canvas.width - imgWidth) / 2 + cropperOffsetX;
+      const centerY = (canvas.height - imgHeight) / 2 + cropperOffsetY;
+
+      ctx.drawImage(cropperImage, centerX, centerY, imgWidth, imgHeight);
+      ctx.restore();
+    }
+
+    // Загрузка файла
+    if (avatarInput) {
+      avatarInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          cropperImage = new Image();
+          cropperImage.src = evt.target.result;
+          cropperImage.onload = () => {
+            isNewImageSelected = true;
+            if (previewContainer) previewContainer.style.display = "none";
+            if (canvasContainer) canvasContainer.style.display = "block";
+            resetEditor(); // <-- ВАЖНО: Считаем правильный масштаб
+          };
+        };
+        reader.readAsDataURL(file);
       });
-      btn.addEventListener("mouseup", () => {
-        btn.style.transform = "scale(1)";
+    }
+
+    // Зум слайдер
+    if (slider) {
+      slider.addEventListener("input", (e) => {
+        zoomLevel = parseFloat(e.target.value); // Теперь это множитель (1x ... 3x)
+        drawEditor();
       });
-    });
+    }
+
+    // Перетаскивание
+    if (canvas) {
+      canvas.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+      });
+      window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        cropperOffsetX += e.clientX - startX;
+        cropperOffsetY += e.clientY - startY;
+        startX = e.clientX;
+        startY = e.clientY;
+        drawEditor();
+      });
+      window.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
+    }
+
+    // Сохранение
+    if (profileForm) {
+      profileForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.querySelector(
+          "#profile-form button[type='submit']",
+        );
+        const originalText = btn.textContent;
+        btn.textContent = "Saving...";
+        btn.disabled = true;
+
+        const user = JSON.parse(localStorage.getItem("user_data"));
+        let finalAvatarUrl = user.avatar_url;
+
+        try {
+          // Если есть новое фото -> сохраняем
+          if (isNewImageSelected && canvas) {
+            const blob = await new Promise((resolve) =>
+              canvas.toBlob(resolve, "image/webp", 0.8),
+            );
+            const formData = new FormData();
+            formData.append("file", blob, "avatar.webp");
+
+            const upRes = await fetch("/api/upload", {
+              method: "POST",
+              body: formData,
+            });
+            const upData = await upRes.json();
+            if (upData.url) finalAvatarUrl = upData.url;
+          }
+
+          // Обновляем профиль
+          const updateRes = await fetch("/api/user/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: user.id,
+              avatar_url: finalAvatarUrl,
+              car_model: document.getElementById("profile-car").value,
+              bio: document.getElementById("profile-bio").value,
+            }),
+          });
+
+          const updateData = await updateRes.json();
+          if (updateData.success) {
+            localStorage.setItem("user_data", JSON.stringify(updateData.user));
+            alert("Saved!");
+            location.reload();
+          } else {
+            alert("Error: " + updateData.error);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Error saving profile");
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      });
+    }
   } catch (error) {
     console.warn("Init error", error);
+    // Даже при ошибке загрузки JSON запускаем основные функции
     setupEventListeners();
     updateLanguage();
   }
@@ -870,6 +1073,10 @@ function renderResults(codes) {
 // ==========================================
 
 function init3DBackground() {
+  if (typeof THREE === "undefined") {
+    console.warn("THREE.js not loaded yet");
+    return;
+  }
   const container = document.getElementById("webgl-container");
   if (!container) return;
   container.innerHTML = "";
@@ -935,3 +1142,49 @@ function init3DBackground() {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 }
+// === В КОНЕЦ ФАЙЛА script.js ===
+
+// Глобальная функция открытия/закрытия профиля
+// === В КОНЕЦ ФАЙЛА script.js ===
+
+// Глобальная функция открытия/закрытия профиля
+window.toggleProfileModal = function () {
+  const modal = document.getElementById("profile-modal");
+  if (!modal) return;
+
+  modal.classList.toggle("active");
+
+  // Если открываем окно — заполняем данными
+  if (modal.classList.contains("active")) {
+    const user = JSON.parse(localStorage.getItem("user_data"));
+
+    if (user) {
+      // Заполняем поля
+      const carInput = document.getElementById("profile-car");
+      const bioInput = document.getElementById("profile-bio");
+      if (carInput) carInput.value = user.car_model || "";
+      if (bioInput) bioInput.value = user.bio || "";
+
+      // Сбрасываем редактор фото в начальное состояние
+      const previewContainer = document.getElementById("current-avatar-view");
+      const canvasContainer = document.getElementById("canvas-container");
+      const previewImg = document.getElementById("profile-preview-img");
+
+      // Сброс глобальных переменных редактора
+      isNewImageSelected = false;
+
+      if (previewContainer) previewContainer.style.display = "block";
+      if (canvasContainer) canvasContainer.style.display = "none";
+
+      // Показываем текущую аватарку
+      if (previewImg) {
+        if (user.avatar_url) {
+          previewImg.src = user.avatar_url;
+        } else {
+          // Генерация буквы, если нет фото
+          previewImg.src = `https://ui-avatars.com/api/?name=${user.username}&background=random&color=fff`;
+        }
+      }
+    }
+  }
+};
