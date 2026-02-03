@@ -637,12 +637,10 @@ function setupLoginForm() {
       const data = await res.json();
 
       if (res.ok) {
-        // 1. Сохраняем данные
         localStorage.setItem("auth_token", data.token);
         localStorage.setItem("user_data", JSON.stringify(data.user));
-
-        // 2. ОБНОВЛЯЕМ ИНТЕРФЕЙС МГНОВЕННО
-        checkAuthStatus(); // Обновляет шапку (Имя и Аватар)
+        await refreshUserData();
+        checkAuthStatus();
 
         // Если мы на странице форума — обновляем сайдбар
         if (typeof updateSidebarUser === "function") {
