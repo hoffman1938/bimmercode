@@ -744,6 +744,23 @@ async function init() {
     initWizard();
 
     // 2. ЛОГИКА РЕДАКТОРА ФОТО (ИСПРАВЛЕННАЯ)
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeFromUrl = urlParams.get("code");
+
+    if (codeFromUrl) {
+      const input = document.getElementById("search-input");
+      if (input) {
+        input.value = codeFromUrl; // Вставляем код в поле
+        handleSearch(); // Запускаем поиск
+
+        // Очищаем URL, чтобы при обновлении страницы поиск не сбрасывался (опционально)
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+      }
+    }
     const avatarInput = document.getElementById("avatar-upload");
     const canvas = document.getElementById("avatar-canvas");
     const ctx = canvas ? canvas.getContext("2d") : null;

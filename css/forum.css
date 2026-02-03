@@ -518,18 +518,45 @@
 /* === TOPIC PAGE SPECIFIC STYLES === */
 
 /* Back link */
+/* --- КНОПКА НАЗАД (BACK LINK) --- */
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: var(--f-text-muted);
+  gap: 10px;
+  color: #fff;
   text-decoration: none;
-  font-size: 14px;
-  margin-bottom: 20px;
-  transition: 0.2s;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  /* Стили кнопки */
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 25px;
+  border-radius: 50px; /* Закругленная "капсула" */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 30px;
+
+  /* Анимация */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(5px);
 }
+
+.back-link i {
+  color: var(--bmw-sky); /* Голубая стрелка */
+  transition: transform 0.3s ease;
+}
+
+/* Эффект при наведении */
 .back-link:hover {
-  color: white;
+  background: rgba(0, 102, 179, 0.15); /* Подсветка BMW Blue */
+  border-color: var(--bmw-blue);
+  box-shadow: 0 5px 15px rgba(0, 102, 179, 0.2);
+  transform: translateX(-5px); /* Легкий сдвиг влево */
+}
+
+.back-link:hover i {
+  transform: translateX(-3px); /* Стрелка двигается сильнее */
 }
 
 /* Topic tags */
