@@ -14,10 +14,19 @@ export async function onRequest(context) {
       });
 
     try {
+      // ИЗМЕНЕННЫЙ ЗАПРОС (ДОБАВЛЯЕМ JOIN С ТАБЛИЦЕЙ ЮЗЕРОВ)
       const topic = await db
-        .prepare("SELECT * FROM topics WHERE id = ?")
+        .prepare(
+          `
+          SELECT t.*, u.avatar_url as author_avatar 
+          FROM topics t
+          LEFT JOIN users u ON t.user_id = u.id
+          WHERE t.id = ?
+        `,
+        )
         .bind(topicId)
         .first();
+
       if (!topic)
         return new Response(JSON.stringify({ error: "Not found" }), {
           status: 404,

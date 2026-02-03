@@ -16,7 +16,7 @@ const topicTranslations = {
     loginToReply: "Please login to reply.",
     login: "login",
     member: "Member",
-    op: "Created", // ИЗМЕНЕНО
+    op: "Author",
     confirmSolution: "Mark this post as the solution?",
     errorLoading: "Error loading topic",
     errorSending: "Error sending reply",
@@ -38,7 +38,7 @@ const topicTranslations = {
     loginToReply: "Войдите, чтобы ответить.",
     login: "войти",
     member: "Участник",
-    op: "Создано", // ИЗМЕНЕНО
+    op: "Автор",
     confirmSolution: "Отметить этот пост как решение?",
     errorLoading: "Ошибка загрузки темы",
     errorSending: "Ошибка отправки ответа",
@@ -60,7 +60,7 @@ const topicTranslations = {
     loginToReply: "შედით პასუხის დასაწერად.",
     login: "შესვლა",
     member: "მონაწილე",
-    op: "დაწერილია", // ИЗМЕНЕНО
+    op: "ავტორი",
     confirmSolution: "მონიშნოთ ეს პოსტი როგორც გადაწყვეტა?",
     errorLoading: "თემის ჩატვირთვის შეცდომა",
     errorSending: "პასუხის გაგზავნის შეცდომა",
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupReplyForm();
   updateTopicPageLanguage();
 
-  // Запускаем живое обновление темы каждые 15 сек
+  // Живое обновление темы (новые ответы)
   setInterval(checkLiveTopicUpdates, 15000);
 
   // Управление видимостью формы ответа
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// === НОВАЯ ФУНКЦИЯ: ОПРЕДЕЛЕНИЕ ЯЗЫКА ===
+// === ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ЯЗЫКА ТЕКСТА ===
 function detectContentLanguage(text) {
   if (!text) return "en";
   const kaRegex = /[\u10A0-\u10FF]/;
@@ -118,7 +118,7 @@ function detectContentLanguage(text) {
   return "en";
 }
 
-// === ОСНОВНАЯ ЛОГИКА ЗАГРУЗКИ ===
+// === ЗАГРУЗКА ДАННЫХ ===
 async function loadTopicData() {
   const t = topicTranslations[currentTopicLang];
 
@@ -144,18 +144,16 @@ async function renderTopicWithTranslation(data) {
   const topic = data.topic;
 
   const container = document.getElementById("posts-container");
-  // Если контейнер пуст, показываем лоадер, иначе просто обновляем (чтобы не моргало при live update)
   if (!container.hasChildNodes()) {
     container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;"><i class="fas fa-language fa-spin"></i> ${t.translating}</div>`;
   }
 
-  // Переводим заголовок и контент темы
+  // Перевод
   const [translatedTitle, translatedContent] = await Promise.all([
     translateText(topic.title, currentTopicLang),
     translateText(topic.content, currentTopicLang),
   ]);
 
-  // Переводим посты параллельно
   const translatedPosts = await Promise.all(
     data.posts.map(async (post) => ({
       ...post,
@@ -165,7 +163,7 @@ async function renderTopicWithTranslation(data) {
 
   document.title = `${translatedTitle} | BimmerCodes`;
 
-  // Рендер Шапки Темы
+  // Хедер темы
   const headerContainer = document.getElementById("topic-header-container");
   if (headerContainer) {
     headerContainer.innerHTML = `
@@ -178,7 +176,7 @@ async function renderTopicWithTranslation(data) {
       `;
   }
 
-  // Рендер Сайдбара
+  // Сайдбар
   const sidebarCard = document.querySelector(".sidebar-card");
   if (sidebarCard) {
     sidebarCard.innerHTML = `
@@ -193,10 +191,11 @@ async function renderTopicWithTranslation(data) {
     `;
   }
 
-  // Рендер Списка Постов
+  // Рендер Главного поста
   let html = renderPostHTML(
     {
       id: "topic-main",
+      user_id: topic.user_id, // Важно для проверки авторства
       username: topic.username,
       content: translatedContent,
       created_at: topic.created_at,
@@ -204,11 +203,13 @@ async function renderTopicWithTranslation(data) {
       likes_count: 0,
       is_liked: false,
       lang: topic.lang,
+      author_avatar: topic.author_avatar, // ВАЖНО: передаем аватарку автора темы
     },
     true,
     topic.user_id,
   );
 
+  // Рендер Ответов
   html += translatedPosts
     .map((post) =>
       renderPostHTML(
@@ -222,25 +223,21 @@ async function renderTopicWithTranslation(data) {
   container.innerHTML = html;
 }
 
-// Генерация HTML одного поста
-
-// Внутри js/topic.js
-
+// === ГЕНЕРАЦИЯ HTML ПОСТА (ИСПРАВЛЕННАЯ) ===
 function renderPostHTML(post, isMain, topicAuthorId) {
   const t = topicTranslations[currentTopicLang];
   const isTopicOwner = user && String(topicAuthorId) === String(user.id);
 
-  // Проверка: является ли текущий юзер автором этого поста?
+  // Проверка: автор ли это?
   const isMyPost = user && String(post.user_id) === String(user.id);
 
-  // Определяем язык (по умолчанию EN, если в базе нет)
+  // Язык
   const originLang = post.lang ? post.lang.toUpperCase() : "EN";
 
-  // === ИСПРАВЛЕНИЕ АВАТАРКИ ===
+  // === АВАТАРКА ===
   let avatarHTML;
-  const avatarUrl =
-    post.author_avatar ||
-    (user && user.id === post.user_id ? user.avatar_url : null);
+  // Берем author_avatar с сервера, либо user.avatar_url если это текущий пользователь
+  const avatarUrl = post.author_avatar || (isMyPost ? user.avatar_url : null);
 
   if (avatarUrl) {
     avatarHTML = `<img src="${avatarUrl}" class="post-user-avatar" style="object-fit:cover;">`;
@@ -262,7 +259,6 @@ function renderPostHTML(post, isMain, topicAuthorId) {
         <div class="post-header-meta">
           <div style="display:flex; align-items:center; gap:10px;">
               <span><i class="far fa-clock"></i> ${formatDate(post.created_at)}</span>
-              
               <span class="lang-badge" title="Original language">
                 <i class="fas fa-language"></i> ${originLang}
               </span>
@@ -285,7 +281,7 @@ function renderPostHTML(post, isMain, topicAuthorId) {
           ${
             isMyPost
               ? `
-            <button class="btn-action" onclick="deleteItem('post', '${post.id}')" style="color:#e74c3c; border-color:rgba(231,76,60,0.3); margin-right:auto;" title="Delete post">
+            <button class="btn-action" onclick="deleteItem('post', '${post.id}')" style="color:#e74c3c; border-color:rgba(231,76,60,0.3); margin-right:auto;" title="Delete">
                 <i class="fas fa-trash"></i>
             </button>
           `
@@ -329,9 +325,7 @@ function setupReplyForm() {
   if (attachBtn && fileInput) {
     attachBtn.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", (e) => {
-      if (e.target.files.length > 0) {
-        processAndUpload(e.target.files[0]);
-      }
+      if (e.target.files.length > 0) processAndUpload(e.target.files[0]);
     });
   }
 
@@ -345,7 +339,7 @@ function setupReplyForm() {
     const btn = form.querySelector("button[type='submit']");
     btn.disabled = true;
 
-    // ОПРЕДЕЛЯЕМ ЯЗЫК КОММЕНТАРИЯ
+    // Авто-определение языка
     const detectedLang = detectContentLanguage(content);
 
     try {
@@ -357,7 +351,7 @@ function setupReplyForm() {
           user_id: user.id,
           username: user.username,
           content: content,
-          lang: detectedLang, // Используем определенный язык
+          lang: detectedLang,
         }),
       });
 
@@ -374,7 +368,6 @@ function setupReplyForm() {
   });
 }
 
-// Обработка вставки из буфера обмена
 async function handlePasteImage(e) {
   const items = (e.clipboardData || e.originalEvent.clipboardData).items;
   for (let index in items) {
@@ -385,38 +378,21 @@ async function handlePasteImage(e) {
   }
 }
 
-// Главная функция: Конвертация + Загрузка
-// Внутри js/topic.js
-
-// Функция отправки (с конвертацией)
 async function processAndUpload(file) {
   const textarea = document.getElementById("reply-content");
-  const loadingTag = `\n![Uploading...]`;
+  const t = topicTranslations[currentTopicLang];
 
-  // Вставляем текст загрузки
   const cursor = textarea.selectionStart;
+  const loadingTag = `\n![${t.uploading}...]`;
   textarea.value =
     textarea.value.slice(0, cursor) + loadingTag + textarea.value.slice(cursor);
 
   try {
-    console.log("Original file:", file.name, file.type, file.size);
-
-    // 1. КОНВЕРТАЦИЯ (Client-side)
-    // Если это уже webp, можно не конвертировать, но для сжатия лучше прогнать
     const webpFile = await convertToWebP(file);
-
-    console.log("Converted file:", webpFile.name, webpFile.type, webpFile.size);
-
-    // 2. ЗАГРУЗКА
     const formData = new FormData();
-    formData.append("file", webpFile); // Отправляем уже WebP!
+    formData.append("file", webpFile);
 
     const res = await fetch("/api/upload", { method: "POST", body: formData });
-
-    if (!res.ok) {
-      throw new Error(`Upload failed: ${res.statusText}`);
-    }
-
     const data = await res.json();
 
     if (data.url) {
@@ -425,7 +401,10 @@ async function processAndUpload(file) {
         `\n![image](${data.url})`,
       );
     } else {
-      throw new Error("No URL returned");
+      textarea.value = textarea.value.replace(
+        loadingTag,
+        `\n[${t.uploadError}]`,
+      );
     }
   } catch (err) {
     console.error(err);
@@ -433,23 +412,18 @@ async function processAndUpload(file) {
       loadingTag,
       `\n[Error: ${err.message}]`,
     );
-    alert("Upload error: " + err.message);
   }
 }
 
-// Утилита конвертации
 function convertToWebP(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-
     reader.onload = (event) => {
       const img = new Image();
       img.src = event.target.result;
-
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        // Ограничение размера (Full HD)
         const MAX_WIDTH = 1920;
         const scale = Math.min(1, MAX_WIDTH / img.width);
 
@@ -459,15 +433,11 @@ function convertToWebP(file) {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Конвертация в blob image/webp с качеством 0.8
         canvas.toBlob(
           (blob) => {
             if (!blob) return reject(new Error("Canvas conversion failed"));
-
-            // Меняем имя файла на .webp
-            const fileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+            const fileName = file.name.split(".")[0] + ".webp";
             const newFile = new File([blob], fileName, { type: "image/webp" });
-
             resolve(newFile);
           },
           "image/webp",
@@ -480,11 +450,10 @@ function convertToWebP(file) {
   });
 }
 
-// === ВЗАИМОДЕЙСТВИЯ ===
+// === ЛАЙКИ, РЕШЕНИЯ, УДАЛЕНИЕ ===
 async function likePost(postId) {
   if (!user) return toggleAuthModal();
 
-  // Оптимистичное обновление UI
   const countSpan = document.getElementById(`likes-${postId}`);
   const btn = countSpan.parentElement;
   const icon = btn.querySelector("i");
@@ -504,21 +473,17 @@ async function likePost(postId) {
   }
   countSpan.textContent = count;
 
-  // Отправка на сервер
   try {
     await fetch("/api/forum/like", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: postId, user_id: user.id }),
     });
-  } catch (e) {
-    console.error("Like failed", e);
-  }
+  } catch (e) {}
 }
 
 async function markSolution(postId) {
   if (!confirm(topicTranslations[currentTopicLang].confirmSolution)) return;
-
   await fetch("/api/forum/solve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -531,37 +496,44 @@ async function markSolution(postId) {
   loadTopicData();
 }
 
-// === ЖИВОЕ ОБНОВЛЕНИЕ ТЕМЫ ===
-async function checkLiveTopicUpdates() {
-  if (!originalTopicData) return;
-
-  // Считаем сколько сейчас постов
-  const currentPostCount = document.querySelectorAll(".post-card").length;
-  // -1 потому что первый элемент это сама тема (main post)
-  const currentReplyCount = currentPostCount > 0 ? currentPostCount - 1 : 0;
-
+async function deleteItem(type, id) {
+  if (!confirm("Are you sure you want to delete this?")) return;
   try {
-    const userIdParam = user ? `&user_id=${user.id}` : "";
-    const res = await fetch(`/api/forum/topic?id=${topicId}${userIdParam}`);
-    if (!res.ok) return;
-
-    const data = await res.json();
-
-    // Если на сервере больше постов, перезагружаем данные
-    if (data.posts.length > currentReplyCount) {
-      console.log("New posts detected, refreshing...");
-      originalTopicData = data;
-      renderTopicWithTranslation(data);
+    const res = await fetch("/api/forum/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, id, user_id: user.id }),
+    });
+    if (res.ok) {
+      if (type === "topic") window.location.href = "forum.html";
+      else loadTopicData();
+    } else {
+      alert("Error deleting item");
     }
   } catch (e) {
     console.error(e);
   }
 }
 
-// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+async function checkLiveTopicUpdates() {
+  if (!originalTopicData) return;
+  const currentPostCount = document.querySelectorAll(".post-card").length;
+  const currentReplyCount = currentPostCount > 0 ? currentPostCount - 1 : 0;
+  try {
+    const userIdParam = user ? `&user_id=${user.id}` : "";
+    const res = await fetch(`/api/forum/topic?id=${topicId}${userIdParam}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.posts.length > currentReplyCount) {
+      originalTopicData = data;
+      renderTopicWithTranslation(data);
+    }
+  } catch (e) {}
+}
+
+// === УТИЛИТЫ ===
 function formatDate(dateString) {
   if (!dateString) return "";
-  // Добавляем Z, если дата без таймзоны (для D1), чтобы браузер понял что это UTC
   const safeDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
   return new Date(safeDate).toLocaleString();
 }
@@ -592,12 +564,10 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
-// === GOOGLE TRANSLATE API ===
 async function translateText(text, targetLang) {
   if (!text || text.trim().length < 2) return text;
   const cacheKey = `${text.substring(0, 100)}_${targetLang}`;
   if (translationCache[cacheKey]) return translationCache[cacheKey];
-
   try {
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
     const response = await fetch(url);
@@ -622,7 +592,6 @@ async function translateText(text, targetLang) {
   }
 }
 
-// Обновление языка темы
 async function switchTopicLanguage() {
   const langs = ["en", "ru", "ka"];
   let idx = langs.indexOf(currentTopicLang);
@@ -646,76 +615,39 @@ function updateTopicPageLanguage() {
   if (replyContent) replyContent.placeholder = t.writeReply;
 }
 
-// === LIGHTBOX LOGIC ===
-
-// 1. Делегирование событий: ловим клик по картинке внутри постов
-document.addEventListener("click", function (e) {
-  // Если кликнули по IMG внутри контейнера поста
-  if (e.target.tagName === "IMG" && e.target.closest(".post-text-body")) {
-    openLightbox(e.target.src);
-  }
-});
-
-function openLightbox(src) {
+// === LIGHTBOX LOGIC (ОТКРЫТИЕ ФОТО) ===
+document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("lightbox-modal");
-  const img = document.getElementById("lightbox-img");
+  const modalImg = document.getElementById("lightbox-img");
+  const closeBtn = document.querySelector(".close-lightbox");
 
-  if (modal && img) {
-    img.src = src;
-    modal.classList.add("active"); // Показываем модалку
-    document.body.style.overflow = "hidden"; // Блокируем скролл страницы
-  }
-}
+  if (!modal || !modalImg) return;
 
-// Эта функция должна быть глобальной (window), так как вызывается из onclick в HTML
-window.closeLightbox = function (e) {
-  // Закрываем, если кликнули по фону, по крестику или по самой картинке
-  if (
-    e.target.id === "lightbox-modal" ||
-    e.target.classList.contains("close-lightbox") ||
-    e.target.classList.contains("lightbox-content")
-  ) {
-    const modal = document.getElementById("lightbox-modal");
-    if (modal) {
-      modal.classList.remove("active");
-      document.body.style.overflow = ""; // Разблокируем скролл
-      setTimeout(() => {
-        document.getElementById("lightbox-img").src = "";
-      }, 300);
+  document.addEventListener("click", (e) => {
+    if (e.target.tagName === "IMG" && e.target.closest(".post-text-body")) {
+      modalImg.src = e.target.src;
+      modal.classList.add("active");
+      document.body.style.overflow = "hidden";
     }
-  }
-};
+  });
 
-// Закрытие по клавише Esc
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    const modal = document.getElementById("lightbox-modal");
-    if (modal && modal.classList.contains("active")) {
-      window.closeLightbox({ target: modal });
+  window.closeLightbox = function (e) {
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+    setTimeout(() => {
+      modalImg.src = "";
+    }, 300);
+  };
+
+  if (closeBtn) closeBtn.addEventListener("click", window.closeLightbox);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) window.closeLightbox();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      window.closeLightbox();
     }
-  }
+  });
 });
-
-// В конец js/topic.js
-
-async function deleteItem(type, id) {
-  if (!confirm("Are you sure you want to delete this?")) return;
-
-  const user = JSON.parse(localStorage.getItem("user_data"));
-  try {
-    const res = await fetch("/api/forum/delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, id, user_id: user.id }),
-    });
-
-    if (res.ok) {
-      if (type === "topic") window.location.href = "forum.html";
-      else loadTopicData(); // Перезагрузить посты
-    } else {
-      alert("Error deleting item");
-    }
-  } catch (e) {
-    console.error(e);
-  }
-}
