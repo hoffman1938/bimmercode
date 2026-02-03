@@ -1013,3 +1013,38 @@
 .close-lightbox:hover {
   color: #bbb;
 }
+/* --- ЯЗЫКОВЫЕ МЕТКИ (ORIGINAL LANG BADGE) --- */
+.lang-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--f-text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--f-border);
+  margin-left: 8px;
+  vertical-align: middle;
+  cursor: help;
+}
+
+.lang-badge i {
+  font-size: 9px;
+  color: var(--f-accent-blue);
+}
+
+.lang-badge:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Для мобильных чуть компактнее */
+@media (max-width: 900px) {
+  .lang-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+}

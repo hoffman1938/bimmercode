@@ -16,6 +16,7 @@ const topicTranslations = {
     loginToReply: "Please login to reply.",
     login: "login",
     member: "Member",
+    op: "Created", // ИЗМЕНЕНО
     confirmSolution: "Mark this post as the solution?",
     errorLoading: "Error loading topic",
     errorSending: "Error sending reply",
@@ -37,6 +38,7 @@ const topicTranslations = {
     loginToReply: "Войдите, чтобы ответить.",
     login: "войти",
     member: "Участник",
+    op: "Создано", // ИЗМЕНЕНО
     confirmSolution: "Отметить этот пост как решение?",
     errorLoading: "Ошибка загрузки темы",
     errorSending: "Ошибка отправки ответа",
@@ -58,6 +60,7 @@ const topicTranslations = {
     loginToReply: "შედით პასუხის დასაწერად.",
     login: "შესვლა",
     member: "მონაწილე",
+    op: "დაწერილია", // ИЗМЕНЕНО
     confirmSolution: "მონიშნოთ ეს პოსტი როგორც გადაწყვეტა?",
     errorLoading: "თემის ჩატვირთვის შეცდომა",
     errorSending: "პასუხის გაგზავნის შეცდომა",
@@ -75,7 +78,7 @@ let currentTopicLang = localStorage.getItem("forumLanguage") || "en";
 let translationCache = JSON.parse(
   localStorage.getItem("translationCache") || "{}",
 );
-let originalTopicData = null; // Храним данные для переключения языка без перезагрузки
+let originalTopicData = null;
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener("DOMContentLoaded", () => {
@@ -104,6 +107,16 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("login-to-reply").style.display = "block";
   }
 });
+
+// === НОВАЯ ФУНКЦИЯ: ОПРЕДЕЛЕНИЕ ЯЗЫКА ===
+function detectContentLanguage(text) {
+  if (!text) return "en";
+  const kaRegex = /[\u10A0-\u10FF]/;
+  const ruRegex = /[\u0400-\u04FF]/;
+  if (kaRegex.test(text)) return "ka";
+  if (ruRegex.test(text)) return "ru";
+  return "en";
+}
 
 // === ОСНОВНАЯ ЛОГИКА ЗАГРУЗКИ ===
 async function loadTopicData() {
@@ -190,6 +203,7 @@ async function renderTopicWithTranslation(data) {
       is_solution: false,
       likes_count: 0,
       is_liked: false,
+      lang: topic.lang,
     },
     true,
     topic.user_id,
@@ -209,9 +223,14 @@ async function renderTopicWithTranslation(data) {
 }
 
 // Генерация HTML одного поста
+// Внутри js/topic.js
+
 function renderPostHTML(post, isMain, topicAuthorId) {
   const t = topicTranslations[currentTopicLang];
   const isTopicOwner = user && String(topicAuthorId) === String(user.id);
+
+  // Определяем язык (по умолчанию EN, если в базе нет)
+  const originLang = post.lang ? post.lang.toUpperCase() : "EN";
 
   return `
     <div class="post-card ${post.is_solution ? "solution" : ""}" id="post-${post.id}">
@@ -223,8 +242,21 @@ function renderPostHTML(post, isMain, topicAuthorId) {
       
       <div class="post-content-panel">
         <div class="post-header-meta">
-          <span><i class="far fa-clock"></i> ${formatDate(post.created_at)}</span>
-          ${post.is_solution ? `<span style="color:#2ecc71; font-weight:bold;"><i class="fas fa-check"></i> ${t.solution}</span>` : isMain ? '<span style="opacity:0.5">OP</span>' : `<span style="opacity:0.5">#${post.id.slice(0, 4)}</span>`}
+          <div style="display:flex; align-items:center; gap:10px;">
+              <span><i class="far fa-clock"></i> ${formatDate(post.created_at)}</span>
+              
+              <span class="lang-badge" title="Original language">
+                <i class="fas fa-language"></i> ${originLang}
+              </span>
+          </div>
+
+          ${
+            post.is_solution
+              ? `<span style="color:#2ecc71; font-weight:bold;"><i class="fas fa-check"></i> ${t.solution}</span>`
+              : isMain
+                ? `<span style="opacity:0.5; border:1px solid #555; padding:1px 5px; border-radius:4px; font-size:10px;">${t.op}</span>`
+                : `<span style="opacity:0.5">#${post.id.slice(0, 4)}</span>`
+          }
         </div>
         
         <div class="post-text-body">
@@ -261,16 +293,13 @@ function renderPostHTML(post, isMain, topicAuthorId) {
 function setupReplyForm() {
   const form = document.getElementById("reply-form");
   const textarea = document.getElementById("reply-content");
-  const attachBtn = document.getElementById("attach-btn"); // Убедитесь, что добавили кнопку в HTML
-  const fileInput = document.getElementById("file-input"); // И скрытый инпут
+  const attachBtn = document.getElementById("attach-btn");
+  const fileInput = document.getElementById("file-input");
 
   if (!form || !textarea) return;
 
-  // 1. Клик по скрепке открывает выбор файла
   if (attachBtn && fileInput) {
     attachBtn.addEventListener("click", () => fileInput.click());
-
-    // 2. Обработка выбора файла
     fileInput.addEventListener("change", (e) => {
       if (e.target.files.length > 0) {
         processAndUpload(e.target.files[0]);
@@ -278,10 +307,8 @@ function setupReplyForm() {
     });
   }
 
-  // 3. Drag & Drop и Paste
   textarea.addEventListener("paste", handlePasteImage);
 
-  // 4. Отправка формы
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const content = textarea.value;
@@ -289,6 +316,9 @@ function setupReplyForm() {
 
     const btn = form.querySelector("button[type='submit']");
     btn.disabled = true;
+
+    // ОПРЕДЕЛЯЕМ ЯЗЫК КОММЕНТАРИЯ
+    const detectedLang = detectContentLanguage(content);
 
     try {
       const res = await fetch("/api/forum/topic", {
@@ -299,7 +329,7 @@ function setupReplyForm() {
           user_id: user.id,
           username: user.username,
           content: content,
-          lang: currentTopicLang,
+          lang: detectedLang, // Используем определенный язык
         }),
       });
 
@@ -587,8 +617,6 @@ function updateTopicPageLanguage() {
   const replyContent = document.getElementById("reply-content");
   if (replyContent) replyContent.placeholder = t.writeReply;
 }
-
-// ... (Конец файла topic.js)
 
 // === LIGHTBOX LOGIC ===
 
