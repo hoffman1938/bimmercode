@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BMW Diagnostic Forum</title>
+
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <link rel="stylesheet" href="./css/forum.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
+    <div id="webgl-container"></div>
+
+    <header>
+      <a href="index.html" class="logo-container">
+        <div class="logo">
+          <i class="fas fa-comments" style="color: #0066b3"></i>
+        </div>
+        <h1>BimmerCodes <span style="color: var(--bmw-sky)">Forum</span></h1>
+      </a>
+      <div class="controls">
+        <!-- Кнопка языка -->
+        <button
+          class="btn"
+          id="forum-language-toggle"
+          onclick="switchForumLanguage()"
+          style="
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 50px;
+          "
+        >
+          <i class="fas fa-globe"></i> <span id="forum-lang-display">EN</span>
+        </button>
+
+        <div class="notification-btn" onclick="toggleNotifications()">
+          <i class="fas fa-bell"></i>
+          <span id="notif-badge" class="notif-badge">0</span>
+        </div>
+
+        <a
+          href="index.html"
+          class="btn"
+          style="background: transparent; border: none"
+        >
+          <i class="fas fa-home"></i>
+        </a>
+        <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
+          <i class="fas fa-user"></i> <span id="btn-login-text">Login</span>
+        </a>
+      </div>
+
+      <div id="notifications-dropdown" class="notifications-dropdown">
+        <div class="notif-header">Notifications</div>
+        <div class="notif-list" id="notif-list">
+          <div style="padding: 20px; text-align: center; color: #666">
+            No notifications
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="topics-header">
+        <div class="search-box" style="margin: 0; max-width: 400px">
+          <input
+            type="text"
+            id="forum-search"
+            placeholder="Search topics or codes..."
+          />
+          <i class="fas fa-search search-icon"></i>
+        </div>
+        <button
+          class="btn"
+          onclick="openNewTopicModal()"
+          style="background: var(--bmw-blue); border: none"
+        >
+          <i class="fas fa-plus"></i> New Topic
+        </button>
+      </div>
+
+      <div class="forum-layout">
+        <aside class="sidebar">
+          <div class="sidebar-card">
+            <div id="user-sidebar-info">
+              <div style="text-align: center; padding: 20px 0">
+                <p style="color: #aaa; margin-bottom: 10px">
+                  Join the community to post
+                </p>
+                <button
+                  class="btn"
+                  onclick="toggleAuthModal()"
+                  style="width: 100%"
+                >
+                  Login / Register
+                </button>
+              </div>
+            </div>
+
+            <div class="nav-menu" style="margin-top: 20px">
+              <a href="#" class="nav-item active" onclick="filterTopics('all')"
+                ><i class="fas fa-stream"></i> All Topics</a
+              >
+              <a href="#" class="nav-item" onclick="filterTopics('diagnosis')"
+                ><i class="fas fa-car-crash"></i> Diagnostics</a
+              >
+              <a href="#" class="nav-item" onclick="filterTopics('coding')"
+                ><i class="fas fa-laptop-code"></i> Coding & Soft</a
+              >
+              <a href="#" class="nav-item" onclick="filterTopics('parts')"
+                ><i class="fas fa-cogs"></i> Parts & Repair</a
+              >
+              <a href="#" class="nav-item" onclick="filterTopics('off-topic')"
+                ><i class="fas fa-coffee"></i> Off-Topic</a
+              >
+            </div>
+          </div>
+        </aside>
+
+        <div id="topics-list-container">
+          <div style="text-align: center; color: #aaa; margin-top: 50px">
+            <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+            <p>Loading discussions...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- NEW TOPIC MODAL -->
+    <div id="new-topic-modal" class="auth-modal">
+      <div class="auth-content" style="max-width: 600px">
+        <button
+          class="close-auth"
+          onclick="
+            document
+              .getElementById('new-topic-modal')
+              .classList.remove('active')
+          "
+        >
+          <i class="fas fa-times"></i>
+        </button>
+        <h2 style="color: white; margin-bottom: 20px">Create New Topic</h2>
+
+        <form id="create-topic-form" class="auth-form active">
+          <div class="input-group">
+            <select
+              id="topic-category"
+              style="
+                width: 100%;
+                padding: 12px;
+                border-radius: 10px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border: 1px solid #333;
+              "
+            >
+              <option value="diagnosis">Diagnostics & Errors</option>
+              <option value="coding">Coding (E-Sys/BimmerCode)</option>
+              <option value="parts">Parts & Repair</option>
+              <option value="off-topic">Off Topic</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <input
+              type="text"
+              id="topic-title"
+              placeholder="Topic Title (e.g. Rough idle on cold start)"
+              required
+            />
+          </div>
+          <div class="input-group">
+            <input
+              type="text"
+              id="topic-code"
+              placeholder="Related Error Code (Optional, e.g. 102613)"
+            />
+          </div>
+          <div class="input-group">
+            <textarea
+              id="topic-content"
+              rows="6"
+              placeholder="Describe your problem in detail..."
+              style="
+                width: 100%;
+                padding: 15px;
+                border-radius: 10px;
+                background: rgba(255, 255, 255, 0.05);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+              "
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="submit-btn">Publish Topic</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div id="auth-modal" class="auth-modal">
+      <div class="auth-content">
+        <button class="close-auth" onclick="toggleAuthModal()">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <div class="auth-tabs">
+          <button class="tab-btn active" onclick="switchAuthTab('login')">
+            Login
+          </button>
+          <button class="tab-btn" onclick="switchAuthTab('register')">
+            Register
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form active">
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="login-email" placeholder="Email" required />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <button type="submit" class="submit-btn">Sign In</button>
+          <p
+            id="login-msg"
+            style="text-align: center; margin-top: 10px; min-height: 20px"
+          ></p>
+
+          <div class="auth-divider">
+            <span>or continue with</span>
+          </div>
+
+          <div
+            id="google-signin-btn"
+            style="display: flex; justify-content: center"
+          ></div>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form">
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input
+              type="text"
+              id="reg-username"
+              placeholder="Username"
+              required
+            />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="reg-email" placeholder="Email" required />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="reg-password"
+              placeholder="Password (min 6 chars)"
+              minlength="6"
+              required
+            />
+          </div>
+          <button type="submit" class="submit-btn">Create Account</button>
+          <p
+            id="reg-msg"
+            style="text-align: center; margin-top: 10px; min-height: 20px"
+          ></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="./js/script.js"></script>
+    <script src="./js/forum.js"></script>
+  </body>
+</html>

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discussion | BimmerCodes</title>
+
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <link rel="stylesheet" href="./css/forum.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
+    <div id="webgl-container"></div>
+
+    <header>
+      <a href="index.html" class="logo-container">
+        <div class="logo">
+          <i class="fas fa-comments" style="color: #0066b3"></i>
+        </div>
+        <h1>BimmerCodes <span style="color: var(--bmw-sky)">Forum</span></h1>
+      </a>
+      <div class="controls">
+        <!-- Кнопка языка -->
+        <button
+          class="btn"
+          id="topic-language-toggle"
+          onclick="switchTopicLanguage()"
+          style="
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 50px;
+          "
+        >
+          <i class="fas fa-globe"></i> <span id="topic-lang-display">EN</span>
+        </button>
+
+        <div class="notification-btn" onclick="toggleNotifications()">
+          <i class="fas fa-bell"></i>
+          <span id="notif-badge" class="notif-badge">0</span>
+        </div>
+
+        <a
+          href="forum.html"
+          class="btn"
+          style="background: transparent; border: none"
+        >
+          <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
+          <i class="fas fa-user"></i> <span id="btn-login-text">Login</span>
+        </a>
+      </div>
+
+      <div id="notifications-dropdown" class="notifications-dropdown">
+        <div class="notif-header">Notifications</div>
+        <div class="notif-list" id="notif-list">
+          <div style="padding: 20px; text-align: center; color: #666">
+            No notifications
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <a href="forum.html" class="back-link">
+        <i class="fas fa-chevron-left"></i> Back to topics
+      </a>
+
+      <div id="topic-header-container" style="margin-bottom: 30px">
+        <div
+          class="skeleton-loader"
+          style="
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+          "
+        ></div>
+      </div>
+
+      <div class="topic-view-layout">
+        <div id="posts-container"></div>
+
+        <aside class="sidebar">
+          <div class="sidebar-card">
+            <h3 style="color: white; margin-bottom: 15px">Topic Info</h3>
+            <div style="color: #aaa; font-size: 14px; line-height: 2">
+              <div>
+                <i class="fas fa-eye"></i> Views:
+                <span id="topic-views">-</span>
+              </div>
+              <div>
+                <i class="fas fa-calendar"></i> Created:
+                <span id="topic-date">-</span>
+              </div>
+              <div>
+                <i class="fas fa-check-circle"></i> Status:
+                <span id="topic-status">Open</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="reply-form-container" id="reply-box">
+        <form
+          id="reply-form"
+          style="display: flex; gap: 15px; align-items: flex-start"
+        >
+          <div style="flex: 1; position: relative">
+            <textarea
+              id="reply-content"
+              rows="2"
+              placeholder="Write a reply... (Type @ to mention)"
+              style="
+                width: 100%;
+                padding: 15px;
+                padding-right: 50px;
+                border-radius: 10px;
+                background: rgba(255, 255, 255, 0.05);
+                color: white;
+                border: none;
+                resize: vertical;
+                min-height: 60px;
+              "
+            ></textarea>
+
+            <button
+              type="button"
+              id="attach-btn"
+              style="
+                position: absolute;
+                right: 10px;
+                top: 10px;
+                background: none;
+                border: none;
+                color: #888;
+                cursor: pointer;
+                padding: 5px;
+              "
+            >
+              <i class="fas fa-paperclip"></i>
+            </button>
+
+            <input
+              type="file"
+              id="file-input"
+              accept="image/png, image/jpeg, image/webp"
+              hidden
+            />
+
+            <div
+              id="upload-preview"
+              style="display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap"
+            ></div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn"
+            style="
+              background: var(--bmw-blue);
+              border: none;
+              height: 50px;
+              padding: 0 25px;
+            "
+          >
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+
+        <div
+          id="login-to-reply"
+          style="display: none; text-align: center; color: #aaa"
+        >
+          Please
+          <a
+            href="#"
+            onclick="
+              toggleAuthModal();
+              return false;
+            "
+            style="color: var(--bmw-sky)"
+            >login</a
+          >
+          to reply.
+        </div>
+      </div>
+    </main>
+
+    <!-- AUTH MODAL -->
+    <div id="auth-modal" class="auth-modal">
+      <div class="auth-content">
+        <button class="close-auth" onclick="toggleAuthModal()">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <div class="auth-tabs">
+          <button class="tab-btn active" onclick="switchAuthTab('login')">
+            Login
+          </button>
+          <button class="tab-btn" onclick="switchAuthTab('register')">
+            Register
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form active">
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="login-email" placeholder="Email" required />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <button type="submit" class="submit-btn">Sign In</button>
+          <p
+            id="login-msg"
+            style="text-align: center; margin-top: 10px; min-height: 20px"
+          ></p>
+
+          <div class="auth-divider">
+            <span>or continue with</span>
+          </div>
+
+          <div
+            id="google-signin-btn"
+            style="display: flex; justify-content: center"
+          ></div>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form">
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input
+              type="text"
+              id="reg-username"
+              placeholder="Username"
+              required
+            />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="reg-email" placeholder="Email" required />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="reg-password"
+              placeholder="Password (min 6 chars)"
+              minlength="6"
+              required
+            />
+          </div>
+          <button type="submit" class="submit-btn">Create Account</button>
+          <p
+            id="reg-msg"
+            style="text-align: center; margin-top: 10px; min-height: 20px"
+          ></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="./js/script.js"></script>
+    <script src="./js/topic.js"></script>
+  </body>
+</html>

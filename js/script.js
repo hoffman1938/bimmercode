@@ -18,7 +18,7 @@ let isDarkMode = true;
 let bmwCodes = [];
 let selectedCode = null;
 let chatOpen = false;
-
+let debounceTimer;
 // UI Text Translations
 const translations = {
   en: {
@@ -533,6 +533,151 @@ function updateChatUI() {
 }
 
 // ==========================================
+// AUTH SYSTEM (Login & Register)
+// ==========================================
+
+// 1. Управление Модальным окном
+function toggleAuthModal() {
+  const modal = document.getElementById("auth-modal");
+  modal.classList.toggle("active");
+}
+
+function switchAuthTab(tab) {
+  // Переключение вкладок (Login / Register)
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach((btn) => btn.classList.remove("active"));
+  document
+    .querySelectorAll(".auth-form")
+    .forEach((form) => form.classList.remove("active"));
+
+  if (tab === "login") {
+    document.querySelectorAll(".tab-btn")[0].classList.add("active");
+    document.getElementById("login-form").classList.add("active");
+  } else {
+    document.querySelectorAll(".tab-btn")[1].classList.add("active");
+    document.getElementById("register-form").classList.add("active");
+  }
+}
+
+// 2. Логика Регистрации
+function setupRegisterForm() {
+  const regForm = document.getElementById("register-form");
+  if (!regForm) return;
+
+  regForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("reg-username").value;
+    const email = document.getElementById("reg-email").value;
+    const password = document.getElementById("reg-password").value;
+    const msg = document.getElementById("reg-msg");
+
+    msg.style.color = "#aaa";
+    msg.textContent = "Processing...";
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // currentLanguage берем из вашей переменной в script.js
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          language: currentLanguage,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.style.color = "#2ecc71";
+        msg.textContent = "Success! Please login.";
+        setTimeout(() => switchAuthTab("login"), 1500);
+      } else {
+        msg.style.color = "#e74c3c";
+        msg.textContent = data.error || "Registration failed";
+      }
+    } catch (err) {
+      msg.textContent = "Error: " + err.message;
+    }
+  });
+}
+
+// 3. Логика Входа
+function setupLoginForm() {
+  const loginForm = document.getElementById("login-form");
+  if (!loginForm) return;
+
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    const msg = document.getElementById("login-msg");
+
+    msg.textContent = "Signing in...";
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Сохраняем токен и данные
+        localStorage.setItem("auth_token", data.token);
+        localStorage.setItem("user_data", JSON.stringify(data.user));
+
+        msg.style.color = "#2ecc71";
+        msg.textContent = "Welcome back!";
+
+        setTimeout(() => {
+          toggleAuthModal();
+          checkAuthStatus(); // Обновить кнопку в шапке
+        }, 1000);
+      } else {
+        msg.style.color = "#e74c3c";
+        msg.textContent = data.error || "Invalid credentials";
+      }
+    } catch (err) {
+      msg.textContent = "Connection error";
+    }
+  });
+}
+
+// 4. Проверка статуса (Обновление UI)
+function checkAuthStatus() {
+  const token = localStorage.getItem("auth_token");
+  const user = JSON.parse(localStorage.getItem("user_data"));
+  const btnText = document.getElementById("btn-login-text");
+  const authBtn = document.getElementById("auth-btn");
+
+  if (token && user) {
+    // Если вошли - показываем имя
+    if (btnText) btnText.textContent = user.username;
+    authBtn.onclick = () => {
+      // Тут можно сделать переход в профиль или выход
+      if (confirm("Logout?")) {
+        logout();
+      }
+    };
+  } else {
+    // Если нет - показываем Login
+    if (btnText) btnText.textContent = "Login";
+    authBtn.onclick = toggleAuthModal;
+  }
+}
+
+function logout() {
+  localStorage.removeItem("auth_token");
+  localStorage.removeItem("user_data");
+  location.reload();
+}
+
+// ==========================================
 // 4. MAIN LOGIC (INIT & SEARCH)
 // ==========================================
 
@@ -548,11 +693,11 @@ async function init() {
       const data = await response.json();
       bmwCodes = [...bmwCodes, ...data.codes];
     }
-
+    setupRegisterForm();
+    setupLoginForm();
+    checkAuthStatus();
     setupEventListeners();
     updateLanguage();
-
-    // Инициализация 3D фона и Чата
     init3DBackground();
     initWizard();
 
@@ -576,39 +721,72 @@ async function init() {
 document.addEventListener("DOMContentLoaded", init);
 
 function setupEventListeners() {
-  searchInput.addEventListener("input", handleSearch);
+  // 1. Поиск (только если есть input)
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => handleSearch(e.target.value), 300);
+    });
+  }
 
-  languageToggle.addEventListener("click", () => {
-    const langs = ["en", "ru", "ka"];
-    let idx = langs.indexOf(currentLanguage);
-    currentLanguage = langs[(idx + 1) % langs.length];
+  // 2. VIN Input (только если есть)
+  const vinInput = document.getElementById("vin-input");
+  if (vinInput) {
+    vinInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") handleVinSearch();
+    });
+  }
 
-    localStorage.setItem("forumLanguage", currentLanguage);
+  // 3. Переключатель языка (ВАЖНО: Добавлена проверка if)
+  if (languageToggle) {
+    languageToggle.addEventListener("click", () => {
+      const langs = ["en", "ru", "ka"];
+      let idx = langs.indexOf(currentLanguage);
+      currentLanguage = langs[(idx + 1) % langs.length];
 
-    updateLanguage();
+      localStorage.setItem("forumLanguage", currentLanguage);
 
-    if (selectedCode) displayCodeDetail(selectedCode);
-    else handleSearch();
+      updateLanguage();
 
-    updateChatUI();
-  });
+      if (selectedCode) displayCodeDetail(selectedCode);
+      else handleSearch();
+
+      updateChatUI();
+    });
+  }
 }
 
 function updateLanguage() {
   const langLabels = { en: "EN", ru: "RU", ka: "KA" };
-  const span = languageToggle.querySelector("span");
-  if (span) span.textContent = langLabels[currentLanguage];
+
+  // 1. Обновляем кнопку языка (если она есть)
+  if (languageToggle) {
+    const span = languageToggle.querySelector("span");
+    if (span) span.textContent = langLabels[currentLanguage];
+  }
 
   const text = translations[currentLanguage];
-  searchInput.placeholder = text.searchPlaceholder;
 
-  document.querySelector("#empty-state .message").textContent =
-    text.emptyStateMessage;
-  document.querySelector("#empty-state .sub-message").textContent =
-    text.emptyStateSubMessage;
-  document.querySelector("#no-results .message").textContent =
-    text.noResultsMessage;
-  document.querySelector("footer p").textContent = text.footer;
+  // 2. Обновляем поиск (если он есть)
+  if (searchInput) {
+    searchInput.placeholder = text.searchPlaceholder;
+  }
+
+  // 3. Безопасное обновление текстовых элементов
+  // Эта мини-функция проверяет, существует ли элемент, прежде чем менять текст
+  const safeSetText = (selector, value) => {
+    const el = document.querySelector(selector);
+    if (el) el.textContent = value;
+  };
+
+  safeSetText("#empty-state .message", text.emptyStateMessage);
+  safeSetText("#empty-state .sub-message", text.emptyStateSubMessage);
+  safeSetText("#no-results .message", text.noResultsMessage);
+  safeSetText("footer p", text.footer);
+
+  // Обновляем чат
+  updateChatUI();
 }
 
 function handleSearch() {

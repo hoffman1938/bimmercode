@@ -396,6 +396,13 @@
         <button class="btn" onclick="toggleFavoritesModal()">
           <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
         </button>
+        <a href="forum.html" class="btn">
+          <i class="fas fa-comments"></i> <span>Forum</span>
+        </a>
+        <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
+          <i class="fas fa-user"></i>
+          <span id="btn-login-text">Login</span>
+        </a>
       </div>
     </header>
     <main class="container">
@@ -550,5 +557,69 @@
           alt=""
         /></div
     ></noscript>
+    <div id="auth-modal" class="auth-modal">
+      <div class="auth-content">
+        <button class="close-auth" onclick="toggleAuthModal()">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <div class="auth-tabs">
+          <button class="tab-btn active" onclick="switchAuthTab('login')">
+            Login
+          </button>
+          <button class="tab-btn" onclick="switchAuthTab('register')">
+            Register
+          </button>
+        </div>
+
+        <form id="login-form" class="auth-form active">
+          <h2>Welcome Back</h2>
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="login-email" placeholder="Email" required />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <button type="submit" class="submit-btn">Sign In</button>
+          <p class="auth-msg" id="login-msg"></p>
+        </form>
+
+        <form id="register-form" class="auth-form">
+          <h2>Join Community</h2>
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input
+              type="text"
+              id="reg-username"
+              placeholder="Username"
+              required
+            />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="reg-email" placeholder="Email" required />
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="reg-password"
+              placeholder="Password (min 8 chars)"
+              required
+              minlength="8"
+            />
+          </div>
+          <button type="submit" class="submit-btn">Create Account</button>
+          <p class="auth-msg" id="reg-msg"></p>
+        </form>
+      </div>
+    </div>
   </body>
 </html>
