@@ -3,6 +3,14 @@
 // ==========================================
 
 // DOM Elements
+let cropperImage = new Image();
+let baseScale = 1; // Базовый масштаб (чтобы фото влезло)
+let zoomLevel = 1; // Множитель зума (от слайдера)
+let cropperOffsetX = 0;
+let cropperOffsetY = 0;
+let isDragging = false;
+let startX, startY;
+let isNewImageSelected = false;
 const searchInput = document.getElementById("search-input");
 const resultsContainer = document.getElementById("results-container");
 const emptyState = document.getElementById("empty-state");
@@ -605,6 +613,7 @@ function setupRegisterForm() {
 }
 
 // 3. Логика Входа
+// 3. Логика Входа (ИСПРАВЛЕННАЯ)
 function setupLoginForm() {
   const loginForm = document.getElementById("login-form");
   if (!loginForm) return;
@@ -616,6 +625,7 @@ function setupLoginForm() {
     const msg = document.getElementById("login-msg");
 
     msg.textContent = "Signing in...";
+    msg.style.color = "#aaa";
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -627,55 +637,92 @@ function setupLoginForm() {
       const data = await res.json();
 
       if (res.ok) {
-        // Сохраняем токен и данные
         localStorage.setItem("auth_token", data.token);
         localStorage.setItem("user_data", JSON.stringify(data.user));
+        await refreshUserData();
+        checkAuthStatus();
 
+        // Если мы на странице форума — обновляем сайдбар
+        if (typeof updateSidebarUser === "function") {
+          updateSidebarUser();
+        }
+
+        // Если мы внутри темы — показываем форму ответа
+        const replyForm = document.getElementById("reply-form");
+        const loginMsg = document.getElementById("login-to-reply");
+        if (replyForm) replyForm.style.display = "flex";
+        if (loginMsg) loginMsg.style.display = "none";
+
+        // 3. Показываем успех и закрываем окно
         msg.style.color = "#2ecc71";
         msg.textContent = "Welcome back!";
 
         setTimeout(() => {
-          toggleAuthModal();
-          checkAuthStatus(); // Обновить кнопку в шапке
+          toggleAuthModal(); // Закрываем модалку
+          // Очищаем форму
+          document.getElementById("login-email").value = "";
+          document.getElementById("login-password").value = "";
+          msg.textContent = "";
         }, 1000);
       } else {
         msg.style.color = "#e74c3c";
         msg.textContent = data.error || "Invalid credentials";
       }
     } catch (err) {
+      console.error(err);
       msg.textContent = "Connection error";
     }
   });
 }
 
 // 4. Проверка статуса (Обновление UI)
+// 4. Проверка статуса (Обновление UI)
 function checkAuthStatus() {
   const token = localStorage.getItem("auth_token");
   const user = JSON.parse(localStorage.getItem("user_data"));
-  const btnText = document.getElementById("btn-login-text");
   const authBtn = document.getElementById("auth-btn");
 
+  if (!authBtn) return;
+
+  // СБРОС КНОПКИ (Важно для корректного переключения без перезагрузки)
+  // Мы возвращаем её в исходное состояние, а потом заполняем данными
+  authBtn.innerHTML =
+    '<i class="fas fa-user-circle"></i> <span id="btn-login-text">Login</span>';
+  const btnText = document.getElementById("btn-login-text");
+
   if (token && user) {
-    // Если вошли - показываем имя
-    if (btnText) btnText.textContent = user.username;
-    authBtn.onclick = () => {
-      // Тут можно сделать переход в профиль или выход
-      if (confirm("Logout?")) {
-        logout();
+    // Если вошли
+    btnText.textContent = user.username;
+
+    // Ставим аватарку
+    if (user.avatar_url) {
+      const icon = authBtn.querySelector("i");
+      if (icon) {
+        icon.outerHTML = `<img src="${user.avatar_url}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; margin-right:8px; border:1px solid rgba(255,255,255,0.2);">`;
       }
+    }
+
+    authBtn.onclick = (e) => {
+      e.preventDefault();
+      toggleProfileModal();
     };
   } else {
-    // Если нет - показываем Login
+    // Если вышли
     if (btnText) btnText.textContent = "Login";
     authBtn.onclick = toggleAuthModal;
   }
 }
 
-function logout() {
+// Глобальная функция выхода
+window.logout = function () {
   localStorage.removeItem("auth_token");
   localStorage.removeItem("user_data");
   location.reload();
-}
+};
+
+// ==========================================
+// 4. MAIN LOGIC (INIT & SEARCH)
+// ==========================================
 
 // ==========================================
 // 4. MAIN LOGIC (INIT & SEARCH)
@@ -683,11 +730,9 @@ function logout() {
 
 async function init() {
   try {
-    // 1. Сначала берем локальные данные из data.js
-    if (typeof getMockData === "function") {
-      bmwCodes = getMockData();
-    }
-    // 2. Пытаемся подгрузить JSON (если есть)
+    await refreshUserData();
+    // 1. Инициализация (как было)
+    if (typeof getMockData === "function") bmwCodes = getMockData();
     const response = await fetch("../data/codes.json");
     if (response.ok) {
       const data = await response.json();
@@ -701,17 +746,195 @@ async function init() {
     init3DBackground();
     initWizard();
 
-    // --- ПЕРЕНЕСЕНО СНИЗУ: Микроанимации кнопок ---
-    document.querySelectorAll(".btn").forEach((btn) => {
-      btn.addEventListener("mousedown", () => {
-        btn.style.transform = "scale(0.95)";
+    // 2. ЛОГИКА РЕДАКТОРА ФОТО (ИСПРАВЛЕННАЯ)
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeFromUrl = urlParams.get("code");
+
+    if (codeFromUrl) {
+      const input = document.getElementById("search-input");
+      if (input) {
+        input.value = codeFromUrl; // Вставляем код в поле
+        handleSearch(); // Запускаем поиск
+
+        // Очищаем URL, чтобы при обновлении страницы поиск не сбрасывался (опционально)
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+      }
+    }
+    const avatarInput = document.getElementById("avatar-upload");
+    const canvas = document.getElementById("avatar-canvas");
+    const ctx = canvas ? canvas.getContext("2d") : null;
+    const slider = document.getElementById("zoom-slider");
+    const previewContainer = document.getElementById("current-avatar-view");
+    const canvasContainer = document.getElementById("canvas-container");
+    const profileForm = document.getElementById("profile-form");
+
+    // Функция: Сброс и расчет масштаба (ЧТОБЫ НЕ БЫЛО "СЛИШКОМ БЛИЗКО")
+    function resetEditor() {
+      if (!canvas || !cropperImage.width) return;
+
+      // Считаем масштаб, чтобы картинка полностью покрыла круг (object-fit: cover)
+      const scaleX = canvas.width / cropperImage.width;
+      const scaleY = canvas.height / cropperImage.height;
+      // Берем больший масштаб, чтобы не было пустых краев
+      baseScale = Math.max(scaleX, scaleY);
+
+      // Сброс позиций в центр
+      zoomLevel = 1;
+      if (slider) slider.value = 1;
+      cropperOffsetX = 0;
+      cropperOffsetY = 0;
+
+      drawEditor();
+    }
+
+    // Функция: Отрисовка
+    function drawEditor() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Маска круга
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(
+        canvas.width / 2,
+        canvas.height / 2,
+        canvas.width / 2,
+        0,
+        Math.PI * 2,
+        true,
+      );
+      ctx.closePath();
+      ctx.clip();
+
+      // Итоговый размер = Базовый (чтобы влезло) * Зум (от слайдера)
+      const currentScale = baseScale * zoomLevel;
+
+      const imgWidth = cropperImage.width * currentScale;
+      const imgHeight = cropperImage.height * currentScale;
+
+      // Центрирование (0,0 - это центр канваса) + Сдвиг пользователя
+      const centerX = (canvas.width - imgWidth) / 2 + cropperOffsetX;
+      const centerY = (canvas.height - imgHeight) / 2 + cropperOffsetY;
+
+      ctx.drawImage(cropperImage, centerX, centerY, imgWidth, imgHeight);
+      ctx.restore();
+    }
+
+    // Загрузка файла
+    if (avatarInput) {
+      avatarInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          cropperImage = new Image();
+          cropperImage.src = evt.target.result;
+          cropperImage.onload = () => {
+            isNewImageSelected = true;
+            if (previewContainer) previewContainer.style.display = "none";
+            if (canvasContainer) canvasContainer.style.display = "block";
+            resetEditor(); // <-- ВАЖНО: Считаем правильный масштаб
+          };
+        };
+        reader.readAsDataURL(file);
       });
-      btn.addEventListener("mouseup", () => {
-        btn.style.transform = "scale(1)";
+    }
+
+    // Зум слайдер
+    if (slider) {
+      slider.addEventListener("input", (e) => {
+        zoomLevel = parseFloat(e.target.value); // Теперь это множитель (1x ... 3x)
+        drawEditor();
       });
-    });
+    }
+
+    // Перетаскивание
+    if (canvas) {
+      canvas.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+      });
+      window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        cropperOffsetX += e.clientX - startX;
+        cropperOffsetY += e.clientY - startY;
+        startX = e.clientX;
+        startY = e.clientY;
+        drawEditor();
+      });
+      window.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
+    }
+
+    // Сохранение
+    if (profileForm) {
+      profileForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.querySelector(
+          "#profile-form button[type='submit']",
+        );
+        const originalText = btn.textContent;
+        btn.textContent = "Saving...";
+        btn.disabled = true;
+
+        const user = JSON.parse(localStorage.getItem("user_data"));
+        let finalAvatarUrl = user.avatar_url;
+
+        try {
+          // Если есть новое фото -> сохраняем
+          if (isNewImageSelected && canvas) {
+            const blob = await new Promise((resolve) =>
+              canvas.toBlob(resolve, "image/webp", 0.8),
+            );
+            const formData = new FormData();
+            formData.append("file", blob, "avatar.webp");
+
+            const upRes = await fetch("/api/upload", {
+              method: "POST",
+              body: formData,
+            });
+            const upData = await upRes.json();
+            if (upData.url) finalAvatarUrl = upData.url;
+          }
+
+          // Обновляем профиль
+          const updateRes = await fetch("/api/user/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: user.id,
+              avatar_url: finalAvatarUrl,
+              car_model: document.getElementById("profile-car").value,
+              bio: document.getElementById("profile-bio").value,
+            }),
+          });
+
+          const updateData = await updateRes.json();
+          if (updateData.success) {
+            localStorage.setItem("user_data", JSON.stringify(updateData.user));
+            alert("Saved!");
+            location.reload();
+          } else {
+            alert("Error: " + updateData.error);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Error saving profile");
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      });
+    }
   } catch (error) {
     console.warn("Init error", error);
+    // Даже при ошибке загрузки JSON запускаем основные функции
     setupEventListeners();
     updateLanguage();
   }
@@ -870,6 +1093,10 @@ function renderResults(codes) {
 // ==========================================
 
 function init3DBackground() {
+  if (typeof THREE === "undefined") {
+    console.warn("THREE.js not loaded yet");
+    return;
+  }
   const container = document.getElementById("webgl-container");
   if (!container) return;
   container.innerHTML = "";
@@ -934,4 +1161,80 @@ function init3DBackground() {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
+}
+
+// === В КОНЕЦ ФАЙЛА script.js ===
+
+// Глобальная функция открытия/закрытия профиля
+window.toggleProfileModal = async function () {
+  const modal = document.getElementById("profile-modal");
+  if (!modal) return;
+
+  modal.classList.toggle("active");
+
+  if (modal.classList.contains("active")) {
+    // СНАЧАЛА подтягиваем свежие данные из базы
+    await refreshUserData();
+
+    // ПОТОМ читаем уже обновлённые данные
+    const user = JSON.parse(localStorage.getItem("user_data"));
+
+    if (user) {
+      // Заполняем поля
+      const carInput = document.getElementById("profile-car");
+      const bioInput = document.getElementById("profile-bio");
+      if (carInput) carInput.value = user.car_model || "";
+      if (bioInput) bioInput.value = user.bio || "";
+
+      // Сбрасываем редактор фото в начальное состояние
+      const previewContainer = document.getElementById("current-avatar-view");
+      const canvasContainer = document.getElementById("canvas-container");
+      const previewImg = document.getElementById("profile-preview-img");
+
+      // Сброс глобальных переменных редактора
+      isNewImageSelected = false;
+
+      if (previewContainer) previewContainer.style.display = "block";
+      if (canvasContainer) canvasContainer.style.display = "none";
+
+      // Показываем текущую аватарку
+      if (previewImg) {
+        if (user.avatar_url) {
+          previewImg.src = user.avatar_url;
+        } else {
+          // Генерация буквы, если нет фото
+          previewImg.src = `https://ui-avatars.com/api/?name=${user.username}&background=random&color=fff`;
+        }
+      }
+    }
+  }
+};
+
+// Функция синхронизации данных профиля
+// === В КОНЕЦ ФАЙЛА script.js ===
+
+async function refreshUserData() {
+  const user = JSON.parse(localStorage.getItem("user_data"));
+  if (!user) return; // Если не залогинен - выходим
+
+  try {
+    // Запрашиваем свежие данные из базы
+    const res = await fetch(`/api/user/get?id=${user.id}`);
+    if (res.ok) {
+      const freshUser = await res.json();
+
+      // Сравниваем данные. Если что-то изменилось - обновляем LocalStorage
+      if (JSON.stringify(freshUser) !== JSON.stringify(user)) {
+        console.log("Updating user profile cache...");
+        localStorage.setItem("user_data", JSON.stringify(freshUser));
+
+        // Обновляем шапку сайта сразу же
+        checkAuthStatus();
+        // Если мы на странице форума - обновляем сайдбар
+        if (typeof updateSidebarUser === "function") updateSidebarUser();
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to refresh user data", e);
+  }
 }

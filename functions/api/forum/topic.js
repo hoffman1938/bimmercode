@@ -14,10 +14,19 @@ export async function onRequest(context) {
       });
 
     try {
+      // ИЗМЕНЕННЫЙ ЗАПРОС (ДОБАВЛЯЕМ JOIN С ТАБЛИЦЕЙ ЮЗЕРОВ)
       const topic = await db
-        .prepare("SELECT * FROM topics WHERE id = ?")
+        .prepare(
+          `
+          SELECT t.*, u.avatar_url as author_avatar 
+          FROM topics t
+          LEFT JOIN users u ON t.user_id = u.id
+          WHERE t.id = ?
+        `,
+        )
         .bind(topicId)
         .first();
+
       if (!topic)
         return new Response(JSON.stringify({ error: "Not found" }), {
           status: 404,
@@ -27,14 +36,16 @@ export async function onRequest(context) {
       // Мы используем LEFT JOIN или подзапрос, чтобы узнать is_liked для конкретного юзера
       // И считаем общее количество лайков
       let postsQuery = `
-        SELECT 
-          p.*,
-          (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
-          EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) as is_liked
-        FROM posts p 
-        WHERE p.topic_id = ? 
-        ORDER BY p.created_at ASC
-      `;
+  SELECT 
+    p.*,
+    u.avatar_url as author_avatar,  -- Достаем аватарку автора
+    (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
+    EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) as is_liked
+  FROM posts p 
+  LEFT JOIN users u ON p.user_id = u.id -- Присоединяем таблицу юзеров
+  WHERE p.topic_id = ? 
+  ORDER BY p.created_at ASC
+`;
 
       // Если юзер не залогинен, передаем null в user_id, чтобы is_liked был 0
       const safeUserId = currentUserId || "guest";

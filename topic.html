@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/responsive.css" />
     <link rel="stylesheet" href="./css/forum.css" />
+    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -43,14 +44,6 @@
           <i class="fas fa-bell"></i>
           <span id="notif-badge" class="notif-badge">0</span>
         </div>
-
-        <a
-          href="forum.html"
-          class="btn"
-          style="background: transparent; border: none"
-        >
-          <i class="fas fa-arrow-left"></i> Back
-        </a>
 
         <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
           <i class="fas fa-user"></i> <span id="btn-login-text">Login</span>
@@ -278,7 +271,53 @@
       <span class="close-lightbox" onclick="closeLightbox(event)">&times;</span>
       <img class="lightbox-content" id="lightbox-img">
     </div>
+<div id="profile-modal" class="auth-modal">
+  <div class="auth-content" style="max-width: 400px;">
+    <button class="close-auth" onclick="toggleProfileModal()"><i class="fas fa-times"></i></button>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2 style="color:white; margin:0;">Edit Profile</h2>
+        <button onclick="logout()" style="background:rgba(231,76,60,0.2); color:#e74c3c; border:1px solid #e74c3c; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px;">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </button>
+    </div>
+    
+    <div class="avatar-editor-container">
+        <div id="current-avatar-view" style="width:120px; height:120px; border-radius:50%; overflow:hidden; margin:0 auto; border:3px solid var(--bmw-blue); background:#222;">
+            <img id="profile-preview-img" src="" style="width:100%; height:100%; object-fit:cover;">
+        </div>
 
+        <div id="canvas-container" style="display:none; text-align:center;">
+            <canvas id="avatar-canvas" width="250" height="250" style="border-radius:50%; border:3px solid var(--bmw-sky); cursor:grab;"></canvas>
+            
+            <div style="margin-top:10px; display:flex; align-items:center; justify-content:center; gap:10px;">
+                <i class="fas fa-search-minus" style="font-size:12px; color:#aaa;"></i>
+                <input type="range" id="zoom-slider" min="1" max="3" step="0.1" value="1" style="width:150px;">
+                <i class="fas fa-search-plus" style="font-size:12px; color:#aaa;"></i>
+            </div>
+            <p style="font-size:11px; color:#aaa; margin-top:5px;">Drag to move • Scale to zoom</p>
+        </div>
+
+        <div style="text-align:center; margin-top:15px;">
+            <button class="btn" onclick="document.getElementById('avatar-upload').click()" style="font-size:12px; padding:8px 15px; border:1px solid #444; background:#333;">
+                <i class="fas fa-camera"></i> Change Photo
+            </button>
+            <input type="file" id="avatar-upload" hidden accept="image/*">
+        </div>
+    </div>
+
+    <form id="profile-form" class="auth-form active" style="margin-top:20px;">
+      <div class="input-group">
+        <i class="fas fa-car"></i>
+        <input type="text" id="profile-car" placeholder="Your Car (e.g. BMW E60 530i)">
+      </div>
+      <div class="input-group">
+        <textarea id="profile-bio" rows="3" placeholder="Bio..." style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:10px; padding:10px; resize:none; font-family:inherit;"></textarea>
+      </div>
+      <button type="submit" class="submit-btn" id="save-profile-btn">Save Changes</button>
+    </form>
+  </div>
+</div>
     <script src="./js/script.js"></script>
     <script src="./js/live.js"></script>
     <script src="./js/topic.js"></script>

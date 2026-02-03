@@ -104,6 +104,21 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(checkNotifications, 15000);
 });
 
+// === НОВАЯ ФУНКЦИЯ: ОПРЕДЕЛЕНИЕ ЯЗЫКА ТЕКСТА ===
+function detectContentLanguage(text) {
+  if (!text) return "en";
+
+  // Проверка на грузинские символы (Unicode range)
+  const kaRegex = /[\u10A0-\u10FF]/;
+  // Проверка на кириллицу (Русский)
+  const ruRegex = /[\u0400-\u04FF]/;
+
+  if (kaRegex.test(text)) return "ka";
+  if (ruRegex.test(text)) return "ru";
+
+  return "en"; // По умолчанию
+}
+
 // === БЕСПЛАТНЫЙ ПЕРЕВОД ===
 async function translateText(text, targetLang) {
   if (!text || text.trim().length < 2) return text;
@@ -228,23 +243,17 @@ function updateForumLanguage() {
 async function fetchTopics(category = "all", search = "") {
   const container = document.getElementById("topics-list-container");
   const t = forumTranslations[currentForumLang];
-
   container.innerHTML = `<div style="padding:40px; text-align:center;"><i class="fas fa-circle-notch fa-spin"></i> ${t.loading}</div>`;
-
   try {
     let url = `/api/forum/topics?category=${category}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
-
     const res = await fetch(url);
     if (!res.ok) throw new Error("API Error");
-
     const topics = await res.json();
-
     if (topics.length === 0) {
       container.innerHTML = `<div style="padding:40px; text-align:center; color:#666;">${t.noTopics}</div>`;
       return;
     }
-
     originalTopicsData = topics;
     await renderTopicsWithTranslation(topics);
   } catch (err) {
@@ -256,10 +265,8 @@ async function fetchTopics(category = "all", search = "") {
 async function renderTopicsWithTranslation(topics) {
   const container = document.getElementById("topics-list-container");
   const t = forumTranslations[currentForumLang];
-
   container.innerHTML = `<div style="padding:40px; text-align:center;"><i class="fas fa-language fa-spin"></i> ${t.translating}</div>`;
 
-  // Переводим все заголовки параллельно
   const translatedTopics = await Promise.all(
     topics.map(async (topic) => ({
       ...topic,
@@ -275,7 +282,12 @@ async function renderTopicsWithTranslation(topics) {
           <i class="fas ${topic.is_solved ? "fa-check-circle" : "fa-comment-alt"}"></i>
         </div>
         <div class="topic-main-content">
-          <h3>${escapeHtml(topic.translatedTitle || topic.title)}</h3>
+          <h3>
+            ${escapeHtml(topic.translatedTitle || topic.title)}
+            <span class="lang-badge" title="Original language: ${topic.lang || "en"}">
+                <i class="fas fa-globe"></i> ${topic.lang ? topic.lang.toUpperCase() : "EN"}
+            </span>
+          </h3>
           <div class="topic-meta-line">
             ${topic.is_solved ? `<span class="topic-badge" style="color:#2ecc71; border-color:#2ecc71;">${t.solved}</span>` : ""}
             ${topic.related_code ? `<span class="topic-badge topic-code-badge">${topic.related_code}</span>` : ""}
@@ -369,6 +381,13 @@ document
     btn.textContent = "Publishing...";
     btn.disabled = true;
 
+    // Берем данные
+    const title = document.getElementById("topic-title").value;
+    const content = document.getElementById("topic-content").value;
+
+    // ОПРЕДЕЛЯЕМ ЯЗЫК НА ОСНОВЕ ТОГО, ЧТО НАПИСАЛ ЮЗЕР
+    const detectedLang = detectContentLanguage(title + " " + content);
+
     try {
       const res = await fetch("/api/forum/topics", {
         method: "POST",
@@ -377,10 +396,10 @@ document
           user_id: user.id,
           username: user.username,
           category: document.getElementById("topic-category").value,
-          title: document.getElementById("topic-title").value,
-          content: document.getElementById("topic-content").value,
+          title: title,
+          content: content,
           related_code: document.getElementById("topic-code").value,
-          lang: currentForumLang,
+          lang: detectedLang, // Используем определенный язык!
         }),
       });
 
@@ -413,15 +432,25 @@ function filterTopics(cat) {
   fetchTopics(cat, currentSearchTerm);
 }
 
+// Внутри js/forum.js
+
 function updateSidebarUser() {
   const user = JSON.parse(localStorage.getItem("user_data"));
   const container = document.getElementById("user-sidebar-info");
   const t = forumTranslations[currentForumLang];
 
   if (user && container) {
+    // Проверяем, есть ли ссылка на фото
+    let avatarHTML;
+    if (user.avatar_url) {
+      avatarHTML = `<img src="${user.avatar_url}" class="user-avatar-large" style="object-fit:cover;">`;
+    } else {
+      avatarHTML = `<div class="user-avatar-large">${user.username[0].toUpperCase()}</div>`;
+    }
+
     container.innerHTML = `
       <div class="user-mini-profile">
-        <div class="user-avatar-large">${user.username[0].toUpperCase()}</div>
+        ${avatarHTML}
         <h3 style="color:white; margin-bottom:5px;">${user.username}</h3>
         <p style="color:#aaa; font-size:12px;">${t.member}</p>
       </div>
@@ -430,19 +459,13 @@ function updateSidebarUser() {
 }
 
 function timeAgo(dateString) {
-  // Добавляем Z, если его нет, чтобы браузер понял, что это UTC
   const cleanDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
   const date = new Date(cleanDate);
   const now = new Date();
-
   const seconds = Math.floor((now - date) / 1000);
-
-  // Переводы (можно расширить объект forumTranslations)
   let unit = "sec";
   let value = seconds;
-
   if (seconds < 60) return "Just now";
-
   const intervals = {
     year: 31536000,
     month: 2592000,
@@ -450,7 +473,6 @@ function timeAgo(dateString) {
     hour: 3600,
     minute: 60,
   };
-
   if (seconds >= intervals.year) {
     value = Math.floor(seconds / intervals.year);
     unit = "y";
@@ -467,7 +489,6 @@ function timeAgo(dateString) {
     value = Math.floor(seconds / intervals.minute);
     unit = "m";
   }
-
   return `${value}${unit} ago`;
 }
 

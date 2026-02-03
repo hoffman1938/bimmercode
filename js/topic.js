@@ -16,6 +16,7 @@ const topicTranslations = {
     loginToReply: "Please login to reply.",
     login: "login",
     member: "Member",
+    op: "Author",
     confirmSolution: "Mark this post as the solution?",
     errorLoading: "Error loading topic",
     errorSending: "Error sending reply",
@@ -37,6 +38,7 @@ const topicTranslations = {
     loginToReply: "Войдите, чтобы ответить.",
     login: "войти",
     member: "Участник",
+    op: "Автор",
     confirmSolution: "Отметить этот пост как решение?",
     errorLoading: "Ошибка загрузки темы",
     errorSending: "Ошибка отправки ответа",
@@ -58,6 +60,7 @@ const topicTranslations = {
     loginToReply: "შედით პასუხის დასაწერად.",
     login: "შესვლა",
     member: "მონაწილე",
+    op: "ავტორი",
     confirmSolution: "მონიშნოთ ეს პოსტი როგორც გადაწყვეტა?",
     errorLoading: "თემის ჩატვირთვის შეცდომა",
     errorSending: "პასუხის გაგზავნის შეცდომა",
@@ -75,7 +78,7 @@ let currentTopicLang = localStorage.getItem("forumLanguage") || "en";
 let translationCache = JSON.parse(
   localStorage.getItem("translationCache") || "{}",
 );
-let originalTopicData = null; // Храним данные для переключения языка без перезагрузки
+let originalTopicData = null;
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener("DOMContentLoaded", () => {
@@ -88,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupReplyForm();
   updateTopicPageLanguage();
 
-  // Запускаем живое обновление темы каждые 15 сек
+  // Живое обновление темы (новые ответы)
   setInterval(checkLiveTopicUpdates, 15000);
 
   // Управление видимостью формы ответа
@@ -105,7 +108,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// === ОСНОВНАЯ ЛОГИКА ЗАГРУЗКИ ===
+// === ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ЯЗЫКА ТЕКСТА ===
+function detectContentLanguage(text) {
+  if (!text) return "en";
+  const kaRegex = /[\u10A0-\u10FF]/;
+  const ruRegex = /[\u0400-\u04FF]/;
+  if (kaRegex.test(text)) return "ka";
+  if (ruRegex.test(text)) return "ru";
+  return "en";
+}
+
+// === ЗАГРУЗКА ДАННЫХ ===
 async function loadTopicData() {
   const t = topicTranslations[currentTopicLang];
 
@@ -131,18 +144,16 @@ async function renderTopicWithTranslation(data) {
   const topic = data.topic;
 
   const container = document.getElementById("posts-container");
-  // Если контейнер пуст, показываем лоадер, иначе просто обновляем (чтобы не моргало при live update)
   if (!container.hasChildNodes()) {
     container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;"><i class="fas fa-language fa-spin"></i> ${t.translating}</div>`;
   }
 
-  // Переводим заголовок и контент темы
+  // Перевод
   const [translatedTitle, translatedContent] = await Promise.all([
     translateText(topic.title, currentTopicLang),
     translateText(topic.content, currentTopicLang),
   ]);
 
-  // Переводим посты параллельно
   const translatedPosts = await Promise.all(
     data.posts.map(async (post) => ({
       ...post,
@@ -152,7 +163,7 @@ async function renderTopicWithTranslation(data) {
 
   document.title = `${translatedTitle} | BimmerCodes`;
 
-  // Рендер Шапки Темы
+  // Хедер темы
   const headerContainer = document.getElementById("topic-header-container");
   if (headerContainer) {
     headerContainer.innerHTML = `
@@ -165,7 +176,7 @@ async function renderTopicWithTranslation(data) {
       `;
   }
 
-  // Рендер Сайдбара
+  // Сайдбар
   const sidebarCard = document.querySelector(".sidebar-card");
   if (sidebarCard) {
     sidebarCard.innerHTML = `
@@ -180,21 +191,26 @@ async function renderTopicWithTranslation(data) {
     `;
   }
 
-  // Рендер Списка Постов
+  // Рендер Главного поста
+  // Рендер Главного поста
   let html = renderPostHTML(
     {
-      id: "topic-main",
+      id: topic.id, // <-- ВАЖНО: Передаем реальный ID темы, а не "topic-main"
+      user_id: topic.user_id,
       username: topic.username,
       content: translatedContent,
       created_at: topic.created_at,
       is_solution: false,
       likes_count: 0,
       is_liked: false,
+      lang: topic.lang,
+      author_avatar: topic.author_avatar,
     },
-    true,
+    true, // isMain = true
     topic.user_id,
   );
 
+  // Рендер Ответов
   html += translatedPosts
     .map((post) =>
       renderPostHTML(
@@ -208,23 +224,52 @@ async function renderTopicWithTranslation(data) {
   container.innerHTML = html;
 }
 
-// Генерация HTML одного поста
+// === ГЕНЕРАЦИЯ HTML ПОСТА (ИСПРАВЛЕННАЯ) ===
 function renderPostHTML(post, isMain, topicAuthorId) {
   const t = topicTranslations[currentTopicLang];
   const isTopicOwner = user && String(topicAuthorId) === String(user.id);
 
+  // Проверка: автор ли это?
+  const isMyPost = user && String(post.user_id) === String(user.id);
+
+  // Язык
+  const originLang = post.lang ? post.lang.toUpperCase() : "EN";
+
+  // === АВАТАРКА ===
+  let avatarHTML;
+  // Берем author_avatar с сервера, либо user.avatar_url если это текущий пользователь
+  const currentUser = JSON.parse(localStorage.getItem("user_data"));
+  const avatarUrl =
+    post.author_avatar ||
+    (isMyPost && currentUser ? currentUser.avatar_url : null);
+
+  if (avatarUrl) {
+    avatarHTML = `<img src="${avatarUrl}" class="post-user-avatar" style="object-fit:cover;">`;
+  } else {
+    avatarHTML = `<div class="post-user-avatar">${post.username ? post.username[0].toUpperCase() : "?"}</div>`;
+  }
+
   return `
     <div class="post-card ${post.is_solution ? "solution" : ""}" id="post-${post.id}">
       <div class="post-user-panel">
-        <div class="post-user-avatar">${post.username ? post.username[0].toUpperCase() : "?"}</div>
+        ${avatarHTML}
         <div class="post-username">${escapeHtml(post.username || "User")}</div>
         <div class="user-role-badge">${t.member}</div>
       </div>
       
       <div class="post-content-panel">
         <div class="post-header-meta">
-          <span><i class="far fa-clock"></i> ${formatDate(post.created_at)}</span>
-          ${post.is_solution ? `<span style="color:#2ecc71; font-weight:bold;"><i class="fas fa-check"></i> ${t.solution}</span>` : isMain ? '<span style="opacity:0.5">OP</span>' : `<span style="opacity:0.5">#${post.id.slice(0, 4)}</span>`}
+          <div style="display:flex; align-items:center; gap:10px;">
+              <span><i class="far fa-clock"></i> ${formatDate(post.created_at)}</span>
+              <span class="lang-badge" title="Original language"><i class="fas fa-language"></i> ${originLang}</span>
+          </div>
+          ${
+            post.is_solution
+              ? `<span style="color:#2ecc71; font-weight:bold;"><i class="fas fa-check"></i> ${t.solution}</span>`
+              : isMain
+                ? `<span style="opacity:0.5; border:1px solid #555; padding:1px 5px; border-radius:4px; font-size:10px;">${t.op}</span>`
+                : `<span style="opacity:0.5">#${post.id.slice(0, 4)}</span>`
+          }
         </div>
         
         <div class="post-text-body">
@@ -232,6 +277,20 @@ function renderPostHTML(post, isMain, topicAuthorId) {
         </div>
 
         <div class="post-footer-actions">
+          ${
+            isMyPost
+              ? `
+            <button class="btn-action btn-edit" onclick="editItem('${isMain ? "topic" : "post"}', '${post.id}')" title="Edit">
+                <i class="fas fa-pen"></i>
+            </button>
+
+            <button class="btn-action btn-delete" onclick="deleteItem('${isMain ? "topic" : "post"}', '${post.id}')" title="Delete">
+                <i class="fas fa-trash"></i>
+            </button>
+          `
+              : '<div style="margin-right:auto;"></div>'
+          }
+
           ${
             !isMain
               ? `
@@ -261,27 +320,20 @@ function renderPostHTML(post, isMain, topicAuthorId) {
 function setupReplyForm() {
   const form = document.getElementById("reply-form");
   const textarea = document.getElementById("reply-content");
-  const attachBtn = document.getElementById("attach-btn"); // Убедитесь, что добавили кнопку в HTML
-  const fileInput = document.getElementById("file-input"); // И скрытый инпут
+  const attachBtn = document.getElementById("attach-btn");
+  const fileInput = document.getElementById("file-input");
 
   if (!form || !textarea) return;
 
-  // 1. Клик по скрепке открывает выбор файла
   if (attachBtn && fileInput) {
     attachBtn.addEventListener("click", () => fileInput.click());
-
-    // 2. Обработка выбора файла
     fileInput.addEventListener("change", (e) => {
-      if (e.target.files.length > 0) {
-        processAndUpload(e.target.files[0]);
-      }
+      if (e.target.files.length > 0) processAndUpload(e.target.files[0]);
     });
   }
 
-  // 3. Drag & Drop и Paste
   textarea.addEventListener("paste", handlePasteImage);
 
-  // 4. Отправка формы
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const content = textarea.value;
@@ -289,6 +341,9 @@ function setupReplyForm() {
 
     const btn = form.querySelector("button[type='submit']");
     btn.disabled = true;
+
+    // Авто-определение языка
+    const detectedLang = detectContentLanguage(content);
 
     try {
       const res = await fetch("/api/forum/topic", {
@@ -299,7 +354,7 @@ function setupReplyForm() {
           user_id: user.id,
           username: user.username,
           content: content,
-          lang: currentTopicLang,
+          lang: detectedLang,
         }),
       });
 
@@ -316,7 +371,6 @@ function setupReplyForm() {
   });
 }
 
-// Обработка вставки из буфера обмена
 async function handlePasteImage(e) {
   const items = (e.clipboardData || e.originalEvent.clipboardData).items;
   for (let index in items) {
@@ -327,38 +381,21 @@ async function handlePasteImage(e) {
   }
 }
 
-// Главная функция: Конвертация + Загрузка
-// Внутри js/topic.js
-
-// Функция отправки (с конвертацией)
 async function processAndUpload(file) {
   const textarea = document.getElementById("reply-content");
-  const loadingTag = `\n![Uploading...]`;
+  const t = topicTranslations[currentTopicLang];
 
-  // Вставляем текст загрузки
   const cursor = textarea.selectionStart;
+  const loadingTag = `\n![${t.uploading}...]`;
   textarea.value =
     textarea.value.slice(0, cursor) + loadingTag + textarea.value.slice(cursor);
 
   try {
-    console.log("Original file:", file.name, file.type, file.size);
-
-    // 1. КОНВЕРТАЦИЯ (Client-side)
-    // Если это уже webp, можно не конвертировать, но для сжатия лучше прогнать
     const webpFile = await convertToWebP(file);
-
-    console.log("Converted file:", webpFile.name, webpFile.type, webpFile.size);
-
-    // 2. ЗАГРУЗКА
     const formData = new FormData();
-    formData.append("file", webpFile); // Отправляем уже WebP!
+    formData.append("file", webpFile);
 
     const res = await fetch("/api/upload", { method: "POST", body: formData });
-
-    if (!res.ok) {
-      throw new Error(`Upload failed: ${res.statusText}`);
-    }
-
     const data = await res.json();
 
     if (data.url) {
@@ -367,7 +404,10 @@ async function processAndUpload(file) {
         `\n![image](${data.url})`,
       );
     } else {
-      throw new Error("No URL returned");
+      textarea.value = textarea.value.replace(
+        loadingTag,
+        `\n[${t.uploadError}]`,
+      );
     }
   } catch (err) {
     console.error(err);
@@ -375,23 +415,18 @@ async function processAndUpload(file) {
       loadingTag,
       `\n[Error: ${err.message}]`,
     );
-    alert("Upload error: " + err.message);
   }
 }
 
-// Утилита конвертации
 function convertToWebP(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-
     reader.onload = (event) => {
       const img = new Image();
       img.src = event.target.result;
-
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        // Ограничение размера (Full HD)
         const MAX_WIDTH = 1920;
         const scale = Math.min(1, MAX_WIDTH / img.width);
 
@@ -401,15 +436,11 @@ function convertToWebP(file) {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Конвертация в blob image/webp с качеством 0.8
         canvas.toBlob(
           (blob) => {
             if (!blob) return reject(new Error("Canvas conversion failed"));
-
-            // Меняем имя файла на .webp
-            const fileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+            const fileName = file.name.split(".")[0] + ".webp";
             const newFile = new File([blob], fileName, { type: "image/webp" });
-
             resolve(newFile);
           },
           "image/webp",
@@ -422,11 +453,10 @@ function convertToWebP(file) {
   });
 }
 
-// === ВЗАИМОДЕЙСТВИЯ ===
+// === ЛАЙКИ, РЕШЕНИЯ, УДАЛЕНИЕ ===
 async function likePost(postId) {
   if (!user) return toggleAuthModal();
 
-  // Оптимистичное обновление UI
   const countSpan = document.getElementById(`likes-${postId}`);
   const btn = countSpan.parentElement;
   const icon = btn.querySelector("i");
@@ -446,21 +476,17 @@ async function likePost(postId) {
   }
   countSpan.textContent = count;
 
-  // Отправка на сервер
   try {
     await fetch("/api/forum/like", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: postId, user_id: user.id }),
     });
-  } catch (e) {
-    console.error("Like failed", e);
-  }
+  } catch (e) {}
 }
 
 async function markSolution(postId) {
   if (!confirm(topicTranslations[currentTopicLang].confirmSolution)) return;
-
   await fetch("/api/forum/solve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -473,37 +499,44 @@ async function markSolution(postId) {
   loadTopicData();
 }
 
-// === ЖИВОЕ ОБНОВЛЕНИЕ ТЕМЫ ===
-async function checkLiveTopicUpdates() {
-  if (!originalTopicData) return;
-
-  // Считаем сколько сейчас постов
-  const currentPostCount = document.querySelectorAll(".post-card").length;
-  // -1 потому что первый элемент это сама тема (main post)
-  const currentReplyCount = currentPostCount > 0 ? currentPostCount - 1 : 0;
-
+async function deleteItem(type, id) {
+  if (!confirm("Are you sure you want to delete this?")) return;
   try {
-    const userIdParam = user ? `&user_id=${user.id}` : "";
-    const res = await fetch(`/api/forum/topic?id=${topicId}${userIdParam}`);
-    if (!res.ok) return;
-
-    const data = await res.json();
-
-    // Если на сервере больше постов, перезагружаем данные
-    if (data.posts.length > currentReplyCount) {
-      console.log("New posts detected, refreshing...");
-      originalTopicData = data;
-      renderTopicWithTranslation(data);
+    const res = await fetch("/api/forum/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, id, user_id: user.id }),
+    });
+    if (res.ok) {
+      if (type === "topic") window.location.href = "forum.html";
+      else loadTopicData();
+    } else {
+      alert("Error deleting item");
     }
   } catch (e) {
     console.error(e);
   }
 }
 
-// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+async function checkLiveTopicUpdates() {
+  if (!originalTopicData) return;
+  const currentPostCount = document.querySelectorAll(".post-card").length;
+  const currentReplyCount = currentPostCount > 0 ? currentPostCount - 1 : 0;
+  try {
+    const userIdParam = user ? `&user_id=${user.id}` : "";
+    const res = await fetch(`/api/forum/topic?id=${topicId}${userIdParam}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.posts.length > currentReplyCount) {
+      originalTopicData = data;
+      renderTopicWithTranslation(data);
+    }
+  } catch (e) {}
+}
+
+// === УТИЛИТЫ ===
 function formatDate(dateString) {
   if (!dateString) return "";
-  // Добавляем Z, если дата без таймзоны (для D1), чтобы браузер понял что это UTC
   const safeDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
   return new Date(safeDate).toLocaleString();
 }
@@ -534,12 +567,10 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
-// === GOOGLE TRANSLATE API ===
 async function translateText(text, targetLang) {
   if (!text || text.trim().length < 2) return text;
   const cacheKey = `${text.substring(0, 100)}_${targetLang}`;
   if (translationCache[cacheKey]) return translationCache[cacheKey];
-
   try {
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
     const response = await fetch(url);
@@ -564,7 +595,6 @@ async function translateText(text, targetLang) {
   }
 }
 
-// Обновление языка темы
 async function switchTopicLanguage() {
   const langs = ["en", "ru", "ka"];
   let idx = langs.indexOf(currentTopicLang);
@@ -588,54 +618,136 @@ function updateTopicPageLanguage() {
   if (replyContent) replyContent.placeholder = t.writeReply;
 }
 
-// ... (Конец файла topic.js)
+// === LIGHTBOX LOGIC (ОТКРЫТИЕ ФОТО) ===
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("lightbox-modal");
+  const modalImg = document.getElementById("lightbox-img");
+  const closeBtn = document.querySelector(".close-lightbox");
 
-// === LIGHTBOX LOGIC ===
+  if (!modal || !modalImg) return;
 
-// 1. Делегирование событий: ловим клик по картинке внутри постов
-document.addEventListener("click", function (e) {
-  // Если кликнули по IMG внутри контейнера поста
-  if (e.target.tagName === "IMG" && e.target.closest(".post-text-body")) {
-    openLightbox(e.target.src);
-  }
+  document.addEventListener("click", (e) => {
+    if (e.target.tagName === "IMG" && e.target.closest(".post-text-body")) {
+      modalImg.src = e.target.src;
+      modal.classList.add("active");
+      document.body.style.overflow = "hidden";
+    }
+  });
+
+  window.closeLightbox = function (e) {
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+    setTimeout(() => {
+      modalImg.src = "";
+    }, 300);
+  };
+
+  if (closeBtn) closeBtn.addEventListener("click", window.closeLightbox);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) window.closeLightbox();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      window.closeLightbox();
+    }
+  });
 });
 
-function openLightbox(src) {
-  const modal = document.getElementById("lightbox-modal");
-  const img = document.getElementById("lightbox-img");
+let originalContentCache = {};
 
-  if (modal && img) {
-    img.src = src;
-    modal.classList.add("active"); // Показываем модалку
-    document.body.style.overflow = "hidden"; // Блокируем скролл страницы
+function editItem(type, id) {
+  // Находим карточку поста
+  const postCard = document.getElementById(
+    type === "topic" ? "post-" + id : "post-" + id,
+  );
+  // Если id главной темы совпадает с id топика, ищем по id.
+  // (В renderPostHTML мы передали реальный ID, так что id будет корректным)
+
+  // Но renderPostHTML ставит id="post-{id}".
+  const card = document.getElementById(`post-${id}`);
+  if (!card) return;
+
+  const textBody = card.querySelector(".post-text-body");
+
+  // Сохраняем текущий HTML (или лучше исходный текст, если бы он был доступен)
+  // Сейчас мы берем текст и пытаемся превратить <br> обратно в \n для удобства
+  const currentHTML = textBody.innerHTML;
+  originalContentCache[id] = currentHTML;
+
+  // Конвертируем HTML обратно в простой текст для редактора (очень упрощенно)
+  let textForEdit = currentHTML
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<b>(.*?)<\/b>/g, "**$1**")
+    .replace(/<img src="(.*?)" alt="(.*?)".*?>/g, "![$2]($1)")
+    .replace(/<code.*?>(.*?)<\/code>/g, "`$1`")
+    // Убираем HTML-экранирование для редактирования
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"');
+
+  // Очищаем лишние пробелы по краям
+  textForEdit = textForEdit.trim();
+
+  // Заменяем содержимое на форму
+  textBody.innerHTML = `
+        <div class="edit-mode-container">
+            <textarea id="edit-area-${id}" class="edit-textarea">${textForEdit}</textarea>
+            <div class="edit-actions">
+                <button class="btn-cancel-edit" onclick="cancelEdit('${id}')">Cancel</button>
+                <button class="btn-save-edit" onclick="saveEdit('${type}', '${id}')">Save Changes</button>
+            </div>
+        </div>
+    `;
+}
+
+function cancelEdit(id) {
+  const card = document.getElementById(`post-${id}`);
+  if (card && originalContentCache[id]) {
+    card.querySelector(".post-text-body").innerHTML = originalContentCache[id];
+    delete originalContentCache[id];
   }
 }
 
-// Эта функция должна быть глобальной (window), так как вызывается из onclick в HTML
-window.closeLightbox = function (e) {
-  // Закрываем, если кликнули по фону, по крестику или по самой картинке
-  if (
-    e.target.id === "lightbox-modal" ||
-    e.target.classList.contains("close-lightbox") ||
-    e.target.classList.contains("lightbox-content")
-  ) {
-    const modal = document.getElementById("lightbox-modal");
-    if (modal) {
-      modal.classList.remove("active");
-      document.body.style.overflow = ""; // Разблокируем скролл
-      setTimeout(() => {
-        document.getElementById("lightbox-img").src = "";
-      }, 300);
-    }
-  }
-};
+async function saveEdit(type, id) {
+  const textarea = document.getElementById(`edit-area-${id}`);
+  const newContent = textarea.value;
+  const user = JSON.parse(localStorage.getItem("user_data"));
 
-// Закрытие по клавише Esc
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    const modal = document.getElementById("lightbox-modal");
-    if (modal && modal.classList.contains("active")) {
-      window.closeLightbox({ target: modal });
-    }
+  if (!newContent.trim()) {
+    alert("Content cannot be empty");
+    return;
   }
-});
+
+  try {
+    const res = await fetch("/api/forum/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: type, // 'topic' или 'post'
+        id: id,
+        user_id: user.id,
+        content: newContent,
+      }),
+    });
+
+    if (res.ok) {
+      // Если успешно - обновляем UI
+      // Используем функцию parseMarkdown для красивого отображения
+      const card = document.getElementById(`post-${id}`);
+      card.querySelector(".post-text-body").innerHTML =
+        parseMarkdown(newContent);
+      delete originalContentCache[id];
+
+      // Если это был перевод - сбрасываем кэш, так как текст изменился
+      // (Это сложно сделать точечно, но пользователь увидит новый оригинальный текст)
+    } else {
+      alert("Error saving changes");
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Connection error");
+  }
+}
