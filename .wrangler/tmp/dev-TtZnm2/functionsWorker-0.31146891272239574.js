@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-hgdIPT/checked-fetch.js
+// .wrangler/tmp/bundle-P7986u/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -27,7 +27,7 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
   }
 });
 
-// .wrangler/tmp/pages-sX3hGV/functionsWorker-0.8599777079121933.mjs
+// .wrangler/tmp/pages-HBq0ZN/functionsWorker-0.31146891272239574.mjs
 var __defProp2 = Object.defineProperty;
 var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
 var urls2 = /* @__PURE__ */ new Set();
@@ -326,6 +326,33 @@ async function onRequestPost6(context) {
 }
 __name(onRequestPost6, "onRequestPost6");
 __name2(onRequestPost6, "onRequestPost");
+async function onRequestGet(context) {
+  const { request, env } = context;
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  if (!id) {
+    return new Response(JSON.stringify({ error: "ID required" }), {
+      status: 400
+    });
+  }
+  try {
+    const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 404
+      });
+    }
+    delete user.password_hash;
+    return new Response(JSON.stringify(user), {
+      headers: { "Content-Type": "application/json" },
+      status: 200
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+__name(onRequestGet, "onRequestGet");
+__name2(onRequestGet, "onRequestGet");
 async function onRequestPost7(context) {
   const { request, env } = context;
   try {
@@ -531,7 +558,7 @@ async function onRequest2(context) {
 }
 __name(onRequest2, "onRequest2");
 __name2(onRequest2, "onRequest");
-async function onRequestGet(context) {
+async function onRequestGet2(context) {
   const { request, env } = context;
   const db = env.DB;
   const url = new URL(request.url);
@@ -560,8 +587,8 @@ async function onRequestGet(context) {
     });
   }
 }
-__name(onRequestGet, "onRequestGet");
-__name2(onRequestGet, "onRequestGet");
+__name(onRequestGet2, "onRequestGet2");
+__name2(onRequestGet2, "onRequestGet");
 async function onRequestPost8(context) {
   const { request, env } = context;
   const db = env.DB;
@@ -635,7 +662,7 @@ async function onRequest3(context) {
 }
 __name(onRequest3, "onRequest3");
 __name2(onRequest3, "onRequest");
-async function onRequestGet2(context) {
+async function onRequestGet3(context) {
   const { env, params } = context;
   const filename = params.filename;
   if (!filename) {
@@ -657,8 +684,8 @@ async function onRequestGet2(context) {
     return new Response("Error fetching image: " + e.message, { status: 500 });
   }
 }
-__name(onRequestGet2, "onRequestGet2");
-__name2(onRequestGet2, "onRequestGet");
+__name(onRequestGet3, "onRequestGet3");
+__name2(onRequestGet3, "onRequestGet");
 var routes = [
   {
     routePath: "/api/auth/login",
@@ -703,6 +730,13 @@ var routes = [
     modules: [onRequestPost6]
   },
   {
+    routePath: "/api/user/get",
+    mountPath: "/api/user",
+    method: "GET",
+    middlewares: [],
+    modules: [onRequestGet]
+  },
+  {
     routePath: "/api/user/update",
     mountPath: "/api/user",
     method: "POST",
@@ -728,7 +762,7 @@ var routes = [
     mountPath: "/api",
     method: "GET",
     middlewares: [],
-    modules: [onRequestGet]
+    modules: [onRequestGet2]
   },
   {
     routePath: "/api/notifications",
@@ -749,7 +783,7 @@ var routes = [
     mountPath: "/images",
     method: "GET",
     middlewares: [],
-    modules: [onRequestGet2]
+    modules: [onRequestGet3]
   }
 ];
 function lexer(str) {
@@ -1417,7 +1451,7 @@ var jsonError2 = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx
 }, "jsonError");
 var middleware_miniflare3_json_error_default2 = jsonError2;
 
-// .wrangler/tmp/bundle-hgdIPT/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-P7986u/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__2 = [
   middleware_ensure_req_body_drained_default2,
   middleware_miniflare3_json_error_default2
@@ -1449,7 +1483,7 @@ function __facade_invoke__2(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__2, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-hgdIPT/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-P7986u/middleware-loader.entry.ts
 var __Facade_ScheduledController__2 = class ___Facade_ScheduledController__2 {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -1549,4 +1583,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__2 as __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default2 as default
 };
-//# sourceMappingURL=functionsWorker-0.8599777079121933.js.map
+//# sourceMappingURL=functionsWorker-0.31146891272239574.js.map

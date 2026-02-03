@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-031vVN/checked-fetch.js
+// ../.wrangler/tmp/bundle-Jiinlo/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -305,6 +305,34 @@ async function onRequestPost6(context) {
 }
 __name(onRequestPost6, "onRequestPost");
 
+// api/user/get.js
+async function onRequestGet(context) {
+  const { request, env } = context;
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  if (!id) {
+    return new Response(JSON.stringify({ error: "ID required" }), {
+      status: 400
+    });
+  }
+  try {
+    const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 404
+      });
+    }
+    delete user.password_hash;
+    return new Response(JSON.stringify(user), {
+      headers: { "Content-Type": "application/json" },
+      status: 200
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+__name(onRequestGet, "onRequestGet");
+
 // api/user/update.js
 async function onRequestPost7(context) {
   const { request, env } = context;
@@ -514,7 +542,7 @@ async function onRequest2(context) {
 __name(onRequest2, "onRequest");
 
 // api/notifications.js
-async function onRequestGet(context) {
+async function onRequestGet2(context) {
   const { request, env } = context;
   const db = env.DB;
   const url = new URL(request.url);
@@ -543,7 +571,7 @@ async function onRequestGet(context) {
     });
   }
 }
-__name(onRequestGet, "onRequestGet");
+__name(onRequestGet2, "onRequestGet");
 async function onRequestPost8(context) {
   const { request, env } = context;
   const db = env.DB;
@@ -619,7 +647,7 @@ async function onRequest3(context) {
 __name(onRequest3, "onRequest");
 
 // images/[filename].js
-async function onRequestGet2(context) {
+async function onRequestGet3(context) {
   const { env, params } = context;
   const filename = params.filename;
   if (!filename) {
@@ -641,9 +669,9 @@ async function onRequestGet2(context) {
     return new Response("Error fetching image: " + e.message, { status: 500 });
   }
 }
-__name(onRequestGet2, "onRequestGet");
+__name(onRequestGet3, "onRequestGet");
 
-// ../.wrangler/tmp/pages-sX3hGV/functionsRoutes-0.2772090447102791.mjs
+// ../.wrangler/tmp/pages-HBq0ZN/functionsRoutes-0.48508299500322494.mjs
 var routes = [
   {
     routePath: "/api/auth/login",
@@ -688,6 +716,13 @@ var routes = [
     modules: [onRequestPost6]
   },
   {
+    routePath: "/api/user/get",
+    mountPath: "/api/user",
+    method: "GET",
+    middlewares: [],
+    modules: [onRequestGet]
+  },
+  {
     routePath: "/api/user/update",
     mountPath: "/api/user",
     method: "POST",
@@ -713,7 +748,7 @@ var routes = [
     mountPath: "/api",
     method: "GET",
     middlewares: [],
-    modules: [onRequestGet]
+    modules: [onRequestGet2]
   },
   {
     routePath: "/api/notifications",
@@ -734,7 +769,7 @@ var routes = [
     mountPath: "/images",
     method: "GET",
     middlewares: [],
-    modules: [onRequestGet2]
+    modules: [onRequestGet3]
   }
 ];
 
@@ -1225,7 +1260,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-031vVN/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-Jiinlo/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1257,7 +1292,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-031vVN/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-Jiinlo/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -1357,4 +1392,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default as default
 };
-//# sourceMappingURL=functionsWorker-0.8599777079121933.mjs.map
+//# sourceMappingURL=functionsWorker-0.31146891272239574.mjs.map

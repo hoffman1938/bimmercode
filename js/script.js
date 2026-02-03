@@ -613,6 +613,7 @@ function setupRegisterForm() {
 }
 
 // 3. Логика Входа
+// 3. Логика Входа (ИСПРАВЛЕННАЯ)
 function setupLoginForm() {
   const loginForm = document.getElementById("login-form");
   if (!loginForm) return;
@@ -624,6 +625,7 @@ function setupLoginForm() {
     const msg = document.getElementById("login-msg");
 
     msg.textContent = "Signing in...";
+    msg.style.color = "#aaa";
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -635,77 +637,79 @@ function setupLoginForm() {
       const data = await res.json();
 
       if (res.ok) {
-        // Сохраняем токен и данные
-        window.dispatchEvent(new Event("auth-success"));
-        window.addEventListener("auth-success", () => {
-          checkAuthStatus(); // Обновит шапку
-          const modal = document.getElementById("auth-modal");
-          if (modal) modal.classList.remove("active");
-
-          // Если мы на странице топика - показываем форму ответа
-          if (document.getElementById("reply-form")) {
-            document.getElementById("reply-form").style.display = "flex";
-            document.getElementById("login-to-reply").style.display = "none";
-          }
-
-          // Если мы на форуме - обновляем сайдбар
-          if (typeof updateSidebarUser === "function") updateSidebarUser();
-        });
+        // 1. Сохраняем данные
         localStorage.setItem("auth_token", data.token);
         localStorage.setItem("user_data", JSON.stringify(data.user));
 
+        // 2. ОБНОВЛЯЕМ ИНТЕРФЕЙС МГНОВЕННО
+        checkAuthStatus(); // Обновляет шапку (Имя и Аватар)
+
+        // Если мы на странице форума — обновляем сайдбар
+        if (typeof updateSidebarUser === "function") {
+          updateSidebarUser();
+        }
+
+        // Если мы внутри темы — показываем форму ответа
+        const replyForm = document.getElementById("reply-form");
+        const loginMsg = document.getElementById("login-to-reply");
+        if (replyForm) replyForm.style.display = "flex";
+        if (loginMsg) loginMsg.style.display = "none";
+
+        // 3. Показываем успех и закрываем окно
         msg.style.color = "#2ecc71";
         msg.textContent = "Welcome back!";
 
         setTimeout(() => {
-          toggleAuthModal();
+          toggleAuthModal(); // Закрываем модалку
+          // Очищаем форму
+          document.getElementById("login-email").value = "";
+          document.getElementById("login-password").value = "";
+          msg.textContent = "";
         }, 1000);
       } else {
         msg.style.color = "#e74c3c";
         msg.textContent = data.error || "Invalid credentials";
       }
     } catch (err) {
+      console.error(err);
       msg.textContent = "Connection error";
     }
   });
 }
 
 // 4. Проверка статуса (Обновление UI)
+// 4. Проверка статуса (Обновление UI)
 function checkAuthStatus() {
   const token = localStorage.getItem("auth_token");
   const user = JSON.parse(localStorage.getItem("user_data"));
-  const btnText = document.getElementById("btn-login-text");
   const authBtn = document.getElementById("auth-btn");
-  const icon = authBtn ? authBtn.querySelector("i") : null;
+
+  if (!authBtn) return;
+
+  // СБРОС КНОПКИ (Важно для корректного переключения без перезагрузки)
+  // Мы возвращаем её в исходное состояние, а потом заполняем данными
+  authBtn.innerHTML =
+    '<i class="fas fa-user-circle"></i> <span id="btn-login-text">Login</span>';
+  const btnText = document.getElementById("btn-login-text");
 
   if (token && user) {
-    if (btnText) btnText.textContent = user.username;
+    // Если вошли
+    btnText.textContent = user.username;
 
-    // Если есть аватарка - ставим её вместо иконки
-    if (user.avatar_url && icon) {
-      // Заменяем иконку <i> на <img>
-      icon.outerHTML = `<img src="${user.avatar_url}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:5px;">`;
+    // Ставим аватарку
+    if (user.avatar_url) {
+      const icon = authBtn.querySelector("i");
+      if (icon) {
+        icon.outerHTML = `<img src="${user.avatar_url}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; margin-right:8px; border:1px solid rgba(255,255,255,0.2);">`;
+      }
     }
 
     authBtn.onclick = (e) => {
       e.preventDefault();
       toggleProfileModal();
     };
-
-    // Заполнение полей модалки (если открыта)
-    if (document.getElementById("profile-car")) {
-      document.getElementById("profile-car").value = user.car_model || "";
-      document.getElementById("profile-bio").value = user.bio || "";
-
-      // Показываем текущую аватарку в превью
-      const prevImg = document.getElementById("profile-preview-img");
-      if (prevImg && user.avatar_url) {
-        prevImg.src = user.avatar_url;
-      } else if (prevImg) {
-        prevImg.src = `https://ui-avatars.com/api/?name=${user.username}&background=random`;
-      }
-    }
   } else {
+    // Если вышли
     if (btnText) btnText.textContent = "Login";
     authBtn.onclick = toggleAuthModal;
   }
@@ -728,6 +732,7 @@ window.logout = function () {
 
 async function init() {
   try {
+    await refreshUserData();
     // 1. Инициализация (как было)
     if (typeof getMockData === "function") bmwCodes = getMockData();
     const response = await fetch("../data/codes.json");
@@ -1159,20 +1164,21 @@ function init3DBackground() {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 }
+
 // === В КОНЕЦ ФАЙЛА script.js ===
 
 // Глобальная функция открытия/закрытия профиля
-// === В КОНЕЦ ФАЙЛА script.js ===
-
-// Глобальная функция открытия/закрытия профиля
-window.toggleProfileModal = function () {
+window.toggleProfileModal = async function () {
   const modal = document.getElementById("profile-modal");
   if (!modal) return;
 
   modal.classList.toggle("active");
 
-  // Если открываем окно — заполняем данными
   if (modal.classList.contains("active")) {
+    // СНАЧАЛА подтягиваем свежие данные из базы
+    await refreshUserData();
+
+    // ПОТОМ читаем уже обновлённые данные
     const user = JSON.parse(localStorage.getItem("user_data"));
 
     if (user) {
@@ -1205,3 +1211,32 @@ window.toggleProfileModal = function () {
     }
   }
 };
+
+// Функция синхронизации данных профиля
+// === В КОНЕЦ ФАЙЛА script.js ===
+
+async function refreshUserData() {
+  const user = JSON.parse(localStorage.getItem("user_data"));
+  if (!user) return; // Если не залогинен - выходим
+
+  try {
+    // Запрашиваем свежие данные из базы
+    const res = await fetch(`/api/user/get?id=${user.id}`);
+    if (res.ok) {
+      const freshUser = await res.json();
+
+      // Сравниваем данные. Если что-то изменилось - обновляем LocalStorage
+      if (JSON.stringify(freshUser) !== JSON.stringify(user)) {
+        console.log("Updating user profile cache...");
+        localStorage.setItem("user_data", JSON.stringify(freshUser));
+
+        // Обновляем шапку сайта сразу же
+        checkAuthStatus();
+        // Если мы на странице форума - обновляем сайдбар
+        if (typeof updateSidebarUser === "function") updateSidebarUser();
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to refresh user data", e);
+  }
+}

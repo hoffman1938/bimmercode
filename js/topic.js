@@ -238,7 +238,10 @@ function renderPostHTML(post, isMain, topicAuthorId) {
   // === АВАТАРКА ===
   let avatarHTML;
   // Берем author_avatar с сервера, либо user.avatar_url если это текущий пользователь
-  const avatarUrl = post.author_avatar || (isMyPost ? user.avatar_url : null);
+  const currentUser = JSON.parse(localStorage.getItem("user_data"));
+  const avatarUrl =
+    post.author_avatar ||
+    (isMyPost && currentUser ? currentUser.avatar_url : null);
 
   if (avatarUrl) {
     avatarHTML = `<img src="${avatarUrl}" class="post-user-avatar" style="object-fit:cover;">`;
