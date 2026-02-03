@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-4W8i4Y/checked-fetch.js
+// .wrangler/tmp/bundle-yuc7Kx/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -27,7 +27,7 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
   }
 });
 
-// .wrangler/tmp/pages-1bZvhA/functionsWorker-0.9946405310104953.mjs
+// .wrangler/tmp/pages-9QLOO3/functionsWorker-0.5161787917864573.mjs
 var __defProp2 = Object.defineProperty;
 var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
 var urls2 = /* @__PURE__ */ new Set();
@@ -176,38 +176,6 @@ __name(onRequestPost2, "onRequestPost2");
 __name2(onRequestPost2, "onRequestPost");
 async function onRequestPost3(context) {
   const { request, env } = context;
-  try {
-    const formData = await request.formData();
-    const file = formData.get("file");
-    if (!file) {
-      return new Response(JSON.stringify({ error: "No file uploaded" }), {
-        status: 400
-      });
-    }
-    if (!file.type.startsWith("image/")) {
-      return new Response(JSON.stringify({ error: "Only images allowed" }), {
-        status: 400
-      });
-    }
-    const filename = crypto.randomUUID() + "-" + file.name;
-    await env.BUCKET.put(filename, file, {
-      httpMetadata: { contentType: file.type }
-    });
-    const publicUrl = "https://pub-8b3387d0698f47dd899b0a43f2a65e7c.r2.dev";
-    return new Response(
-      JSON.stringify({
-        url: `${publicUrl}/${filename}`
-      }),
-      { status: 200 }
-    );
-  } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
-  }
-}
-__name(onRequestPost3, "onRequestPost3");
-__name2(onRequestPost3, "onRequestPost");
-async function onRequestPost4(context) {
-  const { request, env } = context;
   const db = env.DB;
   try {
     const { post_id, user_id } = await request.json();
@@ -252,9 +220,9 @@ async function onRequestPost4(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost4, "onRequestPost4");
-__name2(onRequestPost4, "onRequestPost");
-async function onRequestPost5(context) {
+__name(onRequestPost3, "onRequestPost3");
+__name2(onRequestPost3, "onRequestPost");
+async function onRequestPost4(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -293,8 +261,8 @@ async function onRequestPost5(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost5, "onRequestPost5");
-__name2(onRequestPost5, "onRequestPost");
+__name(onRequestPost4, "onRequestPost4");
+__name2(onRequestPost4, "onRequestPost");
 async function onRequest(context) {
   const { request, env } = context;
   const db = env.DB;
@@ -492,7 +460,7 @@ async function onRequestGet(context) {
 }
 __name(onRequestGet, "onRequestGet");
 __name2(onRequestGet, "onRequestGet");
-async function onRequestPost6(context) {
+async function onRequestPost5(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -523,8 +491,72 @@ async function onRequestPost6(context) {
     });
   }
 }
-__name(onRequestPost6, "onRequestPost6");
-__name2(onRequestPost6, "onRequestPost");
+__name(onRequestPost5, "onRequestPost5");
+__name2(onRequestPost5, "onRequestPost");
+async function onRequest3(context) {
+  const { request, env } = context;
+  if (request.method !== "POST") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file");
+    if (!file) {
+      return new Response(JSON.stringify({ error: "No file uploaded" }), {
+        status: 400
+      });
+    }
+    if (!file.type.startsWith("image/")) {
+      return new Response(JSON.stringify({ error: "Only images allowed" }), {
+        status: 400
+      });
+    }
+    const extension = file.name.split(".").pop();
+    const filename = crypto.randomUUID() + "." + extension;
+    await env.BUCKET.put(filename, file, {
+      httpMetadata: { contentType: file.type }
+    });
+    const imageUrl = `/images/${filename}`;
+    return new Response(
+      JSON.stringify({
+        url: imageUrl
+        // Отправляем эту ссылку на фронтенд
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+        status: 200
+      }
+    );
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+__name(onRequest3, "onRequest3");
+__name2(onRequest3, "onRequest");
+async function onRequestGet2(context) {
+  const { env, params } = context;
+  const filename = params.filename;
+  if (!filename) {
+    return new Response("Filename missing", { status: 400 });
+  }
+  try {
+    const object = await env.BUCKET.get(filename);
+    if (!object) {
+      return new Response("Image not found", { status: 404 });
+    }
+    const headers = new Headers();
+    object.writeHttpMetadata(headers);
+    headers.set("etag", object.httpEtag);
+    headers.set("Cache-Control", "public, max-age=31536000");
+    return new Response(object.body, {
+      headers
+    });
+  } catch (e) {
+    return new Response("Error fetching image: " + e.message, { status: 500 });
+  }
+}
+__name(onRequestGet2, "onRequestGet2");
+__name2(onRequestGet2, "onRequestGet");
 var routes = [
   {
     routePath: "/api/auth/login",
@@ -541,25 +573,18 @@ var routes = [
     modules: [onRequestPost2]
   },
   {
-    routePath: "/api/auth/upload",
-    mountPath: "/api/auth",
-    method: "POST",
-    middlewares: [],
-    modules: [onRequestPost3]
-  },
-  {
     routePath: "/api/forum/like",
     mountPath: "/api/forum",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost4]
+    modules: [onRequestPost3]
   },
   {
     routePath: "/api/forum/solve",
     mountPath: "/api/forum",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost5]
+    modules: [onRequestPost4]
   },
   {
     routePath: "/api/forum/topic",
@@ -587,7 +612,21 @@ var routes = [
     mountPath: "/api",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost6]
+    modules: [onRequestPost5]
+  },
+  {
+    routePath: "/api/upload",
+    mountPath: "/api",
+    method: "",
+    middlewares: [],
+    modules: [onRequest3]
+  },
+  {
+    routePath: "/images/:filename",
+    mountPath: "/images",
+    method: "GET",
+    middlewares: [],
+    modules: [onRequestGet2]
   }
 ];
 function lexer(str) {
@@ -1255,7 +1294,7 @@ var jsonError2 = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx
 }, "jsonError");
 var middleware_miniflare3_json_error_default2 = jsonError2;
 
-// .wrangler/tmp/bundle-4W8i4Y/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-yuc7Kx/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__2 = [
   middleware_ensure_req_body_drained_default2,
   middleware_miniflare3_json_error_default2
@@ -1287,7 +1326,7 @@ function __facade_invoke__2(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__2, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-4W8i4Y/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-yuc7Kx/middleware-loader.entry.ts
 var __Facade_ScheduledController__2 = class ___Facade_ScheduledController__2 {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -1387,4 +1426,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__2 as __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default2 as default
 };
-//# sourceMappingURL=functionsWorker-0.9946405310104953.js.map
+//# sourceMappingURL=functionsWorker-0.5161787917864573.js.map

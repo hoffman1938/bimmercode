@@ -328,26 +328,37 @@ async function handlePasteImage(e) {
 }
 
 // Главная функция: Конвертация + Загрузка
+// Внутри js/topic.js
+
+// Функция отправки (с конвертацией)
 async function processAndUpload(file) {
   const textarea = document.getElementById("reply-content");
-  const t = topicTranslations[currentTopicLang];
+  const loadingTag = `\n![Uploading...]`;
 
-  // Вставляем заглушку
+  // Вставляем текст загрузки
   const cursor = textarea.selectionStart;
-  const loadingTag = `\n![${t.uploading}...]`;
-  const textBefore = textarea.value.substring(0, cursor);
-  const textAfter = textarea.value.substring(cursor);
-  textarea.value = textBefore + loadingTag + textAfter;
+  textarea.value =
+    textarea.value.slice(0, cursor) + loadingTag + textarea.value.slice(cursor);
 
   try {
-    // 1. Конвертируем в WebP на клиенте
+    console.log("Original file:", file.name, file.type, file.size);
+
+    // 1. КОНВЕРТАЦИЯ (Client-side)
+    // Если это уже webp, можно не конвертировать, но для сжатия лучше прогнать
     const webpFile = await convertToWebP(file);
 
-    // 2. Загружаем
+    console.log("Converted file:", webpFile.name, webpFile.type, webpFile.size);
+
+    // 2. ЗАГРУЗКА
     const formData = new FormData();
-    formData.append("file", webpFile);
+    formData.append("file", webpFile); // Отправляем уже WebP!
 
     const res = await fetch("/api/upload", { method: "POST", body: formData });
+
+    if (!res.ok) {
+      throw new Error(`Upload failed: ${res.statusText}`);
+    }
+
     const data = await res.json();
 
     if (data.url) {
@@ -356,10 +367,7 @@ async function processAndUpload(file) {
         `\n![image](${data.url})`,
       );
     } else {
-      textarea.value = textarea.value.replace(
-        loadingTag,
-        `\n[${t.uploadError}]`,
-      );
+      throw new Error("No URL returned");
     }
   } catch (err) {
     console.error(err);
@@ -367,20 +375,23 @@ async function processAndUpload(file) {
       loadingTag,
       `\n[Error: ${err.message}]`,
     );
+    alert("Upload error: " + err.message);
   }
 }
 
-// Утилита конвертации в WebP (Canvas)
+// Утилита конвертации
 function convertToWebP(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
+
     reader.onload = (event) => {
       const img = new Image();
       img.src = event.target.result;
+
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        // Ограничиваем макс размер до 1920px (HD), чтобы база не пухла
+        // Ограничение размера (Full HD)
         const MAX_WIDTH = 1920;
         const scale = Math.min(1, MAX_WIDTH / img.width);
 
@@ -390,12 +401,15 @@ function convertToWebP(file) {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Конвертируем в WebP с качеством 80%
+        // Конвертация в blob image/webp с качеством 0.8
         canvas.toBlob(
           (blob) => {
             if (!blob) return reject(new Error("Canvas conversion failed"));
-            const fileName = file.name.split(".")[0] + ".webp";
+
+            // Меняем имя файла на .webp
+            const fileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
             const newFile = new File([blob], fileName, { type: "image/webp" });
+
             resolve(newFile);
           },
           "image/webp",
@@ -573,3 +587,55 @@ function updateTopicPageLanguage() {
   const replyContent = document.getElementById("reply-content");
   if (replyContent) replyContent.placeholder = t.writeReply;
 }
+
+// ... (Конец файла topic.js)
+
+// === LIGHTBOX LOGIC ===
+
+// 1. Делегирование событий: ловим клик по картинке внутри постов
+document.addEventListener("click", function (e) {
+  // Если кликнули по IMG внутри контейнера поста
+  if (e.target.tagName === "IMG" && e.target.closest(".post-text-body")) {
+    openLightbox(e.target.src);
+  }
+});
+
+function openLightbox(src) {
+  const modal = document.getElementById("lightbox-modal");
+  const img = document.getElementById("lightbox-img");
+
+  if (modal && img) {
+    img.src = src;
+    modal.classList.add("active"); // Показываем модалку
+    document.body.style.overflow = "hidden"; // Блокируем скролл страницы
+  }
+}
+
+// Эта функция должна быть глобальной (window), так как вызывается из onclick в HTML
+window.closeLightbox = function (e) {
+  // Закрываем, если кликнули по фону, по крестику или по самой картинке
+  if (
+    e.target.id === "lightbox-modal" ||
+    e.target.classList.contains("close-lightbox") ||
+    e.target.classList.contains("lightbox-content")
+  ) {
+    const modal = document.getElementById("lightbox-modal");
+    if (modal) {
+      modal.classList.remove("active");
+      document.body.style.overflow = ""; // Разблокируем скролл
+      setTimeout(() => {
+        document.getElementById("lightbox-img").src = "";
+      }, 300);
+    }
+  }
+};
+
+// Закрытие по клавише Esc
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    const modal = document.getElementById("lightbox-modal");
+    if (modal && modal.classList.contains("active")) {
+      window.closeLightbox({ target: modal });
+    }
+  }
+});

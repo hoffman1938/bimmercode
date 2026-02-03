@@ -396,10 +396,15 @@
         <button class="btn" onclick="toggleFavoritesModal()">
           <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
         </button>
-        <a href="forum.html" class="btn">
+        <a href="forum.html" class="hidden btn">
           <i class="fas fa-comments"></i> <span>Forum</span>
         </a>
-        <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
+        <a
+          href="#"
+          class="hidden btn"
+          id="auth-btn"
+          onclick="toggleAuthModal()"
+        >
           <i class="fas fa-user"></i>
           <span id="btn-login-text">Login</span>
         </a>
