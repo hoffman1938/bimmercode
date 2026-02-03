@@ -461,53 +461,70 @@ async function onRequest2(context) {
 }
 __name(onRequest2, "onRequest2");
 __name2(onRequest2, "onRequest");
-async function onRequest3(context) {
+async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.DB;
   const url = new URL(request.url);
-  if (request.method === "GET") {
-    const userId = url.searchParams.get("user_id");
-    if (!userId) return new Response("Missing user_id", { status: 400 });
-    try {
-      const { results } = await db.prepare(
-        `
-        SELECT * FROM notifications 
-        WHERE user_id = ? 
-        ORDER BY created_at DESC 
-        LIMIT 20
-      `
-      ).bind(userId).all();
-      const unread = results.filter((n) => !n.is_read).length;
-      return new Response(
-        JSON.stringify({
-          notifications: results,
-          unread_count: unread
-        }),
-        {
-          headers: { "Content-Type": "application/json" }
-        }
-      );
-    } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), {
-        status: 500
-      });
-    }
+  const userId = url.searchParams.get("user_id");
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "user_id required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
   }
-  if (request.method === "POST") {
-    try {
-      const { user_id } = await request.json();
-      await db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").bind(user_id).run();
-      return new Response(JSON.stringify({ success: true }), { status: 200 });
-    } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), {
-        status: 500
-      });
-    }
+  try {
+    const { results } = await db.prepare(
+      `SELECT * FROM notifications 
+         WHERE user_id = ? 
+         ORDER BY created_at DESC 
+         LIMIT 30`
+    ).bind(userId).all();
+    return new Response(JSON.stringify(results), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
-  return new Response("Method not allowed", { status: 405 });
 }
-__name(onRequest3, "onRequest3");
-__name2(onRequest3, "onRequest");
+__name(onRequestGet, "onRequestGet");
+__name2(onRequestGet, "onRequestGet");
+async function onRequestPost6(context) {
+  const { request, env } = context;
+  const db = env.DB;
+  try {
+    const { user_id, notification_ids } = await request.json();
+    if (!user_id) {
+      return new Response(JSON.stringify({ error: "user_id required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (notification_ids && notification_ids.length > 0) {
+      const placeholders = notification_ids.map(() => "?").join(",");
+      await db.prepare(
+        `UPDATE notifications SET is_read = 1 
+           WHERE user_id = ? AND id IN (${placeholders})`
+      ).bind(user_id, ...notification_ids).run();
+    } else {
+      await db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").bind(user_id).run();
+    }
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+__name(onRequestPost6, "onRequestPost6");
+__name2(onRequestPost6, "onRequestPost");
 var routes = [
   {
     routePath: "/api/auth/login",
@@ -561,9 +578,16 @@ var routes = [
   {
     routePath: "/api/notifications",
     mountPath: "/api",
-    method: "",
+    method: "GET",
     middlewares: [],
-    modules: [onRequest3]
+    modules: [onRequestGet]
+  },
+  {
+    routePath: "/api/notifications",
+    mountPath: "/api",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPost6]
   }
 ];
 function lexer(str) {

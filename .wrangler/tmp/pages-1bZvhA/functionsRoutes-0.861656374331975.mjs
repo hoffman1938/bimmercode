@@ -5,7 +5,8 @@ import { onRequestPost as __api_forum_like_js_onRequestPost } from "/Users/giorg
 import { onRequestPost as __api_forum_solve_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/solve.js"
 import { onRequest as __api_forum_topic_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/topic.js"
 import { onRequest as __api_forum_topics_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/topics.js"
-import { onRequest as __api_notifications_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications.js"
+import { onRequestGet as __api_notifications_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications.js"
+import { onRequestPost as __api_notifications_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications.js"
 
 export const routes = [
     {
@@ -60,8 +61,15 @@ export const routes = [
   {
       routePath: "/api/notifications",
       mountPath: "/api",
-      method: "",
+      method: "GET",
       middlewares: [],
-      modules: [__api_notifications_js_onRequest],
+      modules: [__api_notifications_js_onRequestGet],
+    },
+  {
+      routePath: "/api/notifications",
+      mountPath: "/api",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_notifications_js_onRequestPost],
     },
   ]

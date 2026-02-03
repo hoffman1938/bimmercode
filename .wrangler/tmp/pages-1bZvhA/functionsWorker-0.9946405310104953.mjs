@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-OvHULt/checked-fetch.js
+// ../.wrangler/tmp/bundle-Po8WGT/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -442,52 +442,68 @@ async function onRequest2(context) {
 __name(onRequest2, "onRequest");
 
 // api/notifications.js
-async function onRequest3(context) {
+async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.DB;
   const url = new URL(request.url);
-  if (request.method === "GET") {
-    const userId = url.searchParams.get("user_id");
-    if (!userId) return new Response("Missing user_id", { status: 400 });
-    try {
-      const { results } = await db.prepare(
-        `
-        SELECT * FROM notifications 
-        WHERE user_id = ? 
-        ORDER BY created_at DESC 
-        LIMIT 20
-      `
-      ).bind(userId).all();
-      const unread = results.filter((n) => !n.is_read).length;
-      return new Response(
-        JSON.stringify({
-          notifications: results,
-          unread_count: unread
-        }),
-        {
-          headers: { "Content-Type": "application/json" }
-        }
-      );
-    } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), {
-        status: 500
-      });
-    }
+  const userId = url.searchParams.get("user_id");
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "user_id required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
   }
-  if (request.method === "POST") {
-    try {
-      const { user_id } = await request.json();
-      await db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").bind(user_id).run();
-      return new Response(JSON.stringify({ success: true }), { status: 200 });
-    } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), {
-        status: 500
-      });
-    }
+  try {
+    const { results } = await db.prepare(
+      `SELECT * FROM notifications 
+         WHERE user_id = ? 
+         ORDER BY created_at DESC 
+         LIMIT 30`
+    ).bind(userId).all();
+    return new Response(JSON.stringify(results), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
-  return new Response("Method not allowed", { status: 405 });
 }
-__name(onRequest3, "onRequest");
+__name(onRequestGet, "onRequestGet");
+async function onRequestPost6(context) {
+  const { request, env } = context;
+  const db = env.DB;
+  try {
+    const { user_id, notification_ids } = await request.json();
+    if (!user_id) {
+      return new Response(JSON.stringify({ error: "user_id required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (notification_ids && notification_ids.length > 0) {
+      const placeholders = notification_ids.map(() => "?").join(",");
+      await db.prepare(
+        `UPDATE notifications SET is_read = 1 
+           WHERE user_id = ? AND id IN (${placeholders})`
+      ).bind(user_id, ...notification_ids).run();
+    } else {
+      await db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").bind(user_id).run();
+    }
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+__name(onRequestPost6, "onRequestPost");
 
 // ../.wrangler/tmp/pages-1bZvhA/functionsRoutes-0.861656374331975.mjs
 var routes = [
@@ -543,9 +559,16 @@ var routes = [
   {
     routePath: "/api/notifications",
     mountPath: "/api",
-    method: "",
+    method: "GET",
     middlewares: [],
-    modules: [onRequest3]
+    modules: [onRequestGet]
+  },
+  {
+    routePath: "/api/notifications",
+    mountPath: "/api",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPost6]
   }
 ];
 
@@ -1036,7 +1059,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-OvHULt/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-Po8WGT/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1068,7 +1091,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-OvHULt/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-Po8WGT/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
