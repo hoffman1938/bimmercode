@@ -192,15 +192,17 @@ main.container {
   margin: 0 auto;
 }
 
-#search-input {
+#search-input,
+#forum-search {
+  /* <--- Добавили этот ID */
   width: 100%;
   background: var(--glass-bg);
   border: 2px solid var(--glass-border);
   padding: 18px 25px;
-  padding-right: 50px;
+  /* padding-right: 50px; — можно оставить или убрать для форума */
   border-radius: var(--radius-xl);
   color: #fff;
-  font-size: 16px; /* ВАЖНО: 16px предотвращает зум на iPhone */
+  font-size: 16px;
   font-family: "Exo 2", sans-serif;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -208,7 +210,9 @@ main.container {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-#search-input:focus {
+#search-input:focus,
+#forum-search:focus {
+  /* <--- И тут тоже */
   outline: none;
   border-color: var(--bmw-blue);
   box-shadow: 0 0 30px rgba(0, 102, 179, 0.3);
@@ -230,6 +234,69 @@ main.container {
   flex-direction: column;
   gap: 12px;
   padding-bottom: 40px;
+  animation: resultsSlideIn 0.1s cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+#results-container.hidden {
+  display: none;
+}
+
+@keyframes resultsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Individual code items cascade animation */
+.code-item {
+  animation: codeItemSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.code-item:nth-child(1) {
+  animation-delay: 0.03s;
+}
+.code-item:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.code-item:nth-child(3) {
+  animation-delay: 0.09s;
+}
+.code-item:nth-child(4) {
+  animation-delay: 0.12s;
+}
+.code-item:nth-child(5) {
+  animation-delay: 0.15s;
+}
+.code-item:nth-child(6) {
+  animation-delay: 0.18s;
+}
+.code-item:nth-child(7) {
+  animation-delay: 0.21s;
+}
+.code-item:nth-child(8) {
+  animation-delay: 0.24s;
+}
+.code-item:nth-child(9) {
+  animation-delay: 0.27s;
+}
+.code-item:nth-child(10) {
+  animation-delay: 0.3s;
+}
+
+@keyframes codeItemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .code-item {
@@ -245,7 +312,7 @@ main.container {
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -325,7 +392,22 @@ main.container {
   border-radius: var(--radius-xl);
   padding: 30px;
   margin-bottom: 50px;
-  animation: slideIn 0.3s ease-out;
+  animation: detailSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#code-detail.hidden {
+  display: none;
+}
+
+@keyframes detailSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .detail-header {
@@ -535,21 +617,51 @@ main.container {
   color: white;
   transform: translateX(3px);
 }
-/* Empty State */
+
+/* Empty State & No Results */
 .message-container {
-  text-align: -webkit-center;
+  text-align: center;
   padding: 60px 20px;
   background: var(--glass-bg);
   border-radius: var(--radius-xl);
   border: 1px solid var(--glass-border);
+  animation: fadeInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.message-container.hidden {
+  display: none;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .message-container i {
   font-size: 48px;
-  color: var(--bmw-dark-blue);
+  color: var(--bmw-blue);
   margin-bottom: 20px;
+  display: block;
+  animation: iconFloat 3s ease-in-out infinite;
 }
+
+@keyframes iconFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
 .message {
-  place-self: anchor-center;
   font-size: 1.2rem;
   color: #fff;
   margin-bottom: 8px;
@@ -663,6 +775,7 @@ main.container {
   gap: 12px;
 }
 .message {
+  justify-self: center;
   padding: 10px 14px;
   border-radius: 12px;
   font-size: 14px;
@@ -773,20 +886,26 @@ main.container {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .favorites-modal.active {
   opacity: 1;
   visibility: visible;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
+
 .favorites-content {
   background: #121418;
   width: 90%;
@@ -796,6 +915,15 @@ main.container {
   border: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.favorites-modal.active .favorites-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }
 .favorites-header {
   padding: 15px 20px;
@@ -842,4 +970,159 @@ footer {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* --- AUTH MODAL --- */
+.auth-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-modal.active {
+  opacity: 1;
+  visibility: visible;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.auth-content {
+  background: #121418;
+  border: 1px solid var(--glass-border);
+  width: 90%;
+  max-width: 400px;
+  padding: 30px;
+  border-radius: 20px;
+  position: relative;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.auth-modal.active .auth-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.close-auth {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: #aaa;
+  font-size: 18px;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.close-auth:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* Tabs */
+.auth-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 10px;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 16px;
+  cursor: pointer;
+  font-family: "Exo 2", sans-serif;
+  padding: 5px 10px;
+  transition: 0.3s;
+}
+.tab-btn.active {
+  color: white;
+  border-bottom: 2px solid var(--bmw-blue);
+}
+
+/* Forms */
+.auth-form {
+  display: none;
+  flex-direction: column;
+  gap: 15px;
+}
+.auth-form.active {
+  display: flex;
+}
+
+.auth-form h2 {
+  color: white;
+  margin-bottom: 10px;
+  font-family: "Exo 2", sans-serif;
+}
+
+.input-group {
+  position: relative;
+}
+.input-group i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+}
+.input-group input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  padding: 12px 12px 12px 40px;
+  border-radius: 10px;
+  color: white;
+  outline: none;
+  transition: 0.3s;
+}
+.input-group input:focus {
+  border-color: var(--bmw-blue);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.submit-btn {
+  background: var(--bmw-blue);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+.submit-btn:hover {
+  background: var(--bmw-sky);
+}
+
+.auth-msg {
+  font-size: 13px;
+  text-align: center;
+  min-height: 20px;
 }
