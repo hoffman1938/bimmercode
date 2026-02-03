@@ -1,6 +1,7 @@
 import { onRequestPost as __api_auth_login_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/login.js"
 import { onRequestPost as __api_auth_register_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/register.js"
 import { onRequestPost as __api_forum_delete_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/delete.js"
+import { onRequestPost as __api_forum_edit_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/edit.js"
 import { onRequestPost as __api_forum_like_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/like.js"
 import { onRequestPost as __api_forum_solve_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/solve.js"
 import { onRequestPost as __api_user_update_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/user/update.js"
@@ -32,6 +33,13 @@ export const routes = [
       method: "POST",
       middlewares: [],
       modules: [__api_forum_delete_js_onRequestPost],
+    },
+  {
+      routePath: "/api/forum/edit",
+      mountPath: "/api/forum",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_forum_edit_js_onRequestPost],
     },
   {
       routePath: "/api/forum/like",

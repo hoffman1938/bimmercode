@@ -205,6 +205,40 @@ __name(onRequestPost3, "onRequestPost3");
 __name2(onRequestPost3, "onRequestPost");
 async function onRequestPost4(context) {
   const { request, env } = context;
+  try {
+    const { type, id, user_id, content } = await request.json();
+    if (!content || !content.trim()) {
+      return new Response(
+        JSON.stringify({ error: "Content cannot be empty" }),
+        { status: 400 }
+      );
+    }
+    let result;
+    if (type === "topic") {
+      result = await env.DB.prepare(
+        "UPDATE topics SET content = ? WHERE id = ? AND user_id = ?"
+      ).bind(content, id, user_id).run();
+    } else {
+      result = await env.DB.prepare(
+        "UPDATE posts SET content = ? WHERE id = ? AND user_id = ?"
+      ).bind(content, id, user_id).run();
+    }
+    if (result.meta.changes > 0) {
+      return new Response(JSON.stringify({ success: true }), { status: 200 });
+    } else {
+      return new Response(
+        JSON.stringify({ error: "Update failed or access denied" }),
+        { status: 403 }
+      );
+    }
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+__name(onRequestPost4, "onRequestPost4");
+__name2(onRequestPost4, "onRequestPost");
+async function onRequestPost5(context) {
+  const { request, env } = context;
   const db = env.DB;
   try {
     const { post_id, user_id } = await request.json();
@@ -249,9 +283,9 @@ async function onRequestPost4(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost4, "onRequestPost4");
-__name2(onRequestPost4, "onRequestPost");
-async function onRequestPost5(context) {
+__name(onRequestPost5, "onRequestPost5");
+__name2(onRequestPost5, "onRequestPost");
+async function onRequestPost6(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -290,9 +324,9 @@ async function onRequestPost5(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost5, "onRequestPost5");
-__name2(onRequestPost5, "onRequestPost");
-async function onRequestPost6(context) {
+__name(onRequestPost6, "onRequestPost6");
+__name2(onRequestPost6, "onRequestPost");
+async function onRequestPost7(context) {
   const { request, env } = context;
   try {
     const { id, avatar_url, bio, car_model } = await request.json();
@@ -320,8 +354,8 @@ async function onRequestPost6(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost6, "onRequestPost6");
-__name2(onRequestPost6, "onRequestPost");
+__name(onRequestPost7, "onRequestPost7");
+__name2(onRequestPost7, "onRequestPost");
 async function onRequest(context) {
   const { request, env } = context;
   const db = env.DB;
@@ -528,7 +562,7 @@ async function onRequestGet(context) {
 }
 __name(onRequestGet, "onRequestGet");
 __name2(onRequestGet, "onRequestGet");
-async function onRequestPost7(context) {
+async function onRequestPost8(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -559,8 +593,8 @@ async function onRequestPost7(context) {
     });
   }
 }
-__name(onRequestPost7, "onRequestPost7");
-__name2(onRequestPost7, "onRequestPost");
+__name(onRequestPost8, "onRequestPost8");
+__name2(onRequestPost8, "onRequestPost");
 async function onRequest3(context) {
   const { request, env } = context;
   if (request.method !== "POST") {
@@ -648,25 +682,32 @@ var routes = [
     modules: [onRequestPost3]
   },
   {
-    routePath: "/api/forum/like",
+    routePath: "/api/forum/edit",
     mountPath: "/api/forum",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost4]
   },
   {
-    routePath: "/api/forum/solve",
+    routePath: "/api/forum/like",
     mountPath: "/api/forum",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost5]
   },
   {
+    routePath: "/api/forum/solve",
+    mountPath: "/api/forum",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPost6]
+  },
+  {
     routePath: "/api/user/update",
     mountPath: "/api/user",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost6]
+    modules: [onRequestPost7]
   },
   {
     routePath: "/api/forum/topic",
@@ -694,7 +735,7 @@ var routes = [
     mountPath: "/api",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost7]
+    modules: [onRequestPost8]
   },
   {
     routePath: "/api/upload",

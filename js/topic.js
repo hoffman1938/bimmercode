@@ -192,10 +192,11 @@ async function renderTopicWithTranslation(data) {
   }
 
   // Рендер Главного поста
+  // Рендер Главного поста
   let html = renderPostHTML(
     {
-      id: "topic-main",
-      user_id: topic.user_id, // Важно для проверки авторства
+      id: topic.id, // <-- ВАЖНО: Передаем реальный ID темы, а не "topic-main"
+      user_id: topic.user_id,
       username: topic.username,
       content: translatedContent,
       created_at: topic.created_at,
@@ -203,9 +204,9 @@ async function renderTopicWithTranslation(data) {
       likes_count: 0,
       is_liked: false,
       lang: topic.lang,
-      author_avatar: topic.author_avatar, // ВАЖНО: передаем аватарку автора темы
+      author_avatar: topic.author_avatar,
     },
-    true,
+    true, // isMain = true
     topic.user_id,
   );
 
@@ -248,9 +249,7 @@ function renderPostHTML(post, isMain, topicAuthorId) {
   return `
     <div class="post-card ${post.is_solution ? "solution" : ""}" id="post-${post.id}">
       <div class="post-user-panel">
-        
         ${avatarHTML}
-        
         <div class="post-username">${escapeHtml(post.username || "User")}</div>
         <div class="user-role-badge">${t.member}</div>
       </div>
@@ -259,11 +258,8 @@ function renderPostHTML(post, isMain, topicAuthorId) {
         <div class="post-header-meta">
           <div style="display:flex; align-items:center; gap:10px;">
               <span><i class="far fa-clock"></i> ${formatDate(post.created_at)}</span>
-              <span class="lang-badge" title="Original language">
-                <i class="fas fa-language"></i> ${originLang}
-              </span>
+              <span class="lang-badge" title="Original language"><i class="fas fa-language"></i> ${originLang}</span>
           </div>
-
           ${
             post.is_solution
               ? `<span style="color:#2ecc71; font-weight:bold;"><i class="fas fa-check"></i> ${t.solution}</span>`
@@ -281,7 +277,11 @@ function renderPostHTML(post, isMain, topicAuthorId) {
           ${
             isMyPost
               ? `
-            <button class="btn-action" onclick="deleteItem('post', '${post.id}')" style="color:#e74c3c; border-color:rgba(231,76,60,0.3); margin-right:auto;" title="Delete">
+            <button class="btn-action btn-edit" onclick="editItem('${isMain ? "topic" : "post"}', '${post.id}')" title="Edit">
+                <i class="fas fa-pen"></i>
+            </button>
+
+            <button class="btn-action btn-delete" onclick="deleteItem('${isMain ? "topic" : "post"}', '${post.id}')" title="Delete">
                 <i class="fas fa-trash"></i>
             </button>
           `
@@ -651,3 +651,100 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+let originalContentCache = {};
+
+function editItem(type, id) {
+  // Находим карточку поста
+  const postCard = document.getElementById(
+    type === "topic" ? "post-" + id : "post-" + id,
+  );
+  // Если id главной темы совпадает с id топика, ищем по id.
+  // (В renderPostHTML мы передали реальный ID, так что id будет корректным)
+
+  // Но renderPostHTML ставит id="post-{id}".
+  const card = document.getElementById(`post-${id}`);
+  if (!card) return;
+
+  const textBody = card.querySelector(".post-text-body");
+
+  // Сохраняем текущий HTML (или лучше исходный текст, если бы он был доступен)
+  // Сейчас мы берем текст и пытаемся превратить <br> обратно в \n для удобства
+  const currentHTML = textBody.innerHTML;
+  originalContentCache[id] = currentHTML;
+
+  // Конвертируем HTML обратно в простой текст для редактора (очень упрощенно)
+  let textForEdit = currentHTML
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<b>(.*?)<\/b>/g, "**$1**")
+    .replace(/<img src="(.*?)" alt="(.*?)".*?>/g, "![$2]($1)")
+    .replace(/<code.*?>(.*?)<\/code>/g, "`$1`")
+    // Убираем HTML-экранирование для редактирования
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"');
+
+  // Очищаем лишние пробелы по краям
+  textForEdit = textForEdit.trim();
+
+  // Заменяем содержимое на форму
+  textBody.innerHTML = `
+        <div class="edit-mode-container">
+            <textarea id="edit-area-${id}" class="edit-textarea">${textForEdit}</textarea>
+            <div class="edit-actions">
+                <button class="btn-cancel-edit" onclick="cancelEdit('${id}')">Cancel</button>
+                <button class="btn-save-edit" onclick="saveEdit('${type}', '${id}')">Save Changes</button>
+            </div>
+        </div>
+    `;
+}
+
+function cancelEdit(id) {
+  const card = document.getElementById(`post-${id}`);
+  if (card && originalContentCache[id]) {
+    card.querySelector(".post-text-body").innerHTML = originalContentCache[id];
+    delete originalContentCache[id];
+  }
+}
+
+async function saveEdit(type, id) {
+  const textarea = document.getElementById(`edit-area-${id}`);
+  const newContent = textarea.value;
+  const user = JSON.parse(localStorage.getItem("user_data"));
+
+  if (!newContent.trim()) {
+    alert("Content cannot be empty");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/forum/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: type, // 'topic' или 'post'
+        id: id,
+        user_id: user.id,
+        content: newContent,
+      }),
+    });
+
+    if (res.ok) {
+      // Если успешно - обновляем UI
+      // Используем функцию parseMarkdown для красивого отображения
+      const card = document.getElementById(`post-${id}`);
+      card.querySelector(".post-text-body").innerHTML =
+        parseMarkdown(newContent);
+      delete originalContentCache[id];
+
+      // Если это был перевод - сбрасываем кэш, так как текст изменился
+      // (Это сложно сделать точечно, но пользователь увидит новый оригинальный текст)
+    } else {
+      alert("Error saving changes");
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Connection error");
+  }
+}

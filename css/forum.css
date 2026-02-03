@@ -179,23 +179,155 @@
 
 /* Бейджи */
 .topic-badge {
-  font-size: 10px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--f-text-muted);
-  border: 1px solid var(--f-border);
+  letter-spacing: 1px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+
+  /* Дефолтный стиль (для категории) */
+  background: rgba(0, 102, 179, 0.15); /* Прозрачный синий */
+  border: 1px solid rgba(0, 102, 179, 0.4);
+  color: #58a6ff;
+  box-shadow: 0 0 10px rgba(0, 102, 179, 0.05);
 }
-.topic-code-badge {
-  background: rgba(0, 102, 179, 0.15);
-  color: #6fbaff;
-  border-color: rgba(0, 102, 179, 0.3);
+.topic-badge:hover {
+  background: rgba(0, 102, 179, 0.25);
+  box-shadow: 0 0 15px rgba(0, 102, 179, 0.3);
+  transform: translateY(-1px);
 }
 
-/* === СТРАНИЦА ТЕМЫ (ПОСТЫ) === */
+.topic-code-badge {
+  background: rgba(46, 204, 113, 0.1);
+  border-color: rgba(46, 204, 113, 0.4);
+  color: #2ecc71; /* Яркий зеленый */
+  cursor: pointer;
+}
+
+.topic-code-badge i {
+  margin-right: 6px;
+  font-size: 10px;
+}
+
+.topic-code-badge:hover {
+  background: #2ecc71; /* Полная заливка при наведении */
+  color: #000; /* Черный текст для контраста */
+  border-color: #2ecc71;
+  box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+}
+
+.badge-solved {
+  background: rgba(46, 204, 113, 0.1);
+  border-color: #2ecc71;
+  color: #2ecc71;
+}
+
+.btn-delete {
+  margin-right: auto; /* Прижимаем влево */
+  color: #e74c3c !important; /* Красный текст */
+  border: 1px solid rgba(231, 76, 60, 0.3) !important;
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px; /* Немного скруглим */
+}
+
+.btn-delete:hover {
+  background-color: #e74c3c !important;
+  color: white !important;
+  border-color: #e74c3c !important;
+  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+  transform: scale(1.1) rotate(5deg); /* Эффект "тряски" при наведении */
+}
+
+/* --- КНОПКА РЕДАКТИРОВАНИЯ (EDIT) --- */
+.btn-edit {
+  color: var(--bmw-sky) !important; /* Голубой */
+  border: 1px solid rgba(52, 152, 219, 0.3) !important;
+  background: transparent;
+  transition: all 0.3s ease;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
+.btn-edit:hover {
+  background-color: var(--bmw-sky) !important;
+  color: white !important;
+  border-color: var(--bmw-sky) !important;
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.4);
+}
+
+/* --- ЗОНА РЕДАКТИРОВАНИЯ --- */
+.edit-mode-container {
+  animation: fadeIn 0.3s ease;
+}
+
+.edit-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--f-border);
+  color: var(--f-text-main);
+  padding: 15px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 120px;
+  margin-bottom: 10px;
+}
+
+.edit-textarea:focus {
+  outline: none;
+  border-color: var(--bmw-blue);
+  box-shadow: 0 0 10px rgba(0, 102, 179, 0.2);
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn-save-edit {
+  background: var(--bmw-blue);
+  color: white;
+  border: none;
+  padding: 6px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-cancel-edit {
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #555;
+  padding: 6px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-cancel-edit:hover {
+  color: white;
+  border-color: white;
+}
 
 /* Карточка Поста */
 .post-card {
