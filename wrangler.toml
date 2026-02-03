@@ -5,7 +5,7 @@ compatibility_date = "2024-01-01"
 # Подключение Базы Данных D1
 [[d1_databases]]
 binding = "DB" # Так мы будем обращаться к базе в коде: env.DB
-database_name = "bimmercodes-db"
+database_name = "bmw-db"
 database_id = "6e997484-ee10-48d1-a4d6-78d95216721f"
 
 # Подключение R2 (для фото)
