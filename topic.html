@@ -8,18 +8,62 @@
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/responsive.css" />
     <link rel="stylesheet" href="./css/forum.css" />
+    <style>
+        /* BADGES */
+        .user-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .badge-admin { background: #e74c3c; color: white; }
+        .badge-expert { background: #f1c40f; color: black; }
+        .badge-pro { background: #3498db; color: white; }
+        .badge-newcomer { background: #2ecc71; color: white; }
+
+        /* SHARE BUTTONS */
+        .share-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: transform 0.2s;
+            background: rgba(255,255,255,0.1);
+        }
+        .share-btn:hover { transform: scale(1.1); }
+        .share-whatsapp { background: #25D366; }
+        .share-telegram { background: #0088cc; }
+        
+        /* MARKDOWN STYLES */
+        .post-text-body h1, .post-text-body h2, .post-text-body h3 { margin-top: 10px; color: #fff; }
+        .post-text-body p { margin-bottom: 10px; }
+        .post-text-body pre { background: #1a1a1a; padding: 10px; border-radius: 6px; overflow-x: auto; border: 1px solid #333; }
+        .post-text-body code { background: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 4px; font-family: monospace; color: #f1c40f; }
+        .post-text-body blockquote { border-left: 3px solid #0066b3; margin: 10px 0; padding-left: 10px; color: #aaa; background: rgba(255,255,255,0.05); padding: 10px; }
+        .post-text-body ul, .post-text-body ol { padding-left: 20px; margin-bottom: 10px; }
+        .post-text-body img { max-width: 100%; border-radius: 6px; }
+    </style>
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
     <div id="webgl-container"></div>
 
     <header>
-      <a href="index.html" class="logo-container">
+      <a href="/forum" class="logo-container">
         <div class="logo">
           <i class="fas fa-comments" style="color: #0066b3"></i>
         </div>
@@ -61,7 +105,7 @@
     </header>
 
     <main class="container">
-      <a href="forum.html" class="back-link">
+      <a href="/forum" class="back-link">
         <i class="fas fa-chevron-left"></i> Back to topics
       </a>
 
@@ -318,6 +362,7 @@
     </form>
   </div>
 </div>
+    <script src="./js/translations.js"></script>
     <script src="./js/script.js"></script>
     <script src="./js/live.js"></script>
     <script src="./js/topic.js"></script>

@@ -49,6 +49,7 @@ export async function onRequestPost(context) {
           username: user.username,
           avatar: user.avatar_url,
           lang: user.preferred_lang,
+          role: user.role,
         },
       }),
       { status: 200 },

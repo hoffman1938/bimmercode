@@ -9,7 +9,11 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
-  "categories": ["automotive", "utilities", "tools"],
+  "categories": [
+    "automotive",
+    "utilities",
+    "tools"
+  ],
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -24,7 +28,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/ico.svg",
+      "src": "/assets/icons/ico.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
@@ -51,14 +55,24 @@
       "short_name": "Search",
       "description": "Search BMW diagnostic codes",
       "url": "/?action=search",
-      "icons": [{ "src": "/icon-search.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icon-search.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Forum",
       "short_name": "Forum",
       "description": "BMW Community Forum",
-      "url": "/forum.html",
-      "icons": [{ "src": "/icon-forum.png", "sizes": "96x96" }]
+      "url": "/forum",
+      "icons": [
+        {
+          "src": "/icon-forum.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ],
   "related_applications": [],

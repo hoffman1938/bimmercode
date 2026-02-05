@@ -52,6 +52,13 @@ export async function onRequestPost(context) {
       .bind(user_id)
       .first();
 
+    // 3. REPUTATION: +10 points to solution author
+    if (post && String(post.user_id) !== String(user_id)) {
+        await db.prepare("UPDATE users SET reputation = COALESCE(reputation, 0) + 10 WHERE id = ?")
+            .bind(post.user_id)
+            .run();
+    }
+
     if (post && String(post.user_id) !== String(user_id)) {
       await db
         .prepare(

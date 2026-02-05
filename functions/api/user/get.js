@@ -26,7 +26,10 @@ export async function onRequestGet(context) {
     delete user.password_hash;
 
     return new Response(JSON.stringify(user), {
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" 
+      },
       status: 200,
     });
   } catch (e) {

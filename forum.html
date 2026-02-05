@@ -17,20 +17,27 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
     <div id="webgl-container"></div>
 
     <header>
-      <a href="index.html" class="logo-container">
+      <a href="/forum" class="logo-container">
         <div class="logo">
           <i class="fas fa-comments" style="color: #0066b3"></i>
         </div>
         <h1>BimmerCodes <span style="color: var(--bmw-sky)">Forum</span></h1>
       </a>
       <div class="controls">
-        <!-- Кнопка языка -->
+         <a
+          href="/"
+          class="btn"
+          style="background: transparent; border: none"
+        >
+          <i class="fas fa-home"></i>
+        </a>
         <button
           class="btn"
           id="forum-language-toggle"
@@ -43,19 +50,10 @@
         >
           <i class="fas fa-globe"></i> <span id="forum-lang-display">EN</span>
         </button>
-
         <div class="notification-btn" onclick="toggleNotifications()">
           <i class="fas fa-bell"></i>
           <span id="notif-badge" class="notif-badge">0</span>
         </div>
-
-        <a
-          href="index.html"
-          class="btn"
-          style="background: transparent; border: none"
-        >
-          <i class="fas fa-home"></i>
-        </a>
         <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
           <i class="fas fa-user"></i> <span id="btn-login-text">Login</span>
         </a>
@@ -435,6 +433,28 @@
         </form>
       </div>
     </div>
+      </div>
+    </div>
+    <!-- CODE DETAIL MODAL (Hidden by default) -->
+    <div id="code-detail-modal" class="modal">
+      <div class="modal-content" style="max-width: 600px; width: 90%;">
+        <span class="close-btn" onclick="document.getElementById('code-detail-modal').classList.remove('active')">&times;</span>
+        <div id="code-detail" class="hidden">
+           <!-- Content injected by script.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden Search Container (required for script.js compatibility) -->
+    <div id="search-container" style="display:none;"></div>
+
+    <!-- MOBILE FAB -->
+    <button class="fab-btn" onclick="openNewTopicModal()">
+      <i class="fas fa-plus"></i>
+    </button>
+
+    <script src="./data/data.js"></script>
+    <script src="./js/translations.js"></script>
     <script src="./js/script.js"></script>
     <script src="./js/forum.js"></script>
     <script src="./js/live.js"></script>

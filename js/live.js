@@ -15,7 +15,7 @@ window.toggleNotifications = function () {
 window.handleNotificationClick = async function (topicId, notifId) {
   const userDataStr = localStorage.getItem("user_data");
   if (!userDataStr) {
-    window.location.href = `topic.html?id=${topicId}`;
+    window.location.href = `/topic?id=${topicId}`;
     return;
   }
   const user = JSON.parse(userDataStr);
@@ -30,9 +30,9 @@ window.handleNotificationClick = async function (topicId, notifId) {
         notification_ids: [notifId],
       }),
     });
-    window.location.href = `topic.html?id=${topicId}`;
+    window.location.href = `/topic?id=${topicId}`;
   } catch (e) {
-    window.location.href = `topic.html?id=${topicId}`;
+    window.location.href = `/topic?id=${topicId}`;
   }
 };
 

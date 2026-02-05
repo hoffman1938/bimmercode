@@ -31,6 +31,13 @@ export async function onRequest(context) {
         params.push(`%${search}%`);
       }
 
+      // Filter by User ID (for Profile Page)
+      const userId = url.searchParams.get("user_id");
+      if (userId) {
+        conditions.push("t.user_id = ?");
+        params.push(userId);
+      }
+
       if (conditions.length > 0) {
         query += " WHERE " + conditions.join(" AND ");
       }
@@ -56,12 +63,16 @@ export async function onRequest(context) {
       const data = await request.json();
 
       if (!data.title || !data.content || !data.user_id) {
-        return new Response(JSON.stringify({ error: "Missing fields" }), {
+        return new Response(JSON.stringify({ error: "Missing fields: " + JSON.stringify(data) }), {
           status: 400,
         });
       }
 
-      const topicId = crypto.randomUUID();
+      // Generate UUID (polyfill-ish)
+      const topicId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+      });
 
       await db
         .prepare(

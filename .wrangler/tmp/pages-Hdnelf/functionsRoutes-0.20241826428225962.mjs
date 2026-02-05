@@ -1,3 +1,4 @@
+import { onRequestGet as __api_admin_promote_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/promote.js"
 import { onRequestPost as __api_auth_login_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/login.js"
 import { onRequestPost as __api_auth_register_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/register.js"
 import { onRequestPost as __api_forum_delete_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/delete.js"
@@ -15,6 +16,13 @@ import { onRequestGet as __images__filename__js_onRequestGet } from "/Users/gior
 
 export const routes = [
     {
+      routePath: "/api/admin/promote",
+      mountPath: "/api/admin",
+      method: "GET",
+      middlewares: [],
+      modules: [__api_admin_promote_js_onRequestGet],
+    },
+  {
       routePath: "/api/auth/login",
       mountPath: "/api/auth",
       method: "POST",

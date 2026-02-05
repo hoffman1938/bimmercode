@@ -24,6 +24,15 @@ export async function onRequestPost(context) {
         .prepare("DELETE FROM post_likes WHERE user_id = ? AND post_id = ?")
         .bind(user_id, post_id)
         .run();
+        
+      // REPUTATION: -1 point
+       const postInfo = await db.prepare("SELECT user_id FROM posts WHERE id = ?").bind(post_id).first();
+       if (postInfo && String(postInfo.user_id) !== String(user_id)) {
+           await db.prepare("UPDATE users SET reputation = MAX(0, COALESCE(reputation, 0) - 1) WHERE id = ?")
+             .bind(postInfo.user_id)
+             .run();
+       }
+
     } else {
       // Ставим лайк (Like)
       await db
@@ -49,9 +58,14 @@ export async function onRequestPost(context) {
 
       if (
         post &&
-        post.user_id !== parseInt(user_id) &&
-        post.user_id !== user_id
+        String(post.user_id) !== String(user_id)
       ) {
+        
+        // REPUTATION: +1 point
+        await db.prepare("UPDATE users SET reputation = COALESCE(reputation, 0) + 1 WHERE id = ?")
+            .bind(post.user_id)
+            .run();
+
         // Проверка типов ID
         await db
           .prepare(

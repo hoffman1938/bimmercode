@@ -28,74 +28,7 @@ let selectedCode = null;
 let chatOpen = false;
 let debounceTimer;
 // UI Text Translations
-const translations = {
-  en: {
-    savedBtn: "Saved",
-    savedTitle: "Saved Codes",
-    emptySaved: "You haven't saved any codes yet.",
-    forumBtn: "Forum",
-    searchPlaceholder: "Enter DTC code (e.g. 102613) or P-code...",
-    emptyStateMessage: "BMW Diagnostic Database",
-    emptyStateSubMessage: "Search for engine, transmission, and body codes.",
-    noResultsMessage: "No codes found",
-    description: "System Diagnosis",
-    possibleSolutions: "Repair Plan",
-    applicableModels: "Models",
-    engineCodes: "Engines",
-    category: "System",
-    footer: "BMW DTC Bot © 2026 • Diagnostic Data",
-    partsBtn: "RealOEM (Parts)",
-    catalogBtn: "Catalog Search",
-    obdLabel: "OBD-II Code:",
-    chatTitle: "BMW AI Expert",
-    chatStatus: "Connected to Database",
-    chatPlaceholder: "Describe issue (e.g. 'smoke', 'misfire')...",
-  },
-  ru: {
-    savedBtn: "Избранное",
-    savedTitle: "Избранные коды",
-    emptySaved: "Вы еще не сохранили ни одного кода.",
-    forumBtn: "Форум",
-    searchPlaceholder: "Введите код ошибки (напр. 102613)...",
-    emptyStateMessage: "База диагностики BMW",
-    emptyStateSubMessage: "Поиск кодов двигателя, трансмиссии и кузова.",
-    noResultsMessage: "Код не найден",
-    description: "Диагностика системы",
-    possibleSolutions: "План ремонта",
-    applicableModels: "Модели",
-    engineCodes: "Двигатели",
-    category: "Система",
-    footer: "BMW DTC Bot © 2026 • Диагностика",
-    partsBtn: "Запчасти (RealOEM)",
-    catalogBtn: "Поиск в каталоге",
-    obdLabel: "Код OBD-II:",
-    chatTitle: "ИИ Эксперт BMW",
-    chatStatus: "Подключено к базе",
-    chatPlaceholder: "Опишите проблему (напр. 'дым', 'троит')...",
-  },
-  ka: {
-    savedBtn: "შენახული",
-    savedTitle: "შენახული კოდები",
-    emptySaved: "თქვენ ჯერ არ შეგინახავთ კოდები.",
-    forumBtn: "ფორუმი",
-    searchPlaceholder: "შეიყვანეთ კოდი (მაგ. 102613)...",
-    emptyStateMessage: "BMW დიაგნოსტიკური ბაზა",
-    emptyStateSubMessage: "მოძებნეთ ძრავის და სისტემის კოდები.",
-    noResultsMessage: "კოდი ვერ მოიძებნა",
-    description: "სისტემის დიაგნოსტიკა",
-    possibleSolutions: "შეკეთების გეგმა",
-    applicableModels: "მოდელები",
-    engineCodes: "ძრავები",
-    category: "სისტემა",
-    footer: "BMW DTC Bot © 2026 • დიაგნოსტიკის კოდები",
-    partsBtn: "ნაწილები (RealOEM)",
-    catalogBtn: "კატალოგში ძებნა",
-    obdLabel: "OBD-II კოდი:",
-    chatTitle: "BMW-ს AI ექსპერტი",
-    chatStatus: "დაკავშირებულია ბაზასთან",
-    chatPlaceholder: "აღწერეთ პრობლემა (მაგ. 'ბოლი')...",
-  },
-};
+// Removed local translations object in favor of global APP_TRANSLATIONS in js/translations.js
 
 // ==========================================
 // 2. CORE FUNCTIONS
@@ -103,12 +36,23 @@ const translations = {
 
 function displayCodeDetail(code) {
   selectedCode = code;
-  const lang = currentLanguage;
-  const t = translations[lang];
+  const lang = currentLanguage || "en";
+  const t = APP_TRANSLATIONS[lang] || APP_TRANSLATIONS["en"];
 
-  searchContainer.classList.add("hidden");
-  codeDetail.classList.remove("hidden");
-  window.scrollTo(0, 0);
+  // FORUM COMPATIBILITY KEY:
+  const forumModal = document.getElementById("code-detail-modal");
+  
+  if (forumModal) {
+      // We are on forum page -> Open modal
+      forumModal.classList.add("active");
+      const codeDetail = document.getElementById("code-detail");
+      if(codeDetail) codeDetail.classList.remove("hidden");
+  } else {
+      // Main page behavior
+      if(searchContainer) searchContainer.classList.add("hidden");
+      if(codeDetail) codeDetail.classList.remove("hidden");
+      window.scrollTo(0, 0);
+  }
 
   // Безопасная проверка данных
   const engine =
@@ -220,7 +164,7 @@ window.toggleFavoritesModal = function () {
 function renderFavoritesList() {
   const list = document.getElementById("favorites-list");
   const favorites = JSON.parse(localStorage.getItem("bmwFavorites")) || [];
-  const t = translations[currentLanguage];
+  const t = APP_TRANSLATIONS[currentLanguage] || APP_TRANSLATIONS["en"];
 
   list.innerHTML = "";
 
@@ -267,6 +211,12 @@ function renderFavoritesList() {
 window.hideDetail = function () {
   const detailEl = document.getElementById("code-detail");
   const searchEl = document.getElementById("search-container");
+  const forumModal = document.getElementById("code-detail-modal");
+
+  if (forumModal) {
+    forumModal.classList.remove("active");
+    // Also clear content or reset if needed
+  }
 
   if (detailEl) detailEl.classList.add("hidden");
   if (searchEl) searchEl.classList.remove("hidden");
@@ -285,7 +235,7 @@ function initWizard() {
   if (document.getElementById("wizard-widget")) return;
 
   const lang = currentLanguage;
-  const t = translations[lang];
+  const t = APP_TRANSLATIONS[lang];
 
   const wizardHTML = `
     <div id="wizard-widget">
@@ -331,6 +281,36 @@ function initWizard() {
       }
     });
 }
+
+window.updateChatbotUI = function () {
+  const lang = currentLanguage || "en";
+  const t = APP_TRANSLATIONS[lang] || APP_TRANSLATIONS["en"];
+
+  // Update static elements
+  const titleEl = document.getElementById("chat-bot-title");
+  if (titleEl) titleEl.textContent = t.chatTitle;
+
+  const inputEl = document.getElementById("chat-input");
+  if (inputEl) inputEl.placeholder = t.chatPlaceholder;
+  
+  // Update status (complex structure)
+  const statusEl = document.querySelector(".bot-status");
+  if (statusEl) {
+      statusEl.innerHTML = `<div class="status-dot"></div> ${t.chatStatus}`;
+  }
+
+  // Reset chat history to show greeting in new language
+  const chatBody = document.getElementById("chat-body");
+  if (chatBody) {
+    // Keep typing indicator
+    const indicator = document.getElementById("typing-indicator");
+    chatBody.innerHTML = ""; 
+    if(indicator) chatBody.appendChild(indicator);
+    
+    // Resend greeting
+    sendBotGreeting();
+  }
+};
 
 window.toggleChat = function () {
   const chatWindow = document.getElementById("chat-window");
@@ -384,38 +364,48 @@ function analyzeRequest(query) {
   indicator.style.display = "none";
   const lang = currentLanguage;
 
-  const terms = query
-    .toLowerCase()
-    .split(" ")
-    .filter((t) => t.length > 2);
-  if (terms.length === 0 && query.length > 0) terms.push(query.toLowerCase());
 
-  let matches = bmwCodes.map((code) => {
-    let score = 0;
-    if (code.code.toLowerCase().includes(query.toLowerCase())) score += 100;
-    if (
-      code.pCodes &&
-      code.pCodes.some((p) => p.toLowerCase().includes(query.toLowerCase()))
-    )
-      score += 100;
 
-    terms.forEach((term) => {
-      if (code.title[lang] && code.title[lang].toLowerCase().includes(term))
-        score += 10;
-      if (
-        code.description[lang] &&
-        code.description[lang].toLowerCase().includes(term)
-      )
-        score += 5;
-      if (
-        code.solutions[lang] &&
-        code.solutions[lang].join(" ").toLowerCase().includes(term)
-      )
-        score += 3;
-      if (code.title.en.toLowerCase().includes(term)) score += 2;
-    });
-    return { code, score };
-  });
+  // 2. SEARCH (FUSE.JS or MANUAL)
+  let matches = [];
+
+  if (typeof Fuse !== "undefined") {
+     // === FUSE.JS FUZZY SEARCH ===
+     const options = {
+        keys: [
+          { name: 'code', weight: 1.0 },
+          { name: `title.${lang}`, weight: 0.8 },
+          { name: `description.${lang}`, weight: 0.4 },
+          { name: 'pCodes', weight: 0.9 }
+        ],
+        threshold: 0.35,
+        ignoreLocation: true
+     };
+     const fuse = new Fuse(bmwCodes, options);
+     // Fuse returns { item, score, refIndex }
+     const fuseRes = fuse.search(query);
+     // Convert to our format. Fuse score: 0 is perfect, 1 is mismatch.
+     matches = fuseRes.map(r => ({ code: r.item, score: (1 - r.score) * 100 }));
+  } 
+  
+  // FALLBACK if Fuse missing or no results (Manual Scan)
+  if (matches.length === 0) {
+      const terms = query.toLowerCase().split(" ").filter((t) => t.length > 2);
+      if (terms.length === 0 && query.length > 0) terms.push(query.toLowerCase());
+
+      matches = bmwCodes.map((code) => {
+        let score = 0;
+        if (code.code.toLowerCase().includes(query.toLowerCase())) score += 100;
+        if (code.pCodes && code.pCodes.some((p) => p.toLowerCase().includes(query.toLowerCase()))) score += 100;
+
+        terms.forEach((term) => {
+          if (code.title[lang] && code.title[lang].toLowerCase().includes(term)) score += 10;
+          if (code.description[lang] && code.description[lang].toLowerCase().includes(term)) score += 5;
+          if (code.solutions[lang] && code.solutions[lang].join(" ").toLowerCase().includes(term)) score += 3;
+        });
+        return { code, score };
+      });
+  }
 
   const results = matches
     .filter((m) => m.score > 0)
@@ -464,11 +454,28 @@ function analyzeRequest(query) {
       ka: "ვერ ვიპოვე. სცადეთ სიტყვები: 'ტურბინა', 'სენსორი' ან კოდი.",
     };
     addMessage(notFound[lang], "bot");
+
+    // === "ASK COMMUNITY" BUTTON ===
+    const askBtn = document.createElement("button");
+    askBtn.className = "chat-option-btn";
+    askBtn.style.background = "#e74c3c";
+    askBtn.style.marginTop = "10px";
+    askBtn.innerHTML = `<i class="fas fa-users"></i> Ask Community`;
+    askBtn.onclick = () => {
+       // Open new topic modal pre-filled
+       // We can redirect to forum with params
+       window.location.href = `/forum?new_topic=true&title=${encodeURIComponent(query)}`;
+    };
+    const chatBody = document.getElementById("chat-body");
+    chatBody.insertBefore(askBtn, document.getElementById("typing-indicator"));
+
     showQuickChips();
   }
   const chatBody = document.getElementById("chat-body");
   chatBody.scrollTop = chatBody.scrollHeight;
 }
+
+
 
 function addMessage(text, sender) {
   const chatBody = document.getElementById("chat-body");
@@ -520,7 +527,7 @@ function showQuickChips() {
 }
 
 function updateChatUI() {
-  const t = translations[currentLanguage];
+  const t = APP_TRANSLATIONS[currentLanguage];
   const titleEl = document.getElementById("chat-bot-title");
   const statusEl = document.querySelector("#chat-window .bot-status");
   const inputEl = document.getElementById("chat-input");
@@ -733,7 +740,7 @@ async function init() {
     await refreshUserData();
     // 1. Инициализация (как было)
     if (typeof getMockData === "function") bmwCodes = getMockData();
-    const response = await fetch("../data/codes.json");
+    const response = await fetch("/data/codes.json");
     if (response.ok) {
       const data = await response.json();
       bmwCodes = [...bmwCodes, ...data.codes];
@@ -989,7 +996,7 @@ function updateLanguage() {
     if (span) span.textContent = langLabels[currentLanguage];
   }
 
-  const text = translations[currentLanguage];
+  const text = APP_TRANSLATIONS[currentLanguage];
 
   // 2. Обновляем поиск (если он есть)
   if (searchInput) {
@@ -1094,7 +1101,8 @@ function renderResults(codes) {
 
 function init3DBackground() {
   if (typeof THREE === "undefined") {
-    console.warn("THREE.js not loaded yet");
+    // Retry initialization if library is not ready
+    setTimeout(init3DBackground, 100);
     return;
   }
   const container = document.getElementById("webgl-container");
@@ -1218,8 +1226,8 @@ async function refreshUserData() {
   if (!user) return; // Если не залогинен - выходим
 
   try {
-    // Запрашиваем свежие данные из базы
-    const res = await fetch(`/api/user/get?id=${user.id}`);
+    // Запрашиваем свежие данные из базы (с anti-cache)
+    const res = await fetch(`/api/user/get?id=${user.id}&t=${Date.now()}`);
     if (res.ok) {
       const freshUser = await res.json();
 
@@ -1230,11 +1238,52 @@ async function refreshUserData() {
 
         // Обновляем шапку сайта сразу же
         checkAuthStatus();
-        // Если мы на странице форума - обновляем сайдбар
+        // Если мы на странице форума - обновляем сайдбар и хедер
         if (typeof updateSidebarUser === "function") updateSidebarUser();
+        if (typeof updateHeaderAuth === "function") updateHeaderAuth();
       }
     }
   } catch (e) {
     console.warn("Failed to refresh user data", e);
   }
 }
+
+// === SERVICE WORKER REGISTRATION (PWA) ===
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log("SW registered");
+      })
+      .catch((err) => {
+        console.log("SW registration failed: ", err);
+      });
+  });
+}
+
+// === AUTO-REFRESH USER DATA ===
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof refreshUserData === "function") {
+    refreshUserData();
+  }
+
+
+  // Check for search params
+  const params = new URLSearchParams(window.location.search);
+  const codeParam = params.get("code");
+  if (codeParam && searchInput) {
+      searchInput.value = codeParam;
+      
+      // Poll until bmwCodes is populated
+      const checkData = setInterval(() => {
+          if (bmwCodes && bmwCodes.length > 0) {
+              clearInterval(checkData);
+              if (typeof handleSearch === "function") handleSearch();
+          }
+      }, 100);
+      
+      // Safety timeout to stop polling
+      setTimeout(() => clearInterval(checkData), 5000);
+  }
+});

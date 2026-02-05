@@ -1,89 +1,8 @@
 // js/forum.js
 
 // Переводы UI
-const forumTranslations = {
-  en: {
-    allTopics: "All Topics",
-    diagnostics: "Diagnostics",
-    codingSoft: "Coding & Soft",
-    partsRepair: "Parts & Repair",
-    offTopic: "Off-Topic",
-    searchPlaceholder: "Search topics or codes...",
-    newTopic: "New Topic",
-    replies: "replies",
-    views: "views",
-    solved: "Solved",
-    by: "by",
-    noTopics: "No topics found.",
-    loadError: "Failed to load topics.",
-    loginToPost: "Join the community to post",
-    loginRegister: "Login / Register",
-    member: "Member",
-    notifications: "Notifications",
-    noNotifications: "No notifications",
-    likedPost: "liked your post in",
-    markedSolution: "marked solution in",
-    repliedTo: "replied to",
-    createTopic: "Create New Topic",
-    publish: "Publish Topic",
-    loading: "Loading...",
-    translating: "Translating...",
-  },
-  ru: {
-    allTopics: "Все темы",
-    diagnostics: "Диагностика",
-    codingSoft: "Кодирование",
-    partsRepair: "Запчасти",
-    offTopic: "Оффтоп",
-    searchPlaceholder: "Поиск тем или кодов...",
-    newTopic: "Новая тема",
-    replies: "ответов",
-    views: "просм.",
-    solved: "Решено",
-    by: "от",
-    noTopics: "Темы не найдены.",
-    loadError: "Ошибка загрузки.",
-    loginToPost: "Войдите, чтобы писать",
-    loginRegister: "Вход / Регистрация",
-    member: "Участник",
-    notifications: "Уведомления",
-    noNotifications: "Нет уведомлений",
-    likedPost: "лайкнул ваш пост",
-    markedSolution: "отметил решение",
-    repliedTo: "ответил в",
-    createTopic: "Создать тему",
-    publish: "Опубликовать",
-    loading: "Загрузка...",
-    translating: "Перевод...",
-  },
-  ka: {
-    allTopics: "ყველა თემა",
-    diagnostics: "დიაგნოსტიკა",
-    codingSoft: "კოდირება",
-    partsRepair: "ნაწილები",
-    offTopic: "სხვა",
-    searchPlaceholder: "თემების ძებნა...",
-    newTopic: "ახალი თემა",
-    replies: "პასუხი",
-    views: "ნახვა",
-    solved: "გადაწყვეტილი",
-    by: "-",
-    noTopics: "თემები ვერ მოიძებნა.",
-    loadError: "ჩატვირთვის შეცდომა.",
-    loginToPost: "შედით საზოგადოებაში",
-    loginRegister: "შესვლა / რეგისტრაცია",
-    member: "მონაწილე",
-    notifications: "შეტყობინებები",
-    noNotifications: "შეტყობინებები არ არის",
-    likedPost: "მოიწონა თქვენი პოსტი",
-    markedSolution: "მონიშნა გადაწყვეტა",
-    repliedTo: "უპასუხა",
-    createTopic: "თემის შექმნა",
-    publish: "გამოქვეყნება",
-    loading: "იტვირთება...",
-    translating: "ითარგმნება...",
-  },
-};
+// Translations are now loaded from js/translations.js
+// using APP_TRANSLATIONS global object
 
 let currentForumLang = localStorage.getItem("forumLanguage") || "en";
 let currentSearchTerm = "";
@@ -99,7 +18,31 @@ document.addEventListener("DOMContentLoaded", () => {
   updateSidebarUser();
   checkNotifications();
   setupForumSearch();
+  // Ensure global currentLanguage matches forum language
+  if (typeof currentLanguage !== "undefined") {
+      currentLanguage = currentForumLang;
+  }
+  
   updateForumLanguage();
+  setupSimilarTopics();
+  updateHeaderAuth(); // New function
+  
+  // Check for pre-fill params from AI Chat
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("new_topic") === "true") {
+      const title = urlParams.get("title");
+      if (title) {
+          setTimeout(() => {
+              openNewTopicModal();
+              const titleInput = document.getElementById("topic-title");
+              if (titleInput) {
+                  titleInput.value = title;
+                  // Trigger input event to show similar topics
+                  titleInput.dispatchEvent(new Event('input'));
+              }
+          }, 500); // Small delay to ensure translations loaded
+      }
+  }
 
   setInterval(checkNotifications, 15000);
 });
@@ -177,6 +120,14 @@ async function switchForumLanguage() {
   let idx = langs.indexOf(currentForumLang);
   currentForumLang = langs[(idx + 1) % langs.length];
   localStorage.setItem("forumLanguage", currentForumLang);
+  
+  // SYNC WITH CHATBOT/SCRIPT.JS
+  if (typeof currentLanguage !== "undefined") {
+    currentLanguage = currentForumLang;
+    localStorage.setItem("language", currentForumLang); // Sync persistence
+    if (window.updateChatbotUI) window.updateChatbotUI();
+  }
+  
   updateForumLanguage();
 
   // Перерендерим с переводом
@@ -186,7 +137,10 @@ async function switchForumLanguage() {
 }
 
 function updateForumLanguage() {
-  const t = forumTranslations[currentForumLang];
+  if (!APP_TRANSLATIONS) return;
+  const t = APP_TRANSLATIONS[currentForumLang] || APP_TRANSLATIONS["en"];
+  if (!t) return;
+  
   const langLabels = { en: "EN", ru: "RU", ka: "KA" };
 
   const langDisplay = document.getElementById("forum-lang-display");
@@ -223,7 +177,7 @@ function updateForumLanguage() {
     sidebarInfo.innerHTML = `
       <div style="text-align: center; padding: 20px 0">
         <p style="color: #aaa; margin-bottom: 10px">${t.loginToPost}</p>
-        <button class="btn" onclick="toggleAuthModal()" style="width: 100%">${t.loginRegister}</button>
+        <button class="submit-btn" onclick="toggleAuthModal()">${t.loginRegister}</button>
       </div>
     `;
   }
@@ -237,13 +191,62 @@ function updateForumLanguage() {
 
   const notifHeader = document.querySelector(".notif-header");
   if (notifHeader) notifHeader.textContent = t.notifications;
+
+  // REAL-TIME VALIDATION FOR CODE INPUT
+  const codeInput = document.getElementById("topic-code");
+  if (codeInput) {
+      // Remove any existing feedback to prevent duplicates
+      const existing = document.getElementById("code-validation-feedback");
+      if (existing) existing.remove();
+
+      // Create feedback element
+      const feedback = document.createElement("div");
+      feedback.id = "code-validation-feedback";
+      feedback.style.fontSize = "12px";
+      feedback.style.marginTop = "5px";
+      feedback.style.height = "20px"; // Reserve space
+      feedback.style.transition = "all 0.3s ease";
+      codeInput.parentNode.appendChild(feedback);
+
+      codeInput.addEventListener("input", (e) => {
+           const val = e.target.value.trim().toLowerCase();
+           if (!val) {
+               codeInput.style.borderColor = "";
+               feedback.textContent = "";
+               return;
+           }
+
+           const found = bmwCodes && bmwCodes.find(c => c.code.toLowerCase() === val);
+           
+           if (found) {
+               codeInput.style.borderColor = "#2ecc71";
+               feedback.style.color = "#2ecc71";
+               feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${found.code} - ${found.title[currentForumLang] || found.title['en']}`;
+           } else {
+               codeInput.style.borderColor = "#e74c3c";
+               feedback.style.color = "#e74c3c";
+               feedback.textContent = APP_TRANSLATIONS[currentForumLang].invalidCodeError || "Code not found in database";
+           }
+      });
+  }
+
+
 }
 
 // === ЗАГРУЗКА ТЕМ ===
 async function fetchTopics(category = "all", search = "") {
   const container = document.getElementById("topics-list-container");
-  const t = forumTranslations[currentForumLang];
-  container.innerHTML = `<div style="padding:40px; text-align:center;"><i class="fas fa-circle-notch fa-spin"></i> ${t.loading}</div>`;
+  const t = APP_TRANSLATIONS[currentForumLang];
+  // SKELETON LOADING
+  container.innerHTML = Array(5).fill(0).map(() => `
+    <div class="skeleton-row">
+      <div class="skeleton-icon"></div>
+      <div class="skeleton-content">
+        <div class="skeleton-line long"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+    </div>
+  `).join('');
   try {
     let url = `/api/forum/topics?category=${category}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
@@ -264,7 +267,7 @@ async function fetchTopics(category = "all", search = "") {
 
 async function renderTopicsWithTranslation(topics) {
   const container = document.getElementById("topics-list-container");
-  const t = forumTranslations[currentForumLang];
+  const t = APP_TRANSLATIONS[currentForumLang];
   container.innerHTML = `<div style="padding:40px; text-align:center;"><i class="fas fa-language fa-spin"></i> ${t.translating}</div>`;
 
   const translatedTopics = await Promise.all(
@@ -277,7 +280,7 @@ async function renderTopicsWithTranslation(topics) {
   container.innerHTML = translatedTopics
     .map(
       (topic) => `
-      <div class="topic-row" onclick="window.location.href='topic.html?id=${topic.id}'">
+      <div class="topic-row" onclick="window.location.href='/topic?id=${topic.id}'">
         <div class="topic-status-icon ${topic.is_solved ? "solved" : ""}">
           <i class="fas ${topic.is_solved ? "fa-check-circle" : "fa-comment-alt"}"></i>
         </div>
@@ -290,7 +293,7 @@ async function renderTopicsWithTranslation(topics) {
           </h3>
           <div class="topic-meta-line">
             ${topic.is_solved ? `<span class="topic-badge" style="color:#2ecc71; border-color:#2ecc71;">${t.solved}</span>` : ""}
-            ${topic.related_code ? `<span class="topic-badge topic-code-badge">${topic.related_code}</span>` : ""}
+            ${topic.related_code ? `<a href="/?code=${topic.related_code}" class="topic-badge topic-code-badge" style="text-decoration:none; color:inherit;"><i class="fas fa-search"></i> ${topic.related_code}</a>` : ""}
             <span class="topic-badge">${topic.category}</span>
             <span>${t.by} <span style="color:#fff">${topic.username}</span></span>
             <span>${timeAgo(topic.created_at)}</span>
@@ -325,13 +328,13 @@ async function checkNotifications() {
     }
 
     const list = document.getElementById("notif-list");
-    const t = forumTranslations[currentForumLang];
+    const t = APP_TRANSLATIONS[currentForumLang];
 
     if (list && notifs.length > 0) {
       list.innerHTML = notifs
         .map(
           (n) => `
-          <div class="notif-item ${!n.is_read ? "unread" : ""}" onclick="window.location.href='topic.html?id=${n.topic_id}'">
+          <div class="notif-item ${!n.is_read ? "unread" : ""}" onclick="window.location.href='/topic?id=${n.topic_id}'">
             <div class="notif-icon"><i class="fas ${getNotifIcon(n.type)}"></i></div>
             <div>
               <div style="font-weight:bold;">${n.sender_name}</div>
@@ -345,9 +348,8 @@ async function checkNotifications() {
   } catch (e) {}
 }
 
-function toggleNotifications() {
-  document.getElementById("notifications-dropdown").classList.toggle("active");
-}
+// Duplicate toggleNotifications removed (handled by live.js)
+
 
 function getNotifIcon(type) {
   return type === "like"
@@ -384,6 +386,19 @@ document
     // Берем данные
     const title = document.getElementById("topic-title").value;
     const content = document.getElementById("topic-content").value;
+    const relatedCode = document.getElementById("topic-code").value.trim();
+
+    // VALIDATION: Check if code exists in bmwCodes
+    if (relatedCode) {
+         // Using global bmwCodes from script.js
+         const exists = bmwCodes && bmwCodes.some(c => c.code.toLowerCase() === relatedCode.toLowerCase());
+         if (!exists) {
+             alert(APP_TRANSLATIONS[currentForumLang].invalidCodeError || "Invalid error code. Please enter a valid code from our database or leave it empty.");
+             btn.disabled = false;
+             btn.textContent = APP_TRANSLATIONS[currentForumLang].publish;
+             return; 
+         }
+    }
 
     // ОПРЕДЕЛЯЕМ ЯЗЫК НА ОСНОВЕ ТОГО, ЧТО НАПИСАЛ ЮЗЕР
     const detectedLang = detectContentLanguage(title + " " + content);
@@ -398,17 +413,17 @@ document
           category: document.getElementById("topic-category").value,
           title: title,
           content: content,
-          related_code: document.getElementById("topic-code").value,
+          related_code: relatedCode || null,
           lang: detectedLang, // Используем определенный язык!
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        window.location.href = `topic.html?id=${data.topicId}`;
+        window.location.href = `/topic?id=${data.topicId}`;
       } else {
         alert("Error: " + data.error);
-        btn.textContent = forumTranslations[currentForumLang].publish;
+        btn.textContent = APP_TRANSLATIONS[currentForumLang].publish;
         btn.disabled = false;
       }
     } catch (err) {
@@ -437,7 +452,7 @@ function filterTopics(cat) {
 function updateSidebarUser() {
   const user = JSON.parse(localStorage.getItem("user_data"));
   const container = document.getElementById("user-sidebar-info");
-  const t = forumTranslations[currentForumLang];
+  const t = APP_TRANSLATIONS[currentForumLang];
 
   if (user && container) {
     // Проверяем, есть ли ссылка на фото
@@ -448,11 +463,24 @@ function updateSidebarUser() {
       avatarHTML = `<div class="user-avatar-large">${user.username[0].toUpperCase()}</div>`;
     }
 
+    // Determine role badge
+    let roleBadge = `<span class="user-badge badge-newcomer" style="margin-top:5px; display:inline-block;"><i class="fas fa-user"></i> ${t.member}</span>`;
+    if (user.role === 'admin') roleBadge = '<span class="user-badge badge-admin" style="margin-top:5px; display:inline-block;"><i class="fas fa-shield-alt"></i> Admin</span>';
+
     container.innerHTML = `
       <div class="user-mini-profile">
         ${avatarHTML}
-        <h3 style="color:white; margin-bottom:5px;">${user.username}</h3>
-        <p style="color:#aaa; font-size:12px;">${t.member}</p>
+        <h3 style="color:white; margin:10px 0 5px;">${escapeHtml(user.username)}</h3>
+        ${roleBadge}
+        
+        <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+            <a href="/profile" class="btn" style="padding: 8px; font-size: 13px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: #ddd;">
+                <i class="fas fa-user-circle"></i> Profile
+            </a>
+            <button onclick="logout()" class="btn" style="padding: 8px; font-size: 13px; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.3); color: #e74c3c;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
       </div>
     `;
   }
@@ -500,4 +528,81 @@ function escapeHtml(text) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+// === SIMILAR TOPICS SUGGESTIONS ===
+function setupSimilarTopics() {
+  const titleInput = document.getElementById("topic-title");
+  if (!titleInput) return;
+
+  // Create suggestions container
+  let similarContainer = document.getElementById("similar-topics-suggestions");
+  if (!similarContainer) {
+    similarContainer = document.createElement("div");
+    similarContainer.id = "similar-topics-suggestions";
+    similarContainer.style.cssText =
+      "max-height:0; overflow:hidden; transition:max-height 0.3s; margin-top:5px;";
+    titleInput.parentNode.appendChild(similarContainer);
+  }
+
+  titleInput.addEventListener("input", (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    if (query.length < 3) {
+      similarContainer.style.maxHeight = "0";
+      return;
+    }
+
+    // Search in originalTopicsData
+    const matches = originalTopicsData
+      .filter((t) => t.title.toLowerCase().includes(query))
+      .slice(0, 3);
+
+    if (matches.length > 0) {
+      similarContainer.innerHTML = `
+                <div style="font-size:12px; color:#aaa; margin-bottom:5px;">Similar topics found:</div>
+                ${matches
+                  .map(
+                    (m) => `
+                    <div style="background:rgba(255,255,255,0.05); padding:8px; margin-bottom:5px; border-radius:4px; font-size:13px;">
+                        <a href="/topic?id=${m.id}" target="_blank" style="color:white; text-decoration:none; display:block; display:flex; align-items:center; gap:5px;">
+                            <i class="fas fa-external-link-alt" style="font-size:10px; color:#0066b3;"></i> 
+                            <span>${escapeHtml(m.title)}</span>
+                        </a>
+                    </div>
+                `,
+                  )
+                  .join("")}
+            `;
+      similarContainer.style.maxHeight = "300px";
+    } else {
+      similarContainer.style.maxHeight = "0";
+    }
+  });
+}
+
+function updateHeaderAuth() {
+  const user = JSON.parse(localStorage.getItem("user_data"));
+  const authBtn = document.getElementById("auth-btn");
+  if (!authBtn) return;
+
+  if (user) {
+    let avatarIcon = '<i class="fas fa-user"></i>';
+    if (user.avatar_url) {
+        avatarIcon = `<img src="${user.avatar_url}" style="width:20px; height:20px; border-radius:50%; object-fit:cover;">`;
+    }
+
+    authBtn.innerHTML = `${avatarIcon} <span style="font-size:12px; margin-left:5px;">${user.username}</span>`;
+    authBtn.onclick = (e) => {
+        // Redirect to profile
+        window.location.href = "profile.html"; 
+    };
+    authBtn.href = "profile.html";
+    authBtn.title = "Go to Profile";
+  } else {
+    // Guest
+    authBtn.innerHTML = '<i class="fas fa-user-circle"></i>';
+    authBtn.onclick = toggleAuthModal;
+    authBtn.href = "#";
+    authBtn.title = "Login / Register";
+  }
 }

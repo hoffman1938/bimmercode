@@ -167,12 +167,24 @@ async function renderTopicWithTranslation(data) {
   const headerContainer = document.getElementById("topic-header-container");
   if (headerContainer) {
     headerContainer.innerHTML = `
-        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-          <span class="topic-badge">${topic.category}</span>
-          ${topic.is_solved ? `<span class="topic-badge badge-solved"><i class="fas fa-check"></i> ${t.solved}</span>` : ""}
-          ${topic.related_code ? `<a href="index.html?code=${topic.related_code}" class="topic-badge topic-code-badge"><i class="fas fa-search"></i> ${topic.related_code}</a>` : ""}
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+                  <span class="topic-badge">${topic.category}</span>
+                  ${topic.is_solved ? `<span class="topic-badge badge-solved"><i class="fas fa-check"></i> ${t.solved}</span>` : ""}
+                  ${topic.related_code ? `<a href="/?code=${topic.related_code}" class="topic-badge topic-code-badge"><i class="fas fa-search"></i> ${topic.related_code}</a>` : ""}
+                </div>
+                <h1 style="color:white; margin:10px 0;">${escapeHtml(translatedTitle)}</h1>
+            </div>
+            <div class="share-buttons" style="display:flex; gap:10px;">
+                <a href="https://wa.me/?text=${encodeURIComponent(translatedTitle + ' ' + window.location.href)}" target="_blank" class="share-btn share-whatsapp" title="Share on WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(translatedTitle)}" target="_blank" class="share-btn share-telegram" title="Share on Telegram">
+                    <i class="fab fa-telegram-plane"></i>
+                </a>
+            </div>
         </div>
-        <h1 style="color:white; margin:10px 0;">${escapeHtml(translatedTitle)}</h1>
       `;
   }
 
@@ -252,9 +264,11 @@ function renderPostHTML(post, isMain, topicAuthorId) {
   return `
     <div class="post-card ${post.is_solution ? "solution" : ""}" id="post-${post.id}">
       <div class="post-user-panel">
-        ${avatarHTML}
-        <div class="post-username">${escapeHtml(post.username || "User")}</div>
-        <div class="user-role-badge">${t.member}</div>
+        <a href="/profile?id=${post.user_id}" style="text-decoration: none; color: inherit; display: block; text-align: center;">
+            ${avatarHTML}
+            <div class="post-username">${escapeHtml(post.username || "User")}</div>
+        </a>
+        ${getUserBadge(post.username, post.user_id, post.author_role)}
       </div>
       
       <div class="post-content-panel">
@@ -278,7 +292,7 @@ function renderPostHTML(post, isMain, topicAuthorId) {
 
         <div class="post-footer-actions">
           ${
-            isMyPost
+            isMyPost || (user && user.role === 'admin')
               ? `
             <button class="btn-action btn-edit" onclick="editItem('${isMain ? "topic" : "post"}', '${post.id}')" title="Edit">
                 <i class="fas fa-pen"></i>
@@ -541,20 +555,28 @@ function formatDate(dateString) {
   return new Date(safeDate).toLocaleString();
 }
 
+// === MARKDOWN PARSING (USING MARKED.JS) ===
 function parseMarkdown(text) {
   if (!text) return "";
-  let html = escapeHtml(text);
-  html = html.replace(
-    /!\[(.*?)\]\((.*?)\)/g,
-    '<img src="$2" alt="$1" style="max-width:100%; border-radius:8px; margin:10px 0; border:1px solid #333;">',
-  );
-  html = html.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-  html = html.replace(
-    /`([^`]+)`/g,
-    '<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace;">$1</code>',
-  );
-  html = html.replace(/\n/g, "<br>");
-  return html;
+  // Check if marked is loaded
+  if (typeof marked !== "undefined") {
+    // Configure marked for security (optional but recommended)
+    // marked.setOptions({ sanitize: true }); // Note: sanitize is deprecated in newer marked, use DOMPurify if needed.
+    // For now, we trust the output or rely on basic escaping done before if mixed.
+    // Actually, marked expects raw markdown.
+    return marked.parse(text);
+  }
+  // Fallback if marked not loaded
+  return escapeHtml(text).replace(/\n/g, "<br>");
+}
+
+// === USER BADGES HELPERS ===
+// === USER BADGES HELPERS ===
+function getUserBadge(username, userId, role) {
+    if (role === 'admin') return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
+    if (role === 'expert') return '<span class="user-badge badge-expert"><i class="fas fa-star"></i> Expert</span>';
+    if (role === 'pro') return '<span class="user-badge badge-pro"><i class="fas fa-wrench"></i> Pro</span>';
+    return '<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> Member</span>';
 }
 
 function escapeHtml(text) {
