@@ -309,43 +309,10 @@ async function renderTopicsWithTranslation(topics) {
     .join("");
 }
 
+// Notification logic is handled by js/live.js
 async function checkNotifications() {
-  const user = JSON.parse(localStorage.getItem("user_data"));
-  if (!user) return;
-
-  try {
-    const res = await fetch(`/api/notifications?user_id=${user.id}`);
-    if (!res.ok) return;
-
-    const notifs = await res.json();
-    const unreadCount = notifs.filter((n) => !n.is_read).length;
-
-    const badge = document.getElementById("notif-badge");
-    if (badge) {
-      badge.textContent = unreadCount;
-      if (unreadCount > 0) badge.classList.add("visible");
-      else badge.classList.remove("visible");
-    }
-
-    const list = document.getElementById("notif-list");
-    const t = APP_TRANSLATIONS[currentForumLang];
-
-    if (list && notifs.length > 0) {
-      list.innerHTML = notifs
-        .map(
-          (n) => `
-          <div class="notif-item ${!n.is_read ? "unread" : ""}" onclick="window.location.href='/topic?id=${n.topic_id}'">
-            <div class="notif-icon"><i class="fas ${getNotifIcon(n.type)}"></i></div>
-            <div>
-              <div style="font-weight:bold;">${n.sender_name}</div>
-              <div>${getNotifText(n.type, t)} "${escapeHtml(n.topic_title)}"</div>
-            </div>
-          </div>
-        `,
-        )
-        .join("");
-    }
-  } catch (e) {}
+  // Deprecated in favor of live.js
+  return;
 }
 
 // Duplicate toggleNotifications removed (handled by live.js)

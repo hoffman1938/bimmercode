@@ -1263,6 +1263,108 @@ if ("serviceWorker" in navigator) {
 }
 
 // === AUTO-REFRESH USER DATA ===
+// Custom Alert & Confirm Implementation
+function createCustomModal(type) {
+    let overlay = document.querySelector('.custom-alert-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay'; // Reuses existing styles
+        document.body.appendChild(overlay);
+    }
+    
+    // Reset content for new usage
+    overlay.innerHTML = `
+        <div class="custom-alert-box">
+            <div class="custom-alert-icon"><i class="fas"></i></div>
+            <div class="custom-alert-message"></div>
+            <div class="custom-alert-actions"></div>
+        </div>
+    `;
+    
+    const icon = overlay.querySelector('.custom-alert-icon i');
+    if (type === 'error') {
+        icon.className = 'fas fa-exclamation-circle';
+        icon.style.color = '#e74c3c';
+    } else if (type === 'success') {
+        icon.className = 'fas fa-check-circle';
+        icon.style.color = '#2ecc71';
+    } else if (type === 'confirm') {
+        icon.className = 'fas fa-question-circle';
+        icon.style.color = '#f1c40f';
+    } else {
+        icon.className = 'fas fa-info-circle';
+        icon.style.color = '#0066b3';
+    }
+    
+    return overlay;
+}
+
+function showCustomAlert(message, type = 'info') {
+    return new Promise((resolve) => {
+        const overlay = createCustomModal(type);
+        overlay.querySelector('.custom-alert-message').textContent = message;
+        
+        const btn = document.createElement('button');
+        btn.className = 'custom-alert-btn';
+        btn.textContent = 'OK';
+        btn.onclick = () => {
+            closeCustomModal();
+            resolve();
+        };
+        
+        overlay.querySelector('.custom-alert-actions').appendChild(btn);
+        
+        // Show
+        setTimeout(() => overlay.classList.add('active'), 10);
+    });
+}
+
+function showCustomConfirm(message) {
+    return new Promise((resolve) => {
+        const overlay = createCustomModal('confirm');
+        overlay.querySelector('.custom-alert-message').textContent = message;
+        
+        const actions = overlay.querySelector('.custom-alert-actions');
+        
+        const btnCancel = document.createElement('button');
+        btnCancel.className = 'custom-alert-btn cancel';
+        btnCancel.textContent = 'Cancel';
+        btnCancel.onclick = () => {
+            closeCustomModal();
+            resolve(false);
+        };
+        
+        const btnOk = document.createElement('button');
+        btnOk.className = 'custom-alert-btn';
+        btnOk.textContent = 'Confirm';
+        btnOk.onclick = () => {
+            closeCustomModal();
+            resolve(true);
+        };
+        
+        actions.appendChild(btnCancel);
+        actions.appendChild(btnOk);
+        
+        setTimeout(() => overlay.classList.add('active'), 10);
+    });
+}
+
+function closeCustomModal() {
+    const overlay = document.querySelector('.custom-alert-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            if(overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }, 300);
+    }
+}
+
+// Override native alert
+window.alert = function(msg) {
+    showCustomAlert(msg);
+};
+
+// Start of original script
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof refreshUserData === "function") {
     refreshUserData();

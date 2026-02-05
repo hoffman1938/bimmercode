@@ -167,16 +167,16 @@ async function renderTopicWithTranslation(data) {
   const headerContainer = document.getElementById("topic-header-container");
   if (headerContainer) {
     headerContainer.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+        <div class="topic-header-row">
+            <div class="topic-header-main">
+                <div class="topic-meta-badges">
                   <span class="topic-badge">${topic.category}</span>
                   ${topic.is_solved ? `<span class="topic-badge badge-solved"><i class="fas fa-check"></i> ${t.solved}</span>` : ""}
                   ${topic.related_code ? `<a href="/?code=${topic.related_code}" class="topic-badge topic-code-badge"><i class="fas fa-search"></i> ${topic.related_code}</a>` : ""}
                 </div>
-                <h1 style="color:white; margin:10px 0;">${escapeHtml(translatedTitle)}</h1>
+                <h1>${escapeHtml(translatedTitle)}</h1>
             </div>
-            <div class="share-buttons" style="display:flex; gap:10px;">
+            <div class="share-buttons">
                 <a href="https://wa.me/?text=${encodeURIComponent(translatedTitle + ' ' + window.location.href)}" target="_blank" class="share-btn share-whatsapp" title="Share on WhatsApp">
                     <i class="fab fa-whatsapp"></i>
                 </a>
@@ -192,14 +192,12 @@ async function renderTopicWithTranslation(data) {
   const sidebarCard = document.querySelector(".sidebar-card");
   if (sidebarCard) {
     sidebarCard.innerHTML = `
-      <div style="padding:20px;">
-        <h3 style="color: white; margin-bottom: 15px; font-family:'Exo 2'">${t.topicInfo}</h3>
-        <div style="color: #aaa; font-size: 14px; line-height: 2">
-            <div><i class="fas fa-eye" style="width:20px; text-align:center; color:#0066b3"></i> ${t.views}: <span style="color:white; font-weight:bold">${topic.views}</span></div>
-            <div><i class="fas fa-calendar" style="width:20px; text-align:center; color:#0066b3"></i> ${t.created}: <span style="color:white">${formatDate(topic.created_at)}</span></div>
-            <div><i class="fas fa-check-circle" style="width:20px; text-align:center; color:#0066b3"></i> ${t.status}: <span style="color:${topic.is_solved ? "#2ecc71" : "white"}">${topic.is_solved ? t.solved : t.open}</span></div>
+        <h3>${t.topicInfo}</h3>
+        <div class="topic-info-list" style="margin-top:15px;">
+            <div class="topic-info-item"><i class="fas fa-eye"></i> ${t.views}: <span style="font-weight:bold; margin-left:auto; color: white;">${topic.views}</span></div>
+            <div class="topic-info-item"><i class="fas fa-calendar"></i> ${t.created}: <span style="margin-left:auto; color: white;">${formatDateShort(topic.created_at)}</span></div>
+            <div class="topic-info-item"><i class="fas fa-check-circle"></i> ${t.status}: <span style="margin-left:auto; color:${topic.is_solved ? "#2ecc71" : "white"}">${topic.is_solved ? t.solved : t.open}</span></div>
         </div>
-      </div>
     `;
   }
 
@@ -279,10 +277,10 @@ function renderPostHTML(post, isMain, topicAuthorId) {
           </div>
           ${
             post.is_solution
-              ? `<span style="color:#2ecc71; font-weight:bold;"><i class="fas fa-check"></i> ${t.solution}</span>`
+              ? `<span class="badge-solution"><i class="fas fa-check"></i> ${t.solution}</span>`
               : isMain
-                ? `<span style="opacity:0.5; border:1px solid #555; padding:1px 5px; border-radius:4px; font-size:10px;">${t.op}</span>`
-                : `<span style="opacity:0.5">#${post.id.slice(0, 4)}</span>`
+                ? `<span class="badge-op">${t.op}</span>`
+                : `<span class="badge-pid">#${post.id.slice(0, 4)}</span>`
           }
         </div>
         
@@ -500,7 +498,7 @@ async function likePost(postId) {
 }
 
 async function markSolution(postId) {
-  if (!confirm(topicTranslations[currentTopicLang].confirmSolution)) return;
+  if (!await showCustomConfirm(topicTranslations[currentTopicLang].confirmSolution)) return;
   await fetch("/api/forum/solve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -514,7 +512,7 @@ async function markSolution(postId) {
 }
 
 async function deleteItem(type, id) {
-  if (!confirm("Are you sure you want to delete this?")) return;
+  if (!await showCustomConfirm("Are you sure you want to delete this?")) return;
   try {
     const res = await fetch("/api/forum/delete", {
       method: "POST",
@@ -772,4 +770,12 @@ async function saveEdit(type, id) {
     console.error(e);
     alert("Connection error");
   }
+}
+
+function formatDateShort(dateString) {
+  if (!dateString) return "";
+  const safeDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
+  // Format as DD/MM/YYYY
+  const d = new Date(safeDate);
+  return d.toLocaleDateString();
 }
