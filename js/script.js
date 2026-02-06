@@ -576,16 +576,137 @@ function switchAuthTab(tab) {
 }
 
 // 2. Логика Регистрации
+// 2. Логика Регистрации
+
+// --- Recovery Logic (Global Scope) ---
+window.showRecoveryModal = function() {
+  toggleAuthModal(); // Close auth modal
+  const modal = document.getElementById("recovery-modal");
+  if(modal) {
+      modal.classList.add("active");
+      document.getElementById("recovery-step-1").classList.add("active");
+      document.getElementById("recovery-step-2").classList.remove("active");
+      const msg = document.getElementById("rec-msg-1");
+      if(msg) msg.textContent = "";
+      document.getElementById("rec-email").value = "";
+  }
+};
+
+window.closeRecoveryModal = function() {
+  const modal = document.getElementById("recovery-modal");
+  if(modal) modal.classList.remove("active");
+};
+
 function setupRegisterForm() {
   const regForm = document.getElementById("register-form");
+
+  // Recovery Event Listeners (Ensure they attach even if regForm is missing)
+  const step1 = document.getElementById("recovery-step-1");
+  if (step1) {
+      step1.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("rec-email").value;
+        const msg = document.getElementById("rec-msg-1");
+        const btn = e.target.querySelector("button");
+        
+        try {
+            btn.textContent = "Checking...";
+            msg.textContent = "";
+            
+            const res = await fetch("/api/auth/get_recovery_question", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ email })
+            });
+            
+            const data = await res.json();
+            
+            if(res.ok) {
+                document.getElementById("recovery-step-1").classList.remove("active");
+                document.getElementById("recovery-step-2").classList.add("active");
+                
+                const qMap = {
+                    "first_pet": "What was your first pet's name?",
+                    "mother_maiden": "What is your mother's maiden name?",
+                    "first_car": "What was your first car model?",
+                    "city_born": "In which city were you born?"
+                };
+                const qText = qMap[data.question] || data.question;
+                const display = document.getElementById("rec-question-display");
+                if(display) display.textContent = qText;
+                
+            } else {
+                msg.textContent = data.error || "User not found";
+                msg.style.color = "#e74c3c";
+            }
+        } catch(err) {
+            msg.textContent = "Connection error";
+        } finally {
+            btn.textContent = "Continue";
+        }
+      });
+  }
+
+  const step2 = document.getElementById("recovery-step-2");
+  if (step2) {
+      step2.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("rec-email").value;
+        const answer = document.getElementById("rec-answer").value;
+        const newPassword = document.getElementById("rec-new-password").value;
+        const msg = document.getElementById("rec-msg-2");
+        const btn = e.target.querySelector("button");
+
+        try {
+            btn.textContent = "Resetting...";
+            msg.textContent = "";
+            
+            const res = await fetch("/api/auth/recover", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ email, answer, newPassword })
+            });
+            
+            const data = await res.json();
+            
+            if(res.ok) {
+                msg.textContent = "Success! Login now.";
+                msg.style.color = "#2ecc71";
+                setTimeout(() => {
+                    closeRecoveryModal();
+                    toggleAuthModal();
+                }, 2000);
+            } else {
+                msg.textContent = data.error || "Incorrect answer";
+                msg.style.color = "#e74c3c";
+            }
+        } catch(err) {
+            msg.textContent = "Connection error";
+        } finally {
+            btn.textContent = "Reset Password";
+        }
+      });
+  }
+
   if (!regForm) return;
+
+// Listeners moved to global scope setup
+// ...
 
   regForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("reg-username").value;
     const email = document.getElementById("reg-email").value;
     const password = document.getElementById("reg-password").value;
+    const question = document.getElementById("reg-question").value;
+    const answer = document.getElementById("reg-answer").value;
     const msg = document.getElementById("reg-msg");
+
+    if(!question || !answer) {
+        msg.textContent = "Please select a security question and answer.";
+        msg.style.color = "#e74c3c";
+        return;
+    }
 
     msg.style.color = "#aaa";
     msg.textContent = "Processing...";
@@ -600,6 +721,8 @@ function setupRegisterForm() {
           email,
           password,
           language: currentLanguage,
+          security_question: question,
+          security_answer: answer
         }),
       });
 

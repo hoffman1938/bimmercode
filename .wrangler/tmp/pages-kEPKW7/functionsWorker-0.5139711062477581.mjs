@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-59S3w3/checked-fetch.js
+// ../.wrangler/tmp/bundle-avETRT/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -69,6 +69,30 @@ async function onRequestGet(context) {
 }
 __name(onRequestGet, "onRequestGet");
 
+// api/auth/get_recovery_question.js
+async function onRequestPost2(context) {
+  const { request, env } = context;
+  try {
+    const { email } = await request.json();
+    if (!email) {
+      return new Response(JSON.stringify({ error: "Email is required" }), { status: 400 });
+    }
+    const user = await env.DB.prepare(
+      "SELECT security_question FROM users WHERE email = ?"
+    ).bind(email).first();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+    }
+    if (!user.security_question) {
+      return new Response(JSON.stringify({ error: "No security question set for this account" }), { status: 400 });
+    }
+    return new Response(JSON.stringify({ question: user.security_question }), { status: 200 });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+__name(onRequestPost2, "onRequestPost");
+
 // lib/jwt.js
 async function sign(text, secret) {
   const encoder = new TextEncoder();
@@ -108,7 +132,7 @@ async function verifyPassword(password, storedHash) {
 __name(verifyPassword, "verifyPassword");
 
 // api/auth/login.js
-async function onRequestPost2(context) {
+async function onRequestPost3(context) {
   const { request, env } = context;
   try {
     const { email, password } = await request.json();
@@ -151,7 +175,40 @@ async function onRequestPost2(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost2, "onRequestPost");
+__name(onRequestPost3, "onRequestPost");
+
+// api/auth/recover.js
+async function onRequestPost4(context) {
+  const { request, env } = context;
+  try {
+    const { email, answer, newPassword } = await request.json();
+    if (!email || !answer || !newPassword) {
+      return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+    }
+    const user = await env.DB.prepare(
+      "SELECT id, security_answer_hash FROM users WHERE email = ?"
+    ).bind(email).first();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+    }
+    if (!user.security_answer_hash) {
+      return new Response(JSON.stringify({ error: "Recovery not configured for this account" }), { status: 403 });
+    }
+    const normalizedAnswer = answer.trim().toLowerCase();
+    const isValid = await verifyPassword(normalizedAnswer, user.security_answer_hash);
+    if (!isValid) {
+      return new Response(JSON.stringify({ error: "Incorrect answer" }), { status: 401 });
+    }
+    const newHash = await hashPassword(newPassword);
+    await env.DB.prepare(
+      "UPDATE users SET password_hash = ? WHERE id = ?"
+    ).bind(newHash, user.id).run();
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+__name(onRequestPost4, "onRequestPost");
 
 // lib/utils.js
 function generateId() {
@@ -160,11 +217,11 @@ function generateId() {
 __name(generateId, "generateId");
 
 // api/auth/register.js
-async function onRequestPost3(context) {
+async function onRequestPost5(context) {
   const { request, env } = context;
   try {
-    const { email, username, password, language } = await request.json();
-    if (!email || !username || !password) {
+    const { email, username, password, language, security_question, security_answer } = await request.json();
+    if (!email || !username || !password || !security_question || !security_answer) {
       return new Response(JSON.stringify({ error: "Missing fields" }), {
         status: 400
       });
@@ -179,10 +236,11 @@ async function onRequestPost3(context) {
     }
     const userId = generateId();
     const passwordHash = await hashPassword(password);
+    const answerHash = await hashPassword(security_answer.trim().toLowerCase());
     await env.DB.prepare(
-      `INSERT INTO users (id, email, username, password_hash, preferred_lang, created_at) 
-       VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
-    ).bind(userId, email, username, passwordHash, language || "en").run();
+      `INSERT INTO users (id, email, username, password_hash, preferred_lang, security_question, security_answer_hash, created_at) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
+    ).bind(userId, email, username, passwordHash, language || "en", security_question, answerHash).run();
     return new Response(JSON.stringify({ success: true, userId }), {
       status: 201
     });
@@ -190,10 +248,10 @@ async function onRequestPost3(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost3, "onRequestPost");
+__name(onRequestPost5, "onRequestPost");
 
 // api/forum/delete.js
-async function onRequestPost4(context) {
+async function onRequestPost6(context) {
   const { request, env } = context;
   try {
     const { type, id, user_id } = await request.json();
@@ -230,10 +288,10 @@ async function onRequestPost4(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost4, "onRequestPost");
+__name(onRequestPost6, "onRequestPost");
 
 // api/forum/edit.js
-async function onRequestPost5(context) {
+async function onRequestPost7(context) {
   const { request, env } = context;
   try {
     const { type, id, user_id, content } = await request.json();
@@ -265,10 +323,10 @@ async function onRequestPost5(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost5, "onRequestPost");
+__name(onRequestPost7, "onRequestPost");
 
 // api/forum/like.js
-async function onRequestPost6(context) {
+async function onRequestPost8(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -325,10 +383,10 @@ async function onRequestPost6(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost6, "onRequestPost");
+__name(onRequestPost8, "onRequestPost");
 
 // api/forum/solve.js
-async function onRequestPost7(context) {
+async function onRequestPost9(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -376,10 +434,10 @@ async function onRequestPost7(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost7, "onRequestPost");
+__name(onRequestPost9, "onRequestPost");
 
 // api/notifications/read-all.js
-async function onRequestPost8(context) {
+async function onRequestPost10(context) {
   const { request, env } = context;
   try {
     const { user_id } = await request.json();
@@ -393,7 +451,7 @@ async function onRequestPost8(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost8, "onRequestPost");
+__name(onRequestPost10, "onRequestPost");
 
 // api/user/get.js
 async function onRequestGet2(context) {
@@ -427,7 +485,7 @@ async function onRequestGet2(context) {
 __name(onRequestGet2, "onRequestGet");
 
 // api/user/update.js
-async function onRequestPost9(context) {
+async function onRequestPost11(context) {
   const { request, env } = context;
   try {
     const { id, avatar_url, bio, car_model } = await request.json();
@@ -455,7 +513,7 @@ async function onRequestPost9(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-__name(onRequestPost9, "onRequestPost");
+__name(onRequestPost11, "onRequestPost");
 
 // api/forum/topic.js
 async function onRequest(context) {
@@ -785,7 +843,7 @@ async function onRequestGet4(context) {
 }
 __name(onRequestGet4, "onRequestGet");
 
-// ../.wrangler/tmp/pages-8HJrGS/functionsRoutes-0.4232085862606698.mjs
+// ../.wrangler/tmp/pages-kEPKW7/functionsRoutes-0.0080710807736466.mjs
 var routes = [
   {
     routePath: "/api/notifications/:id/read",
@@ -802,53 +860,67 @@ var routes = [
     modules: [onRequestGet]
   },
   {
-    routePath: "/api/auth/login",
+    routePath: "/api/auth/get_recovery_question",
     mountPath: "/api/auth",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost2]
   },
   {
-    routePath: "/api/auth/register",
+    routePath: "/api/auth/login",
     mountPath: "/api/auth",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost3]
   },
   {
-    routePath: "/api/forum/delete",
-    mountPath: "/api/forum",
+    routePath: "/api/auth/recover",
+    mountPath: "/api/auth",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost4]
   },
   {
-    routePath: "/api/forum/edit",
-    mountPath: "/api/forum",
+    routePath: "/api/auth/register",
+    mountPath: "/api/auth",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost5]
   },
   {
-    routePath: "/api/forum/like",
+    routePath: "/api/forum/delete",
     mountPath: "/api/forum",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost6]
   },
   {
-    routePath: "/api/forum/solve",
+    routePath: "/api/forum/edit",
     mountPath: "/api/forum",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost7]
   },
   {
+    routePath: "/api/forum/like",
+    mountPath: "/api/forum",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPost8]
+  },
+  {
+    routePath: "/api/forum/solve",
+    mountPath: "/api/forum",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPost9]
+  },
+  {
     routePath: "/api/notifications/read-all",
     mountPath: "/api/notifications",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost8]
+    modules: [onRequestPost10]
   },
   {
     routePath: "/api/user/get",
@@ -862,7 +934,7 @@ var routes = [
     mountPath: "/api/user",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost9]
+    modules: [onRequestPost11]
   },
   {
     routePath: "/api/forum/topic",
@@ -1395,7 +1467,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-59S3w3/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-avETRT/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1427,7 +1499,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-59S3w3/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-avETRT/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -1527,4 +1599,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default as default
 };
-//# sourceMappingURL=functionsWorker-0.9651419429931245.mjs.map
+//# sourceMappingURL=functionsWorker-0.5139711062477581.mjs.map

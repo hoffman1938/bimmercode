@@ -1,6 +1,8 @@
 import { onRequestPost as __api_notifications__id__read_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/[id]/read.js"
 import { onRequestGet as __api_admin_promote_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/promote.js"
+import { onRequestPost as __api_auth_get_recovery_question_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/get_recovery_question.js"
 import { onRequestPost as __api_auth_login_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/login.js"
+import { onRequestPost as __api_auth_recover_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/recover.js"
 import { onRequestPost as __api_auth_register_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/register.js"
 import { onRequestPost as __api_forum_delete_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/delete.js"
 import { onRequestPost as __api_forum_edit_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/edit.js"
@@ -32,11 +34,25 @@ export const routes = [
       modules: [__api_admin_promote_js_onRequestGet],
     },
   {
+      routePath: "/api/auth/get_recovery_question",
+      mountPath: "/api/auth",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_auth_get_recovery_question_js_onRequestPost],
+    },
+  {
       routePath: "/api/auth/login",
       mountPath: "/api/auth",
       method: "POST",
       middlewares: [],
       modules: [__api_auth_login_js_onRequestPost],
+    },
+  {
+      routePath: "/api/auth/recover",
+      mountPath: "/api/auth",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_auth_recover_js_onRequestPost],
     },
   {
       routePath: "/api/auth/register",

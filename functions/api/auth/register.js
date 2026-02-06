@@ -5,10 +5,10 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const { email, username, password, language } = await request.json();
+    const { email, username, password, language, security_question, security_answer } = await request.json();
 
     // 1. Валидация
-    if (!email || !username || !password) {
+    if (!email || !username || !password || !security_question || !security_answer) {
       return new Response(JSON.stringify({ error: "Missing fields" }), {
         status: 400,
       });
@@ -30,13 +30,14 @@ export async function onRequestPost(context) {
     // 3. Создание пользователя
     const userId = generateId();
     const passwordHash = await hashPassword(password);
+    const answerHash = await hashPassword(security_answer.trim().toLowerCase()); // Normalize answer
 
     // Вставляем в D1
     await env.DB.prepare(
-      `INSERT INTO users (id, email, username, password_hash, preferred_lang, created_at) 
-       VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      `INSERT INTO users (id, email, username, password_hash, preferred_lang, security_question, security_answer_hash, created_at) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
     )
-      .bind(userId, email, username, passwordHash, language || "en")
+      .bind(userId, email, username, passwordHash, language || "en", security_question, answerHash)
       .run();
 
     return new Response(JSON.stringify({ success: true, userId }), {

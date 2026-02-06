@@ -243,15 +243,13 @@
             />
           </div>
           <button type="submit" class="submit-btn">Sign In</button>
+                    <div style="text-align: right; margin-bottom: 15px;">
+              <a href="#" onclick="showRecoveryModal(); return false;" style="color: var(--bmw-blue); font-size: 13px; text-decoration: none;">Forgot Password?</a>
+          </div>
           <p
             id="login-msg"
             style="text-align: center; margin-top: 10px; min-height: 20px"
           ></p>
-
-          <div
-            id="google-signin-btn"
-            style="display: flex; justify-content: center"
-          ></div>
         </form>
 
         <!-- Register Form -->
@@ -279,7 +277,23 @@
               required
             />
           </div>
-          <button type="submit" class="submit-btn">Create Account</button>
+
+          <div class="input-group" style="margin-top: 15px;">
+            <i class="fas fa-question-circle"></i>
+            <select id="reg-question" required style="width: 100%; background: transparent; border: none; color: white; outline: none; padding: 10px;">
+                <option value="" disabled selected>Select Security Question</option>
+                <option value="first_pet">What was your first pet's name?</option>
+                <option value="mother_maiden">What is your mother's maiden name?</option>
+                <option value="first_car">What was your first car model?</option>
+                <option value="city_born">In which city were you born?</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-key"></i>
+            <input type="text" id="reg-answer" placeholder="Security Answer" required />
+          </div>
+
+          <button type="submit" class="submit-btn" style="margin-top: 15px;">Create Account</button>
           <p
             id="reg-msg"
             style="text-align: center; margin-top: 10px; min-height: 20px"
@@ -287,6 +301,50 @@
         </form>
       </div>
     </div>
+
+    <!-- Password Recovery Modal -->
+    <div id="recovery-modal" class="auth-modal">
+      <div class="auth-content">
+        <button class="close-auth" onclick="closeRecoveryModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h2 style="
+    font-size: 23px;
+    place-self: anchor-center;
+    margin-bottom: 10px;
+">Reset Password</h2>
+        
+        <!-- Step 1: Email -->
+        <form id="recovery-step-1" class="auth-form active">
+            <p style="text-align: center; color: #ccc; margin-bottom: 20px; font-size: 14px;">Enter your email to find your account.</p>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="rec-email" placeholder="Email Address" required />
+            </div>
+            <button type="submit" class="submit-btn">Continue</button>
+            <p class="auth-msg" id="rec-msg-1"></p>
+        </form>
+
+        <!-- Step 2: Question & New Password -->
+        <form id="recovery-step-2" class="auth-form">
+            <p id="rec-question-display" style="text-align: center; color: #fff; margin-bottom: 20px; font-weight: bold;"></p>
+            
+            <div class="input-group">
+                <i class="fas fa-key"></i>
+                <input type="text" id="rec-answer" placeholder="Your Answer" required />
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="rec-new-password" placeholder="New Password" required minlength="8" />
+            </div>
+
+            <button type="submit" class="submit-btn">Reset Password</button>
+            <p class="auth-msg" id="rec-msg-2"></p>
+        </form>
+      </div>
+    </div>
+
     <div id="profile-modal" class="auth-modal">
       <div class="auth-content" style="max-width: 400px">
         <button class="close-auth" onclick="toggleProfileModal()">
