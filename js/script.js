@@ -662,7 +662,7 @@ function setupLoginForm() {
 
         // 3. Показываем успех и закрываем окно
         msg.style.color = "#2ecc71";
-        msg.textContent = "Welcome back!";
+        msg.textContent = "Welcome!";
 
         setTimeout(() => {
           toggleAuthModal(); // Закрываем модалку
