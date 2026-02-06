@@ -241,7 +241,9 @@ __name2(generateId, "generateId");
 async function onRequestPost5(context) {
   const { request, env } = context;
   try {
-    const { email, username, password, language, security_question, security_answer } = await request.json();
+    const body = await request.clone().json();
+    console.log("Register Payload:", JSON.stringify(body, null, 2));
+    const { email, username, password, language, security_question, security_answer } = body;
     if (!email || !username || !password || !security_question || !security_answer) {
       return new Response(JSON.stringify({ error: "Missing fields" }), {
         status: 400

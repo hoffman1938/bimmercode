@@ -710,20 +710,22 @@ function setupRegisterForm() {
 
     msg.style.color = "#aaa";
     msg.textContent = "Processing...";
+    const payload = {
+          username,
+          email,
+          password,
+          language: (typeof currentLanguage !== 'undefined') ? currentLanguage : "en",
+          security_question: question,
+          security_answer: answer
+    };
+    console.log("Sending Registration:", payload);
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // currentLanguage берем из вашей переменной в script.js
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          language: currentLanguage,
-          security_question: question,
-          security_answer: answer
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();

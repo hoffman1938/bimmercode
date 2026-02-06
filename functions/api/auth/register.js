@@ -5,7 +5,9 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const { email, username, password, language, security_question, security_answer } = await request.json();
+    const body = await request.clone().json();
+    console.log("Register Payload:", JSON.stringify(body, null, 2));
+    const { email, username, password, language, security_question, security_answer } = body;
 
     // 1. Валидация
     if (!email || !username || !password || !security_question || !security_answer) {
