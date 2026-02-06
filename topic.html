@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Discussion | BimmerCodes</title>
 
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/responsive.css" />
-    <link rel="stylesheet" href="./css/forum.css" />
+    <link rel="stylesheet" href="./css/style.css?v=2.6" />
+    <link rel="stylesheet"  />
+    <link rel="stylesheet" href="./css/forum.css?v=2.6" />
+    <link rel="stylesheet" href="./css/responsive.css?v=2.6" />
+
     <style>
         /* Markdown Specific Styles overrides */
         .post-text-body pre { background: #1a1a1a; padding: 10px; border-radius: 6px; overflow-x: auto; border: 1px solid #333; }
@@ -27,6 +29,10 @@
     <div id="webgl-container"></div>
 
     <header>
+      <button class="burger-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
+
       <a href="/forum" class="logo-container">
         <div class="logo">
           <i class="fas fa-comments" style="color: #0066b3"></i>
@@ -48,10 +54,6 @@
           <i class="fas fa-globe"></i> <span id="topic-lang-display">EN</span>
         </button>
 
-        <div class="btn notification-btn" onclick="toggleNotifications()">
-          <i class="fas fa-bell"></i>
-          <span id="notif-badge" class="notif-badge">0</span>
-        </div>
 
         <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
           <i class="fas fa-user"></i> <span id="btn-login-text">Login</span>
@@ -67,6 +69,19 @@
         </div>
       </div>
     </header>
+
+    <!-- MOBILE OFF-CANVAS MENU -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    <aside class="mobile-offcanvas">
+        <div class="offcanvas-header">
+            <h2>Menu</h2>
+            <button class="close-offcanvas" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="offcanvas-content" id="mobile-menu-content">
+             <!-- Content will be injected by JS -->
+             <a href="/forum" class="nav-item"><i class="fas fa-chevron-left"></i> Back to Forum</a>
+        </div>
+    </aside>
 
     <main class="container">
       <a href="/forum" class="back-link">
@@ -327,8 +342,8 @@
   </div>
 </div>
     <script src="./js/translations.js"></script>
-    <script src="./js/script.js"></script>
-    <script src="./js/live.js"></script>
-    <script src="./js/topic.js"></script>
+    <script src="./js/script.js?v=2.6"></script>
+    <script src="./js/live.js?v=2.6"></script>
+    <script src="./js/topic.js?v=2.6"></script>
 </body>
 </html>

@@ -58,14 +58,13 @@ async function loadProfile(profileId) {
 
     // Role Badges
     const badgeContainer = document.getElementById("profile-badges");
-    badgeContainer.innerHTML = "";
-    if (user.role === 'admin') {
-        badgeContainer.innerHTML += `<span class="topic-badge" style="background: #e74c3c; color: white; border: none;">ADMIN</span>`;
+    // Use global helper if available, otherwise fallback (or simple check)
+    if (typeof getReputationBadge === "function") {
+        badgeContainer.innerHTML = getReputationBadge(user.reputation, user.role);
+    } else {
+        // Fallback if script.js not loaded yet (shouldn't happen)
+        badgeContainer.innerHTML = `<span class="topic-badge">${user.role.toUpperCase()}</span>`;
     }
-    if (user.reputation > 50) {
-        badgeContainer.innerHTML += `<span class="topic-badge" style="background: #f1c40f; color: black; border: none;">EXPERT</span>`;
-    }
-    badgeContainer.innerHTML += `<span class="topic-badge">${user.role.toUpperCase()}</span>`;
 
     // 3. Stats
     document.getElementById("stat-reputation").textContent = user.reputation || 0;
@@ -91,15 +90,25 @@ async function loadProfile(profileId) {
   }
 }
 
-async function loadUserTopics(userId) {
-    const container = document.getElementById("topics-list-container");
+// Global pagination state for profile
+let currentProfilePage = 1;
+const ITEMS_PER_PAGE = 10;
+
+async function loadUserTopics(userId, page = 1) {
+    currentProfilePage = page;
+    const container = document.getElementById("profile-topics-container");
     container.innerHTML = `<div class="skeleton-row"><div class="skeleton-content"><div class="skeleton-line long"></div></div></div>`;
     
     try {
-        const res = await fetch(`/api/forum/topics?user_id=${userId}`);
-        const topics = await res.json();
+        const res = await fetch(`/api/forum/topics?user_id=${userId}&page=${page}&limit=${ITEMS_PER_PAGE}`);
+        const data = await res.json();
         
-        document.getElementById("stat-topics").textContent = topics.length;
+        // Handle new response format { topics: [], total: ... }
+        const topics = data.topics || [];
+        const total = data.total || 0;
+        const totalPages = data.totalPages || 1;
+        
+        document.getElementById("stat-topics").textContent = total;
 
         if (topics.length === 0) {
             container.innerHTML = `<div style="padding: 20px; text-align: center; color: #888;">No topics created yet.</div>`;
@@ -120,6 +129,43 @@ async function loadUserTopics(userId) {
                 </div>
             </div>
         `).join('');
+
+        // Render Pagination Controls
+        if (totalPages > 1) {
+            const paginationDiv = document.createElement("div");
+            paginationDiv.className = "pagination-controls";
+            paginationDiv.style.display = "flex";
+            paginationDiv.style.justifyContent = "center";
+            paginationDiv.style.gap = "10px";
+            paginationDiv.style.marginTop = "20px";
+
+            // Prev Button
+            if (page > 1) {
+                const prevBtn = document.createElement("button");
+                prevBtn.className = "btn secondary";
+                prevBtn.innerHTML = "<i class='fas fa-chevron-left'></i>";
+                prevBtn.onclick = () => loadUserTopics(userId, page - 1);
+                paginationDiv.appendChild(prevBtn);
+            }
+
+            // Page Info
+            const info = document.createElement("span");
+            info.style.alignSelf = "center";
+            info.style.color = "#888";
+            info.textContent = `Page ${page} of ${totalPages}`;
+            paginationDiv.appendChild(info);
+
+            // Next Button
+            if (page < totalPages) {
+                const nextBtn = document.createElement("button");
+                nextBtn.className = "btn secondary";
+                nextBtn.innerHTML = "<i class='fas fa-chevron-right'></i>";
+                nextBtn.onclick = () => loadUserTopics(userId, page + 1);
+                paginationDiv.appendChild(nextBtn);
+            }
+
+            container.appendChild(paginationDiv);
+        }
 
     } catch (err) {
         console.error(err);

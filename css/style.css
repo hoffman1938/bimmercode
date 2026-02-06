@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap");
+@import url("./notifications.css");
 
 :root {
   /* Colors */
@@ -27,6 +28,15 @@
   --sab: env(safe-area-inset-bottom);
   --sal: env(safe-area-inset-left);
   --sar: env(safe-area-inset-right);
+
+  /* Fluid Typography & Spacing */
+  --font-size-base: clamp(14px, 1.5vw, 16px);
+  --font-size-h1: clamp(24px, 5vw, 40px);
+  --font-size-h2: clamp(20px, 4vw, 32px);
+  --font-size-h3: clamp(18px, 3vw, 24px);
+  
+  --container-padding: clamp(16px, 5vw, 40px);
+  --header-height: clamp(60px, 10vh, 80px);
 }
 
 /* Reset & Base */
@@ -1041,6 +1051,88 @@ footer {
   color: white;
   transform: rotate(90deg);
 }
+
+/* Auth Forms & Inputs */
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  color: #8ba4b6;
+  font-size: 13px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.auth-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: white;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--bmw-blue);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 102, 179, 0.2);
+}
+
+.auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--bmw-blue);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 10px;
+  box-shadow: 0 10px 20px rgba(0, 102, 179, 0.3);
+}
+
+.submit-btn:hover {
+  background: var(--bmw-dark-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(0, 102, 179, 0.4);
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 12px;
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 30px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+
+.btn-logout:hover {
+  background: rgba(231, 76, 60, 0.2);
+  border-color: #e74c3c;
+}
+
 
 /* Tabs */
 .auth-tabs {

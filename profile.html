@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Profile - BimmerCodes</title>
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/forum.css" />
-    <link rel="stylesheet" href="./css/responsive.css" />
+    <link rel="stylesheet" href="./css/style.css?v=2.6" />
+    <link rel="stylesheet" href="./css/forum.css?v=2.6" />
+    <link rel="stylesheet" href="./css/responsive.css?v=2.6" />
+    <link rel="stylesheet"  />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -24,7 +25,7 @@
         <h1>User <span style="font-weight: 300">Profile</span></h1>
       </a>
 
-      <div class="header-right">
+      <div class="controls">
         <a
           href="/forum"
           class="btn"
@@ -88,7 +89,7 @@
       <!-- User's Topics -->
       <h3 style="margin-bottom: 20px; border-bottom: 1px solid var(--f-border); padding-bottom: 10px;">User Activity</h3>
       
-      <div id="topics-list-container">
+      <div id="profile-topics-container">
         <!-- Topics will be loaded here -->
         <div class="skeleton-row"></div>
       </div>
@@ -101,7 +102,10 @@
             <button class="close-auth" onclick="closeEditProfileModal()">
                 <i class="fas fa-times"></i>
             </button>
-            <h2 style="margin-bottom: 20px;">Edit Profile</h2>
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h2 style="color: white; margin: 0; font-size: 24px;">Edit Profile</h2>
+                <p style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">Update your public profile details</p>
+            </div>
             <form id="edit-profile-form" onsubmit="handleProfileUpdate(event)">
                 <div class="form-group">
                     <label>Bio</label>
@@ -115,14 +119,15 @@
                     <label>Avatar URL</label>
                     <input type="text" id="edit-avatar" class="auth-input" placeholder="https://...">
                 </div>
-                <button type="submit" class="btn" style="width: 100%;">Save Changes</button>
+                <button type="submit" class="submit-btn">Save Changes</button>
             </form>
         </div>
     </div>
 
     <script src="./js/translations.js"></script>
-    <script src="./js/script.js"></script>
-    <script src="./js/forum.js"></script> <!-- Reusing for auth logic/utils -->
+    <script src="./js/script.js?v=2.6"></script>
+    <script src="./js/forum.js?v=2.6"></script> <!-- Reusing for auth logic/utils -->
     <script src="./js/profile.js"></script>
+    <script src="./js/live.js?v=2.6"></script>
   </body>
 </html>

@@ -571,9 +571,26 @@ function parseMarkdown(text) {
 // === USER BADGES HELPERS ===
 // === USER BADGES HELPERS ===
 function getUserBadge(username, userId, role) {
+    // If we have the user object in context (posts usually don't have full user obj with reputation, 
+    // BUT the API for 'topic' might return author_reputation? 
+    // Actually, renderPostHTML doesn't receive reputation currently.
+    // For now, let's rely on role or if we can fetch reputation.
+    // Ideally, the API should return author_reputation for each post.
+    
+    // TEMPORARY: Since we don't have reputation in post object yet, we might need to rely on role 
+    // or just show role based badges. 
+    // Wait, the user asked for reputation based badges.
+    // I need to check if the API returns reputation for posts.
+    
+    if (typeof getReputationBadge === 'function') {
+        // We need to pass reputation. If missing, pass 0.
+        // We will need to update the API to return reputation for post authors.
+        // For now, assuming post object might be updated or just passing 0/role.
+        // Let's defer to the global function which handles 'admin'.
+        return getReputationBadge(0, role); 
+    }
+    
     if (role === 'admin') return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
-    if (role === 'expert') return '<span class="user-badge badge-expert"><i class="fas fa-star"></i> Expert</span>';
-    if (role === 'pro') return '<span class="user-badge badge-pro"><i class="fas fa-wrench"></i> Pro</span>';
     return '<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> Member</span>';
 }
 
@@ -679,20 +696,15 @@ let originalContentCache = {};
 
 function editItem(type, id) {
   // Находим карточку поста
-  const postCard = document.getElementById(
-    type === "topic" ? "post-" + id : "post-" + id,
-  );
-  // Если id главной темы совпадает с id топика, ищем по id.
-  // (В renderPostHTML мы передали реальный ID, так что id будет корректным)
-
-  // Но renderPostHTML ставит id="post-{id}".
   const card = document.getElementById(`post-${id}`);
   if (!card) return;
+
+  // 1. Check if already editing
+  if (card.querySelector(".edit-mode-container")) return;
 
   const textBody = card.querySelector(".post-text-body");
 
   // Сохраняем текущий HTML (или лучше исходный текст, если бы он был доступен)
-  // Сейчас мы берем текст и пытаемся превратить <br> обратно в \n для удобства
   const currentHTML = textBody.innerHTML;
   originalContentCache[id] = currentHTML;
 

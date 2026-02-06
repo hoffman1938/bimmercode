@@ -14,10 +14,19 @@ let translationCache = JSON.parse(
 );
 
 document.addEventListener("DOMContentLoaded", () => {
-  fetchTopics();
-  updateSidebarUser();
+  // Only run forum-specific logic if on the main forum page
+  const isForumMain = !!document.querySelector(".sidebar");
+
+  if (isForumMain) {
+      fetchTopics();
+      updateSidebarUser();
+      setupForumSearch();
+  } else {
+      // On profile page, we might just want generic stuff or nothing from here
+  }
+  
   checkNotifications();
-  setupForumSearch();
+
   // Ensure global currentLanguage matches forum language
   if (typeof currentLanguage !== "undefined") {
       currentLanguage = currentForumLang;
@@ -234,9 +243,15 @@ function updateForumLanguage() {
 }
 
 // === ЗАГРУЗКА ТЕМ ===
-async function fetchTopics(category = "all", search = "") {
+// === ЗАГРУЗКА ТЕМ ===
+let currentForumPage = 1;
+const FORUM_ITEMS_PER_PAGE = 20;
+
+async function fetchTopics(category = "all", search = "", page = 1) {
+  currentForumPage = page;
   const container = document.getElementById("topics-list-container");
   const t = APP_TRANSLATIONS[currentForumLang];
+  
   // SKELETON LOADING
   container.innerHTML = Array(5).fill(0).map(() => `
     <div class="skeleton-row">
@@ -247,27 +262,92 @@ async function fetchTopics(category = "all", search = "") {
       </div>
     </div>
   `).join('');
+
   try {
-    let url = `/api/forum/topics?category=${category}`;
-    if (search) url += `&search=${encodeURIComponent(search)}`;
+    let url = `/api/forum/topics?category=${category}&page=${page}&limit=${FORUM_ITEMS_PER_PAGE}`;
+    if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
+    }
+    
     const res = await fetch(url);
     if (!res.ok) throw new Error("API Error");
-    const topics = await res.json();
+    const data = await res.json();
+    
+    // Handle new response structure
+    // Handle new response structure
+    let topics = data.topics;
+    if (!Array.isArray(topics)) {
+        // Fallback or empty if invalid
+        topics = []; 
+    }
+    const total = data.total || 0;
+    const totalPages = data.totalPages || 1;
+
     if (topics.length === 0) {
       container.innerHTML = `<div style="padding:40px; text-align:center; color:#666;">${t.noTopics}</div>`;
       return;
     }
+
     originalTopicsData = topics;
     await renderTopicsWithTranslation(topics);
+    renderPagination(totalPages, page, category, search);
+
   } catch (err) {
     console.error(err);
     container.innerHTML = `<p style="color:#e74c3c; text-align:center; padding:20px;">${t.loadError}</p>`;
   }
 }
 
+function renderPagination(totalPages, currentPage, category, search) {
+    const container = document.getElementById("topics-list-container");
+    
+    if (totalPages <= 1) return;
+
+    const nav = document.createElement("div");
+    nav.className = "pagination-controls";
+    nav.style.display = "flex";
+    nav.style.justifyContent = "center";
+    nav.style.gap = "10px";
+    nav.style.marginTop = "20px";
+    nav.style.marginBottom = "20px";
+
+    // Prev
+    if (currentPage > 1) {
+        const prev = document.createElement("button");
+        prev.className = "btn secondary";
+        prev.innerHTML = "<i class='fas fa-chevron-left'></i>";
+        prev.onclick = () => fetchTopics(category, search, currentPage - 1);
+        nav.appendChild(prev);
+    }
+
+    // Info
+    const info = document.createElement("span");
+    info.style.alignSelf = "center";
+    info.style.color = "#888";
+    info.textContent = `Page ${currentPage} of ${totalPages}`;
+    nav.appendChild(info);
+
+    // Next
+    if (currentPage < totalPages) {
+        const next = document.createElement("button");
+        next.className = "btn secondary";
+        next.innerHTML = "<i class='fas fa-chevron-right'></i>";
+        next.onclick = () => fetchTopics(category, search, currentPage + 1);
+        nav.appendChild(next);
+    }
+
+    container.appendChild(nav);
+}
+
 async function renderTopicsWithTranslation(topics) {
   const container = document.getElementById("topics-list-container");
   const t = APP_TRANSLATIONS[currentForumLang];
+  
+  if (!Array.isArray(topics)) {
+      console.error("renderTopicsWithTranslation: topics is not an array", topics);
+      topics = [];
+  }
+
   container.innerHTML = `<div style="padding:40px; text-align:center;"><i class="fas fa-language fa-spin"></i> ${t.translating}</div>`;
 
   const translatedTopics = await Promise.all(
@@ -431,8 +511,13 @@ function updateSidebarUser() {
     }
 
     // Determine role badge
-    let roleBadge = `<span class="user-badge badge-newcomer" style="margin-top:5px; display:inline-block;"><i class="fas fa-user"></i> ${t.member}</span>`;
-    if (user.role === 'admin') roleBadge = '<span class="user-badge badge-admin" style="margin-top:5px; display:inline-block;"><i class="fas fa-shield-alt"></i> Admin</span>';
+    let roleBadge = "";
+    if (typeof getReputationBadge === "function") {
+      roleBadge = getReputationBadge(user.reputation, user.role);
+    } else {
+      roleBadge = `<span class="user-badge badge-newcomer" style="margin-top:5px; display:inline-block;"><i class="fas fa-user"></i> ${t.member}</span>`;
+      if (user.role === 'admin') roleBadge = '<span class="user-badge badge-admin" style="margin-top:5px; display:inline-block;"><i class="fas fa-shield-alt"></i> Admin</span>';
+    }
 
     container.innerHTML = `
       <div class="user-mini-profile">

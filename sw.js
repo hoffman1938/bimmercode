@@ -1,4 +1,4 @@
-const CACHE_NAME = "bimmercodes-v28-fix-sw-redirects";
+const CACHE_NAME = "bimmercodes-v29-fix-profile-topics";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",

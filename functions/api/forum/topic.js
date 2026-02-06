@@ -116,20 +116,27 @@ export async function onRequest(context) {
         .bind(data.topic_id)
         .first();
       if (topic && String(topic.user_id) !== String(data.user_id)) {
+        const metadata = JSON.stringify({
+           sender_id: data.user_id,
+           sender_name: data.username,
+           topic_id: data.topic_id,
+           post_id: postId
+        });
+        
         await db
           .prepare(
             `
-          INSERT INTO notifications (id, user_id, sender_id, sender_name, type, topic_id, topic_title)
-          VALUES (?, ?, ?, ?, 'reply', ?, ?)
+          INSERT INTO notifications (id, user_id, type, title, text, link, icon, metadata)
+          VALUES (?, ?, 'reply', ?, ?, ?, 'fa-reply', ?)
         `,
           )
           .bind(
             crypto.randomUUID(),
             topic.user_id,
-            data.user_id,
-            data.username,
-            data.topic_id,
-            topic.title,
+            "New reply in " + topic.title,
+            data.username + " replied to your topic",
+            `/topic?id=${data.topic_id}#post-${postId}`,
+            metadata
           )
           .run();
       }

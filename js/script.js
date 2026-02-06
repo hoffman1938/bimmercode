@@ -798,6 +798,11 @@ async function init() {
       drawEditor();
     }
 
+    // Initialize Mobile Menu
+    initMobileMenu();
+
+
+
     // Функция: Отрисовка
     function drawEditor() {
       if (!ctx) return;
@@ -1389,3 +1394,136 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => clearInterval(checkData), 5000);
   }
 });
+
+// ==========================================
+// 5. BADGE SYSTEM
+// ==========================================
+window.getReputationBadge = function(reputation, role) {
+    if (role === 'admin') {
+        return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
+    }
+    
+    const rep = parseInt(reputation) || 0;
+    
+    if (rep >= 50) {
+        return '<span class="user-badge badge-expert"><i class="fas fa-star"></i> Expert</span>';
+    } else if (rep >= 10) {
+        return '<span class="user-badge badge-pro"><i class="fas fa-wrench"></i> Pro</span>';
+    } else {
+        return '<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> Member</span>';
+    }
+};
+
+// ==========================================
+// 6. MOBILE MENU LOGIC
+// ==========================================
+window.toggleMobileMenu = function() {
+    const offcanvas = document.querySelector('.mobile-offcanvas');
+    const overlay = document.querySelector('.mobile-menu-overlay');
+    if (offcanvas && overlay) {
+        offcanvas.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = offcanvas.classList.contains('active') ? 'hidden' : '';
+    }
+};
+
+window.initMobileMenu = function() {
+    const menuContent = document.getElementById('mobile-menu-content');
+    if (!menuContent) return;
+    
+    // Clear previous usage if needed
+    menuContent.innerHTML = '';
+    
+    // 0. Manual Navigation Links (Fallback if no sidebar)
+    const topicPageNav = document.querySelector('.mobile-offcanvas .nav-item');
+    if (topicPageNav) {
+         menuContent.appendChild(topicPageNav); // Keep the back button if it was there
+    }
+
+    // 1. Clone Navigation items from Sidebar (if exists)
+    const sidebarNav = document.querySelector('.sidebar .nav-menu');
+    if (sidebarNav) {
+        const navClone = sidebarNav.cloneNode(true);
+        navClone.style.marginTop = "0";
+        navClone.style.flexDirection = "column";
+        
+        // Remove 'active' class duplication issues if needed
+        navClone.querySelectorAll('.nav-item').forEach(item => {
+            item.onclick = function(e) {
+                 // Close menu on click
+                 toggleMobileMenu();
+                 // Original handler should still work or href
+                 const originalFn = item.getAttribute('onclick');
+                 if(originalFn && originalFn.includes('filterTopics')) {
+                     // Since filterTopics is global, it will work.
+                 }
+            };
+        });
+        
+        menuContent.appendChild(navClone);
+    }
+
+    // 2. Clone User Info / Auth Buttons
+    const authContainer = document.createElement('div');
+    authContainer.style.marginTop = '20px';
+    authContainer.style.paddingTop = '20px';
+    authContainer.style.borderTop = '1px solid rgba(255,255,255,0.1)';
+    
+    // Safely get user data
+    let user = null;
+    try {
+        user = JSON.parse(localStorage.getItem("user_data"));
+    } catch(e) {}
+
+    const t = (typeof APP_TRANSLATIONS !== 'undefined' && APP_TRANSLATIONS[currentLanguage]) 
+        ? APP_TRANSLATIONS[currentLanguage] 
+        : {
+            loginRegister: "Login / Register",
+            profile: "Profile",
+            logout: "Logout"
+        };
+
+
+    if (user) {
+         authContainer.innerHTML = `
+             <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                 <img src="${user.avatar_url || ''}" style="width:40px; height:40px; border-radius:50%; background:#333; object-fit:cover;">
+                 <div>
+                     <div style="font-weight:bold; color:white;">${user.username}</div>
+                     <div style="font-size:12px; color:#aaa;">${user.email}</div>
+                 </div>
+             </div>
+             <a href="/profile" class="btn" style="width:100%; justify-content:center; margin-bottom:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); display:flex;">
+                <i class="fas fa-user-circle"></i> ${t.profile}
+             </a>
+             <button onclick="logout()" class="btn" style="width:100%; justify-content:center; background:rgba(231, 76, 60, 0.2); color:#e74c3c; border:1px solid rgba(231, 76, 60, 0.3); display:flex;">
+                <i class="fas fa-sign-out-alt"></i> ${t.logout}
+             </button>
+         `;
+    } else {
+         authContainer.innerHTML = `
+             <button class="btn" onclick="toggleMobileMenu(); toggleAuthModal()" style="width:100%; justify-content:center; background:var(--bmw-blue); border:none; display:flex;">
+                 <i class="fas fa-sign-in-alt"></i> ${t.loginRegister}
+             </button>
+         `;
+    }
+    
+    menuContent.appendChild(authContainer);
+    
+    // 3. Clone Language Toggle
+    const langToggle = document.getElementById('forum-language-toggle');
+    const topicLangToggle = document.getElementById('topic-language-toggle');
+    const targetToggle = langToggle || topicLangToggle;
+    
+    if(targetToggle) {
+        const langClone = targetToggle.cloneNode(true);
+        langClone.onclick = () => {
+             if (typeof switchForumLanguage === 'function') switchForumLanguage();
+             else if (typeof switchTopicLanguage === 'function') switchTopicLanguage();
+        };
+        langClone.style.marginTop = "20px";
+        langClone.style.width = "100%";
+        langClone.style.display = "flex";
+        authContainer.appendChild(langClone);
+    }
+};

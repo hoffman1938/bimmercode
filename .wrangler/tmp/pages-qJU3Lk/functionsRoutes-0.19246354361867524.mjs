@@ -1,3 +1,4 @@
+import { onRequestPost as __api_notifications__id__read_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/[id]/read.js"
 import { onRequestGet as __api_admin_promote_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/promote.js"
 import { onRequestPost as __api_auth_login_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/login.js"
 import { onRequestPost as __api_auth_register_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/register.js"
@@ -5,17 +6,25 @@ import { onRequestPost as __api_forum_delete_js_onRequestPost } from "/Users/gio
 import { onRequestPost as __api_forum_edit_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/edit.js"
 import { onRequestPost as __api_forum_like_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/like.js"
 import { onRequestPost as __api_forum_solve_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/solve.js"
+import { onRequestPost as __api_notifications_read_all_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/read-all.js"
 import { onRequestGet as __api_user_get_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/user/get.js"
 import { onRequestPost as __api_user_update_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/user/update.js"
 import { onRequest as __api_forum_topic_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/topic.js"
 import { onRequest as __api_forum_topics_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/topics.js"
-import { onRequestGet as __api_notifications_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications.js"
-import { onRequestPost as __api_notifications_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications.js"
+import { onRequestDelete as __api_notifications__id__js_onRequestDelete } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/[id].js"
+import { onRequestGet as __api_notifications_index_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/index.js"
 import { onRequest as __api_upload_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/upload.js"
 import { onRequestGet as __images__filename__js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/images/[filename].js"
 
 export const routes = [
     {
+      routePath: "/api/notifications/:id/read",
+      mountPath: "/api/notifications/:id",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_notifications__id__read_js_onRequestPost],
+    },
+  {
       routePath: "/api/admin/promote",
       mountPath: "/api/admin",
       method: "GET",
@@ -65,6 +74,13 @@ export const routes = [
       modules: [__api_forum_solve_js_onRequestPost],
     },
   {
+      routePath: "/api/notifications/read-all",
+      mountPath: "/api/notifications",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_notifications_read_all_js_onRequestPost],
+    },
+  {
       routePath: "/api/user/get",
       mountPath: "/api/user",
       method: "GET",
@@ -93,18 +109,18 @@ export const routes = [
       modules: [__api_forum_topics_js_onRequest],
     },
   {
-      routePath: "/api/notifications",
-      mountPath: "/api",
-      method: "GET",
+      routePath: "/api/notifications/:id",
+      mountPath: "/api/notifications",
+      method: "DELETE",
       middlewares: [],
-      modules: [__api_notifications_js_onRequestGet],
+      modules: [__api_notifications__id__js_onRequestDelete],
     },
   {
       routePath: "/api/notifications",
-      mountPath: "/api",
-      method: "POST",
+      mountPath: "/api/notifications",
+      method: "GET",
       middlewares: [],
-      modules: [__api_notifications_js_onRequestPost],
+      modules: [__api_notifications_index_js_onRequestGet],
     },
   {
       routePath: "/api/upload",

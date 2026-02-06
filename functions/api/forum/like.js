@@ -66,21 +66,28 @@ export async function onRequestPost(context) {
             .bind(post.user_id)
             .run();
 
-        // Проверка типов ID
+        // Notification V2
+        const metadata = JSON.stringify({
+            sender_id: user_id,
+            sender_name: senderName,
+            topic_id: post.topic_id,
+            post_id: post_id
+        });
+
         await db
           .prepare(
             `
-          INSERT INTO notifications (id, user_id, sender_id, sender_name, type, topic_id, topic_title)
-          VALUES (?, ?, ?, ?, 'like', ?, ?)
+          INSERT INTO notifications (id, user_id, type, title, text, link, icon, metadata)
+          VALUES (?, ?, 'like', ?, ?, ?, 'fa-heart', ?)
         `,
           )
           .bind(
             crypto.randomUUID(),
             post.user_id,
-            user_id,
-            senderName,
-            post.topic_id,
-            post.title,
+            "New like",
+            senderName + " liked your post",
+            `/topic?id=${post.topic_id}#post-${post_id}`,
+            metadata
           )
           .run();
       }
