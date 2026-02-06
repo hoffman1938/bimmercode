@@ -143,6 +143,11 @@ async function switchForumLanguage() {
   if (originalTopicsData.length > 0) {
     await renderTopicsWithTranslation(originalTopicsData);
   }
+
+  // Refresh Mobile Menu with new language
+  if (typeof initMobileMenu === 'function') {
+      initMobileMenu();
+  }
 }
 
 function updateForumLanguage() {
@@ -505,7 +510,7 @@ function updateSidebarUser() {
     // Проверяем, есть ли ссылка на фото
     let avatarHTML;
     if (user.avatar_url) {
-      avatarHTML = `<img src="${user.avatar_url}" class="user-avatar-large" style="object-fit:cover;">`;
+      avatarHTML = `<img src="${user.avatar_url}" onerror="this.onerror=null; this.src='./assets/icons/ico.svg'" class="user-avatar-large" style="object-fit:cover;">`;
     } else {
       avatarHTML = `<div class="user-avatar-large">${user.username[0].toUpperCase()}</div>`;
     }

@@ -1022,6 +1022,11 @@ function updateLanguage() {
 
   // Обновляем чат
   updateChatUI();
+  
+  // Re-render mobile menu with new language
+  if (typeof initMobileMenu === 'function') {
+      initMobileMenu();
+  }
 }
 
 function handleSearch() {
@@ -1231,14 +1236,24 @@ async function refreshUserData() {
   if (!user) return; // Если не залогинен - выходим
 
   try {
+    // Check and fix bad avatar URL in local cache immediately
+    if (user.avatar_url && user.avatar_url.includes('avatar-placeholder.png')) {
+        user.avatar_url = './assets/icons/ico.svg';
+        localStorage.setItem("user_data", JSON.stringify(user));
+    }
+
     // Запрашиваем свежие данные из базы (с anti-cache)
     const res = await fetch(`/api/user/get?id=${user.id}&t=${Date.now()}`);
     if (res.ok) {
       const freshUser = await res.json();
 
-      // Сравниваем данные. Если что-то изменилось - обновляем LocalStorage
-      if (JSON.stringify(freshUser) !== JSON.stringify(user)) {
+      // Сравниваем только важные поля, чтобы избежать перезагрузки из-за таймстампов
+      const importantKeys = ['username', 'avatar_url', 'reputation', 'role', 'email'];
+      const hasChanges = importantKeys.some(key => freshUser[key] !== user[key]);
+
+      if (hasChanges) {
         console.log("Updating user profile cache...");
+        // Сохраняем полный объект, но триггерим UI только при важных изменениях
         localStorage.setItem("user_data", JSON.stringify(freshUser));
 
         // Обновляем шапку сайта сразу же
@@ -1246,6 +1261,11 @@ async function refreshUserData() {
         // Если мы на странице форума - обновляем сайдбар и хедер
         if (typeof updateSidebarUser === "function") updateSidebarUser();
         if (typeof updateHeaderAuth === "function") updateHeaderAuth();
+      } else {
+        // Если изменились только таймстампы, просто тихо обновляем сторадж
+        if (JSON.stringify(freshUser) !== JSON.stringify(user)) {
+             localStorage.setItem("user_data", JSON.stringify(freshUser));
+        }
       }
     }
   } catch (e) {
@@ -1440,6 +1460,9 @@ window.initMobileMenu = function() {
          menuContent.appendChild(topicPageNav); // Keep the back button if it was there
     }
 
+    // Clear existing content to allow re-rendering
+    menuContent.innerHTML = '';
+
     // 1. Clone Navigation items from Sidebar (if exists)
     const sidebarNav = document.querySelector('.sidebar .nav-menu');
     if (sidebarNav) {
@@ -1449,15 +1472,10 @@ window.initMobileMenu = function() {
         
         // Remove 'active' class duplication issues if needed
         navClone.querySelectorAll('.nav-item').forEach(item => {
-            item.onclick = function(e) {
+            item.addEventListener('click', function(e) {
                  // Close menu on click
                  toggleMobileMenu();
-                 // Original handler should still work or href
-                 const originalFn = item.getAttribute('onclick');
-                 if(originalFn && originalFn.includes('filterTopics')) {
-                     // Since filterTopics is global, it will work.
-                 }
-            };
+            });
         });
         
         menuContent.appendChild(navClone);
@@ -1487,7 +1505,7 @@ window.initMobileMenu = function() {
     if (user) {
          authContainer.innerHTML = `
              <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
-                 <img src="${user.avatar_url || ''}" style="width:40px; height:40px; border-radius:50%; background:#333; object-fit:cover;">
+                 <img src="${user.avatar_url || ''}" onerror="this.onerror=null; this.src='./assets/icons/ico.svg'" style="width:40px; height:40px; border-radius:50%; background:#333; object-fit:cover;">
                  <div>
                      <div style="font-weight:bold; color:white;">${user.username}</div>
                      <div style="font-size:12px; color:#aaa;">${user.email}</div>

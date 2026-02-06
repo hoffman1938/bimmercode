@@ -737,7 +737,7 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 500px;
+  max-width: 800px;
   transition: 0.3s;
 }
 

@@ -51,6 +51,8 @@ window.APP_TRANSLATIONS = {
     publish: "Publish Topic",
     loading: "Loading...",
     translating: "Translating...",
+    profile: "Profile",
+    logout: "Logout",
   },
   ru: {
     // === HOME ===
@@ -101,6 +103,8 @@ window.APP_TRANSLATIONS = {
     publish: "Опубликовать",
     loading: "Загрузка...",
     translating: "Перевод...",
+    profile: "Профиль",
+    logout: "Выйти",
     
     // === BOT SCENARIOS ===
     bot_misfire: "Обнаружены пропуски зажигания",
@@ -186,6 +190,8 @@ window.APP_TRANSLATIONS = {
     publish: "გამოქვეყნება",
     loading: "იტვირთება...",
     translating: "ითარგმნება...",
+    profile: "პროფილი",
+    logout: "გასვლა",
     // === BOT SCENARIOS ===
     bot_misfire: "ძრავის ძაგძაგი (Misfire)",
     bot_misfire_q1: "როდის აქვს ძაგძაგი?",

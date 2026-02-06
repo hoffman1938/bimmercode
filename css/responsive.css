@@ -120,6 +120,12 @@
   .desktop-only {
     display: none !important;
   }
+
+  .share-buttons {
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
+  }
   
   /* Show Burger */
   .burger-btn {
