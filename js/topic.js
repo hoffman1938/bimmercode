@@ -202,7 +202,6 @@ async function renderTopicWithTranslation(data) {
   }
 
   // Рендер Главного поста
-  // Рендер Главного поста
   let html = renderPostHTML(
     {
       id: topic.id, // <-- ВАЖНО: Передаем реальный ID темы, а не "topic-main"
@@ -219,6 +218,18 @@ async function renderTopicWithTranslation(data) {
     true, // isMain = true
     topic.user_id,
   );
+
+  // Add Replies Section Divider
+  if (translatedPosts.length > 0) {
+    const repliesText = currentTopicLang === 'ru' ? 'Ответы' : currentTopicLang === 'ka' ? 'პასუხები' : 'Replies';
+    html += `
+      <div class="replies-divider">
+        <span class="replies-divider-text">
+          <i class="fas fa-comments"></i> ${repliesText} (${translatedPosts.length})
+        </span>
+      </div>
+    `;
+  }
 
   // Рендер Ответов
   html += translatedPosts

@@ -285,6 +285,39 @@ body {
   box-shadow: 0 0 15px rgba(231, 76, 60, 0.2);
 }
 
+/* Language Badge */
+.lang-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  margin-left: 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(0, 160, 233, 0.1);
+  border: 1px solid rgba(0, 160, 233, 0.25);
+  color: #00a0e9;
+  transition: all 0.3s ease;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.lang-badge i {
+  font-size: 9px;
+  opacity: 0.8;
+}
+
+.lang-badge:hover {
+  background: rgba(0, 160, 233, 0.2);
+  border-color: rgba(0, 160, 233, 0.4);
+  box-shadow: 0 0 12px rgba(0, 160, 233, 0.15);
+  transform: translateY(-1px);
+}
+
+
 /* Topic Stats (Right Side) */
 .topic-stats {
   display: flex;
@@ -319,23 +352,26 @@ body {
   margin-top: 30px;
 }
 
-/* Topic Header */
+/* Topic Header - Enhanced */
 #topic-header-container {
-  background: var(--f-glass-heavy);
+  background: linear-gradient(135deg, rgba(0, 102, 179, 0.15) 0%, rgba(0, 102, 179, 0.05) 100%), var(--f-glass-heavy);
   border: 1px solid var(--f-glass-border);
+  border-left: 4px solid var(--bmw-blue);
   border-radius: var(--f-radius-lg);
-  padding: 30px;
+  padding: 35px;
   margin-bottom: 30px;
   position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 #topic-header-container h1 {
   font-family: var(--f-font-display);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: white;
   margin: 15px 0;
   line-height: 1.3;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .header-badges {
@@ -354,6 +390,7 @@ body {
   font-size: 14px;
 }
 
+
 /* Post Card */
 .post-card {
   background: var(--f-glass-heavy);
@@ -363,6 +400,48 @@ body {
   overflow: hidden;
   display: grid;
   grid-template-columns: 200px 1fr; /* User Sidebar | Content */
+  transition: all 0.3s ease;
+}
+
+/* Original Post (First Post) - Enhanced */
+.post-card:first-child {
+  background: linear-gradient(135deg, rgba(0, 102, 179, 0.12) 0%, rgba(0, 102, 179, 0.04) 100%), var(--f-glass-heavy);
+  border-left: 4px solid var(--bmw-blue);
+  box-shadow: 0 4px 20px rgba(0, 102, 179, 0.15);
+  margin-bottom: 40px;
+}
+
+.post-card:first-child .post-user-panel {
+  background: rgba(0, 102, 179, 0.08);
+}
+
+.post-card:first-child .badge-op {
+  background: linear-gradient(135deg, var(--bmw-blue), #0088cc);
+  color: white;
+  font-weight: 800;
+  padding: 6px 14px;
+  font-size: 11px;
+  box-shadow: 0 2px 8px rgba(0, 102, 179, 0.3);
+}
+
+/* Reply Posts - Lighter Styling */
+.post-card:not(:first-child) {
+  background: rgba(255, 255, 255, 0.03);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.post-card:not(:first-child) .post-user-panel {
+  padding: 20px 15px;
+}
+
+.post-card:not(:first-child) .post-user-avatar {
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+}
+
+.post-card:not(:first-child) .post-content-panel {
+  padding: 20px 25px;
 }
 
 /* User Panel in Post */
@@ -409,6 +488,28 @@ body {
   color: var(--f-text-muted);
 }
 
+/* Badge Styles */
+.badge-op {
+  background: rgba(0, 102, 179, 0.2);
+  color: var(--bmw-sky);
+  border: 1px solid rgba(0, 102, 179, 0.3);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-pid {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--f-text-muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
 /* Post Content */
 .post-content-panel {
   padding: 30px;
@@ -436,6 +537,44 @@ body {
 .post-text-body p {
   margin-bottom: 16px;
 }
+
+/* Replies Section Divider */
+.replies-divider {
+  margin: 40px 0 30px;
+  text-align: center;
+  position: relative;
+}
+
+.replies-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.replies-divider-text {
+  position: relative;
+  display: inline-block;
+  padding: 8px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: var(--f-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 1;
+}
+
+.replies-divider-text i {
+  color: var(--bmw-sky);
+  margin-right: 8px;
+}
+
 
 /* Post Actions */
 .post-footer-actions {
@@ -1032,4 +1171,160 @@ body {
 /* BADGE ICONS FIX */
 .user-badge i {
   margin-right: 4px;
+}
+
+/* =========================================
+   PROFILE AVATAR UPLOAD INTERFACE
+   ========================================= */
+
+/* Avatar Upload Container */
+.avatar-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--f-glass-border);
+  border-radius: var(--f-radius-md);
+}
+
+/* Avatar Preview in Edit Modal */
+.avatar-preview-edit {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--f-glass-medium);
+  border: 3px solid var(--f-accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: var(--f-text-muted);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(0, 102, 179, 0.2);
+}
+
+.avatar-preview-edit img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-preview-edit i {
+  font-size: 40px;
+}
+
+/* Avatar Actions Buttons */
+.avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.btn-upload-avatar,
+.btn-delete-avatar {
+  padding: 10px 20px;
+  border-radius: var(--f-radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  outline: none;
+}
+
+.btn-upload-avatar {
+  background: linear-gradient(135deg, var(--f-accent-primary), var(--f-accent-secondary));
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 102, 179, 0.3);
+}
+
+.btn-upload-avatar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 102, 179, 0.4);
+}
+
+.btn-upload-avatar:active {
+  transform: translateY(0);
+}
+
+.btn-delete-avatar {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.btn-delete-avatar:hover {
+  background: rgba(231, 76, 60, 0.25);
+  border-color: rgba(231, 76, 60, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-delete-avatar:active {
+  transform: translateY(0);
+}
+
+/* Loading State */
+.btn-upload-avatar.uploading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-upload-avatar.uploading i {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Form Group Styling - Scoped to Edit Profile Modal */
+#edit-profile-modal .form-group {
+  margin-bottom: 20px;
+}
+
+#edit-profile-modal .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--f-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* User Mini Profile in Sidebar */
+.user-mini-profile {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.user-mini-profile .user-avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  display: block;
+  border: 3px solid var(--f-accent-primary);
+  box-shadow: 0 4px 15px rgba(0, 102, 179, 0.2);
+}
+
+.user-mini-profile h3 {
+  color: white;
+  margin: 10px 0 5px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.user-mini-profile .user-badge {
+  display: inline-block;
+  margin-bottom: 15px;
 }

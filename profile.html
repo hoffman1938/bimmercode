@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Profile - BimmerCodes</title>
-    <link rel="stylesheet" href="./css/style.css?v=2.91" />
-    <link rel="stylesheet" href="./css/forum.css?v=2.91" />
-    <link rel="stylesheet" href="./css/responsive.css?v=2.91" />
+    <link rel="stylesheet" href="./css/style.css?v=2.92" />
+    <link rel="stylesheet" href="./css/forum.css?v=2.92" />
+    <link rel="stylesheet" href="./css/responsive.css?v=2.92" />
     <link rel="stylesheet"  />
     <link
       rel="stylesheet"
@@ -116,8 +116,29 @@
                     <input type="text" id="edit-car" class="auth-input" placeholder="e.g. BMW G20 330i">
                 </div>
                 <div class="form-group">
-                    <label>Avatar URL</label>
-                    <input type="text" id="edit-avatar" class="auth-input" placeholder="https://...">
+                    <label>Avatar</label>
+                    <div class="avatar-upload-container">
+                        <!-- Preview -->
+                        <div class="avatar-preview-edit" id="avatar-preview-edit">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        
+                        <!-- Buttons -->
+                        <div class="avatar-actions">
+                            <button type="button" class="btn-upload-avatar" onclick="triggerAvatarUpload()">
+                                <i class="fas fa-upload"></i> Upload Image
+                            </button>
+                            <button type="button" class="btn-delete-avatar" onclick="deleteAvatar()" id="btn-delete-avatar" style="display: none;">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                        
+                        <!-- Hidden file input -->
+                        <input type="file" id="avatar-file-input" accept="image/*" hidden onchange="handleAvatarUpload(event)">
+                        
+                        <!-- Hidden URL storage (kept for backward compatibility) -->
+                        <input type="hidden" id="edit-avatar" value="">
+                    </div>
                 </div>
                 <button type="submit" class="submit-btn">Save Changes</button>
             </form>

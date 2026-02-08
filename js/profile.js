@@ -176,6 +176,19 @@ async function loadUserTopics(userId, page = 1) {
 // === Edit Modal Logic ===
 function openEditProfileModal() {
     document.getElementById("edit-profile-modal").classList.add("active");
+    
+    // Initialize avatar preview
+    const avatarPreview = document.getElementById("avatar-preview-edit");
+    const deleteBtn = document.getElementById("btn-delete-avatar");
+    const currentUser = JSON.parse(localStorage.getItem("user_data"));
+    
+    if (currentUser && currentUser.avatar_url) {
+        avatarPreview.innerHTML = `<img src="${currentUser.avatar_url}" alt="Avatar">`;
+        deleteBtn.style.display = "block";
+    } else {
+        avatarPreview.innerHTML = '<i class="fas fa-user"></i>';
+        deleteBtn.style.display = "none";
+    }
 }
 function closeEditProfileModal() {
     document.getElementById("edit-profile-modal").classList.remove("active");
@@ -236,4 +249,121 @@ function escapeHtml(text) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+// === Avatar Upload Functions ===
+function triggerAvatarUpload() {
+    document.getElementById("avatar-file-input").click();
+}
+
+async function handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB');
+        return;
+    }
+    
+    const uploadBtn = document.querySelector('.btn-upload-avatar');
+    const uploadIcon = uploadBtn.querySelector('i');
+    const originalHTML = uploadBtn.innerHTML;
+    
+    try {
+        // Show loading state
+        uploadBtn.classList.add('uploading');
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        
+        // Convert to WebP
+        const webpFile = await convertToWebP(file);
+        
+        // Upload to server
+        const formData = new FormData();
+        formData.append('file', webpFile);
+        
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await res.json();
+        
+        if (data.url) {
+            // Update preview
+            const avatarPreview = document.getElementById('avatar-preview-edit');
+            avatarPreview.innerHTML = `<img src="${data.url}" alt="Avatar">`;
+            
+            // Update hidden input
+            document.getElementById('edit-avatar').value = data.url;
+            
+            // Show delete button
+            document.getElementById('btn-delete-avatar').style.display = 'block';
+        } else {
+            throw new Error('Upload failed');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error uploading image. Please try again.');
+    } finally {
+        // Reset button
+        uploadBtn.classList.remove('uploading');
+        uploadBtn.innerHTML = originalHTML;
+        // Clear file input
+        event.target.value = '';
+    }
+}
+
+function deleteAvatar() {
+    // Reset preview
+    const avatarPreview = document.getElementById('avatar-preview-edit');
+    avatarPreview.innerHTML = '<i class="fas fa-user"></i>';
+    
+    // Clear hidden input
+    document.getElementById('edit-avatar').value = '';
+    
+    // Hide delete button
+    document.getElementById('btn-delete-avatar').style.display = 'none';
+}
+
+// WebP Conversion Function (reused from topic.js)
+function convertToWebP(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; // Smaller for avatars
+                const scale = Math.min(1, MAX_WIDTH / img.width);
+                
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) return reject(new Error('Canvas conversion failed'));
+                        const fileName = file.name.split('.')[0] + '.webp';
+                        const newFile = new File([blob], fileName, { type: 'image/webp' });
+                        resolve(newFile);
+                    },
+                    'image/webp',
+                    0.85
+                );
+            };
+            img.onerror = (e) => reject(e);
+        };
+        reader.onerror = (e) => reject(e);
+    });
 }
