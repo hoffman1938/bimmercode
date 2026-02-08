@@ -22,19 +22,17 @@ async function checkAdminAuth() {
     }
 
     try {
-        // Verify token and role via profile endpoint or verify endpoint
-        // For now, we assume if we can fetch admin data, we are good.
-        // Or we decode token if client-side check is enough for redirect (server validates API calls)
         const payload = JSON.parse(atob(token.split('.')[1]));
-        
-        // Simple client-side check (real security is in API)
-        // We can define a set of admin roles
-        const adminRoles = ['admin_role', 'mod_role']; // Adjust based on DB
-        // But payload might just have role name or we need to fetch it.
-        // Let's rely on the first API call failing with 403 to redirect.
+        // Basic check, real check is API call
+        // Also check if admin role
+        // For now, let's just proceed and let APIs fail if 401
     } catch (e) {
+        localStorage.removeItem('auth_token');
         window.location.href = 'index.html';
     }
+
+    // Load initial tab
+    switchTab('dashboard');
 }
 
 function logoutAdmin() {
@@ -43,82 +41,90 @@ function logoutAdmin() {
     window.location.href = 'index.html';
 }
 
-// Tab Switching
 function switchTab(tabId) {
+    // Hide all sections
     document.querySelectorAll('.dashboard-section').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.sidebar-menu a').forEach(el => el.classList.remove('active'));
+
+    // Show target
     document.getElementById(`tab-${tabId}`).classList.remove('hidden');
     
-    document.querySelectorAll('.sidebar-menu a').forEach(el => el.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    // Update active link (find link with onclick matching)
+    // Simplified: just select by iteration or ID if we had them. 
+    // For now let's just assume the user clicked and handled the class logic there? 
+    // Actually we need to update sidebar visual:
+    const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+    sidebarLinks.forEach(link => {
+        if(link.getAttribute('onclick') === `switchTab('${tabId}')`) {
+            link.classList.add('active');
+        }
+    });
 
-    if (tabId === 'users') loadUsers();
-    if (tabId === 'reports') loadReports(); // Future
+    // Load data based on tab
+    if (tabId === 'dashboard') loadDashboardStats();
+    if (tabId === 'users') {
+        if(typeof loadUsers === 'function') loadUsers();
+    }
+    if (tabId === 'forum') {
+         if(typeof loadCategories === 'function') loadCategories();
+         if(typeof loadTags === 'function') loadTags();
+    }
+    if (tabId === 'logs') {
+        if(typeof loadLogs === 'function') loadLogs();
+    }
+    if (tabId === 'messages') {
+        if(typeof loadMessages === 'function') loadMessages();
+    }
+    if (tabId === 'settings') {
+        if(typeof loadSettings === 'function') loadSettings();
+    }
 }
 
-// Load Users
-async function loadUsers() {
-    const search = document.getElementById('user-search').value;
-    const tbody = document.getElementById('users-table-body');
-    const loading = document.getElementById('users-loading');
-    
-    tbody.innerHTML = '';
-    loading.style.display = 'block';
-
+async function loadDashboardStats() {
     try {
         const token = localStorage.getItem('auth_token');
-        console.log("Admin Panel: Using token:", token); // DEBUG
-        
-        const res = await fetch(`${API_URL}/admin/users?limit=20&search=${encodeURIComponent(search)}`, {
+        const res = await fetch(`${API_URL}/admin/stats`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-
-        if (res.status === 401 || res.status === 403) {
-            alert("Unauthorized access");
-            window.location.href = 'index.html';
+        
+        if (res.status === 401) {
+            alert("Session expired");
+            logoutAdmin();
             return;
         }
 
         const data = await res.json();
-        
-        loading.style.display = 'none';
-        
-        if (data.users && data.users.length > 0) {
-            data.users.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <div style="display: flex; align-items: center;">
-                            <img src="${user.avatar_url || 'assets/default-avatar.png'}" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                            ${user.username}
-                        </div>
-                    </td>
-                    <td>${user.email}</td>
-                    <td>${user.role_id || 'User'}</td>
-                    <td><span class="status-badge" style="background: ${user.level_color}33; color: ${user.level_color}">${user.level_name || 'Novice'}</span></td>
-                    <td>
-                        <span class="status-badge ${user.is_active ? 'status-active' : 'status-banned'}">
-                            ${user.is_active ? 'Active' : 'Banned'}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="action-btn" onclick="openActionModal('${user.id}', 'edit')"><i class="fas fa-edit"></i></button>
-                        ${user.is_active ? 
-                            `<button class="action-btn btn-danger" onclick="openActionModal('${user.id}', 'ban')"><i class="fas fa-ban"></i></button>` :
-                            `<button class="action-btn" onclick="openActionModal('${user.id}', 'unban')"><i class="fas fa-undo"></i></button>`
-                        }
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } else {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No users found</td></tr>';
+        if (data.success) {
+            const s = data.stats;
+            const container = document.getElementById('stats-container');
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${s.users.total}</div>
+                    <div>Total Users</div>
+                    <div style="font-size:0.8em; opacity:0.7;">${s.users.active} active</div>
+                </div>
+                <div class="stat-card" style="border-left-color: #e74c3c;">
+                    <div class="stat-value">${s.users.banned}</div>
+                    <div>Banned Users</div>
+                </div>
+                <div class="stat-card" style="border-left-color: #f1c40f;">
+                    <div class="stat-value">${s.moderation.pending_reports}</div>
+                    <div>Pending Reports</div>
+                </div>
+                <div class="stat-card" style="border-left-color: #2ecc71;">
+                    <div class="stat-value">${s.content.posts}</div>
+                    <div>Total Posts</div>
+                    <div style="font-size:0.8em; opacity:0.7;">in ${s.content.topics} topics</div>
+                </div>
+            `;
         }
-
     } catch (e) {
-        console.error(e);
-        loading.innerHTML = 'Error loading users';
+        console.error("Failed to load stats", e);
     }
 }
+
+// Load Users is now handled in js/admin_users.js
+
 
 // Modal Actions
 const modal = document.getElementById('action-modal');

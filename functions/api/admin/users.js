@@ -40,8 +40,8 @@ export async function onRequestGet(context) {
       const url = new URL(request.url);
       const limit = parseInt(url.searchParams.get("limit")) || 20;
       const offset = parseInt(url.searchParams.get("offset")) || 0;
-      // Optional: Search by username/email
       const search = url.searchParams.get("search");
+      const roleFilter = url.searchParams.get("role");
       
       let query = `
         SELECT 
@@ -49,11 +49,49 @@ export async function onRequestGet(context) {
             role_id, reputation, created_at, last_login, is_active 
         FROM users
       `;
+      
+      let whereClauses = [];
       let params = [];
       
+      // 1. Role Filter
+      if (roleFilter) {
+          if (roleFilter === 'banned') {
+              whereClauses.push("is_active = 0");
+          } else {
+              whereClauses.push("role_id = ?");
+              params.push(roleFilter);
+          }
+      }
+      
+      // 2. Search Logic (Smart)
       if (search) {
-          query += " WHERE username LIKE ? OR email LIKE ?";
-          params.push(`%${search}%`, `%${search}%`);
+          const searchLower = search.toLowerCase();
+          let searchConditions = [];
+          
+          // Match Username or Email
+          searchConditions.push("username LIKE ?");
+          params.push(`%${search}%`);
+          searchConditions.push("email LIKE ?");
+          params.push(`%${search}%`);
+          
+          // Match Role ID text
+          searchConditions.push("role_id LIKE ?");
+          params.push(`%${search}%`);
+          
+          // Match Status keywords
+          if (searchLower.includes('ban') || searchLower.includes('block')) {
+              searchConditions.push("is_active = 0");
+          }
+          if (searchLower.includes('active')) {
+              searchConditions.push("is_active = 1");
+          }
+          
+          whereClauses.push(`(${searchConditions.join(" OR ")})`);
+      }
+      
+      // Assemble Query
+      if (whereClauses.length > 0) {
+          query += " WHERE " + whereClauses.join(" AND ");
       }
       
       query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
@@ -61,12 +99,16 @@ export async function onRequestGet(context) {
       
       const { results } = await env.DB.prepare(query).bind(...params).all();
       
-      // Get total count
-      const countQuery = search 
-        ? "SELECT COUNT(*) as total FROM users WHERE username LIKE ? OR email LIKE ?" 
-        : "SELECT COUNT(*) as total FROM users";
-        
-      const countParams = search ? [`%${search}%`, `%${search}%`] : [];
+      // Get total count (using same filters)
+      let countQuery = "SELECT COUNT(*) as total FROM users";
+      let countParams = [];
+      
+      if (whereClauses.length > 0) {
+          countQuery += " WHERE " + whereClauses.join(" AND ");
+          // Params for count are same as main query minus limit/offset
+          countParams = params.slice(0, params.length - 2); 
+      }
+      
       const total = await env.DB.prepare(countQuery).bind(...countParams).first('total');
       
       return new Response(JSON.stringify({

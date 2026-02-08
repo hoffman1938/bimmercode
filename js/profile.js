@@ -68,7 +68,8 @@ async function loadProfile(profileId) {
 
     // 3. Stats
     document.getElementById("stat-reputation").textContent = user.reputation || 0;
-    document.getElementById("stat-joined").textContent = new Date(user.created_at).toLocaleDateString();
+    const joinedDate = new Date(user.created_at.endsWith('Z') ? user.created_at : user.created_at + 'Z');
+    document.getElementById("stat-joined").textContent = joinedDate.toLocaleDateString();
 
     // 4. Check Ownership (Show Edit Button)
     const currentUser = JSON.parse(localStorage.getItem("user_data")); // Fix key name (was forum_user)
@@ -123,7 +124,7 @@ async function loadUserTopics(userId, page = 1) {
                 <div class="topic-main-content">
                     <h3>${escapeHtml(topic.title)}</h3>
                     <div class="topic-meta-line">
-                        <span>${new Date(topic.created_at).toLocaleDateString()}</span>
+                        <span>${new Date(topic.created_at.endsWith('Z') ? topic.created_at : topic.created_at + 'Z').toLocaleDateString()}</span>
                         <span>• ${topic.reply_count} replies</span>
                     </div>
                 </div>

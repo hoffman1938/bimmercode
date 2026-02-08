@@ -215,3 +215,21 @@ CREATE INDEX IF NOT EXISTS idx_posts_topic ON posts(topic_id);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role_id);
 CREATE INDEX IF NOT EXISTS idx_reputation_user ON reputation_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_login_attempts_ip ON login_attempts(ip_address, created_at);
+
+-- 15. SYSTEM SETTINGS
+CREATE TABLE IF NOT EXISTS system_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
+
+-- 16. CONTACT MESSAGES
+CREATE TABLE IF NOT EXISTS contact_messages (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    subject TEXT,
+    message TEXT NOT NULL,
+    ip_address TEXT,
+    is_read BOOLEAN DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

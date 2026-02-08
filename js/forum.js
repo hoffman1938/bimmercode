@@ -10,11 +10,55 @@ let originalTopicsData = [];
 
 // Кэш переводов
 let translationCache = JSON.parse(
-  localStorage.getItem("translationCache") || "{}",
+  localStorage.getItem("translationCache") || "{}"
 );
 
+// Load Categories dynamically
+async function loadForumCategories() {
+    try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        
+        if (data.success && data.categories) {
+            renderSidebarCategories(data.categories);
+            renderModalCategories(data.categories);
+        }
+    } catch (e) {
+        console.error("Failed to load categories", e);
+    }
+}
+
+function renderSidebarCategories(categories) {
+    const navMenu = document.querySelector('.nav-menu');
+    if (!navMenu) return; // Guard
+    
+    // Keep "All Topics"
+    let html = `<a href="#" class="nav-item active" onclick="filterTopics('all')"><i class="fas fa-stream"></i> All Topics</a>`;
+    
+    categories.forEach(cat => {
+        html += `<a href="#" class="nav-item" onclick="filterTopics('${cat.slug}')"><i class="${cat.icon || 'fas fa-folder'}"></i> ${cat.title}</a>`;
+    });
+    
+    navMenu.innerHTML = html;
+}
+
+function renderModalCategories(categories) {
+    const select = document.getElementById('topic-category');
+    if (!select) return;
+    
+    let html = '';
+    categories.forEach(cat => {
+        html += `<option value="${cat.slug}">${cat.title}</option>`;
+    });
+    
+    select.innerHTML = html;
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Only run forum-specific logic if on the main forum page
+  loadForumCategories();
+
+  // Only run forum-specific logic if on the main
   const isForumMain = !!document.querySelector(".sidebar");
 
   if (isForumMain) {

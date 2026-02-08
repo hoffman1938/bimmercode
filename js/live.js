@@ -223,7 +223,8 @@ function toggleNotifications() {
 
 function timeAgo(dateString) {
     if(!dateString) return '';
-    const date = new Date(dateString);
+    const safeDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
+    const date = new Date(safeDate);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
     

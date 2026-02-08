@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - BimmerCodes</title>
+    <link rel="stylesheet" href="./css/style.css?v=2.92">
+    <link rel="stylesheet" href="./css/forum.css?v=2.92">
+    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .legal-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: rgba(16, 16, 16, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+        .legal-container h1 { color: white; margin-bottom: 20px; text-align: center; }
+        .contact-group { margin-bottom: 20px; }
+        .contact-group label { display: block; margin-bottom: 5px; color: #aaa; }
+        .contact-input { 
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 5px; 
+            border: 1px solid #444; 
+            background: #222; 
+            color: white; 
+        }
+        .contact-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--bmw-blue);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .contact-btn:hover { background: #005691; }
+    </style>
+</head>
+<body class="bmw-pattern">
+    <header>
+      <a href="/" class="logo-container">
+        <div class="logo">
+          <i class="fas fa-envelope" style="color: #0066b3"></i>
+        </div>
+        <h1>BimmerCodes <span style="color: var(--bmw-sky)">Contact</span></h1>
+      </a>
+      <div class="controls">
+         <a href="/" class="btn"><i class="fas fa-home"></i> Home</a>
+      </div>
+    </header>
+
+    <main class="container">
+        <div class="legal-container">
+            <h1>Contact Support</h1>
+            <p style="text-align: center; margin-bottom: 30px;">Have a question or found a bug? Send us a message.</p>
+
+            <form id="contact-form">
+                <div class="contact-group">
+                    <label>Your Name</label>
+                    <input type="text" id="contact-name" class="contact-input" required>
+                </div>
+                <div class="contact-group">
+                    <label>Email Address</label>
+                    <input type="email" id="contact-email" class="contact-input" required>
+                </div>
+                <div class="contact-group">
+                    <label>Subject</label>
+                    <select id="contact-subject" class="contact-input">
+                        <option value="General Inquiry">General Inquiry</option>
+                        <option value="Bug Report">Bug Report</option>
+                        <option value="Advertising">Advertising</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="contact-group">
+                    <label>Message</label>
+                    <textarea id="contact-message" class="contact-input" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="contact-btn">Send Message</button>
+                <p id="contact-msg" style="text-align: center; margin-top: 15px; min-height: 20px;"></p>
+            </form>
+
+            <script>
+                document.getElementById('contact-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const btn = e.target.querySelector('button');
+                    const msg = document.getElementById('contact-msg');
+                    
+                    const name = document.getElementById('contact-name').value;
+                    const email = document.getElementById('contact-email').value;
+                    const subject = document.getElementById('contact-subject').value;
+                    const message = document.getElementById('contact-message').value;
+                    
+                    btn.disabled = true;
+                    btn.textContent = "Sending...";
+                    msg.textContent = "";
+                    msg.style.color = "#ccc";
+
+                    try {
+                        const res = await fetch('/api/contact', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name, email, subject, message })
+                        });
+                        
+                        const data = await res.json();
+                        
+                        if (data.success) {
+                            msg.style.color = "var(--bmw-blue)";
+                            msg.textContent = "Message sent successfully! We will get back to you soon.";
+                            e.target.reset();
+                        } else {
+                            msg.style.color = "#e74c3c";
+                            msg.textContent = "Error: " + (data.error || "Failed to send message");
+                        }
+                    } catch (err) {
+                         msg.style.color = "#e74c3c";
+                         msg.textContent = "Connection error. Please try again.";
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = "Send Message";
+                    }
+                });
+            </script>
+        </div>
+    </main>
+
+    <footer>
+        <!-- Content injected by js/footer.js -->
+    </footer>
+
+    <script src="./js/footer.js"></script>
+</body>
+</html>
