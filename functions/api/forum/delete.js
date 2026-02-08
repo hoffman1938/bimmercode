@@ -4,8 +4,8 @@ export async function onRequestPost(context) {
     const { type, id, user_id } = await request.json(); // type: 'topic' или 'post'
 
     // Check user role
-    const user = await env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(user_id).first();
-    const isAdmin = user && user.role === 'admin';
+    const user = await env.DB.prepare("SELECT role_id FROM users WHERE id = ?").bind(user_id).first();
+    const isAdmin = user && (user.role_id === 'admin_role' || user.role_id === 'super_admin_role');
 
     if (type === "post") {
       let query = "DELETE FROM posts WHERE id = ?";

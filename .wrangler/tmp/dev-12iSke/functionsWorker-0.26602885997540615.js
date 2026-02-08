@@ -79,7 +79,7 @@ function checkURL2(request, init) {
 __name(checkURL2, "checkURL");
 var urls2;
 var init_checked_fetch = __esm({
-  "../.wrangler/tmp/bundle-DxYtTF/checked-fetch.js"() {
+  "../.wrangler/tmp/bundle-LS5gza/checked-fetch.js"() {
     urls2 = /* @__PURE__ */ new Set();
     __name2(checkURL2, "checkURL");
     globalThis.fetch = new Proxy(globalThis.fetch, {
@@ -3691,8 +3691,8 @@ async function onRequestPost15(context) {
   const { request, env } = context;
   try {
     const { type, id, user_id } = await request.json();
-    const user = await env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(user_id).first();
-    const isAdmin = user && user.role === "admin";
+    const user = await env.DB.prepare("SELECT role_id FROM users WHERE id = ?").bind(user_id).first();
+    const isAdmin = user && (user.role_id === "admin_role" || user.role_id === "super_admin_role");
     if (type === "post") {
       let query = "DELETE FROM posts WHERE id = ?";
       const params = [id];

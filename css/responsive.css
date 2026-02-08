@@ -387,8 +387,10 @@
     border-radius: 0 !important;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* Align to top to prevent cut-off */
     padding: 20px;
+    padding-bottom: 40px; /* Space for bottom scroll */
+    overflow-y: auto !important; /* Force scroll */
   }
   
   .auth-modal {

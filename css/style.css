@@ -995,10 +995,11 @@ footer {
   z-index: 10000;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; /* Centered by default */
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 20px; /* Add padding wrapper to prevent touching edges */
 }
 
 .auth-modal.active {
@@ -1013,8 +1014,12 @@ footer {
   background: #121418;
   border: 1px solid var(--glass-border);
   width: 90%;
-  max-width: 400px;
-  padding: 30px;
+  max-width: 400px; /* Keep this constraint */
+  max-height: 90vh; /* Viewport safety */
+  overflow-y: auto; /* Enable scrolling */
+  display: flex;
+  flex-direction: column;
+  padding: 30px; /* Keep padding */
   border-radius: 20px;
   position: relative;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
