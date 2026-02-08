@@ -325,10 +325,18 @@ window.toggleChat = function () {
     if (chatBody.querySelectorAll(".message").length === 0) {
       sendBotGreeting();
     }
-  } else {
     chatWindow.classList.remove("active");
   }
 };
+
+// Close Chat on Outside Click
+document.addEventListener('click', (e) => {
+    const chatWindow = document.getElementById('chat-window');
+    const fab = document.getElementById('wizard-fab');
+    if (chatOpen && chatWindow && !chatWindow.contains(e.target) && !fab.contains(e.target)) {
+        toggleChat();
+    }
+});
 
 function sendBotGreeting() {
   const lang = currentLanguage;

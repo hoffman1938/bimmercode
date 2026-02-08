@@ -230,6 +230,23 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     subject TEXT,
     message TEXT NOT NULL,
     ip_address TEXT,
-    is_read BOOLEAN DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 17. ANALYTICS EVENTS
+CREATE TABLE IF NOT EXISTS analytics_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT, -- Nullable for guests
+    event_type TEXT DEFAULT 'page_view', -- 'page_view', 'action'
+    path TEXT,
+    referrer TEXT,
+    user_agent TEXT,
+    ip_address TEXT,
+    country TEXT,
+    device_type TEXT, -- 'mobile', 'desktop', 'tablet'
+    meta TEXT, -- JSON extra data
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_analytics_user ON analytics_events(user_id);

@@ -6,6 +6,7 @@
     <title>Admin Dashboard - BMW Diagnostic Codes</title>
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./css/admin.css">
     </head>
 <body class="bmw-pattern">
@@ -48,11 +49,44 @@
             <!-- Dashboard Section -->
             <div id="tab-dashboard" class="dashboard-section">
                 <h2>Overview</h2>
+                <!-- Realtime Stats -->
+                <div class="dashboard-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(15, 23, 42, 0.4)); border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="margin:0; color: #60a5fa;">Real-Time Activity</h3>
+                            <p style="margin: 5px 0 0 0; color: #94a3b8;">Users active in last 15 minutes</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span id="active-users-count" style="font-size: 3rem; font-weight: 800; color: white; text-shadow: 0 0 20px rgba(59,130,246,0.5);">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Stats Grid -->
                 <div class="stat-grid" id="stats-container">
                     <!-- Loading Stats -->
                     <div class="stat-card"><div class="stat-value">...</div><div>Total Users</div></div>
                     <div class="stat-card"><div class="stat-value">...</div><div>Posts</div></div>
                     <div class="stat-card"><div class="stat-value">...</div><div>Reports</div></div>
+                </div>
+                
+                <!-- Charts -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="dashboard-card">
+                        <h3>Traffic Pattern (24h)</h3>
+                        <canvas id="trafficChart" height="200"></canvas>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Device Usage</h3>
+                        <canvas id="deviceChart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>Top Pages</h3>
+                    <table class="data-table">
+                        <tbody id="top-pages-body"></tbody>
+                    </table>
                 </div>
             </div>
 
@@ -131,9 +165,37 @@
 
             <!-- Reports Section -->
             <div id="tab-reports" class="dashboard-section hidden">
-                <h2>Reports Queue</h2>
+                <div class="dashboard-header">
+                    <h2>Reports Queue</h2>
+                    <div style="display:flex; gap:10px;">
+                        <button class="action-btn" onclick="loadReports('pending')" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                        <select id="report-status-filter" onchange="loadReports(this.value)">
+                            <option value="pending">Pending</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="dismissed">Dismissed</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <div class="dashboard-card">
-                    <p>Reports integration in progress for Moderator Phase...</p>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Reported Item</th>
+                                <th>Reason</th>
+                                <th>Reporter</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                    <div id="reports-loading" style="text-align: center; padding: 20px; display:none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
                 </div>
             </div>
 
@@ -171,9 +233,69 @@
             
             <!-- Settings Section -->
             <div id="tab-settings" class="dashboard-section hidden">
-                <h2>System Settings</h2>
-                 <div class="dashboard-card">
-                    <p>Configuration options coming soon...</p>
+                <div class="dashboard-header">
+                    <h2>System Configuration</h2>
+                    <button class="btn" onclick="saveSettings()"> <i class="fas fa-save"></i> Save Changes</button>
+                </div>
+
+                 <div class="dashboard-card" style="max-width: 800px;">
+                    <h3>General Settings</h3>
+                    <form id="settings-form" onsubmit="event.preventDefault(); saveSettings();">
+                        <div class="input-group">
+                            <label>Site Name</label>
+                            <input type="text" id="set-site-name" class="form-input" placeholder="BMW Diagnostic Codes">
+                        </div>
+
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div>
+                                <strong style="color: white; display: block;">Maintenance Mode</strong>
+                                <span style="font-size: 0.85em; color: #aaa;">Only admins can access the site when enabled.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="set-maintenance">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div>
+                                <strong style="color: white; display: block;">Open Registration</strong>
+                                <span style="font-size: 0.85em; color: #aaa;">Allow new users to sign up.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="set-registration">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+                        <h3>Announcement Banner</h3>
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <label style="margin:0;">Show Banner</label>
+                            <label class="switch">
+                                <input type="checkbox" id="set-banner-active">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Banner Message</label>
+                            <input type="text" id="set-banner-msg" class="form-input" placeholder="e.g., Server maintenance scheduled for...">
+                        </div>
+                        
+                         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                         
+                         <h3>Global Push Notification</h3>
+                         <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 15px; border-radius: 8px;">
+                            <p style="margin-top:0; font-size:0.9em; color:#93c5fd;">Send a permanent notification to ALL active users. Use sparingly.</p>
+                            <div class="input-group">
+                                <label>Message</label>
+                                <input type="text" id="broadcast-msg" class="form-input" placeholder="e.g., New features are now live!">
+                            </div>
+                            <button class="btn" style="width:100%; background: var(--admin-primary);" onclick="sendBroadcast(event)"><i class="fas fa-paper-plane"></i> Send to All Users</button>
+                         </div>
+                    </form>
                 </div>
             </div>
         </main>
@@ -261,11 +383,25 @@
 
     <!-- Main Admin Logic -->
     <script src="./js/admin_utils.js"></script>
+    <!-- User Inspector Modal -->
+    <div id="inspector-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>User Inspector</h2>
+                <button class="close-modal" onclick="closeInspectorModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="inspector-body">
+                <div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+            </div>
+        </div>
+    </div>
+
     <script src="./js/admin.js"></script>
     <script src="./js/admin_users.js"></script>
     <script src="./js/admin_forum.js"></script>
     <script src="./js/admin_logs.js"></script>
     <script src="./js/admin_messages.js"></script>
     <script src="./js/admin_settings.js"></script>
+    <script src="./js/admin_reports.js"></script>
 </body>
 </html>

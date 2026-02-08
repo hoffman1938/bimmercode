@@ -91,7 +91,7 @@ function renderNotificationItem(n) {
             <div style="font-size:16px; color:${iconColor}; margin-top: 2px;">
                 <i class="fas ${iconClass}"></i>
             </div>
-            <div style="flex: 1;" onclick="handleNotifClick('${n.id}', '${n.link}')">
+            <div style="flex: 1;" onclick="handleNotifClick('${n.id}', '${n.link || ""}', \`${n.text ? n.text.replace(/`/g, '\\`').replace(/'/g, "\\'") : ''}\`)">
                 <div class="notif-text-body" style="font-size:13px; color:#fff; font-weight: ${isUnread ? '600' : '400'}; line-height: 1.4;">
                     ${n.text}
                 </div>
@@ -108,13 +108,68 @@ function renderNotificationItem(n) {
 
 // === ACTIONS ===
 
-async function handleNotifClick(id, link) {
+// Notification Modal
+function openNotificationModal(text) {
+    let modal = document.getElementById('notif-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'notif-modal';
+        modal.className = 'modal'; // Add standard class
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 10001;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s;
+        `;
+        // Removed inline onclick to prevent CSP/Scope issues. We bind globally or via dedicated listener.
+        modal.innerHTML = `
+            <div style="background: var(--admin-bg, #1a1a1a); width: 90%; max-width: 500px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); transform: scale(0.9); transition: transform 0.3s;">
+                <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03);">
+                    <h3 style="margin: 0; font-size: 1.1em; color: white;">Notification</h3>
+                    <button class="close-modal-btn" style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 1.2em;"><i class="fas fa-times"></i></button>
+                </div>
+                <div style="padding: 20px; color: #ddd; line-height: 1.6; max-height: 60vh; overflow-y: auto;">
+                    <p id="notif-modal-content" style="margin: 0; white-space: pre-wrap;"></p>
+                </div>
+                <div style="padding: 15px 20px; background: rgba(0,0,0,0.2); text-align: right;">
+                    <button class="close-modal-btn" style="padding: 8px 16px; background: var(--bmw-blue, #3b82f6); color: white; border: none; border-radius: 6px; cursor: pointer;">Close</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Event Listeners (Locally scoped to this modal for robustness)
+        modal.addEventListener('click', (e) => {
+           if (e.target === modal) closeNotifModal();
+        });
+        
+        // Allow close buttons to work
+        modal.querySelectorAll('.close-modal-btn').forEach(btn => {
+            btn.addEventListener('click', closeNotifModal);
+        });
+    }
+    
+    document.getElementById('notif-modal-content').textContent = text;
+    
+    // Show
+    requestAnimationFrame(() => {
+        modal.classList.add('active');
+        modal.style.opacity = '1';
+        modal.querySelector('div').style.transform = 'scale(1)';
+    });
+}
+
+function closeNotifModal() {
+    const modal = document.getElementById('notif-modal');
+    if(modal) modal.classList.remove('active');
+}
+
+async function handleNotifClick(id, link, fullText) {
     // Optimistic Update: Mark as read immediately in UI
     const el = document.getElementById(`notif-${id}`);
     if (el) {
         el.style.background = 'transparent';
         el.style.borderLeftColor = 'transparent';
-        // Safe selection with optional chaining or if check
         const textEl = el.querySelector('.notif-text-body') || el.querySelector('div[style*="font-weight: 600"]');
         if (textEl) {
             textEl.style.fontWeight = '400';
@@ -130,15 +185,17 @@ async function handleNotifClick(id, link) {
          if(count === 0) badge.style.display = 'none';
     }
 
-    // API Call (Fire and forget, but logically we await if we wanted to be sure)
+    // API Call (Fire and forget)
     try {
-        await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
-    } catch (e) {
-        console.error("Mark read failed", e);
-    }
+         fetch(`/api/notifications/${id}/read`, { method: 'POST' }).catch(e => console.error(e));
+    } catch (e) { console.error(e); }
 
-    // Navigate
-    if (link && link !== '#') {
+    // Logic: If system notification (no link or explicit type), open modal
+    // We can infer system type if link is missing or empty
+    if (!link || link === '#' || link === 'null' || link === 'undefined') {
+        // Need to get the text. passed as arg now
+        openNotificationModal(fullText);
+    } else {
         window.location.href = link;
     }
 }

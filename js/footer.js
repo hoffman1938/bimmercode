@@ -23,6 +23,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     `;
 
-    // Attempt to fetch custom text if API is accessible (public read-only endpoint would be ideal, 
-    // but our settings are admin-only. We can leave it static for now or create a public config endpoint later).
+    // Analytics Tracking
+    const trackPageView = async () => {
+        try {
+            const userData = localStorage.getItem('user_data');
+            const user = userData ? JSON.parse(userData) : null;
+            
+            await fetch('/api/analytics/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: user ? user.id : null,
+                    event_type: 'page_view',
+                    path: window.location.pathname,
+                    referrer: document.referrer,
+                    user_agent: navigator.userAgent,
+                    device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+                })
+            });
+        } catch (e) {
+            console.error("Tracking Error:", e); // Silent fail in prod usually
+        }
+    };
+    
+    trackPageView();
 });

@@ -1,14 +1,20 @@
+import { onRequestPost as __api_admin_announcements_send_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/announcements/send.js"
 import { onRequestPost as __api_admin_roles_assign_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/roles/assign.js"
 import { onRequestPost as __api_auth_password_recovery_init_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/password-recovery/init.js"
 import { onRequestPost as __api_auth_password_recovery_reset_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/password-recovery/reset.js"
 import { onRequestPost as __api_auth_password_recovery_verify_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/password-recovery/verify.js"
+import { onRequestGet as __api_admin_users__id__js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/users/[id].js"
 import { onRequestPost as __api_notifications__id__read_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/[id]/read.js"
+import { onRequestGet as __api_admin_analytics_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/analytics.js"
 import { onRequestPost as __api_admin_ban_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/ban.js"
 import { onRequestGet as __api_admin_logs_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/logs.js"
 import { onRequestGet as __api_admin_promote_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/promote.js"
+import { onRequestGet as __api_admin_settings_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/settings.js"
+import { onRequestPost as __api_admin_settings_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/settings.js"
 import { onRequestGet as __api_admin_stats_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/stats.js"
 import { onRequestPost as __api_admin_unban_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/unban.js"
 import { onRequestGet as __api_admin_users_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/users.js"
+import { onRequestPost as __api_analytics_track_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/analytics/track.js"
 import { onRequestPost as __api_auth_get_recovery_question_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/get_recovery_question.js"
 import { onRequestPost as __api_auth_login_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/login.js"
 import { onRequestPost as __api_auth_recover_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/auth/recover.js"
@@ -19,6 +25,8 @@ import { onRequestPost as __api_forum_like_js_onRequestPost } from "/Users/giorg
 import { onRequestPost as __api_forum_solve_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/solve.js"
 import { onRequestGet as __api_moderation_list_reports_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/moderation/list_reports.js"
 import { onRequestPost as __api_moderation_report_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/moderation/report.js"
+import { onRequestGet as __api_moderation_reports_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/moderation/reports.js"
+import { onRequestPost as __api_moderation_resolve_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/moderation/resolve.js"
 import { onRequestPost as __api_moderation_resolve_report_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/moderation/resolve_report.js"
 import { onRequestPost as __api_moderation_warn_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/moderation/warn.js"
 import { onRequestPost as __api_notifications_read_all_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/read-all.js"
@@ -31,12 +39,12 @@ import { onRequestGet as __api_user_get_js_onRequestGet } from "/Users/giorgi/De
 import { onRequestPost as __api_user_update_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/user/update.js"
 import { onRequest as __api_admin_categories_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/categories.js"
 import { onRequest as __api_admin_messages_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/messages.js"
-import { onRequest as __api_admin_settings_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/settings.js"
 import { onRequest as __api_admin_tags_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/admin/tags.js"
 import { onRequest as __api_forum_topic_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/topic.js"
 import { onRequest as __api_forum_topics_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/forum/topics.js"
 import { onRequestDelete as __api_notifications__id__js_onRequestDelete } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/[id].js"
 import { onRequestGet as __api_categories_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/categories.js"
+import { onRequestGet as __api_config_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/config.js"
 import { onRequestPost as __api_contact_js_onRequestPost } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/contact.js"
 import { onRequestGet as __api_notifications_index_js_onRequestGet } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/notifications/index.js"
 import { onRequest as __api_upload_js_onRequest } from "/Users/giorgi/Desktop/test1/bimmercode/Untitled/functions/api/upload.js"
@@ -45,6 +53,13 @@ import { onRequest as ___middleware_js_onRequest } from "/Users/giorgi/Desktop/t
 
 export const routes = [
     {
+      routePath: "/api/admin/announcements/send",
+      mountPath: "/api/admin/announcements",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_admin_announcements_send_js_onRequestPost],
+    },
+  {
       routePath: "/api/admin/roles/assign",
       mountPath: "/api/admin/roles",
       method: "POST",
@@ -73,11 +88,25 @@ export const routes = [
       modules: [__api_auth_password_recovery_verify_js_onRequestPost],
     },
   {
+      routePath: "/api/admin/users/:id",
+      mountPath: "/api/admin/users",
+      method: "GET",
+      middlewares: [],
+      modules: [__api_admin_users__id__js_onRequestGet],
+    },
+  {
       routePath: "/api/notifications/:id/read",
       mountPath: "/api/notifications/:id",
       method: "POST",
       middlewares: [],
       modules: [__api_notifications__id__read_js_onRequestPost],
+    },
+  {
+      routePath: "/api/admin/analytics",
+      mountPath: "/api/admin",
+      method: "GET",
+      middlewares: [],
+      modules: [__api_admin_analytics_js_onRequestGet],
     },
   {
       routePath: "/api/admin/ban",
@@ -101,6 +130,20 @@ export const routes = [
       modules: [__api_admin_promote_js_onRequestGet],
     },
   {
+      routePath: "/api/admin/settings",
+      mountPath: "/api/admin",
+      method: "GET",
+      middlewares: [],
+      modules: [__api_admin_settings_js_onRequestGet],
+    },
+  {
+      routePath: "/api/admin/settings",
+      mountPath: "/api/admin",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_admin_settings_js_onRequestPost],
+    },
+  {
       routePath: "/api/admin/stats",
       mountPath: "/api/admin",
       method: "GET",
@@ -120,6 +163,13 @@ export const routes = [
       method: "GET",
       middlewares: [],
       modules: [__api_admin_users_js_onRequestGet],
+    },
+  {
+      routePath: "/api/analytics/track",
+      mountPath: "/api/analytics",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_analytics_track_js_onRequestPost],
     },
   {
       routePath: "/api/auth/get_recovery_question",
@@ -190,6 +240,20 @@ export const routes = [
       method: "POST",
       middlewares: [],
       modules: [__api_moderation_report_js_onRequestPost],
+    },
+  {
+      routePath: "/api/moderation/reports",
+      mountPath: "/api/moderation",
+      method: "GET",
+      middlewares: [],
+      modules: [__api_moderation_reports_js_onRequestGet],
+    },
+  {
+      routePath: "/api/moderation/resolve",
+      mountPath: "/api/moderation",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_moderation_resolve_js_onRequestPost],
     },
   {
       routePath: "/api/moderation/resolve_report",
@@ -276,13 +340,6 @@ export const routes = [
       modules: [__api_admin_messages_js_onRequest],
     },
   {
-      routePath: "/api/admin/settings",
-      mountPath: "/api/admin",
-      method: "",
-      middlewares: [],
-      modules: [__api_admin_settings_js_onRequest],
-    },
-  {
       routePath: "/api/admin/tags",
       mountPath: "/api/admin",
       method: "",
@@ -316,6 +373,13 @@ export const routes = [
       method: "GET",
       middlewares: [],
       modules: [__api_categories_js_onRequestGet],
+    },
+  {
+      routePath: "/api/config",
+      mountPath: "/api",
+      method: "GET",
+      middlewares: [],
+      modules: [__api_config_js_onRequestGet],
     },
   {
       routePath: "/api/contact",

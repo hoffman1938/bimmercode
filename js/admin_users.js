@@ -33,6 +33,78 @@ async function loadUsers(page = 1) {
     }
 }
 
+// User Inspector
+async function openInspector(userId) {
+    const modal = document.getElementById('inspector-modal');
+    const body = document.getElementById('inspector-body');
+    modal.classList.add('active');
+    body.innerHTML = '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+
+    try {
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            const u = data.user;
+            const h = data.history;
+            
+            body.innerHTML = `
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div>
+                        <h3>Profile</h3>
+                        <p><strong>Username:</strong> ${u.username}</p>
+                        <p><strong>Email:</strong> ${u.email}</p>
+                        <p><strong>Role:</strong> ${u.role_id}</p>
+                        <p><strong>Status:</strong> ${u.is_active ? '<span style="color:#2ecc71">Active</span>' : '<span style="color:#e74c3c">Banned</span>'}</p>
+                        <p><strong>Reputation:</strong> ${u.reputation}</p>
+                        <p><strong>Joined:</strong> ${new Date(u.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                        <h3>Security</h3>
+                        <p><strong>Last Login:</strong> ${u.last_login ? new Date(u.last_login).toLocaleString() : 'Never'}</p>
+                        <p><strong>Failed Attempts:</strong> ${u.failed_login_attempts}</p>
+                        <h4>Recent Logins (Last 10)</h4>
+                        <div style="max-height:150px; overflow-y:auto; font-size:0.9em; background:rgba(0,0,0,0.2); padding:5px;">
+                            ${h.logins.map(l => `
+                                <div style="border-bottom:1px solid rgba(255,255,255,0.05); padding:2px;">
+                                    ${l.success ? '<i class="fas fa-check" style="color:#2ecc71"></i>' : '<i class="fas fa-times" style="color:#e74c3c"></i>'}
+                                    ${new Date(l.created_at).toLocaleString()} - ${l.ip_address}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin-top:20px;">History</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div>
+                         <h4>Warnings</h4>
+                         ${h.warnings.length ? h.warnings.map(w => `<div class="message-tag">${w.severity}: ${w.reason}</div>`).join('') : '<p style="opacity:0.6">No warnings</p>'}
+                    </div>
+                    <div>
+                         <h4>Reputation Log</h4>
+                         ${h.reputation.length ? h.reputation.map(r => `<div>${r.change_amount > 0 ? '+' : ''}${r.change_amount}: ${r.reason}</div>`).join('') : '<p style="opacity:0.6">No changes</p>'}
+                    </div>
+                </div>
+            `;
+        } else {
+            body.innerHTML = `<p style="color:red">Error: ${data.error}</p>`;
+        }
+    } catch (e) {
+        body.innerHTML = `<p style="color:red">Failed to load user details.</p>`;
+    }
+}
+
+function closeInspectorModal() {
+    document.getElementById('inspector-modal').classList.remove('active');
+}
+
+// Update renderUsers to use openInspector
+// (We need to find where renderUsers creates buttons and add the call)
+
 // Make global
 // Make global
 window.unbanUser = unbanUser;

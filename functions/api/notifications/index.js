@@ -14,7 +14,7 @@ export async function onRequestGet(context) {
 
         // Fetch notifications
         const { results } = await db.prepare(`
-            SELECT * FROM notifications 
+            SELECT *, topic_title as text FROM notifications 
             WHERE user_id = ? 
             ORDER BY created_at DESC 
             LIMIT ? OFFSET ?

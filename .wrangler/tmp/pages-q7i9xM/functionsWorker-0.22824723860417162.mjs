@@ -32,7 +32,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// ../.wrangler/tmp/bundle-3pav4g/checked-fetch.js
+// ../.wrangler/tmp/bundle-AJMH4U/checked-fetch.js
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
     (typeof request === "string" ? new Request(request, init) : request).url
@@ -50,7 +50,7 @@ function checkURL(request, init) {
 }
 var urls;
 var init_checked_fetch = __esm({
-  "../.wrangler/tmp/bundle-3pav4g/checked-fetch.js"() {
+  "../.wrangler/tmp/bundle-AJMH4U/checked-fetch.js"() {
     urls = /* @__PURE__ */ new Set();
     __name(checkURL, "checkURL");
     globalThis.fetch = new Proxy(globalThis.fetch, {
@@ -60,6 +60,44 @@ var init_checked_fetch = __esm({
         return Reflect.apply(target, thisArg, argArray);
       }
     });
+  }
+});
+
+// api/admin/announcements/send.js
+async function onRequestPost({ request, env }) {
+  try {
+    const data = await request.json();
+    const { message, title } = data;
+    if (!message) {
+      return new Response(JSON.stringify({ error: "Message required" }), { status: 400 });
+    }
+    const { results: users } = await env.DB.prepare("SELECT id FROM users WHERE is_active = 1").all();
+    const stmt = env.DB.prepare(`
+        INSERT INTO notifications (id, user_id, type, topic_title, created_at) 
+        VALUES (?, ?, 'system', ?, CURRENT_TIMESTAMP)
+      `);
+    const batch = [];
+    const BATCH_SIZE = 50;
+    for (const user of users) {
+      batch.push(stmt.bind(crypto.randomUUID(), user.id, (title || "System Announcement") + ": " + message));
+    }
+    for (let i = 0; i < batch.length; i += BATCH_SIZE) {
+      const chunk = batch.slice(i, i + BATCH_SIZE);
+      await env.DB.batch(chunk);
+    }
+    return new Response(JSON.stringify({
+      success: true,
+      count: users.length
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+var init_send = __esm({
+  "api/admin/announcements/send.js"() {
+    init_functionsRoutes_0_2333257447238799();
+    init_checked_fetch();
+    __name(onRequestPost, "onRequestPost");
   }
 });
 
@@ -223,7 +261,7 @@ var init_permissions = __esm({
 });
 
 // api/admin/roles/assign.js
-async function onRequestPost(context) {
+async function onRequestPost2(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -276,7 +314,7 @@ var init_assign = __esm({
     init_checked_fetch();
     init_jwt();
     init_permissions();
-    __name(onRequestPost, "onRequestPost");
+    __name(onRequestPost2, "onRequestPost");
   }
 });
 
@@ -2356,7 +2394,7 @@ var init_audit = __esm({
 });
 
 // api/auth/password-recovery/init.js
-async function onRequestPost2(context) {
+async function onRequestPost3(context) {
   const { request, env } = context;
   const ipAddress = getIpAddress(request);
   try {
@@ -2427,12 +2465,12 @@ var init_init = __esm({
     init_rate_limit();
     init_crypto();
     init_audit();
-    __name(onRequestPost2, "onRequestPost");
+    __name(onRequestPost3, "onRequestPost");
   }
 });
 
 // api/auth/password-recovery/reset.js
-async function onRequestPost3(context) {
+async function onRequestPost4(context) {
   const { request, env } = context;
   const ipAddress = getIpAddress(request);
   try {
@@ -2500,12 +2538,12 @@ var init_reset = __esm({
     init_crypto();
     init_audit();
     init_rate_limit();
-    __name(onRequestPost3, "onRequestPost");
+    __name(onRequestPost4, "onRequestPost");
   }
 });
 
 // api/auth/password-recovery/verify.js
-async function onRequestPost4(context) {
+async function onRequestPost5(context) {
   const { request, env } = context;
   const ipAddress = getIpAddress(request);
   try {
@@ -2572,12 +2610,67 @@ var init_verify = __esm({
     init_checked_fetch();
     init_crypto();
     init_rate_limit();
-    __name(onRequestPost4, "onRequestPost");
+    __name(onRequestPost5, "onRequestPost");
+  }
+});
+
+// api/admin/users/[id].js
+async function onRequestGet({ request, env }) {
+  try {
+    const url = new URL(request.url);
+    const parts = url.pathname.split("/");
+    const userId = parts[parts.length - 1];
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "User ID required" }), { status: 400 });
+    }
+    const user = await env.DB.prepare(`
+        SELECT id, username, email, role_id, created_at, last_login, is_active, reputation, failed_login_attempts
+        FROM users WHERE id = ?
+      `).bind(userId).first();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+    }
+    const { results: logins } = await env.DB.prepare(`
+        SELECT ip_address, created_at, success, failure_reason 
+        FROM login_attempts 
+        WHERE identifier = ? OR identifier = ?
+        ORDER BY created_at DESC LIMIT 10
+      `).bind(user.email, user.username).all();
+    const { results: warnings } = await env.DB.prepare(`
+        SELECT reason, severity, created_at 
+        FROM warnings 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC
+      `).bind(userId).all();
+    const { results: reputation } = await env.DB.prepare(`
+        SELECT change_amount, reason, created_at 
+        FROM reputation_history 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC LIMIT 10
+      `).bind(userId).all();
+    return new Response(JSON.stringify({
+      success: true,
+      user,
+      history: {
+        logins,
+        warnings,
+        reputation
+      }
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+var init_id = __esm({
+  "api/admin/users/[id].js"() {
+    init_functionsRoutes_0_2333257447238799();
+    init_checked_fetch();
+    __name(onRequestGet, "onRequestGet");
   }
 });
 
 // api/notifications/[id]/read.js
-async function onRequestPost5(context) {
+async function onRequestPost6(context) {
   const { request, env, params } = context;
   const notificationId = params.id;
   if (!notificationId) {
@@ -2595,12 +2688,63 @@ var init_read = __esm({
   "api/notifications/[id]/read.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestPost5, "onRequestPost");
+    __name(onRequestPost6, "onRequestPost");
+  }
+});
+
+// api/admin/analytics.js
+async function onRequestGet2({ request, env }) {
+  try {
+    const url = new URL(request.url);
+    const { results: pageViews } = await env.DB.prepare(`
+        SELECT strftime('%H:00', created_at) as hour, COUNT(*) as count 
+        FROM analytics_events 
+        WHERE created_at > datetime('now', '-24 hours') 
+        GROUP BY hour 
+        ORDER BY hour ASC
+      `).all();
+    const activeUsers = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT ip_address) as count 
+        FROM analytics_events 
+        WHERE created_at > datetime('now', '-15 minutes')
+      `).first("count");
+    const { results: topPages } = await env.DB.prepare(`
+        SELECT path, COUNT(*) as count 
+        FROM analytics_events 
+        WHERE created_at > datetime('now', '-24 hours') 
+        GROUP BY path 
+        ORDER BY count DESC 
+        LIMIT 5
+      `).all();
+    const { results: devices } = await env.DB.prepare(`
+        SELECT device_type, COUNT(*) as count 
+        FROM analytics_events 
+        WHERE created_at > datetime('now', '-24 hours') 
+        GROUP BY device_type
+      `).all();
+    return new Response(JSON.stringify({
+      success: true,
+      data: {
+        pageViews,
+        activeUsers,
+        topPages,
+        devices
+      }
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+var init_analytics = __esm({
+  "api/admin/analytics.js"() {
+    init_functionsRoutes_0_2333257447238799();
+    init_checked_fetch();
+    __name(onRequestGet2, "onRequestGet");
   }
 });
 
 // api/admin/ban.js
-async function onRequestPost6(context) {
+async function onRequestPost7(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -2659,12 +2803,12 @@ var init_ban = __esm({
     init_permissions();
     init_audit();
     init_rate_limit();
-    __name(onRequestPost6, "onRequestPost");
+    __name(onRequestPost7, "onRequestPost");
   }
 });
 
 // api/admin/logs.js
-async function onRequestGet(context) {
+async function onRequestGet3(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -2705,12 +2849,12 @@ var init_logs = __esm({
     init_checked_fetch();
     init_jwt();
     init_permissions();
-    __name(onRequestGet, "onRequestGet");
+    __name(onRequestGet3, "onRequestGet");
   }
 });
 
 // api/admin/promote.js
-async function onRequestGet2(context) {
+async function onRequestGet4(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const email = url.searchParams.get("email");
@@ -2736,12 +2880,62 @@ var init_promote = __esm({
   "api/admin/promote.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestGet2, "onRequestGet");
+    __name(onRequestGet4, "onRequestGet");
+  }
+});
+
+// api/admin/settings.js
+async function onRequestGet5({ request, env }) {
+  try {
+    const token = request.headers.get("Authorization");
+    const { results } = await env.DB.prepare("SELECT key, value FROM system_settings").all();
+    const settings = {};
+    results.forEach((row) => {
+      settings[row.key] = row.value;
+    });
+    const defaults = {
+      site_name: "BMW Diagnostic Codes",
+      maintenance_mode: "false",
+      registrations_open: "true",
+      announcement_banner: "",
+      announcement_active: "false",
+      default_lang: "en"
+    };
+    return new Response(JSON.stringify({
+      success: true,
+      settings: { ...defaults, ...settings }
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+async function onRequestPost8({ request, env }) {
+  try {
+    const data = await request.json();
+    const stmt = env.DB.prepare("INSERT OR REPLACE INTO system_settings (key, value) VALUES (?, ?)");
+    const batch = [];
+    for (const [key, value] of Object.entries(data)) {
+      batch.push(stmt.bind(key, String(value)));
+    }
+    await env.DB.batch(batch);
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+var init_settings = __esm({
+  "api/admin/settings.js"() {
+    init_functionsRoutes_0_2333257447238799();
+    init_checked_fetch();
+    __name(onRequestGet5, "onRequestGet");
+    __name(onRequestPost8, "onRequestPost");
   }
 });
 
 // api/admin/stats.js
-async function onRequestGet3(context) {
+async function onRequestGet6(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -2799,12 +2993,12 @@ var init_stats = __esm({
     init_checked_fetch();
     init_jwt();
     init_permissions();
-    __name(onRequestGet3, "onRequestGet");
+    __name(onRequestGet6, "onRequestGet");
   }
 });
 
 // api/admin/unban.js
-async function onRequestPost7(context) {
+async function onRequestPost9(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
@@ -2840,12 +3034,12 @@ var init_unban = __esm({
     init_jwt();
     init_permissions();
     init_audit();
-    __name(onRequestPost7, "onRequestPost");
+    __name(onRequestPost9, "onRequestPost");
   }
 });
 
 // api/admin/users.js
-async function onRequestGet4(context) {
+async function onRequestGet7(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   console.log("Admin API: Auth Header:", authHeader);
@@ -2940,12 +3134,48 @@ var init_users = __esm({
     init_checked_fetch();
     init_jwt();
     init_permissions();
-    __name(onRequestGet4, "onRequestGet");
+    __name(onRequestGet7, "onRequestGet");
+  }
+});
+
+// api/analytics/track.js
+async function onRequestPost10({ request, env }) {
+  try {
+    const data = await request.json();
+    const { user_id, event_type, path, referrer, user_agent, device_type, meta } = data;
+    const ip = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
+    const country = request.headers.get("CF-IPCountry") || "Unknown";
+    await env.DB.prepare(`
+      INSERT INTO analytics_events (user_id, event_type, path, referrer, user_agent, ip_address, country, device_type, meta)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      user_id || null,
+      event_type || "page_view",
+      path,
+      referrer,
+      user_agent,
+      ip,
+      country,
+      device_type,
+      meta ? JSON.stringify(meta) : null
+    ).run();
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+var init_track = __esm({
+  "api/analytics/track.js"() {
+    init_functionsRoutes_0_2333257447238799();
+    init_checked_fetch();
+    __name(onRequestPost10, "onRequestPost");
   }
 });
 
 // api/auth/get_recovery_question.js
-async function onRequestPost8(context) {
+async function onRequestPost11(context) {
   const { request, env } = context;
   try {
     const { email } = await request.json();
@@ -2970,7 +3200,7 @@ var init_get_recovery_question = __esm({
   "api/auth/get_recovery_question.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestPost8, "onRequestPost");
+    __name(onRequestPost11, "onRequestPost");
   }
 });
 
@@ -3056,7 +3286,7 @@ var init_reputation = __esm({
 });
 
 // api/auth/login.js
-async function onRequestPost9(context) {
+async function onRequestPost12(context) {
   const { request, env } = context;
   const ipAddress = getIpAddress(request);
   const userAgent = request.headers.get("User-Agent");
@@ -3193,12 +3423,12 @@ var init_login = __esm({
     init_audit();
     init_permissions();
     init_reputation();
-    __name(onRequestPost9, "onRequestPost");
+    __name(onRequestPost12, "onRequestPost");
   }
 });
 
 // api/auth/recover.js
-async function onRequestPost10(context) {
+async function onRequestPost13(context) {
   const { request, env } = context;
   try {
     const { email, answer, newPassword } = await request.json();
@@ -3233,12 +3463,12 @@ var init_recover = __esm({
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
     init_crypto();
-    __name(onRequestPost10, "onRequestPost");
+    __name(onRequestPost13, "onRequestPost");
   }
 });
 
 // api/auth/register.js
-async function onRequestPost11(context) {
+async function onRequestPost14(context) {
   const { request, env } = context;
   try {
     const body = await request.clone().json();
@@ -3398,12 +3628,12 @@ var init_register = __esm({
     init_crypto();
     init_rate_limit();
     init_audit();
-    __name(onRequestPost11, "onRequestPost");
+    __name(onRequestPost14, "onRequestPost");
   }
 });
 
 // api/forum/delete.js
-async function onRequestPost12(context) {
+async function onRequestPost15(context) {
   const { request, env } = context;
   try {
     const { type, id, user_id } = await request.json();
@@ -3444,12 +3674,12 @@ var init_delete = __esm({
   "api/forum/delete.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestPost12, "onRequestPost");
+    __name(onRequestPost15, "onRequestPost");
   }
 });
 
 // api/forum/edit.js
-async function onRequestPost13(context) {
+async function onRequestPost16(context) {
   const { request, env } = context;
   try {
     const { type, id, user_id, content } = await request.json();
@@ -3485,12 +3715,12 @@ var init_edit = __esm({
   "api/forum/edit.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestPost13, "onRequestPost");
+    __name(onRequestPost16, "onRequestPost");
   }
 });
 
 // api/forum/like.js
-async function onRequestPost14(context) {
+async function onRequestPost17(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -3551,12 +3781,12 @@ var init_like = __esm({
   "api/forum/like.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestPost14, "onRequestPost");
+    __name(onRequestPost17, "onRequestPost");
   }
 });
 
 // api/forum/solve.js
-async function onRequestPost15(context) {
+async function onRequestPost18(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -3608,12 +3838,12 @@ var init_solve = __esm({
   "api/forum/solve.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestPost15, "onRequestPost");
+    __name(onRequestPost18, "onRequestPost");
   }
 });
 
 // api/moderation/list_reports.js
-async function onRequestGet5(context) {
+async function onRequestGet8(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -3655,12 +3885,12 @@ var init_list_reports = __esm({
     init_checked_fetch();
     init_jwt();
     init_permissions();
-    __name(onRequestGet5, "onRequestGet");
+    __name(onRequestGet8, "onRequestGet");
   }
 });
 
 // api/moderation/report.js
-async function onRequestPost16(context) {
+async function onRequestPost19(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -3693,12 +3923,85 @@ var init_report = __esm({
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
     init_jwt();
-    __name(onRequestPost16, "onRequestPost");
+    __name(onRequestPost19, "onRequestPost");
+  }
+});
+
+// api/moderation/reports.js
+async function onRequestGet9({ request, env }) {
+  try {
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") || "pending";
+    const limit = parseInt(url.searchParams.get("limit")) || 20;
+    const offset = parseInt(url.searchParams.get("offset")) || 0;
+    const { results } = await env.DB.prepare(`
+        SELECT 
+            r.*,
+            reporter.username as reporter_name,
+            reported.username as reported_username
+        FROM reports r
+        LEFT JOIN users reporter ON r.reporter_id = reporter.id
+        LEFT JOIN users reported ON r.reported_user_id = reported.id
+        WHERE r.status = ?
+        ORDER BY r.created_at DESC
+        LIMIT ? OFFSET ?
+      `).bind(status, limit, offset).all();
+    const total = await env.DB.prepare("SELECT COUNT(*) as total FROM reports WHERE status = ?").bind(status).first("total");
+    return new Response(JSON.stringify({
+      success: true,
+      reports: results,
+      total,
+      page: Math.floor(offset / limit) + 1,
+      pages: Math.ceil(total / limit)
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+var init_reports = __esm({
+  "api/moderation/reports.js"() {
+    init_functionsRoutes_0_2333257447238799();
+    init_checked_fetch();
+    __name(onRequestGet9, "onRequestGet");
+  }
+});
+
+// api/moderation/resolve.js
+async function onRequestPost20({ request, env }) {
+  try {
+    const data = await request.json();
+    const { report_id, action, notes, moderator_id } = data;
+    if (!report_id || !action) {
+      return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
+    }
+    await env.DB.prepare(`
+        UPDATE reports 
+        SET status = 'resolved', resolution_notes = ?, resolved_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(JSON.stringify({ action, notes }), report_id).run();
+    if (action === "ban_user") {
+      const report = await env.DB.prepare("SELECT reported_user_id FROM reports WHERE id = ?").bind(report_id).first();
+      if (report && report.reported_user_id) {
+        await env.DB.prepare("UPDATE users SET is_active = 0 WHERE id = ?").bind(report.reported_user_id).run();
+      }
+    }
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+var init_resolve = __esm({
+  "api/moderation/resolve.js"() {
+    init_functionsRoutes_0_2333257447238799();
+    init_checked_fetch();
+    __name(onRequestPost20, "onRequestPost");
   }
 });
 
 // api/moderation/resolve_report.js
-async function onRequestPost17(context) {
+async function onRequestPost21(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
@@ -3737,12 +4040,12 @@ var init_resolve_report = __esm({
     init_jwt();
     init_permissions();
     init_audit();
-    __name(onRequestPost17, "onRequestPost");
+    __name(onRequestPost21, "onRequestPost");
   }
 });
 
 // api/moderation/warn.js
-async function onRequestPost18(context) {
+async function onRequestPost22(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -3797,12 +4100,12 @@ var init_warn = __esm({
     init_jwt();
     init_permissions();
     init_audit();
-    __name(onRequestPost18, "onRequestPost");
+    __name(onRequestPost22, "onRequestPost");
   }
 });
 
 // api/notifications/read-all.js
-async function onRequestPost19(context) {
+async function onRequestPost23(context) {
   const { request, env } = context;
   try {
     const { user_id } = await request.json();
@@ -3820,12 +4123,12 @@ var init_read_all = __esm({
   "api/notifications/read-all.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestPost19, "onRequestPost");
+    __name(onRequestPost23, "onRequestPost");
   }
 });
 
 // api/reputation/history.js
-async function onRequestGet6(context) {
+async function onRequestGet10(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -3855,12 +4158,12 @@ var init_history = __esm({
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
     init_jwt();
-    __name(onRequestGet6, "onRequestGet");
+    __name(onRequestGet10, "onRequestGet");
   }
 });
 
 // api/reputation/upvote.js
-async function onRequestPost20(context) {
+async function onRequestPost24(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -3911,12 +4214,12 @@ var init_upvote = __esm({
     init_checked_fetch();
     init_jwt();
     init_reputation();
-    __name(onRequestPost20, "onRequestPost");
+    __name(onRequestPost24, "onRequestPost");
   }
 });
 
 // api/user/change-email.js
-async function onRequestPost21(context) {
+async function onRequestPost25(context) {
   const { request, env } = context;
   const ipAddress = getIpAddress(request);
   try {
@@ -3968,12 +4271,12 @@ var init_change_email = __esm({
     init_crypto();
     init_audit();
     init_rate_limit();
-    __name(onRequestPost21, "onRequestPost");
+    __name(onRequestPost25, "onRequestPost");
   }
 });
 
 // api/user/change-password.js
-async function onRequestPost22(context) {
+async function onRequestPost26(context) {
   const { request, env } = context;
   const ipAddress = getIpAddress(request);
   try {
@@ -4018,12 +4321,12 @@ var init_change_password = __esm({
     init_crypto();
     init_audit();
     init_rate_limit();
-    __name(onRequestPost22, "onRequestPost");
+    __name(onRequestPost26, "onRequestPost");
   }
 });
 
 // api/user/delete.js
-async function onRequestPost23(context) {
+async function onRequestPost27(context) {
   const { request, env } = context;
   const ipAddress = getIpAddress(request);
   try {
@@ -4078,12 +4381,12 @@ var init_delete2 = __esm({
     init_crypto();
     init_audit();
     init_rate_limit();
-    __name(onRequestPost23, "onRequestPost");
+    __name(onRequestPost27, "onRequestPost");
   }
 });
 
 // api/user/get.js
-async function onRequestGet7(context) {
+async function onRequestGet11(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const username = url.searchParams.get("username");
@@ -4154,12 +4457,12 @@ var init_get = __esm({
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
     init_reputation();
-    __name(onRequestGet7, "onRequestGet");
+    __name(onRequestGet11, "onRequestGet");
   }
 });
 
 // api/user/update.js
-async function onRequestPost24(context) {
+async function onRequestPost28(context) {
   const { request, env } = context;
   const ipAddress = getIpAddress(request);
   try {
@@ -4251,7 +4554,7 @@ var init_update = __esm({
     init_crypto();
     init_audit();
     init_rate_limit();
-    __name(onRequestPost24, "onRequestPost");
+    __name(onRequestPost28, "onRequestPost");
   }
 });
 
@@ -4459,57 +4762,8 @@ var init_messages = __esm({
   }
 });
 
-// api/admin/settings.js
-async function onRequest3(context) {
-  const { request, env } = context;
-  const db = env.DB;
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader) return new Response("Unauthorized", { status: 401 });
-  if (request.method === "GET") {
-    try {
-      const { results } = await db.prepare("SELECT * FROM system_settings").all();
-      const settings = {};
-      results.forEach((row) => {
-        settings[row.key] = row.value;
-      });
-      return new Response(JSON.stringify({ success: true, settings }), {
-        headers: { "Content-Type": "application/json" }
-      });
-    } catch (e) {
-      if (e.message.includes("no such table")) {
-        return new Response(JSON.stringify({ success: true, settings: {} }), { headers: { "Content-Type": "application/json" } });
-      }
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
-    }
-  }
-  if (request.method === "POST") {
-    try {
-      const { settings } = await request.json();
-      const stmt = db.prepare("INSERT INTO system_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value");
-      const batch = [];
-      for (const [key, value] of Object.entries(settings)) {
-        batch.push(stmt.bind(key, String(value)));
-      }
-      await db.batch(batch);
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { "Content-Type": "application/json" }
-      });
-    } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
-    }
-  }
-  return new Response("Method not allowed", { status: 405 });
-}
-var init_settings = __esm({
-  "api/admin/settings.js"() {
-    init_functionsRoutes_0_2333257447238799();
-    init_checked_fetch();
-    __name(onRequest3, "onRequest");
-  }
-});
-
 // api/admin/tags.js
-async function onRequest4(context) {
+async function onRequest3(context) {
   const { request, env } = context;
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -4563,7 +4817,7 @@ var init_tags = __esm({
     init_checked_fetch();
     init_jwt();
     init_permissions();
-    __name(onRequest4, "onRequest");
+    __name(onRequest3, "onRequest");
     __name(handleGet2, "handleGet");
     __name(handlePost2, "handlePost");
     __name(handleDelete2, "handleDelete");
@@ -4571,7 +4825,7 @@ var init_tags = __esm({
 });
 
 // api/forum/topic.js
-async function onRequest5(context) {
+async function onRequest4(context) {
   const { request, env } = context;
   const db = env.DB;
   const url = new URL(request.url);
@@ -4682,12 +4936,12 @@ var init_topic = __esm({
   "api/forum/topic.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequest5, "onRequest");
+    __name(onRequest4, "onRequest");
   }
 });
 
 // api/forum/topics.js
-async function onRequest6(context) {
+async function onRequest5(context) {
   const { request, env } = context;
   const db = env.DB;
   const url = new URL(request.url);
@@ -4785,7 +5039,7 @@ var init_topics = __esm({
   "api/forum/topics.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequest6, "onRequest");
+    __name(onRequest5, "onRequest");
   }
 });
 
@@ -4804,7 +5058,7 @@ async function onRequestDelete(context) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
-var init_id = __esm({
+var init_id2 = __esm({
   "api/notifications/[id].js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
@@ -4813,7 +5067,7 @@ var init_id = __esm({
 });
 
 // api/categories.js
-async function onRequestGet8(context) {
+async function onRequestGet12(context) {
   const { env } = context;
   try {
     const { results } = await env.DB.prepare(
@@ -4830,12 +5084,43 @@ var init_categories2 = __esm({
   "api/categories.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestGet8, "onRequestGet");
+    __name(onRequestGet12, "onRequestGet");
+  }
+});
+
+// api/config.js
+async function onRequestGet13({ env }) {
+  try {
+    const { results } = await env.DB.prepare("SELECT key, value FROM system_settings WHERE key IN ('site_name', 'maintenance_mode', 'registrations_open', 'announcement_banner', 'announcement_active')").all();
+    const config = {};
+    results.forEach((row) => {
+      config[row.key] = row.value;
+    });
+    const defaults = {
+      site_name: "BMW Diagnostic Codes",
+      maintenance_mode: "false",
+      registrations_open: "true",
+      announcement_banner: "",
+      announcement_active: "false"
+    };
+    return new Response(JSON.stringify({
+      success: true,
+      config: { ...defaults, ...config }
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  }
+}
+var init_config = __esm({
+  "api/config.js"() {
+    init_functionsRoutes_0_2333257447238799();
+    init_checked_fetch();
+    __name(onRequestGet13, "onRequestGet");
   }
 });
 
 // api/contact.js
-async function onRequestPost25(context) {
+async function onRequestPost29(context) {
   const { request, env } = context;
   const db = env.DB;
   try {
@@ -4859,12 +5144,12 @@ var init_contact = __esm({
   "api/contact.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestPost25, "onRequestPost");
+    __name(onRequestPost29, "onRequestPost");
   }
 });
 
 // api/notifications/index.js
-async function onRequestGet9(context) {
+async function onRequestGet14(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const userId = url.searchParams.get("user_id");
@@ -4876,7 +5161,7 @@ async function onRequestGet9(context) {
   try {
     const db = env.DB;
     const { results } = await db.prepare(`
-            SELECT * FROM notifications 
+            SELECT *, topic_title as text FROM notifications 
             WHERE user_id = ? 
             ORDER BY created_at DESC 
             LIMIT ? OFFSET ?
@@ -4903,12 +5188,12 @@ var init_notifications = __esm({
   "api/notifications/index.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestGet9, "onRequestGet");
+    __name(onRequestGet14, "onRequestGet");
   }
 });
 
 // api/upload.js
-async function onRequest7(context) {
+async function onRequest6(context) {
   const { request, env } = context;
   if (request.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
@@ -4950,12 +5235,12 @@ var init_upload = __esm({
   "api/upload.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequest7, "onRequest");
+    __name(onRequest6, "onRequest");
   }
 });
 
 // images/[filename].js
-async function onRequestGet10(context) {
+async function onRequestGet15(context) {
   const { env, params } = context;
   const filename = params.filename;
   if (!filename) {
@@ -4981,12 +5266,12 @@ var init_filename = __esm({
   "images/[filename].js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequestGet10, "onRequestGet");
+    __name(onRequestGet15, "onRequestGet");
   }
 });
 
 // _middleware.js
-async function onRequest8(context) {
+async function onRequest7(context) {
   const { request, next, env } = context;
   const response = await next();
   const newHeaders = new Headers(response.headers);
@@ -5005,7 +5290,7 @@ var init_middleware = __esm({
   "_middleware.js"() {
     init_functionsRoutes_0_2333257447238799();
     init_checked_fetch();
-    __name(onRequest8, "onRequest");
+    __name(onRequest7, "onRequest");
   }
 });
 
@@ -5013,17 +5298,23 @@ var init_middleware = __esm({
 var routes;
 var init_functionsRoutes_0_2333257447238799 = __esm({
   "../.wrangler/tmp/pages-q7i9xM/functionsRoutes-0.2333257447238799.mjs"() {
+    init_send();
     init_assign();
     init_init();
     init_reset();
     init_verify();
+    init_id();
     init_read();
+    init_analytics();
     init_ban();
     init_logs();
     init_promote();
+    init_settings();
+    init_settings();
     init_stats();
     init_unban();
     init_users();
+    init_track();
     init_get_recovery_question();
     init_login();
     init_recover();
@@ -5034,6 +5325,8 @@ var init_functionsRoutes_0_2333257447238799 = __esm({
     init_solve();
     init_list_reports();
     init_report();
+    init_reports();
+    init_resolve();
     init_resolve_report();
     init_warn();
     init_read_all();
@@ -5046,12 +5339,12 @@ var init_functionsRoutes_0_2333257447238799 = __esm({
     init_update();
     init_categories();
     init_messages();
-    init_settings();
     init_tags();
     init_topic();
     init_topics();
-    init_id();
+    init_id2();
     init_categories2();
+    init_config();
     init_contact();
     init_notifications();
     init_upload();
@@ -5059,221 +5352,277 @@ var init_functionsRoutes_0_2333257447238799 = __esm({
     init_middleware();
     routes = [
       {
+        routePath: "/api/admin/announcements/send",
+        mountPath: "/api/admin/announcements",
+        method: "POST",
+        middlewares: [],
+        modules: [onRequestPost]
+      },
+      {
         routePath: "/api/admin/roles/assign",
         mountPath: "/api/admin/roles",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost]
+        modules: [onRequestPost2]
       },
       {
         routePath: "/api/auth/password-recovery/init",
         mountPath: "/api/auth/password-recovery",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost2]
+        modules: [onRequestPost3]
       },
       {
         routePath: "/api/auth/password-recovery/reset",
         mountPath: "/api/auth/password-recovery",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost3]
+        modules: [onRequestPost4]
       },
       {
         routePath: "/api/auth/password-recovery/verify",
         mountPath: "/api/auth/password-recovery",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost4]
+        modules: [onRequestPost5]
+      },
+      {
+        routePath: "/api/admin/users/:id",
+        mountPath: "/api/admin/users",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet]
       },
       {
         routePath: "/api/notifications/:id/read",
         mountPath: "/api/notifications/:id",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost5]
-      },
-      {
-        routePath: "/api/admin/ban",
-        mountPath: "/api/admin",
-        method: "POST",
-        middlewares: [],
         modules: [onRequestPost6]
       },
       {
-        routePath: "/api/admin/logs",
-        mountPath: "/api/admin",
-        method: "GET",
-        middlewares: [],
-        modules: [onRequestGet]
-      },
-      {
-        routePath: "/api/admin/promote",
+        routePath: "/api/admin/analytics",
         mountPath: "/api/admin",
         method: "GET",
         middlewares: [],
         modules: [onRequestGet2]
       },
       {
-        routePath: "/api/admin/stats",
-        mountPath: "/api/admin",
-        method: "GET",
-        middlewares: [],
-        modules: [onRequestGet3]
-      },
-      {
-        routePath: "/api/admin/unban",
+        routePath: "/api/admin/ban",
         mountPath: "/api/admin",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost7]
       },
       {
-        routePath: "/api/admin/users",
+        routePath: "/api/admin/logs",
+        mountPath: "/api/admin",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet3]
+      },
+      {
+        routePath: "/api/admin/promote",
         mountPath: "/api/admin",
         method: "GET",
         middlewares: [],
         modules: [onRequestGet4]
       },
       {
-        routePath: "/api/auth/get_recovery_question",
-        mountPath: "/api/auth",
+        routePath: "/api/admin/settings",
+        mountPath: "/api/admin",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet5]
+      },
+      {
+        routePath: "/api/admin/settings",
+        mountPath: "/api/admin",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost8]
       },
       {
-        routePath: "/api/auth/login",
-        mountPath: "/api/auth",
+        routePath: "/api/admin/stats",
+        mountPath: "/api/admin",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet6]
+      },
+      {
+        routePath: "/api/admin/unban",
+        mountPath: "/api/admin",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost9]
       },
       {
-        routePath: "/api/auth/recover",
-        mountPath: "/api/auth",
+        routePath: "/api/admin/users",
+        mountPath: "/api/admin",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet7]
+      },
+      {
+        routePath: "/api/analytics/track",
+        mountPath: "/api/analytics",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost10]
       },
       {
-        routePath: "/api/auth/register",
+        routePath: "/api/auth/get_recovery_question",
         mountPath: "/api/auth",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost11]
       },
       {
-        routePath: "/api/forum/delete",
-        mountPath: "/api/forum",
+        routePath: "/api/auth/login",
+        mountPath: "/api/auth",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost12]
       },
       {
-        routePath: "/api/forum/edit",
-        mountPath: "/api/forum",
+        routePath: "/api/auth/recover",
+        mountPath: "/api/auth",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost13]
       },
       {
-        routePath: "/api/forum/like",
-        mountPath: "/api/forum",
+        routePath: "/api/auth/register",
+        mountPath: "/api/auth",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost14]
       },
       {
-        routePath: "/api/forum/solve",
+        routePath: "/api/forum/delete",
         mountPath: "/api/forum",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost15]
       },
       {
+        routePath: "/api/forum/edit",
+        mountPath: "/api/forum",
+        method: "POST",
+        middlewares: [],
+        modules: [onRequestPost16]
+      },
+      {
+        routePath: "/api/forum/like",
+        mountPath: "/api/forum",
+        method: "POST",
+        middlewares: [],
+        modules: [onRequestPost17]
+      },
+      {
+        routePath: "/api/forum/solve",
+        mountPath: "/api/forum",
+        method: "POST",
+        middlewares: [],
+        modules: [onRequestPost18]
+      },
+      {
         routePath: "/api/moderation/list_reports",
         mountPath: "/api/moderation",
         method: "GET",
         middlewares: [],
-        modules: [onRequestGet5]
+        modules: [onRequestGet8]
       },
       {
         routePath: "/api/moderation/report",
         mountPath: "/api/moderation",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost16]
+        modules: [onRequestPost19]
+      },
+      {
+        routePath: "/api/moderation/reports",
+        mountPath: "/api/moderation",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet9]
+      },
+      {
+        routePath: "/api/moderation/resolve",
+        mountPath: "/api/moderation",
+        method: "POST",
+        middlewares: [],
+        modules: [onRequestPost20]
       },
       {
         routePath: "/api/moderation/resolve_report",
         mountPath: "/api/moderation",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost17]
+        modules: [onRequestPost21]
       },
       {
         routePath: "/api/moderation/warn",
         mountPath: "/api/moderation",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost18]
+        modules: [onRequestPost22]
       },
       {
         routePath: "/api/notifications/read-all",
         mountPath: "/api/notifications",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost19]
+        modules: [onRequestPost23]
       },
       {
         routePath: "/api/reputation/history",
         mountPath: "/api/reputation",
         method: "GET",
         middlewares: [],
-        modules: [onRequestGet6]
+        modules: [onRequestGet10]
       },
       {
         routePath: "/api/reputation/upvote",
         mountPath: "/api/reputation",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost20]
+        modules: [onRequestPost24]
       },
       {
         routePath: "/api/user/change-email",
         mountPath: "/api/user",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost21]
+        modules: [onRequestPost25]
       },
       {
         routePath: "/api/user/change-password",
         mountPath: "/api/user",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost22]
+        modules: [onRequestPost26]
       },
       {
         routePath: "/api/user/delete",
         mountPath: "/api/user",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost23]
+        modules: [onRequestPost27]
       },
       {
         routePath: "/api/user/get",
         mountPath: "/api/user",
         method: "GET",
         middlewares: [],
-        modules: [onRequestGet7]
+        modules: [onRequestGet11]
       },
       {
         routePath: "/api/user/update",
         mountPath: "/api/user",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost24]
+        modules: [onRequestPost28]
       },
       {
         routePath: "/api/admin/categories",
@@ -5290,32 +5639,25 @@ var init_functionsRoutes_0_2333257447238799 = __esm({
         modules: [onRequest2]
       },
       {
-        routePath: "/api/admin/settings",
+        routePath: "/api/admin/tags",
         mountPath: "/api/admin",
         method: "",
         middlewares: [],
         modules: [onRequest3]
       },
       {
-        routePath: "/api/admin/tags",
-        mountPath: "/api/admin",
-        method: "",
-        middlewares: [],
-        modules: [onRequest4]
-      },
-      {
         routePath: "/api/forum/topic",
         mountPath: "/api/forum",
         method: "",
         middlewares: [],
-        modules: [onRequest5]
+        modules: [onRequest4]
       },
       {
         routePath: "/api/forum/topics",
         mountPath: "/api/forum",
         method: "",
         middlewares: [],
-        modules: [onRequest6]
+        modules: [onRequest5]
       },
       {
         routePath: "/api/notifications/:id",
@@ -5329,52 +5671,59 @@ var init_functionsRoutes_0_2333257447238799 = __esm({
         mountPath: "/api",
         method: "GET",
         middlewares: [],
-        modules: [onRequestGet8]
+        modules: [onRequestGet12]
+      },
+      {
+        routePath: "/api/config",
+        mountPath: "/api",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet13]
       },
       {
         routePath: "/api/contact",
         mountPath: "/api",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost25]
+        modules: [onRequestPost29]
       },
       {
         routePath: "/api/notifications",
         mountPath: "/api/notifications",
         method: "GET",
         middlewares: [],
-        modules: [onRequestGet9]
+        modules: [onRequestGet14]
       },
       {
         routePath: "/api/upload",
         mountPath: "/api",
         method: "",
         middlewares: [],
-        modules: [onRequest7]
+        modules: [onRequest6]
       },
       {
         routePath: "/images/:filename",
         mountPath: "/images",
         method: "GET",
         middlewares: [],
-        modules: [onRequestGet10]
+        modules: [onRequestGet15]
       },
       {
         routePath: "/",
         mountPath: "/",
         method: "",
-        middlewares: [onRequest8],
+        middlewares: [onRequest7],
         modules: []
       }
     ];
   }
 });
 
-// ../.wrangler/tmp/bundle-3pav4g/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-AJMH4U/middleware-loader.entry.ts
 init_functionsRoutes_0_2333257447238799();
 init_checked_fetch();
 
-// ../.wrangler/tmp/bundle-3pav4g/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-AJMH4U/middleware-insertion-facade.js
 init_functionsRoutes_0_2333257447238799();
 init_checked_fetch();
 
@@ -5875,7 +6224,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-3pav4g/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-AJMH4U/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -5909,7 +6258,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-3pav4g/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-AJMH4U/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
