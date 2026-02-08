@@ -601,7 +601,7 @@ function getUserBadge(username, userId, role) {
         return getReputationBadge(0, role); 
     }
     
-    if (role === 'admin') return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
+    if (role === 'admin_role') return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
     return '<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> Member</span>';
 }
 

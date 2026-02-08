@@ -1,45 +1,150 @@
+// functions/api/auth/login.js - Enhanced Login API
 import { generateToken } from "../../lib/jwt.js";
 import { verifyPassword } from "../../lib/crypto.js";
+import { 
+  checkRateLimit, 
+  RATE_LIMITS, 
+  getIpAddress,
+  trackLoginAttempt,
+  checkAccountLock
+} from "../../lib/rate-limit.js";
+import { logAudit, AUDIT_ACTIONS } from "../../lib/audit.js";
+import { getUserPermissions, getUserRole } from "../../lib/permissions.js";
+import { getUserLevel } from "../../lib/reputation.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const ipAddress = getIpAddress(request);
+  const userAgent = request.headers.get('User-Agent');
 
   try {
-    const { email, password } = await request.json();
+    // 1. Rate Limiting (IP based)
+    const rateLimit = await checkRateLimit(env, ipAddress, RATE_LIMITS.LOGIN);
+    if (!rateLimit.allowed) {
+      return new Response(JSON.stringify({ 
+        error: "Too many login attempts. Please try again later.",
+        resetAt: rateLimit.resetAt.toISOString()
+      }), {
+        status: 429,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Retry-After': Math.ceil((rateLimit.resetAt - new Date()) / 1000).toString()
+        }
+      });
+    }
 
-    // 1. Ищем пользователя
-    const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?")
-      .bind(email)
+    const { email, password, remember_me } = await request.json(); // 'email' field can contain email OR username
+
+    if (!email || !password) {
+      return new Response(JSON.stringify({ error: "Username/Email and password are required" }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 2. Check Account Lockout
+    const lockStatus = await checkAccountLock(env, email);
+    if (lockStatus.locked) {
+      const remainingMinutes = Math.ceil((lockStatus.lockedUntil - new Date()) / 60000);
+      
+      // Log attempted login on locked account
+      await trackLoginAttempt(env, email, ipAddress, false, 'account_locked', userAgent);
+      
+      return new Response(JSON.stringify({ 
+        error: `Account is temporarily locked due to multiple failed attempts. Please try again in ${remainingMinutes} minutes.` 
+      }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 3. Find user by email OR username
+    const user = await env.DB.prepare(
+      "SELECT * FROM users WHERE email = ? OR username = ?"
+    )
+      .bind(email, email)
       .first();
 
     if (!user) {
+      // Log failed attempt (user not found) - vague error for security
+      await trackLoginAttempt(env, email, ipAddress, false, 'user_not_found', userAgent);
+      // Wait a bit to prevent timing attacks
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
         status: 401,
+        headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // 2. Проверяем пароль
+    // 4. Verify Password
     const isValid = await verifyPassword(password, user.password_hash);
+    
     if (!isValid) {
+      // Log failed attempt (wrong password)
+      await trackLoginAttempt(env, email, ipAddress, false, 'invalid_password', userAgent);
+      
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
         status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // 5. Check if active
+    if (!user.is_active) {
+       await trackLoginAttempt(env, email, ipAddress, false, 'account_disabled', userAgent);
+       return new Response(JSON.stringify({ error: "Account is disabled. Please contact support." }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // 3. Генерируем токен
-    // ВАЖНО: JWT_SECRET нужно задать в настройках Pages! Пока используем временный "secret" если не задан.
-    const secret = env.JWT_SECRET || "secret-dev-key";
+    // 6. Login Success - Track and Audit
+    await trackLoginAttempt(env, email, ipAddress, true, null, userAgent);
+    
+    await logAudit(env, {
+      userId: user.id,
+      action: AUDIT_ACTIONS.USER_LOGIN,
+      targetEntityType: 'user',
+      targetEntityId: user.id,
+      targetUserId: user.id,
+      details: {
+        method: email.includes('@') ? 'email' : 'username',
+        ip: ipAddress
+      },
+      ipAddress,
+      userAgent
+    });
 
+    // 7. Get Role, Permissions and Level Data
+    const permissions = await getUserPermissions(env, user.id);
+    const role = await getUserRole(env, user.id);
+    const level = await getUserLevel(env, user.reputation || 0, user.preferred_lang || 'en');
+
+    // 8. Generate Token
+    const secret = env.JWT_SECRET || "secret-dev-key";
+    
+    // Token expires in 30 days if remember_me is true, otherwise 24 hours
+    const expirationSeconds = remember_me ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
+    
     const token = await generateToken(
       {
         id: user.id,
         username: user.username,
-        role: user.role,
+        role: role?.name || 'user',
+        role_level: role?.level || 1,
+        permissions: permissions
       },
       secret,
+      { expiresIn: expirationSeconds }
     );
 
-    // 4. Возвращаем токен и данные юзера
+    // 9. Update last login
+    await env.DB.prepare(
+      "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?"
+    ).bind(user.id).run();
+
+    // 10. Return Response
     return new Response(
       JSON.stringify({
         success: true,
@@ -47,14 +152,28 @@ export async function onRequestPost(context) {
         user: {
           id: user.id,
           username: user.username,
-          avatar: user.avatar_url,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          age: user.age,
+          avatar_url: user.avatar_url,
           lang: user.preferred_lang,
-          role: user.role,
+          role: role?.name || 'user',
+          role_display: role?.display_name || 'User',
+          bio: user.bio,
+          car_model: user.car_model,
+          reputation: user.reputation || 0,
+          level: level,
+          permissions: permissions
         },
       }),
-      { status: 200 },
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    console.error("Login Error:", e);
+    return new Response(JSON.stringify({ error: "Login failed. Please try again." }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

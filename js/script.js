@@ -613,15 +613,18 @@ function setupRegisterForm() {
             btn.textContent = "Checking...";
             msg.textContent = "";
             
-            const res = await fetch("/api/auth/get_recovery_question", {
+            const res = await fetch("/api/auth/password-recovery/init", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ identifier: email }) // Updated payload key
             });
             
             const data = await res.json();
             
             if(res.ok) {
+                // Store recovery token for next step
+                window.recoveryToken = data.recovery_token;
+                
                 document.getElementById("recovery-step-1").classList.remove("active");
                 document.getElementById("recovery-step-2").classList.add("active");
                 
@@ -631,7 +634,7 @@ function setupRegisterForm() {
                     "first_car": "What was your first car model?",
                     "city_born": "In which city were you born?"
                 };
-                const qText = qMap[data.question] || data.question;
+                const qText = qMap[data.security_question] || data.security_question;
                 const display = document.getElementById("rec-question-display");
                 if(display) display.textContent = qText;
                 
@@ -640,6 +643,7 @@ function setupRegisterForm() {
                 msg.style.color = "#e74c3c";
             }
         } catch(err) {
+            console.error(err);
             msg.textContent = "Connection error";
         } finally {
             btn.textContent = "Continue";
@@ -661,27 +665,49 @@ function setupRegisterForm() {
             btn.textContent = "Resetting...";
             msg.textContent = "";
             
-            const res = await fetch("/api/auth/recover", {
+            // 1. Verify Answer -> Get Reset Token
+            const verifyRes = await fetch("/api/auth/password-recovery/verify", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ email, answer, newPassword })
+                body: JSON.stringify({ 
+                    recovery_token: window.recoveryToken,
+                    security_answer: answer 
+                })
             });
             
-            const data = await res.json();
+            const verifyData = await verifyRes.json();
             
-            if(res.ok) {
+            if (!verifyRes.ok) throw new Error(verifyData.error || "Incorrect answer");
+            
+            // 2. Reset Password using Reset Token
+            const resetRes = await fetch("/api/auth/password-recovery/reset", {
+                 method: "POST",
+                 headers: {"Content-Type": "application/json"},
+                 body: JSON.stringify({
+                     reset_token: verifyData.reset_token,
+                     new_password: newPassword
+                 })
+            });
+            
+            const resetData = await resetRes.json();
+            
+            if(resetRes.ok) {
                 msg.textContent = "Success! Login now.";
                 msg.style.color = "#2ecc71";
+                // Clear token
+                window.recoveryToken = null;
+                
                 setTimeout(() => {
                     closeRecoveryModal();
                     toggleAuthModal();
                 }, 2000);
             } else {
-                msg.textContent = data.error || "Incorrect answer";
-                msg.style.color = "#e74c3c";
+                throw new Error(resetData.error || "Failed to reset password");
             }
         } catch(err) {
-            msg.textContent = "Connection error";
+            console.error(err);
+            msg.textContent = err.message || "Connection error";
+            msg.style.color = "#e74c3c";
         } finally {
             btn.textContent = "Reset Password";
         }
@@ -696,6 +722,9 @@ function setupRegisterForm() {
   regForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("reg-username").value;
+    const firstName = document.getElementById("reg-first-name").value;
+    const lastName = document.getElementById("reg-last-name").value;
+    const age = parseInt(document.getElementById("reg-age").value);
     const email = document.getElementById("reg-email").value;
     const password = document.getElementById("reg-password").value;
     const question = document.getElementById("reg-question").value;
@@ -707,11 +736,21 @@ function setupRegisterForm() {
         msg.style.color = "#e74c3c";
         return;
     }
+    
+    // Validate age
+    if (age < 13 || age > 120) {
+        msg.textContent = "Age must be between 13 and 120";
+        msg.style.color = "#e74c3c";
+        return;
+    }
 
     msg.style.color = "#aaa";
     msg.textContent = "Processing...";
     const payload = {
           username,
+          first_name: firstName,
+          last_name: lastName,
+          age,
           email,
           password,
           language: (typeof currentLanguage !== 'undefined') ? currentLanguage : "en",
@@ -1021,6 +1060,52 @@ async function init() {
         btn.disabled = true;
 
         const user = JSON.parse(localStorage.getItem("user_data"));
+        
+        // Get all form values
+        const username = document.getElementById("profile-username")?.value;
+        const email = document.getElementById("profile-email")?.value;
+        const firstName = document.getElementById("profile-first-name")?.value;
+        const lastName = document.getElementById("profile-last-name")?.value;
+        const age = parseInt(document.getElementById("profile-age")?.value) || null;
+        
+        const city = document.getElementById("profile-city")?.value;
+        const country = document.getElementById("profile-country")?.value;
+        
+        const carModel = document.getElementById("profile-car")?.value;
+        const bmwYear = parseInt(document.getElementById("profile-year")?.value) || null;
+        const bmwBody = document.getElementById("profile-body")?.value;
+        const bmwEngine = document.getElementById("profile-engine")?.value;
+        
+        const bio = document.getElementById("profile-bio")?.value;
+        const currentPassword = document.getElementById("profile-password-confirm")?.value;
+        
+        console.log("DEBUG FORM VALUES:", {
+          username,
+          email,
+          firstName,
+          lastName,
+          age,
+          carModel,
+          bio,
+          currentPassword: currentPassword ? "***" : "(empty)"
+        });
+        
+        // Validate password is provided
+        if (!currentPassword) {
+          alert("Please enter your current password to save changes");
+          btn.textContent = originalText;
+          btn.disabled = false;
+          return;
+        }
+        
+        // Validate age
+        if (age && (age < 13 || age > 120)) {
+          alert("Age must be between 13 and 120");
+          btn.textContent = originalText;
+          btn.disabled = false;
+          return;
+        }
+
         let finalAvatarUrl = user.avatar_url;
 
         try {
@@ -1040,25 +1125,50 @@ async function init() {
             if (upData.url) finalAvatarUrl = upData.url;
           }
 
-          // Обновляем профиль
+          // Обновляем профиль с подтверждением пароля
           const updateRes = await fetch("/api/user/update", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               id: user.id,
+              current_password: currentPassword,
+              username,
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              age,
+              city,
+              country,
               avatar_url: finalAvatarUrl,
-              car_model: document.getElementById("profile-car").value,
-              bio: document.getElementById("profile-bio").value,
+              car_model: carModel,
+              bmw_year: bmwYear,
+              bmw_body: bmwBody,
+              bmw_engine: bmwEngine,
+              bio,
             }),
           });
 
           const updateData = await updateRes.json();
-          if (updateData.success) {
-            localStorage.setItem("user_data", JSON.stringify(updateData.user));
-            alert("Saved!");
-            location.reload();
+          
+          if (updateRes.ok && updateData.success) {
+            // Clear password field
+            document.getElementById("profile-password-confirm").value = "";
+            
+            // Refresh user data
+            await refreshUserData();
+            
+            alert("Profile updated successfully!");
+            
+            // Reload if username changed (affects display everywhere)
+            if (username !== user.username) {
+              location.reload();
+            } else {
+              // Just close modal and update UI
+              toggleProfileModal();
+              checkAuthStatus();
+            }
           } else {
-            alert("Error: " + updateData.error);
+            alert("Error: " + (updateData.error || "Update failed"));
           }
         } catch (err) {
           console.error(err);
@@ -1323,11 +1433,39 @@ window.toggleProfileModal = async function () {
     const user = JSON.parse(localStorage.getItem("user_data"));
 
     if (user) {
-      // Заполняем поля
+      // Заполняем все поля
+      const usernameInput = document.getElementById("profile-username");
+      const emailInput = document.getElementById("profile-email");
+      const firstNameInput = document.getElementById("profile-first-name");
+      const lastNameInput = document.getElementById("profile-last-name");
+      const ageInput = document.getElementById("profile-age");
       const carInput = document.getElementById("profile-car");
       const bioInput = document.getElementById("profile-bio");
+      
+      if (usernameInput) usernameInput.value = user.username || "";
+      if (emailInput) emailInput.value = user.email || "";
+      if (firstNameInput) firstNameInput.value = user.first_name || "";
+      if (lastNameInput) lastNameInput.value = user.last_name || "";
+      if (ageInput) ageInput.value = user.age || "";
       if (carInput) carInput.value = user.car_model || "";
       if (bioInput) bioInput.value = user.bio || "";
+      
+      // New Fields
+      const cityInput = document.getElementById("profile-city");
+      const countryInput = document.getElementById("profile-country");
+      const yearInput = document.getElementById("profile-year");
+      const bodyInput = document.getElementById("profile-body");
+      const engineInput = document.getElementById("profile-engine");
+      
+      if (cityInput) cityInput.value = user.city || "";
+      if (countryInput) countryInput.value = user.country || "";
+      if (yearInput) yearInput.value = user.bmw_year || "";
+      if (bodyInput) bodyInput.value = user.bmw_body || "";
+      if (engineInput) engineInput.value = user.bmw_engine || "";
+      
+      // Clear password field
+      const passwordInput = document.getElementById("profile-password-confirm");
+      if (passwordInput) passwordInput.value = "";
 
       // Сбрасываем редактор фото в начальное состояние
       const previewContainer = document.getElementById("current-avatar-view");
@@ -1369,6 +1507,13 @@ async function refreshUserData() {
 
     // Запрашиваем свежие данные из базы (с anti-cache)
     const res = await fetch(`/api/user/get?id=${user.id}&t=${Date.now()}`);
+    
+    if (res.status === 404) {
+        console.warn("User ID not found in DB (stale session). Logging out.");
+        logout(); // Assumes logout() is globally available or defined in script.js
+        return;
+    }
+
     if (res.ok) {
       const freshUser = await res.json();
 
@@ -1544,7 +1689,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // 5. BADGE SYSTEM
 // ==========================================
 window.getReputationBadge = function(reputation, role) {
-    if (role === 'admin') {
+    if (role === 'admin_role') {
         return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
     }
     

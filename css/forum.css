@@ -259,6 +259,38 @@ body {
   color: var(--f-text-muted);
 }
 
+/* Profile Form Styling */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  color: #8ba4b6;
+  font-size: 13px;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+/* Scrollbar styling for profile form */
+#profile-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+#profile-form::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+#profile-form::-webkit-scrollbar-thumb {
+  background: var(--bmw-blue);
+  border-radius: 10px;
+}
+
+#profile-form::-webkit-scrollbar-thumb:hover {
+  background: var(--bmw-sky);
+}
+
 /* Badges */
 .topic-badge {
   padding: 4px 10px;

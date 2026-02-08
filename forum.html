@@ -231,7 +231,7 @@
         <form id="login-form" class="auth-form active">
           <div class="input-group">
             <i class="fas fa-envelope"></i>
-            <input type="email" id="login-email" placeholder="Email" required />
+            <input type="text" id="login-email" placeholder="Email/Username" required />
           </div>
           <div class="input-group">
             <i class="fas fa-lock"></i>
@@ -263,6 +263,42 @@
               required
             />
           </div>
+          
+          <!-- First Name -->
+          <div class="input-group">
+            <i class="fas fa-id-card"></i>
+            <input
+              type="text"
+              id="reg-first-name"
+              placeholder="First Name"
+              required
+            />
+          </div>
+          
+          <!-- Last Name -->
+          <div class="input-group">
+            <i class="fas fa-id-card"></i>
+            <input
+              type="text"
+              id="reg-last-name"
+              placeholder="Last Name"
+              required
+            />
+          </div>
+          
+          <!-- Age -->
+          <div class="input-group">
+            <i class="fas fa-calendar"></i>
+            <input
+              type="number"
+              id="reg-age"
+              placeholder="Age"
+              min="13"
+              max="120"
+              required
+            />
+          </div>
+          
           <div class="input-group">
             <i class="fas fa-envelope"></i>
             <input type="email" id="reg-email" placeholder="Email" required />
@@ -397,18 +433,100 @@
           </div>
         </div>
 
-        <form id="profile-form" class="auth-form active" style="margin-top: 25px">
-          <div class="form-group">
-            <label>Car Model</label>
-            <div class="input-group" style="margin-bottom:0"> <!-- Reset margin since form-group handles it -->
-                <i class="fas fa-car" style="position: absolute; left: 15px; color: #8ba4b6;"></i>
-                <input type="text" id="profile-car" class="auth-input" style="padding-left: 40px;" placeholder="e.g. BMW E60 530i">
+        <form id="profile-form" class="auth-form active" style="margin-top: 20px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+          
+          <!-- Account Section -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="color: var(--bmw-blue); font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-user-shield"></i> Account Information
+            </h3>
+            
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="profile-username" class="auth-input" placeholder="Username" required />
+            </div>
+            
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="profile-email" class="auth-input" placeholder="Email" required />
             </div>
           </div>
-          
-          <div class="form-group">
-            <label>Bio</label>
-            <textarea id="profile-bio" class="auth-input" rows="3" placeholder="Tell the community about yourself..."></textarea>
+
+          <!-- Personal Info Section -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="color: var(--bmw-blue); font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-id-card"></i> Personal Information
+            </h3>
+            
+            <div class="form-row" style="display: flex; gap: 10px;">
+              <div class="form-group" style="flex: 1;">
+                <label>First Name</label>
+                <input type="text" id="profile-first-name" class="auth-input" placeholder="First Name" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>Last Name</label>
+                <input type="text" id="profile-last-name" class="auth-input" placeholder="Last Name" />
+              </div>
+            </div>
+            
+            <div class="form-row" style="display: flex; gap: 10px;">
+              <div class="form-group" style="width: 80px;">
+                <label>Age</label>
+                <input type="number" id="profile-age" class="auth-input" placeholder="Age" min="13" max="120" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>City</label>
+                <input type="text" id="profile-city" class="auth-input" placeholder="City" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>Country</label>
+                <input type="text" id="profile-country" class="auth-input" placeholder="Country" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Details Section -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="color: var(--bmw-blue); font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-car"></i> BMW Vehicle Details
+            </h3>
+            
+            <div class="form-group">
+              <label>Car Model</label>
+              <div class="input-group" style="margin-bottom:10px;">
+                <i class="fas fa-car" style="position: absolute; left: 15px; color: #8ba4b6;"></i>
+                <input type="text" id="profile-car" class="auth-input" style="padding-left: 40px;" placeholder="e.g. BMW 530i">
+              </div>
+            </div>
+            
+            <div class="form-row" style="display: flex; gap: 10px;">
+              <div class="form-group" style="flex: 1;">
+                <label>Year</label>
+                <input type="number" id="profile-year" class="auth-input" placeholder="e.g. 2008" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>Chassis</label>
+                <input type="text" id="profile-body" class="auth-input" placeholder="e.g. E60" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>Engine</label>
+                <input type="text" id="profile-engine" class="auth-input" placeholder="e.g. N54" />
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Bio</label>
+              <textarea id="profile-bio" class="auth-input" rows="3" placeholder="Tell the community about yourself..."></textarea>
+            </div>
+          </div>
+
+          <!-- Password Confirmation (REQUIRED) -->
+          <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+            <h3 style="color: #e74c3c; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-lock"></i> Confirm Your Password
+            </h3>
+            <p style="font-size: 12px; color: #ccc; margin-bottom: 10px;">Required to save any changes</p>
+            <input type="password" id="profile-password-confirm" class="auth-input" placeholder="Enter your current password" required style="border-color: rgba(231, 76, 60, 0.5);" />
           </div>
 
           <button type="submit" class="submit-btn" id="save-profile-btn">

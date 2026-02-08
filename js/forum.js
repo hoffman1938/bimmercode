@@ -521,7 +521,7 @@ function updateSidebarUser() {
       roleBadge = getReputationBadge(user.reputation, user.role);
     } else {
       roleBadge = `<span class="user-badge badge-newcomer" style="margin-top:5px; display:inline-block;"><i class="fas fa-user"></i> ${t.member}</span>`;
-      if (user.role === 'admin') roleBadge = '<span class="user-badge badge-admin" style="margin-top:5px; display:inline-block;"><i class="fas fa-shield-alt"></i> Admin</span>';
+      if (user.role === 'admin_role') roleBadge = '<span class="user-badge badge-admin" style="margin-top:5px; display:inline-block;"><i class="fas fa-shield-alt"></i> Admin</span>';
     }
 
     container.innerHTML = `
