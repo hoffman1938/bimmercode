@@ -41,6 +41,24 @@ function logoutAdmin() {
     window.location.href = 'index.html';
 }
 
+// Sidebar Toggle
+function toggleAdminSidebar() {
+    document.querySelector('.sidebar').classList.toggle('active');
+}
+
+// Close sidebar when clicking outside on mobile (optional enhancement)
+document.addEventListener('click', (e) => {
+    const sidebar = document.querySelector('.sidebar');
+    const toggle = document.getElementById('sidebar-toggle');
+    
+    if (window.innerWidth <= 768 && 
+        sidebar.classList.contains('active') && 
+        !sidebar.contains(e.target) && 
+        !toggle.contains(e.target)) {
+        sidebar.classList.remove('active');
+    }
+});
+
 function switchTab(tabId, context = {}) {
     // Hide all sections
     document.querySelectorAll('.dashboard-section').forEach(el => el.classList.add('hidden'));

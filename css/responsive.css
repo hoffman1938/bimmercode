@@ -405,6 +405,12 @@
     right: 0;
     border-radius: 0;
   }
+  
+  /* Contact Form Mobile Fix */
+  .legal-container {
+      margin: 20px 10px !important;
+      padding: 15px !important;
+  }
 }
 
 /* --- SMALL MOBILE (Max 375px) --- */

@@ -161,8 +161,58 @@ h3 {
     font-weight: 800;
     margin-bottom: 8px;
     background: linear-gradient(to right, #fff, #94a3b8);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+@media (max-width: 768px) {
+    .stat-grid {
+        grid-template-columns: 1fr; /* Stack on mobile */
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .search-box {
+        width: 100% !important;
+    }
+
+    /* Sidebar Mobile */
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: 10px 0 20px rgba(0,0,0,0.5);
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    /* Main Content Mobile */
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+        width: 100%;
+    }
+
+    /* Show Burger */
+    #sidebar-toggle {
+        display: inline-flex !important;
+    }
+    
+    /* Table Responsive */
+    .data-table {
+        min-width: 600px; /* Force scroll */
+    }
+    
+    .dashboard-card {
+        padding: 15px;
+        overflow-x: auto; /* Enable scroll for cards with tables */
+    }
 }
 
 .stat-card div:not(.stat-value) {
