@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./css/admin.css">
+    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     </head>
 <body class="bmw-pattern">
     <header>
@@ -381,6 +382,22 @@
             </div>
             
             <button class="submit-btn" onclick="saveRole()">Save Role</button>
+        </div>
+    </div>
+
+    <!-- Report Details Modal -->
+    <div id="report-details-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeReportDetailsModal()"><i class="fas fa-times"></i></button>
+            <h2>Report Details</h2>
+            <div id="report-details-content" style="margin-top: 20px;">
+                <!-- Populated by JS -->
+                <p>Loading...</p>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-danger" id="btn-report-ban" onclick="">Ban User</button>
+                <button class="btn" id="btn-report-dismiss" onclick="">Dismiss</button>
+            </div>
         </div>
     </div>
 

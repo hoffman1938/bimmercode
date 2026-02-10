@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./css/forum.css?v=2.92" />
     <link rel="stylesheet" href="./css/responsive.css?v=2.92" />
     <link rel="stylesheet"  />
+    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -65,6 +66,11 @@
             <!-- Edit Button (Hidden by default) -->
             <button id="btn-edit-profile" class="btn btn-edit-profile-action" style="display: none; margin-bottom: 20px;" onclick="openEditProfileModal()">
               <i class="fas fa-edit"></i> Edit Profile
+            </button>
+            
+            <!-- Report User Button (Hidden by default, shown via JS if not own profile) -->
+            <button id="btn-report-profile" class="btn" style="display: none; margin-bottom: 20px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5;" onclick="triggerUserReport()">
+              <i class="fas fa-flag"></i> Report User
             </button>
         </div>
       </div>
@@ -154,6 +160,7 @@
     <script src="./js/translations.js?v=2.91"></script>
     <script src="./js/script.js?v=2.91"></script>
     <script src="./js/forum.js?v=2.91"></script> <!-- Reusing for auth logic/utils -->
+    <script src="./js/report.js"></script>
     <script src="./js/profile.js"></script>
     <script src="./js/live.js?v=2.91"></script>
   </body>

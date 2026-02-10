@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-7OBwi4/checked-fetch.js
+// .wrangler/tmp/bundle-CMHjaP/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -27,7 +27,7 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
   }
 });
 
-// .wrangler/tmp/pages-eQS7yr/functionsWorker-0.5725034488989598.mjs
+// .wrangler/tmp/pages-YpwyQh/functionsWorker-0.1489627415246224.mjs
 var __create = Object.create;
 var __defProp2 = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -79,7 +79,7 @@ function checkURL2(request, init) {
 __name(checkURL2, "checkURL");
 var urls2;
 var init_checked_fetch = __esm({
-  "../.wrangler/tmp/bundle-dj8cqy/checked-fetch.js"() {
+  "../.wrangler/tmp/bundle-iAs3Df/checked-fetch.js"() {
     urls2 = /* @__PURE__ */ new Set();
     __name2(checkURL2, "checkURL");
     globalThis.fetch = new Proxy(globalThis.fetch, {
@@ -123,7 +123,7 @@ async function onRequestPost({ request, env }) {
 __name(onRequestPost, "onRequestPost");
 var init_send = __esm({
   "api/admin/announcements/send.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost, "onRequestPost");
   }
@@ -199,7 +199,7 @@ async function verifyToken(token, secret) {
 __name(verifyToken, "verifyToken");
 var init_jwt = __esm({
   "lib/jwt.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(sign, "sign");
     __name2(verify, "verify");
@@ -283,7 +283,7 @@ function requirePermission(permissionName) {
 __name(requirePermission, "requirePermission");
 var init_permissions = __esm({
   "lib/permissions.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(hasPermission, "hasPermission");
     __name2(getUserPermissions, "getUserPermissions");
@@ -341,7 +341,7 @@ async function onRequestPost2(context) {
 __name(onRequestPost2, "onRequestPost2");
 var init_assign = __esm({
   "api/admin/roles/assign.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -358,7 +358,7 @@ function generateId() {
 __name(generateId, "generateId");
 var init_utils = __esm({
   "lib/utils.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(generateId, "generateId");
   }
@@ -494,7 +494,7 @@ __name(checkAccountLock, "checkAccountLock");
 var RATE_LIMITS;
 var init_rate_limit = __esm({
   "lib/rate-limit.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     RATE_LIMITS = {
       REGISTRATION: {
@@ -532,7 +532,7 @@ var init_rate_limit = __esm({
 });
 var require_crypto = __commonJS({
   "(disabled):crypto"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
   }
 });
@@ -1100,7 +1100,7 @@ var C_ORIG;
 var bcryptjs_default;
 var init_bcryptjs = __esm({
   "../node_modules/bcryptjs/index.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     import_crypto = __toESM(require_crypto(), 1);
     randomFallback = null;
@@ -2381,7 +2381,7 @@ function validatePasswordStrength(password) {
 __name(validatePasswordStrength, "validatePasswordStrength");
 var init_crypto = __esm({
   "lib/crypto.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_bcryptjs();
     __name2(hashPassword, "hashPassword");
@@ -2428,7 +2428,7 @@ __name(logAudit, "logAudit");
 var AUDIT_ACTIONS;
 var init_audit = __esm({
   "lib/audit.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_utils();
     __name2(logAudit, "logAudit");
@@ -2531,7 +2531,7 @@ async function onRequestPost3(context) {
 __name(onRequestPost3, "onRequestPost3");
 var init_init = __esm({
   "api/auth/password-recovery/init.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_rate_limit();
     init_crypto();
@@ -2603,7 +2603,7 @@ async function onRequestPost4(context) {
 __name(onRequestPost4, "onRequestPost4");
 var init_reset = __esm({
   "api/auth/password-recovery/reset.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_crypto();
     init_audit();
@@ -2675,7 +2675,7 @@ async function onRequestPost5(context) {
 __name(onRequestPost5, "onRequestPost5");
 var init_verify = __esm({
   "api/auth/password-recovery/verify.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_crypto();
     init_rate_limit();
@@ -2731,7 +2731,7 @@ async function onRequestGet({ request, env }) {
 __name(onRequestGet, "onRequestGet");
 var init_id = __esm({
   "api/admin/users/[id].js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet, "onRequestGet");
   }
@@ -2753,7 +2753,7 @@ async function onRequestPost6(context) {
 __name(onRequestPost6, "onRequestPost6");
 var init_read = __esm({
   "api/notifications/[id]/read.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost6, "onRequestPost");
   }
@@ -2803,7 +2803,7 @@ async function onRequestGet2({ request, env }) {
 __name(onRequestGet2, "onRequestGet2");
 var init_analytics = __esm({
   "api/admin/analytics.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet2, "onRequestGet");
   }
@@ -2862,7 +2862,7 @@ async function onRequestPost7(context) {
 __name(onRequestPost7, "onRequestPost7");
 var init_ban = __esm({
   "api/admin/ban.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -2909,7 +2909,7 @@ async function onRequestGet3(context) {
 __name(onRequestGet3, "onRequestGet3");
 var init_logs = __esm({
   "api/admin/logs.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -2941,7 +2941,7 @@ async function onRequestGet4(context) {
 __name(onRequestGet4, "onRequestGet4");
 var init_promote = __esm({
   "api/admin/promote.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet4, "onRequestGet");
   }
@@ -2990,7 +2990,7 @@ async function onRequestPost8({ request, env }) {
 __name(onRequestPost8, "onRequestPost8");
 var init_settings = __esm({
   "api/admin/settings.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet5, "onRequestGet");
     __name2(onRequestPost8, "onRequestPost");
@@ -3051,7 +3051,7 @@ async function onRequestGet6(context) {
 __name(onRequestGet6, "onRequestGet6");
 var init_stats = __esm({
   "api/admin/stats.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -3090,7 +3090,7 @@ async function onRequestPost9(context) {
 __name(onRequestPost9, "onRequestPost9");
 var init_unban = __esm({
   "api/admin/unban.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -3190,7 +3190,7 @@ async function onRequestGet7(context) {
 __name(onRequestGet7, "onRequestGet7");
 var init_users = __esm({
   "api/admin/users.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -3227,7 +3227,7 @@ async function onRequestPost10({ request, env }) {
 __name(onRequestPost10, "onRequestPost10");
 var init_track = __esm({
   "api/analytics/track.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost10, "onRequestPost");
   }
@@ -3256,7 +3256,7 @@ async function onRequestPost11(context) {
 __name(onRequestPost11, "onRequestPost11");
 var init_get_recovery_question = __esm({
   "api/auth/get_recovery_question.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost11, "onRequestPost");
   }
@@ -3336,7 +3336,7 @@ async function canVote(env, userId, targetUserId, postId) {
 __name(canVote, "canVote");
 var init_reputation = __esm({
   "lib/reputation.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(getUserLevel, "getUserLevel");
     __name2(addReputation, "addReputation");
@@ -3473,7 +3473,7 @@ async function onRequestPost12(context) {
 __name(onRequestPost12, "onRequestPost12");
 var init_login = __esm({
   "api/auth/login.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_crypto();
@@ -3517,7 +3517,7 @@ async function onRequestPost13(context) {
 __name(onRequestPost13, "onRequestPost13");
 var init_recover = __esm({
   "api/auth/recover.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_crypto();
     __name2(onRequestPost13, "onRequestPost");
@@ -3678,7 +3678,7 @@ async function onRequestPost14(context) {
 __name(onRequestPost14, "onRequestPost14");
 var init_register = __esm({
   "api/auth/register.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_utils();
     init_crypto();
@@ -3727,7 +3727,7 @@ async function onRequestPost15(context) {
 __name(onRequestPost15, "onRequestPost15");
 var init_delete = __esm({
   "api/forum/delete.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost15, "onRequestPost");
   }
@@ -3767,7 +3767,7 @@ async function onRequestPost16(context) {
 __name(onRequestPost16, "onRequestPost16");
 var init_edit = __esm({
   "api/forum/edit.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost16, "onRequestPost");
   }
@@ -3832,7 +3832,7 @@ async function onRequestPost17(context) {
 __name(onRequestPost17, "onRequestPost17");
 var init_like = __esm({
   "api/forum/like.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost17, "onRequestPost");
   }
@@ -3888,7 +3888,7 @@ async function onRequestPost18(context) {
 __name(onRequestPost18, "onRequestPost18");
 var init_solve = __esm({
   "api/forum/solve.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost18, "onRequestPost");
   }
@@ -3932,7 +3932,7 @@ async function onRequestGet8(context) {
 __name(onRequestGet8, "onRequestGet8");
 var init_list_reports = __esm({
   "api/moderation/list_reports.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -3970,7 +3970,7 @@ async function onRequestPost19(context) {
 __name(onRequestPost19, "onRequestPost19");
 var init_report = __esm({
   "api/moderation/report.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     __name2(onRequestPost19, "onRequestPost");
@@ -4009,7 +4009,7 @@ async function onRequestGet9({ request, env }) {
 __name(onRequestGet9, "onRequestGet9");
 var init_reports = __esm({
   "api/moderation/reports.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet9, "onRequestGet");
   }
@@ -4042,7 +4042,7 @@ async function onRequestPost20({ request, env }) {
 __name(onRequestPost20, "onRequestPost20");
 var init_resolve = __esm({
   "api/moderation/resolve.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost20, "onRequestPost");
   }
@@ -4082,7 +4082,7 @@ async function onRequestPost21(context) {
 __name(onRequestPost21, "onRequestPost21");
 var init_resolve_report = __esm({
   "api/moderation/resolve_report.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -4141,7 +4141,7 @@ async function onRequestPost22(context) {
 __name(onRequestPost22, "onRequestPost22");
 var init_warn = __esm({
   "api/moderation/warn.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -4166,7 +4166,7 @@ async function onRequestPost23(context) {
 __name(onRequestPost23, "onRequestPost23");
 var init_read_all = __esm({
   "api/notifications/read-all.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost23, "onRequestPost");
   }
@@ -4199,7 +4199,7 @@ async function onRequestGet10(context) {
 __name(onRequestGet10, "onRequestGet10");
 var init_history = __esm({
   "api/reputation/history.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     __name2(onRequestGet10, "onRequestGet");
@@ -4253,7 +4253,7 @@ async function onRequestPost24(context) {
 __name(onRequestPost24, "onRequestPost24");
 var init_upvote = __esm({
   "api/reputation/upvote.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_reputation();
@@ -4308,7 +4308,7 @@ async function onRequestPost25(context) {
 __name(onRequestPost25, "onRequestPost25");
 var init_change_email = __esm({
   "api/user/change-email.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_crypto();
     init_audit();
@@ -4357,7 +4357,7 @@ async function onRequestPost26(context) {
 __name(onRequestPost26, "onRequestPost26");
 var init_change_password = __esm({
   "api/user/change-password.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_crypto();
     init_audit();
@@ -4416,7 +4416,7 @@ async function onRequestPost27(context) {
 __name(onRequestPost27, "onRequestPost27");
 var init_delete2 = __esm({
   "api/user/delete.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_crypto();
     init_audit();
@@ -4493,7 +4493,7 @@ async function onRequestGet11(context) {
 __name(onRequestGet11, "onRequestGet11");
 var init_get = __esm({
   "api/user/get.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_reputation();
     __name2(onRequestGet11, "onRequestGet");
@@ -4587,7 +4587,7 @@ async function onRequestPost28(context) {
 __name(onRequestPost28, "onRequestPost28");
 var init_update = __esm({
   "api/user/update.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_crypto();
     init_audit();
@@ -4747,7 +4747,7 @@ async function logAudit2(env, userId, action, type, targetId, details) {
 __name(logAudit2, "logAudit2");
 var init_categories = __esm({
   "api/admin/categories.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -4798,7 +4798,7 @@ async function onRequest2(context) {
 __name(onRequest2, "onRequest2");
 var init_messages = __esm({
   "api/admin/messages.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequest2, "onRequest");
   }
@@ -4857,7 +4857,7 @@ async function handleDelete2(context) {
 __name(handleDelete2, "handleDelete2");
 var init_tags = __esm({
   "api/admin/tags.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     init_jwt();
     init_permissions();
@@ -4977,7 +4977,7 @@ async function onRequest4(context) {
 __name(onRequest4, "onRequest4");
 var init_topic = __esm({
   "api/forum/topic.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequest4, "onRequest");
   }
@@ -5079,7 +5079,7 @@ async function onRequest5(context) {
 __name(onRequest5, "onRequest5");
 var init_topics = __esm({
   "api/forum/topics.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequest5, "onRequest");
   }
@@ -5101,7 +5101,7 @@ async function onRequestDelete(context) {
 __name(onRequestDelete, "onRequestDelete");
 var init_id2 = __esm({
   "api/notifications/[id].js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestDelete, "onRequestDelete");
   }
@@ -5122,7 +5122,7 @@ async function onRequestGet12(context) {
 __name(onRequestGet12, "onRequestGet12");
 var init_categories2 = __esm({
   "api/categories.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet12, "onRequestGet");
   }
@@ -5152,7 +5152,7 @@ async function onRequestGet13({ env }) {
 __name(onRequestGet13, "onRequestGet13");
 var init_config = __esm({
   "api/config.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet13, "onRequestGet");
   }
@@ -5180,7 +5180,7 @@ async function onRequestPost29(context) {
 __name(onRequestPost29, "onRequestPost29");
 var init_contact = __esm({
   "api/contact.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestPost29, "onRequestPost");
   }
@@ -5223,7 +5223,7 @@ async function onRequestGet14(context) {
 __name(onRequestGet14, "onRequestGet14");
 var init_notifications = __esm({
   "api/notifications/index.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet14, "onRequestGet");
   }
@@ -5269,7 +5269,7 @@ async function onRequest6(context) {
 __name(onRequest6, "onRequest6");
 var init_upload = __esm({
   "api/upload.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequest6, "onRequest");
   }
@@ -5299,7 +5299,7 @@ async function onRequestGet15(context) {
 __name(onRequestGet15, "onRequestGet15");
 var init_filename = __esm({
   "images/[filename].js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequestGet15, "onRequestGet");
   }
@@ -5322,14 +5322,14 @@ async function onRequest7(context) {
 __name(onRequest7, "onRequest7");
 var init_middleware = __esm({
   "_middleware.js"() {
-    init_functionsRoutes_0_2996092868626363();
+    init_functionsRoutes_0_41632599781984636();
     init_checked_fetch();
     __name2(onRequest7, "onRequest");
   }
 });
 var routes;
-var init_functionsRoutes_0_2996092868626363 = __esm({
-  "../.wrangler/tmp/pages-eQS7yr/functionsRoutes-0.2996092868626363.mjs"() {
+var init_functionsRoutes_0_41632599781984636 = __esm({
+  "../.wrangler/tmp/pages-YpwyQh/functionsRoutes-0.41632599781984636.mjs"() {
     init_send();
     init_assign();
     init_init();
@@ -5750,13 +5750,13 @@ var init_functionsRoutes_0_2996092868626363 = __esm({
     ];
   }
 });
-init_functionsRoutes_0_2996092868626363();
+init_functionsRoutes_0_41632599781984636();
 init_checked_fetch();
-init_functionsRoutes_0_2996092868626363();
+init_functionsRoutes_0_41632599781984636();
 init_checked_fetch();
-init_functionsRoutes_0_2996092868626363();
+init_functionsRoutes_0_41632599781984636();
 init_checked_fetch();
-init_functionsRoutes_0_2996092868626363();
+init_functionsRoutes_0_41632599781984636();
 init_checked_fetch();
 function lexer(str) {
   var tokens = [];
@@ -6212,7 +6212,7 @@ var cloneResponse = /* @__PURE__ */ __name2((response) => (
     response
   )
 ), "cloneResponse");
-init_functionsRoutes_0_2996092868626363();
+init_functionsRoutes_0_41632599781984636();
 init_checked_fetch();
 var drainBody = /* @__PURE__ */ __name2(async (request, env, _ctx, middlewareCtx) => {
   try {
@@ -6230,7 +6230,7 @@ var drainBody = /* @__PURE__ */ __name2(async (request, env, _ctx, middlewareCtx
   }
 }, "drainBody");
 var middleware_ensure_req_body_drained_default = drainBody;
-init_functionsRoutes_0_2996092868626363();
+init_functionsRoutes_0_41632599781984636();
 init_checked_fetch();
 function reduceError(e) {
   return {
@@ -6259,7 +6259,7 @@ var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_miniflare3_json_error_default
 ];
 var middleware_insertion_facade_default = pages_template_worker_default;
-init_functionsRoutes_0_2996092868626363();
+init_functionsRoutes_0_41632599781984636();
 init_checked_fetch();
 var __facade_middleware__ = [];
 function __facade_register__(...args) {
@@ -6429,7 +6429,7 @@ var jsonError2 = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx
 }, "jsonError");
 var middleware_miniflare3_json_error_default2 = jsonError2;
 
-// .wrangler/tmp/bundle-7OBwi4/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-CMHjaP/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__2 = [
   middleware_ensure_req_body_drained_default2,
   middleware_miniflare3_json_error_default2
@@ -6461,7 +6461,7 @@ function __facade_invoke__2(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__2, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-7OBwi4/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-CMHjaP/middleware-loader.entry.ts
 var __Facade_ScheduledController__2 = class ___Facade_ScheduledController__2 {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -6561,4 +6561,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__2 as __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default2 as default
 };
-//# sourceMappingURL=functionsWorker-0.5725034488989598.js.map
+//# sourceMappingURL=functionsWorker-0.1489627415246224.js.map

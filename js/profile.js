@@ -71,7 +71,7 @@ async function loadProfile(profileId) {
     const joinedDate = new Date(user.created_at.endsWith('Z') ? user.created_at : user.created_at + 'Z');
     document.getElementById("stat-joined").textContent = joinedDate.toLocaleDateString();
 
-    // 4. Check Ownership (Show Edit Button)
+    // 4. Check Ownership (Show Edit Button or Report Button)
     const currentUser = JSON.parse(localStorage.getItem("user_data")); // Fix key name (was forum_user)
     if (currentUser && String(currentUser.id) === String(user.id)) {
         document.getElementById("btn-edit-profile").style.display = "inline-block";
@@ -80,6 +80,9 @@ async function loadProfile(profileId) {
         document.getElementById("edit-bio").value = user.bio || "";
         document.getElementById("edit-car").value = user.car_model || "";
         document.getElementById("edit-avatar").value = user.avatar_url || "";
+    } else if (currentUser) {
+        // Show Report Button if logged in and not own profile
+        document.getElementById("btn-report-profile").style.display = "inline-block";
     }
 
     // 5. Load Topics
@@ -367,4 +370,9 @@ function convertToWebP(file) {
         };
         reader.onerror = (e) => reject(e);
     });
+}
+
+function triggerUserReport() {
+    if (!currentProfileUser) return;
+    openReportModal('user', currentProfileUser.id, currentProfileUser.id);
 }

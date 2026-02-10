@@ -321,6 +321,9 @@ function renderPostHTML(post, isMain, topicAuthorId) {
               <i class="${post.is_liked ? "fas" : "far"} fa-heart"></i> 
               <span id="likes-${post.id}">${post.likes_count || 0}</span>
             </button>
+            <button class="btn-action" title="Report" onclick="openReportModal('post', '${post.id}', '${post.user_id}')">
+                <i class="fas fa-flag"></i>
+            </button>
             ${
               isTopicOwner && !post.is_solution
                 ? `
@@ -331,7 +334,11 @@ function renderPostHTML(post, isMain, topicAuthorId) {
                 : ""
             }
           `
-              : ""
+              : `
+            <button class="btn-action" title="Report Topic" onclick="openReportModal('topic', '${post.id}', '${post.user_id}')">
+                <i class="fas fa-flag"></i> Report
+            </button>
+              `
           }
         </div>
       </div>

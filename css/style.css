@@ -1366,3 +1366,68 @@ footer {
 .footer-links a:hover {
   color: var(--bmw-blue);
 }
+/* Report Modal Specifics */
+#report-modal {
+    z-index: 2000; /* Ensure it's above everything */
+}
+#report-modal .auth-content {
+    background: rgba(18, 20, 24, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+#report-modal textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    resize: vertical;
+}
+/* --- AdSense Containers --- */
+.ad-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    min-height: 90px; /* Default for leaderboard */
+    background: rgba(255, 255, 255, 0.02); /* Subtle placeholder bg */
+    border: 1px dashed rgba(255, 255, 255, 0.1); /* Helper border for dev (remove later if needed) */
+    border-radius: var(--radius-md);
+}
+
+.ad-container.ad-header {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    max-width: 728px;
+}
+
+.ad-container.ad-footer {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    max-width: 728px;
+}
+
+.ad-container.ad-sidebar {
+    min-height: 250px;
+    max-width: 300px;
+}
+
+.ad-container.ad-in-content {
+    margin: 30px auto;
+    max-width: 728px;
+}
+
+/* Mobile Adjustments for Ads */
+@media (max-width: 768px) {
+    .ad-container {
+        min-height: 50px;
+    }
+    .ad-container.ad-sidebar {
+        margin: 20px auto; /* Center sidebar ads on mobile if stacked */
+    }
+}
