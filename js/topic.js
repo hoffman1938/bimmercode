@@ -219,6 +219,13 @@ async function renderTopicWithTranslation(data) {
     topic.user_id,
   );
 
+  // AdSense In-Content
+  html += `
+    <div class="ad-container ad-in-content">
+        <span style="color: #444; font-size: 12px;">Advertisement</span>
+    </div>
+  `;
+
   // Add Replies Section Divider
   if (translatedPosts.length > 0) {
     const repliesText = currentTopicLang === 'ru' ? 'Ответы' : currentTopicLang === 'ka' ? 'პასუხები' : 'Replies';
