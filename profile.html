@@ -27,12 +27,28 @@
       </a>
 
       <div class="controls">
-        <a
-          href="/forum"
+        <a href="/" class="btn">
+          <i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span>
+        </a>
+        <button class="btn" onclick="toggleFavoritesModal()">
+          <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
+        </button>
+        <a href="vin.html" class="btn">
+          <i class="fas fa-barcode"></i> <span data-i18n="vinBtn">VIN Check</span>
+        </a>
+        <button
           class="btn"
-          style="background: transparent; border: none"
+          id="profile-language-toggle"
+          onclick="switchForumLanguage()"
         >
-          <i class="fas fa-arrow-left"></i> Back to Forum
+          <i class="fas fa-globe"></i> <span id="forum-lang-display">EN</span>
+        </button>
+        <button class="btn" id="notif-btn" onclick="toggleNotifications()" style="position: relative; display: none;">
+          <i class="fas fa-bell"></i>
+          <span id="notif-badge" class="notif-badge" style="display: none;">0</span>
+        </button>
+        <a href="/forum" class="btn">
+          <i class="fas fa-arrow-left"></i> <span data-i18n="backToForum">Back to Forum</span>
         </a>
       </div>
     </header>
@@ -65,12 +81,12 @@
             
             <!-- Edit Button (Hidden by default) -->
             <button id="btn-edit-profile" class="btn btn-edit-profile-action" style="display: none; margin-bottom: 20px;" onclick="openEditProfileModal()">
-              <i class="fas fa-edit"></i> Edit Profile
+              <i class="fas fa-edit"></i> <span data-i18n="editProfile">Edit Profile</span>
             </button>
             
             <!-- Report User Button (Hidden by default, shown via JS if not own profile) -->
             <button id="btn-report-profile" class="btn" style="display: none; margin-bottom: 20px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5;" onclick="triggerUserReport()">
-              <i class="fas fa-flag"></i> Report User
+              <i class="fas fa-flag"></i> <span data-i18n="reportUser">Report User</span>
             </button>
         </div>
       </div>
@@ -80,20 +96,20 @@
       <div class="profile-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
         <div class="stat-card-glass">
            <div class="stat-value-large" id="stat-reputation">0</div>
-           <div class="stat-label">Reputation</div>
+           <div class="stat-label" data-i18n="reputation">Reputation</div>
         </div>
         <div class="stat-card-glass">
            <div class="stat-value-large" id="stat-topics">0</div>
-           <div class="stat-label">Topics Created</div>
+           <div class="stat-label" data-i18n="topicsCreated">Topics Created</div>
         </div>
         <div class="stat-card-glass">
            <div class="stat-value-large" id="stat-joined">-</div>
-           <div class="stat-label">Member Since</div>
+           <div class="stat-label" data-i18n="memberSince">Member Since</div>
         </div>
       </div>
 
       <!-- User's Topics -->
-      <h3 style="margin-bottom: 20px; border-bottom: 1px solid var(--f-border); padding-bottom: 10px;">User Activity</h3>
+      <h3 style="margin-bottom: 20px; border-bottom: 1px solid var(--f-border); padding-bottom: 10px;" data-i18n="userActivity">User Activity</h3>
       
       <div id="profile-topics-container">
         <!-- Topics will be loaded here -->
@@ -150,6 +166,35 @@
             </form>
         </div>
     </div>
+    
+    <!-- Favorites Modal -->
+    <div id="favorites-modal" class="favorites-modal">
+      <div class="favorites-content">
+        <div class="favorites-header">
+          <h3>
+            <i class="fas fa-star" style="color: #f1c40f"></i>
+            <span data-i18n="savedTitle">Saved Codes</span>
+          </h3>
+          <button class="close-button" onclick="toggleFavoritesModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="favorites-body" id="favorites-list"></div>
+      </div>
+    </div>
+
+    <!-- CODE DETAIL MODAL (Hidden by default) -->
+    <div id="code-detail-modal" class="modal">
+      <div class="modal-content" style="max-width: 600px; width: 90%;">
+        <span class="close-btn" onclick="document.getElementById('code-detail-modal').classList.remove('active')">&times;</span>
+        <div id="code-detail" class="hidden">
+           <!-- Content injected by script.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden Search Container (required for script.js compatibility) -->
+    <div id="search-container" style="display:none;"></div>
     
     <!-- Bottom Ad Banner -->
     <div class="ad-container ad-footer" style="margin-top: 30px;">

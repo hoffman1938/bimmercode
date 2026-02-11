@@ -16,6 +16,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // SYNC LANGUAGE WITH FORUM
+  const currentForumLang = localStorage.getItem("forumLanguage") || "en";
+  if (typeof currentLanguage !== "undefined") {
+    currentLanguage = currentForumLang;
+  }
+  
+  // CRITICAL: Call updateLanguage from script.js to translate header buttons
+  if (typeof updateLanguage === 'function') {
+    updateLanguage();
+  }
+
   await loadProfile(profileId);
 });
 
@@ -34,18 +45,19 @@ async function loadProfile(profileId) {
     
     // Bio
     const bioEl = document.getElementById("profile-bio");
+    const t = APP_TRANSLATIONS[currentLanguage] || APP_TRANSLATIONS.en;
     if (user.bio) {
         bioEl.textContent = user.bio;
         bioEl.style.fontStyle = "italic";
         bioEl.style.color = "#ccc";
     } else {
-        bioEl.textContent = "This user hasn't written a bio yet.";
+        bioEl.textContent = t.noBio || "This user hasn't written a bio yet.";
         bioEl.style.fontStyle = "normal";
         bioEl.style.color = "var(--f-text-muted)";
     }
 
     // Car Model
-    document.getElementById("profile-car").innerHTML = `<i class="fas fa-car" style="color:var(--bmw-sky)"></i> <span>${user.car_model || "No model specified"}</span>`;
+    document.getElementById("profile-car").innerHTML = `<i class="fas fa-car" style="color:var(--bmw-sky)"></i> <span>${user.car_model || t.noModel || "No model specified"}</span>`;
     
     // Avatar (Using IMG for object-fit support)
     const avatarEl = document.getElementById("profile-avatar");
@@ -115,7 +127,8 @@ async function loadUserTopics(userId, page = 1) {
         document.getElementById("stat-topics").textContent = total;
 
         if (topics.length === 0) {
-            container.innerHTML = `<div style="padding: 20px; text-align: center; color: #888;">No topics created yet.</div>`;
+            const t = APP_TRANSLATIONS[currentLanguage] || APP_TRANSLATIONS.en;
+            container.innerHTML = `<div style="padding: 20px; text-align: center; color: #888;">${t.noTopicsYet || "No topics created yet."}</div>`;
             return;
         }
 
@@ -128,7 +141,7 @@ async function loadUserTopics(userId, page = 1) {
                     <h3>${escapeHtml(topic.title)}</h3>
                     <div class="topic-meta-line">
                         <span>${new Date(topic.created_at.endsWith('Z') ? topic.created_at : topic.created_at + 'Z').toLocaleDateString()}</span>
-                        <span>• ${topic.reply_count} replies</span>
+                        <span>• ${topic.reply_count} ${(APP_TRANSLATIONS[currentLanguage] || APP_TRANSLATIONS.en).replies || "replies"}</span>
                     </div>
                 </div>
             </div>

@@ -89,7 +89,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadTopicData();
   setupReplyForm();
+  
+  // SYNC WITH SCRIPT.JS LANGUAGE
+  if (typeof currentLanguage !== "undefined") {
+    currentLanguage = currentTopicLang;
+  }
+  
   updateTopicPageLanguage();
+  
+  // CRITICAL: Call updateLanguage from script.js to translate header buttons
+  if (typeof updateLanguage === 'function') {
+    updateLanguage();
+  }
 
   // Живое обновление темы (новые ответы)
   setInterval(checkLiveTopicUpdates, 15000);
@@ -662,7 +673,20 @@ async function switchTopicLanguage() {
   let idx = langs.indexOf(currentTopicLang);
   currentTopicLang = langs[(idx + 1) % langs.length];
   localStorage.setItem("forumLanguage", currentTopicLang);
+  
+  // SYNC WITH SCRIPT.JS
+  if (typeof currentLanguage !== "undefined") {
+    currentLanguage = currentTopicLang;
+    localStorage.setItem("language", currentTopicLang);
+  }
+  
   updateTopicPageLanguage();
+  
+  // CRITICAL: Call updateLanguage from script.js to translate header buttons
+  if (typeof updateLanguage === 'function') {
+    updateLanguage();
+  }
+  
   if (originalTopicData) await renderTopicWithTranslation(originalTopicData);
 }
 

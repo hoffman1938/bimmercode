@@ -40,21 +40,26 @@
         <h1>BimmerCodes <span style="color: var(--bmw-sky)">Forum</span></h1>
       </a>
       <div class="controls">
-        <!-- Кнопка языка -->
+        <a href="/" class="btn">
+          <i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span>
+        </a>
+        <button class="btn" onclick="toggleFavoritesModal()">
+          <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
+        </button>
+        <a href="vin.html" class="btn">
+          <i class="fas fa-barcode"></i> <span data-i18n="vinBtn">VIN Check</span>
+        </a>
         <button
           class="btn"
           id="topic-language-toggle"
           onclick="switchTopicLanguage()"
-          style="
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            min-width: 50px;
-          "
         >
           <i class="fas fa-globe"></i> <span id="topic-lang-display">EN</span>
         </button>
-
-
+        <button class="btn" id="notif-btn" onclick="toggleNotifications()" style="position: relative; display: none;">
+          <i class="fas fa-bell"></i>
+          <span id="notif-badge" class="notif-badge" style="display: none;">0</span>
+        </button>
         <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
           <i class="fas fa-user"></i> <span id="btn-login-text">Login</span>
         </a>
@@ -404,6 +409,36 @@
     </form>
   </div>
 </div>
+
+    <!-- Favorites Modal -->
+    <div id="favorites-modal" class="favorites-modal">
+      <div class="favorites-content">
+        <div class="favorites-header">
+          <h3>
+            <i class="fas fa-star" style="color: #f1c40f"></i>
+            <span data-i18n="savedTitle">Saved Codes</span>
+          </h3>
+          <button class="close-button" onclick="toggleFavoritesModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="favorites-body" id="favorites-list"></div>
+      </div>
+    </div>
+
+    <!-- CODE DETAIL MODAL (Hidden by default) -->
+    <div id="code-detail-modal" class="modal">
+      <div class="modal-content" style="max-width: 600px; width: 90%;">
+        <span class="close-btn" onclick="document.getElementById('code-detail-modal').classList.remove('active')">&times;</span>
+        <div id="code-detail" class="hidden">
+           <!-- Content injected by script.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden Search Container (required for script.js compatibility) -->
+    <div id="search-container" style="display:none;"></div>
+    
     <!-- Footer -->
     <footer>
         <!-- Content injected by js/footer.js -->
