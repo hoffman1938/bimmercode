@@ -199,7 +199,7 @@ function updateForumLanguage() {
   const t = APP_TRANSLATIONS[currentForumLang] || APP_TRANSLATIONS["en"];
   if (!t) return;
   
-  const langLabels = { en: "EN", ru: "RU", ka: "KA" };
+  const langLabels = { en: "EN", ru: "RU", ka: "GE" };
 
   const langDisplay = document.getElementById("forum-lang-display");
   if (langDisplay) langDisplay.textContent = langLabels[currentForumLang];

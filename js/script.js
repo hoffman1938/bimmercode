@@ -228,332 +228,9 @@ window.hideDetail = function () {
 };
 
 // ==========================================
-// 3. AI WIZARD & CHAT
+// 3. AI WIZARD & CHAT (REMOVED)
 // ==========================================
 
-function initWizard() {
-  if (document.getElementById("wizard-widget")) return;
-
-  const lang = currentLanguage;
-  const t = APP_TRANSLATIONS[lang];
-
-  const wizardHTML = `
-    <div id="wizard-widget">
-      <div class="wizard-fab" id="wizard-fab" onclick="toggleChat()">
-        <i class="fas fa-robot"></i>
-      </div>
-      
-      <div class="chat-window" id="chat-window">
-        <div class="chat-header">
-          <div class="bot-info">
-            <div class="bot-avatar"><i class="fas fa-microchip"></i></div>
-            <div>
-              <div id="chat-bot-title" style="font-weight:bold; color:#fff;">${t.chatTitle}</div>
-              <div class="bot-status"><div class="status-dot"></div> ${t.chatStatus}</div>
-            </div>
-          </div>
-          <div style="cursor:pointer;" onclick="toggleChat()"><i class="fas fa-times" style="color:#fff;"></i></div>
-        </div>
-        
-        <div class="chat-body" id="chat-body">
-          <div class="typing-indicator" id="typing-indicator">
-            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
-          </div>
-        </div>
-
-        <div class="chat-footer">
-          <input type="text" id="chat-input" class="chat-input" placeholder="${t.chatPlaceholder}" autocomplete="off">
-          <button class="chat-send-btn" onclick="handleUserMessage()">
-            <i class="fas fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.insertAdjacentHTML("beforeend", wizardHTML);
-
-  document
-    .getElementById("chat-input")
-    .addEventListener("keypress", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        handleUserMessage();
-      }
-    });
-}
-
-window.updateChatbotUI = function () {
-  const lang = currentLanguage || "en";
-  const t = APP_TRANSLATIONS[lang] || APP_TRANSLATIONS["en"];
-
-  // Update static elements
-  const titleEl = document.getElementById("chat-bot-title");
-  if (titleEl) titleEl.textContent = t.chatTitle;
-
-  const inputEl = document.getElementById("chat-input");
-  if (inputEl) inputEl.placeholder = t.chatPlaceholder;
-  
-  // Update status (complex structure)
-  const statusEl = document.querySelector(".bot-status");
-  if (statusEl) {
-      statusEl.innerHTML = `<div class="status-dot"></div> ${t.chatStatus}`;
-  }
-
-  // Reset chat history to show greeting in new language
-  const chatBody = document.getElementById("chat-body");
-  if (chatBody) {
-    // Keep typing indicator
-    const indicator = document.getElementById("typing-indicator");
-    chatBody.innerHTML = ""; 
-    if(indicator) chatBody.appendChild(indicator);
-    
-    // Resend greeting
-    sendBotGreeting();
-  }
-};
-
-window.toggleChat = function () {
-  const chatWindow = document.getElementById("chat-window");
-  const chatBody = document.getElementById("chat-body");
-  const input = document.getElementById("chat-input");
-
-  chatOpen = !chatOpen;
-
-  if (chatOpen) {
-    chatWindow.classList.add("active");
-    input.focus();
-    if (chatBody.querySelectorAll(".message").length === 0) {
-      sendBotGreeting();
-    }
-    chatWindow.classList.remove("active");
-  }
-};
-
-// Close Chat on Outside Click
-document.addEventListener('click', (e) => {
-    const chatWindow = document.getElementById('chat-window');
-    const fab = document.getElementById('wizard-fab');
-    if (chatOpen && chatWindow && !chatWindow.contains(e.target) && !fab.contains(e.target)) {
-        toggleChat();
-    }
-});
-
-function sendBotGreeting() {
-  const lang = currentLanguage;
-  const greetings = {
-    en: "Hello! I have full access to the diagnostic database. Describe your problem (e.g., 'engine shaking', 'abs light', 'smoke') or enter a code.",
-    ru: "Привет! У меня есть доступ ко всей базе ошибок. Опишите проблему (например: 'троит двигатель', 'дым', 'вибрация') или введите код.",
-    ka: "გამარჯობა! აღმიწერეთ პრობლემა (მაგ: 'ძრავის ძაგძაგი', 'ბოლი') ან შეიყვანეთ კოდი.",
-  };
-  addMessage(greetings[lang], "bot");
-  showQuickChips();
-}
-
-window.handleUserMessage = function () {
-  const input = document.getElementById("chat-input");
-  const text = input.value.trim();
-  if (!text) return;
-
-  addMessage(text, "user");
-  input.value = "";
-
-  const indicator = document.getElementById("typing-indicator");
-  const chatBody = document.getElementById("chat-body");
-  indicator.style.display = "flex";
-  chatBody.scrollTop = chatBody.scrollHeight;
-
-  setTimeout(() => {
-    analyzeRequest(text);
-  }, 1000);
-};
-
-function analyzeRequest(query) {
-  const indicator = document.getElementById("typing-indicator");
-  indicator.style.display = "none";
-  const lang = currentLanguage;
-
-
-
-  // 2. SEARCH (FUSE.JS or MANUAL)
-  let matches = [];
-
-  if (typeof Fuse !== "undefined") {
-     // === FUSE.JS FUZZY SEARCH ===
-     const options = {
-        keys: [
-          { name: 'code', weight: 1.0 },
-          { name: `title.${lang}`, weight: 0.8 },
-          { name: `description.${lang}`, weight: 0.4 },
-          { name: 'pCodes', weight: 0.9 }
-        ],
-        threshold: 0.35,
-        ignoreLocation: true
-     };
-     const fuse = new Fuse(bmwCodes, options);
-     // Fuse returns { item, score, refIndex }
-     const fuseRes = fuse.search(query);
-     // Convert to our format. Fuse score: 0 is perfect, 1 is mismatch.
-     matches = fuseRes.map(r => ({ code: r.item, score: (1 - r.score) * 100 }));
-  } 
-  
-  // FALLBACK if Fuse missing or no results (Manual Scan)
-  if (matches.length === 0) {
-      const terms = query.toLowerCase().split(" ").filter((t) => t.length > 2);
-      if (terms.length === 0 && query.length > 0) terms.push(query.toLowerCase());
-
-      matches = bmwCodes.map((code) => {
-        let score = 0;
-        if (code.code.toLowerCase().includes(query.toLowerCase())) score += 100;
-        if (code.pCodes && code.pCodes.some((p) => p.toLowerCase().includes(query.toLowerCase()))) score += 100;
-
-        terms.forEach((term) => {
-          if (code.title[lang] && code.title[lang].toLowerCase().includes(term)) score += 10;
-          if (code.description[lang] && code.description[lang].toLowerCase().includes(term)) score += 5;
-          if (code.solutions[lang] && code.solutions[lang].join(" ").toLowerCase().includes(term)) score += 3;
-        });
-        return { code, score };
-      });
-  }
-
-  const results = matches
-    .filter((m) => m.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
-
-  if (results.length > 0) {
-    const phrases = {
-      en: `I found ${results.length} relevant entries in the database based on "${query}":`,
-      ru: `Я нашел несколько записей в базе по запросу "${query}":`,
-      ka: `ვიპოვე რამოდენიმე ჩანაწერი "${query}"-ზე:`,
-    };
-    addMessage(phrases[lang], "bot");
-
-    const chatBody = document.getElementById("chat-body");
-    const resultsDiv = document.createElement("div");
-    resultsDiv.style.display = "flex";
-    resultsDiv.style.flexDirection = "column";
-    resultsDiv.style.gap = "5px";
-    resultsDiv.style.marginBottom = "10px";
-
-    results.forEach((item) => {
-      const btn = document.createElement("div");
-      btn.className = "chat-result-link";
-      btn.innerHTML = `
-                <div style="flex:1;">
-                    <div class="chat-result-code">${item.code.code}</div>
-                    <div style="font-size:12px; line-height:1.2;">${item.code.title[lang]}</div>
-                </div>
-                <i class="fas fa-chevron-right"></i>
-            `;
-      btn.onclick = () => {
-        toggleChat();
-        displayCodeDetail(item.code);
-      };
-      resultsDiv.appendChild(btn);
-    });
-    chatBody.insertBefore(
-      resultsDiv,
-      document.getElementById("typing-indicator"),
-    );
-  } else {
-    const notFound = {
-      en: "I couldn't find exact matches in my database. Try using keywords like 'Turbo', 'Misfire', 'Sensor' or a specific code.",
-      ru: "Я не нашел точных совпадений. Попробуйте общие слова: 'Турбина', 'Пропуски', 'Датчик' или код ошибки.",
-      ka: "ვერ ვიპოვე. სცადეთ სიტყვები: 'ტურბინა', 'სენსორი' ან კოდი.",
-    };
-    addMessage(notFound[lang], "bot");
-
-    // === "ASK COMMUNITY" BUTTON ===
-    const askBtn = document.createElement("button");
-    askBtn.className = "chat-option-btn";
-    askBtn.style.background = "#e74c3c";
-    askBtn.style.marginTop = "10px";
-    askBtn.innerHTML = `<i class="fas fa-users"></i> Ask Community`;
-    askBtn.onclick = () => {
-       // Open new topic modal pre-filled
-       // We can redirect to forum with params
-       window.location.href = `/forum?new_topic=true&title=${encodeURIComponent(query)}`;
-    };
-    const chatBody = document.getElementById("chat-body");
-    chatBody.insertBefore(askBtn, document.getElementById("typing-indicator"));
-
-    showQuickChips();
-  }
-  const chatBody = document.getElementById("chat-body");
-  chatBody.scrollTop = chatBody.scrollHeight;
-}
-
-
-
-function addMessage(text, sender) {
-  const chatBody = document.getElementById("chat-body");
-  const indicator = document.getElementById("typing-indicator");
-  const msgDiv = document.createElement("div");
-  msgDiv.className = `message ${sender}`;
-  msgDiv.innerHTML = text;
-  chatBody.insertBefore(msgDiv, indicator);
-  chatBody.scrollTop = chatBody.scrollHeight;
-}
-
-function showQuickChips() {
-  const chatBody = document.getElementById("chat-body");
-  const indicator = document.getElementById("typing-indicator");
-  const lang = currentLanguage;
-
-  const chipsData = [
-    {
-      label: { en: "Engine Misfire", ru: "Троит мотор", ka: "ძრავის ძაგძაგი" },
-      query: "misfire",
-    },
-    {
-      label: { en: "Boost Pressure", ru: "Нет наддува", ka: "ტურბო წნევა" },
-      query: "boost pressure",
-    },
-    {
-      label: { en: "Battery", ru: "Аккумулятор", ka: "აკუმულატორი" },
-      query: "battery",
-    },
-  ];
-
-  const chipsDiv = document.createElement("div");
-  chipsDiv.className = "chat-options";
-
-  chipsData.forEach((chip) => {
-    const btn = document.createElement("button");
-    btn.className = "chat-option-btn";
-    btn.textContent = chip.label[lang];
-    btn.onclick = () => {
-      chipsDiv.remove();
-      const input = document.getElementById("chat-input");
-      input.value = chip.label[lang];
-      handleUserMessage();
-    };
-    chipsDiv.appendChild(btn);
-  });
-  chatBody.insertBefore(chipsDiv, indicator);
-  chatBody.scrollTop = chatBody.scrollHeight;
-}
-
-function updateChatUI() {
-  const t = APP_TRANSLATIONS[currentLanguage];
-  const titleEl = document.getElementById("chat-bot-title");
-  const statusEl = document.querySelector("#chat-window .bot-status");
-  const inputEl = document.getElementById("chat-input");
-
-  if (titleEl) titleEl.innerText = t.chatTitle;
-  if (statusEl)
-    statusEl.innerHTML = `<div class="status-dot"></div> ${t.chatStatus}`;
-  if (inputEl) inputEl.placeholder = t.chatPlaceholder;
-
-  const chatBody = document.getElementById("chat-body");
-  if (chatBody) {
-    chatBody.innerHTML = `
-      <div class="typing-indicator" id="typing-indicator">
-        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
-      </div>`;
-    if (chatOpen) sendBotGreeting();
-  }
-}
 
 // ==========================================
 // AUTH SYSTEM (Login & Register)
@@ -923,7 +600,7 @@ async function init() {
     setupEventListeners();
     updateLanguage();
     init3DBackground();
-    initWizard();
+
 
     // 2. ЛОГИКА РЕДАКТОРА ФОТО (ИСПРАВЛЕННАЯ)
     const urlParams = new URLSearchParams(window.location.search);
@@ -1230,13 +907,13 @@ function setupEventListeners() {
       if (selectedCode) displayCodeDetail(selectedCode);
       else handleSearch();
 
-      updateChatUI();
+
     });
   }
 }
 
 function updateLanguage() {
-  const langLabels = { en: "EN", ru: "RU", ka: "KA" };
+  const langLabels = { en: "EN", ru: "RU", ka: "GE" };
 
   // 1. Обновляем кнопку языка (если она есть)
   if (languageToggle) {
@@ -1264,7 +941,7 @@ function updateLanguage() {
   safeSetText("footer p", text.footer);
 
   // Обновляем чат
-  updateChatUI();
+
   
   // Re-render mobile menu with new language
   if (typeof initMobileMenu === 'function') {

@@ -130,7 +130,7 @@ function saveToHistory(vin, title) {
 function updateLanguage() {
   const t = translations[currentLanguage];
   const langBtnSpan = document.querySelector("#language-toggle span");
-  const langLabels = { en: "EN", ru: "РУ", ka: "ქა" };
+  const langLabels = { en: "EN", ru: "РУ", ka: "GE" };
   if (langBtnSpan) langBtnSpan.innerText = langLabels[currentLanguage];
 
   document.querySelectorAll("[data-i18n]").forEach((el) => {
