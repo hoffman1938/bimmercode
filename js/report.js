@@ -8,39 +8,42 @@ document.addEventListener('DOMContentLoaded', () => {
 function injectReportModal() {
     if (document.getElementById('report-modal')) return;
 
+    const lang = localStorage.getItem('forumLanguage') || localStorage.getItem('language') || 'en';
+    const t = APP_TRANSLATIONS[lang] || APP_TRANSLATIONS.en;
+
     const modalHtml = `
     <div id="report-modal" class="auth-modal">
         <div class="auth-content">
             <button class="close-auth" onclick="closeReportModal()">
                 <i class="fas fa-times"></i>
             </button>
-            <h2 style="color: white; margin-bottom: 20px;">Report Content</h2>
+            <h2 style="color: white; margin-bottom: 20px;" data-i18n="reportContent">${t.reportContent}</h2>
             <form id="report-form" onsubmit="submitReport(event)">
                 <input type="hidden" id="report-entity-type">
                 <input type="hidden" id="report-entity-id">
                 <input type="hidden" id="report-user-id">
                 
                 <div class="input-group">
-                    <label>Reason</label>
+                    <label data-i18n="reportReason">${t.reportReason}</label>
                     <div class="custom-select-wrapper">
                         <select id="report-reason" class="auth-input" required>
-                            <option value="" disabled selected>Select a reason...</option>
-                            <option value="spam">Spam or Misleading</option>
-                            <option value="harassment">Harassment or Hate Speech</option>
-                            <option value="inappropriate">Inappropriate Content</option>
-                            <option value="off_topic">Off-Topic</option>
-                            <option value="other">Other</option>
+                            <option value="" disabled selected data-i18n="reportSelectReason">${t.reportSelectReason}</option>
+                            <option value="spam" data-i18n="reportSpam">${t.reportSpam}</option>
+                            <option value="harassment" data-i18n="reportHarassment">${t.reportHarassment}</option>
+                            <option value="inappropriate" data-i18n="reportInappropriate">${t.reportInappropriate}</option>
+                            <option value="off_topic" data-i18n="reportOffTopic">${t.reportOffTopic}</option>
+                            <option value="other" data-i18n="reportOther">${t.reportOther}</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label>Description (Optional)</label>
-                    <textarea id="report-desc" class="auth-input" rows="4" placeholder="Provide more details..."></textarea>
+                    <label data-i18n="reportDescription">${t.reportDescription}</label>
+                    <textarea id="report-desc" class="auth-input" rows="4" data-i18n-placeholder="reportPlaceholder" placeholder="${t.reportPlaceholder}"></textarea>
                 </div>
 
                 <button type="submit" class="submit-btn" style="background: var(--admin-danger);">
-                    <i class="fas fa-flag"></i> Submit Report
+                    <i class="fas fa-flag"></i> <span data-i18n="reportSubmit">${t.reportSubmit}</span>
                 </button>
             </form>
         </div>
@@ -52,11 +55,13 @@ function injectReportModal() {
 
 function openReportModal(entityType, entityId, reportedUserId = null) {
     if (!localStorage.getItem('auth_token')) {
+        const lang = localStorage.getItem('forumLanguage') || localStorage.getItem('language') || 'en';
+        const t = APP_TRANSLATIONS[lang] || APP_TRANSLATIONS.en;
         // Prompt login if not authenticated
         if (typeof toggleAuthModal === 'function') {
             toggleAuthModal();
         } else {
-            alert("Please login to report content.");
+            alert(t.reportLoginRequired || "Please login to report content.");
         }
         return;
     }
@@ -79,9 +84,12 @@ function closeReportModal() {
 async function submitReport(e) {
     e.preventDefault();
     
+    const lang = localStorage.getItem('forumLanguage') || localStorage.getItem('language') || 'en';
+    const t = APP_TRANSLATIONS[lang] || APP_TRANSLATIONS.en;
+    
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t.reportSubmitting || "Submitting..."}`;
     submitBtn.disabled = true;
 
     const entityType = document.getElementById('report-entity-type').value;
@@ -110,15 +118,15 @@ async function submitReport(e) {
         const data = await res.json();
 
         if (res.ok) {
-            alert("Report submitted successfully. Thank you for helping keep the community safe.");
+            alert(t.reportSuccess || "Report submitted successfully. Thank you for helping keep the community safe.");
             closeReportModal();
         } else {
-            alert("Error: " + (data.error || "Failed to submit report"));
+            alert("Error: " + (data.error || t.reportError || "Failed to submit report"));
         }
 
     } catch (err) {
         console.error(err);
-        alert("Network error occurred.");
+        alert(t.reportError || "Network error occurred.");
     } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
