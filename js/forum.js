@@ -249,6 +249,18 @@ function updateForumLanguage() {
 
   const notifHeader = document.querySelector(".notif-header");
   if (notifHeader) notifHeader.textContent = t.notifications;
+  
+  // Generic data-i18n support
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (t[key]) el.textContent = t[key];
+  });
+
+  // Generic data-i18n-placeholder support
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (t[key]) el.placeholder = t[key];
+  });
 
   // REAL-TIME VALIDATION FOR CODE INPUT
   const codeInput = document.getElementById("topic-code");
@@ -701,7 +713,8 @@ function updateHeaderAuth() {
     authBtn.title = "Go to Profile";
   } else {
     // Guest
-    authBtn.innerHTML = '<i class="fas fa-user-circle"></i>';
+    const loginText = APP_TRANSLATIONS[currentForumLang]?.loginBtn || "Login";
+    authBtn.innerHTML = `<i class="fas fa-user-circle"></i> <span data-i18n="loginBtn">${loginText}</span>`;
     authBtn.onclick = toggleAuthModal;
     authBtn.href = "#";
     authBtn.title = "Login / Register";

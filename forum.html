@@ -36,27 +36,24 @@
         <h1>BimmerCodes <span style="color: var(--bmw-sky)">Forum</span></h1>
       </a>
       <div class="controls">
-         <a
-          href="/"
-          class="btn desktop-only"
-          style="background: transparent; border: none"
-        >
-          <i class="fas fa-home"></i>
+        <a href="/" class="btn">
+          <i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span>
+        </a>
+        <button class="btn" onclick="toggleFavoritesModal()">
+          <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
+        </button>
+        <a href="vin.html" class="btn">
+          <i class="fas fa-barcode"></i> <span data-i18n="vinBtn">VIN Check</span>
         </a>
         <button
           class="btn"
           id="forum-language-toggle"
           onclick="switchForumLanguage()"
-          style="
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            min-width: 50px;
-          "
         >
           <i class="fas fa-globe"></i> <span id="forum-lang-display">EN</span>
         </button>
         <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
-          <i class="fas fa-user"></i> <span id="btn-login-text">Login</span>
+          <i class="fas fa-user"></i> <span data-i18n="loginBtn">Login</span>
         </a>
       </div>
 
@@ -229,10 +226,10 @@
         </button>
 
         <div class="auth-tabs">
-          <button class="tab-btn active" onclick="switchAuthTab('login')">
+          <button class="tab-btn active" onclick="switchAuthTab('login')" data-i18n="loginTab">
             Login
           </button>
-          <button class="tab-btn" onclick="switchAuthTab('register')">
+          <button class="tab-btn" onclick="switchAuthTab('register')" data-i18n="registerTab">
             Register
           </button>
         </div>
@@ -241,7 +238,7 @@
         <form id="login-form" class="auth-form active">
           <div class="input-group">
             <i class="fas fa-envelope"></i>
-            <input type="text" id="login-email" placeholder="Email/Username" required />
+            <input type="text" id="login-email" placeholder="Email/Username" data-i18n-placeholder="emailUsernamePlaceholder" required />
           </div>
           <div class="input-group">
             <i class="fas fa-lock"></i>
@@ -249,12 +246,13 @@
               type="password"
               id="login-password"
               placeholder="Password"
+              data-i18n-placeholder="passwordPlaceholder"
               required
             />
           </div>
-          <button type="submit" class="submit-btn">Sign In</button>
+          <button type="submit" class="submit-btn" data-i18n="signInBtn">Sign In</button>
                     <div style="text-align: right; margin-bottom: 15px;">
-              <a href="#" onclick="showRecoveryModal(); return false;" style="color: var(--bmw-blue); font-size: 13px; text-decoration: none;">Forgot Password?</a>
+              <a href="#" onclick="showRecoveryModal(); return false;" style="color: var(--bmw-blue); font-size: 13px; text-decoration: none;" data-i18n="forgotPasswordLink">Forgot Password?</a>
           </div>
           <p
             id="login-msg"
@@ -270,6 +268,7 @@
               type="text"
               id="reg-username"
               placeholder="Username"
+              data-i18n-placeholder="usernamePlaceholder"
               required
             />
           </div>
@@ -281,6 +280,7 @@
               type="text"
               id="reg-first-name"
               placeholder="First Name"
+              data-i18n-placeholder="firstNamePlaceholder"
               required
             />
           </div>
@@ -292,6 +292,7 @@
               type="text"
               id="reg-last-name"
               placeholder="Last Name"
+              data-i18n-placeholder="lastNamePlaceholder"
               required
             />
           </div>
@@ -303,6 +304,7 @@
               type="number"
               id="reg-age"
               placeholder="Age"
+              data-i18n-placeholder="agePlaceholder"
               min="13"
               max="120"
               required
@@ -311,7 +313,7 @@
           
           <div class="input-group">
             <i class="fas fa-envelope"></i>
-            <input type="email" id="reg-email" placeholder="Email" required />
+            <input type="email" id="reg-email" placeholder="Email" data-i18n-placeholder="emailPlaceholder" required />
           </div>
           <div class="input-group">
             <i class="fas fa-lock"></i>
@@ -319,6 +321,7 @@
               type="password"
               id="reg-password"
               placeholder="Password (min 6 chars)"
+              data-i18n-placeholder="registerPasswordPlaceholder"
               minlength="6"
               required
             />
@@ -326,7 +329,7 @@
 
           <div class="input-group" style="margin-top: 15px;">
             <select id="reg-question" required style="height: 44px; width: 100%; background: transparent; border: none; color: white; outline: none; padding: 10px;">
-                <option value="" disabled selected>Select Security Question</option>
+                <option value="" disabled selected data-i18n="securityQuestionPlaceholder">Select Security Question</option>
                 <option value="first_pet">What was your first pet's name?</option>
                 <option value="mother_maiden">What is your mother's maiden name?</option>
                 <option value="first_car">What was your first car model?</option>
@@ -335,10 +338,10 @@
           </div>
           <div class="input-group">
             <i class="fas fa-key"></i>
-            <input type="text" id="reg-answer" placeholder="Security Answer" required />
+            <input type="text" id="reg-answer" placeholder="Security Answer" data-i18n-placeholder="securityAnswerPlaceholder" required />
           </div>
 
-          <button type="submit" class="submit-btn" style="margin-top: 15px;">Create Account</button>
+          <button type="submit" class="submit-btn" style="margin-top: 15px;" data-i18n="createAccountBtn">Create Account</button>
           <p
             id="reg-msg"
             style="text-align: center; margin-top: 10px; min-height: 20px"
@@ -551,6 +554,22 @@
     </div>
       </div>
     </div>
+    <!-- FAVORITES MODAL (Duplicated from index.html) -->
+    <div id="favorites-modal" class="favorites-modal">
+      <div class="favorites-content">
+        <div class="favorites-header">
+          <h3>
+            <i class="fas fa-star" style="color: #f1c40f"></i>
+            <span data-i18n="savedTitle">Saved Codes</span>
+          </h3>
+          <button class="close-button" onclick="toggleFavoritesModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="favorites-body" id="favorites-list"></div>
+      </div>
+    </div>
+
     <!-- CODE DETAIL MODAL (Hidden by default) -->
     <div id="code-detail-modal" class="modal">
       <div class="modal-content" style="max-width: 600px; width: 90%;">

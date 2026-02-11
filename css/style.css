@@ -683,11 +683,10 @@ main.container {
 
 .message {
   place-self: center;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 200;
   color: #fff;
   margin-bottom: 12px;
-  letter-spacing: -0.02em;
 }
 
 .sub-message {

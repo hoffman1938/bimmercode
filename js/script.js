@@ -27,6 +27,9 @@ let bmwCodes = [];
 let selectedCode = null;
 let chatOpen = false;
 let debounceTimer;
+
+// UI Text Translations
+// Removed local translations object in favor of global APP_TRANSLATIONS in js/translations.js
 // UI Text Translations
 // Removed local translations object in favor of global APP_TRANSLATIONS in js/translations.js
 
@@ -260,7 +263,6 @@ function switchAuthTab(tab) {
   }
 }
 
-// 2. Логика Регистрации
 // 2. Логика Регистрации
 
 // --- Recovery Logic (Global Scope) ---
@@ -532,7 +534,6 @@ function setupLoginForm() {
 }
 
 // 4. Проверка статуса (Обновление UI)
-// 4. Проверка статуса (Обновление UI)
 function checkAuthStatus() {
   const token = localStorage.getItem("auth_token");
   const user = JSON.parse(localStorage.getItem("user_data"));
@@ -541,14 +542,25 @@ function checkAuthStatus() {
   if (!authBtn) return;
 
   // СБРОС КНОПКИ (Важно для корректного переключения без перезагрузки)
-  // Мы возвращаем её в исходное состояние, а потом заполняем данными
+  // Используем data-i18n для перевода "Login"
+  // Проверяем наличие глобальных переводов, иначе фоллбэк
+  let loginText = "Login";
+  if (typeof APP_TRANSLATIONS !== 'undefined' && typeof currentLanguage !== 'undefined') {
+      loginText = APP_TRANSLATIONS[currentLanguage]?.loginBtn || "Login";
+  }
+
+  // Set innerHTML with data-i18n attribute
   authBtn.innerHTML =
-    '<i class="fas fa-user-circle"></i> <span id="btn-login-text">Login</span>';
-  const btnText = document.getElementById("btn-login-text");
+    `<i class="fas fa-user-circle"></i> <span data-i18n="loginBtn">${loginText}</span>`;
+  
+  const span = authBtn.querySelector("span");
 
   if (token && user) {
-    // Если вошли
-    btnText.textContent = user.username;
+    // Если вошли - убираем data-i18n, чтобы не переводило никнейм
+    if (span) {
+        span.removeAttribute("data-i18n");
+        span.textContent = user.username;
+    }
 
     // Ставим аватарку
     if (user.avatar_url) {
@@ -560,11 +572,26 @@ function checkAuthStatus() {
 
     authBtn.onclick = (e) => {
       e.preventDefault();
+      // Если мы на форуме и есть profile.html, то может быть другое поведение?
+      // Но пока оставим стандартное модальное окно, так как оно есть на всех страницах
       toggleProfileModal();
     };
+    
+    // Если мы на форуме, возможно forum.js захочет переопределить поведение.
+    // Но script.js выполняется позже (из-за async init), поэтому он выигрывает.
+    // Чтобы поддержать редирект на profile.html (если он есть), нужно проверять URL.
+    if (window.location.pathname.includes('/forum') || window.location.pathname.includes('/topic')) {
+        authBtn.onclick = (e) => {
+             // Optional: if profile.html exists, uncomment next line
+             // window.location.href = "profile.html";
+             e.preventDefault();
+             toggleProfileModal();
+        };
+    }
+
   } else {
     // Если вышли
-    if (btnText) btnText.textContent = "Login";
+    // Text already set correctly with data-i18n above
     authBtn.onclick = toggleAuthModal;
   }
 }
@@ -940,6 +967,18 @@ function updateLanguage() {
   safeSetText("#no-results .message", text.noResultsMessage);
   safeSetText("footer p", text.footer);
 
+  // 4. Update elements with data-i18n attribute
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (text[key]) el.textContent = text[key];
+  });
+
+  // 5. Update elements with data-i18n-placeholder attribute
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (text[key]) el.placeholder = text[key];
+  });
+
   // Обновляем чат
 
   
@@ -950,12 +989,15 @@ function updateLanguage() {
 }
 
 function handleSearch() {
+  // Fix for Forum/Other pages where search input might not exist
+  if (!searchInput || !resultsContainer) return;
+
   const term = searchInput.value.trim().toLowerCase();
 
   if (term === "") {
     resultsContainer.classList.add("hidden");
-    emptyState.classList.remove("hidden");
-    noResults.classList.add("hidden");
+    if(emptyState) emptyState.classList.remove("hidden");
+    if(noResults) noResults.classList.add("hidden");
     return;
   }
 

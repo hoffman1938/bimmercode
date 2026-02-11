@@ -4,9 +4,12 @@
 window.APP_TRANSLATIONS = {
   en: {
     // === HOME / SCRIPT.JS ===
+    loginBtn: "Login",
     savedBtn: "Saved",
     savedTitle: "Saved Codes",
+    vinBtn: "VIN Check",
     emptySaved: "You haven't saved any codes yet.",
+    homeBtn: "Home",
     forumBtn: "Forum",
     searchPlaceholder: "Enter DTC code (e.g. 102613) or P-code...",
     emptyStateMessage: "BMW Diagnostic Database",
@@ -56,9 +59,12 @@ window.APP_TRANSLATIONS = {
   },
   ru: {
     // === HOME ===
-    savedBtn: "Избранное",
+    loginBtn: "Вход",
+    savedBtn: "Сохраненное",
     savedTitle: "Избранные коды",
+    vinBtn: "VIN Проверка",
     emptySaved: "Вы еще не сохранили ни одного кода.",
+    homeBtn: "Главная",
     forumBtn: "Форум",
     searchPlaceholder: "Введите код ошибки (напр. 102613)...",
     emptyStateMessage: "База диагностики BMW",
@@ -143,9 +149,12 @@ window.APP_TRANSLATIONS = {
   },
   ka: {
     // === HOME ===
+    loginBtn: "შესვლა",
     savedBtn: "შენახული",
     savedTitle: "შენახული კოდები",
+    vinBtn: "VIN შემოწმება",
     emptySaved: "თქვენ ჯერ არ შეგინახავთ კოდები.",
+    homeBtn: "მთავარი",
     forumBtn: "ფორუმი",
     searchPlaceholder: "შეიყვანეთ კოდი (მაგ. 102613)...",
     emptyStateMessage: "BMW დიაგნოსტიკური ბაზა",
