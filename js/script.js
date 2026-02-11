@@ -1416,18 +1416,37 @@ document.addEventListener("DOMContentLoaded", () => {
 // 5. BADGE SYSTEM
 // ==========================================
 window.getReputationBadge = function(reputation, role) {
+    // Get translations with fallback
+    const lang = localStorage.getItem('forumLanguage') || localStorage.getItem('language') || 'en';
+    const t = (typeof APP_TRANSLATIONS !== 'undefined' && APP_TRANSLATIONS[lang]) ? APP_TRANSLATIONS[lang] : {};
+    
+    // Role-based badges (highest priority)
+    if (role === 'super_admin_role') {
+        return `<span class="user-badge badge-super-admin"><i class="fas fa-crown"></i> ${t.role_super_admin || 'Super Admin'}</span>`;
+    }
     if (role === 'admin_role') {
-        return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
+        return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> ${t.role_admin || 'Admin'}</span>`;
+    }
+    if (role === 'senior_moderator_role') {
+        return `<span class="user-badge badge-senior-mod"><i class="fas fa-user-shield"></i> ${t.role_senior_mod || 'Senior Mod'}</span>`;
+    }
+    if (role === 'moderator_role') {
+        return `<span class="user-badge badge-moderator"><i class="fas fa-gavel"></i> ${t.role_moderator || 'Moderator'}</span>`;
     }
     
+    // Reputation-based badges
     const rep = parseInt(reputation) || 0;
     
-    if (rep >= 50) {
-        return '<span class="user-badge badge-expert"><i class="fas fa-star"></i> Expert</span>';
+    if (rep >= 2000) {
+        return `<span class="user-badge badge-guru"><i class="fas fa-crown"></i> ${t.badge_guru || 'BMW Guru'}</span>`;
+    } else if (rep >= 500) {
+        return `<span class="user-badge badge-expert"><i class="fas fa-star"></i> ${t.badge_expert || 'Expert'}</span>`;
+    } else if (rep >= 100) {
+        return `<span class="user-badge badge-pro"><i class="fas fa-wrench"></i> ${t.badge_pro || 'Pro'}</span>`;
     } else if (rep >= 10) {
-        return '<span class="user-badge badge-pro"><i class="fas fa-wrench"></i> Pro</span>';
+        return `<span class="user-badge badge-member"><i class="fas fa-user"></i> ${t.badge_member || 'Member'}</span>`;
     } else {
-        return '<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> Member</span>';
+        return `<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> ${t.badge_newcomer || 'Newcomer'}</span>`;
     }
 };
 

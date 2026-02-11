@@ -295,7 +295,7 @@ function renderPostHTML(post, isMain, topicAuthorId) {
             ${avatarHTML}
             <div class="post-username">${escapeHtml(post.username || "User")}</div>
         </a>
-        ${getUserBadge(post.username, post.user_id, post.author_role)}
+        ${getUserBadge(post.username, post.user_id, post.author_role, post.author_reputation)}
       </div>
       
       <div class="post-content-panel">
@@ -605,28 +605,17 @@ function parseMarkdown(text) {
 }
 
 // === USER BADGES HELPERS ===
-// === USER BADGES HELPERS ===
-function getUserBadge(username, userId, role) {
-    // If we have the user object in context (posts usually don't have full user obj with reputation, 
-    // BUT the API for 'topic' might return author_reputation? 
-    // Actually, renderPostHTML doesn't receive reputation currently.
-    // For now, let's rely on role or if we can fetch reputation.
-    // Ideally, the API should return author_reputation for each post.
-    
-    // TEMPORARY: Since we don't have reputation in post object yet, we might need to rely on role 
-    // or just show role based badges. 
-    // Wait, the user asked for reputation based badges.
-    // I need to check if the API returns reputation for posts.
-    
+function getUserBadge(username, userId, role, reputation = 0) {
     if (typeof getReputationBadge === 'function') {
-        // We need to pass reputation. If missing, pass 0.
-        // We will need to update the API to return reputation for post authors.
-        // For now, assuming post object might be updated or just passing 0/role.
-        // Let's defer to the global function which handles 'admin'.
-        return getReputationBadge(0, role); 
+        return getReputationBadge(reputation, role); 
     }
     
+    // Fallback if getReputationBadge not available
+    if (role === 'super_admin_role') return '<span class="user-badge badge-super-admin"><i class="fas fa-crown"></i> Super Admin</span>';
     if (role === 'admin_role') return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
+    if (role === 'senior_moderator_role') return '<span class="user-badge badge-senior-mod"><i class="fas fa-user-shield"></i> Senior Mod</span>';
+    if (role === 'moderator_role') return '<span class="user-badge badge-moderator"><i class="fas fa-gavel"></i> Moderator</span>';
+    
     return '<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> Member</span>';
 }
 

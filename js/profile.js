@@ -68,15 +68,30 @@ async function loadProfile(profileId) {
         avatarEl.innerHTML = `<span style="font-size:60px;">${user.username[0].toUpperCase()}</span>`;
     }
 
-    // Role Badges
-    const badgeContainer = document.getElementById("profile-badges");
-    // Use global helper if available, otherwise fallback (or simple check)
-    if (typeof getReputationBadge === "function") {
-        badgeContainer.innerHTML = getReputationBadge(user.reputation, user.role);
-    } else {
-        // Fallback if script.js not loaded yet (shouldn't happen)
-        badgeContainer.innerHTML = `<span class="topic-badge">${user.role.toUpperCase()}</span>`;
+
+    // Role Badges - Create reusable function
+    function updateBadges() {
+        const badgeContainer = document.getElementById("profile-badges");
+        if (!currentProfileUser) return;
+        
+        // Debug: log the role value
+        console.log('[Profile] User role:', currentProfileUser.role, 'Reputation:', currentProfileUser.reputation);
+        
+        // Use global helper if available, otherwise fallback
+        if (typeof getReputationBadge === "function") {
+            badgeContainer.innerHTML = getReputationBadge(currentProfileUser.reputation, currentProfileUser.role);
+        } else {
+            // Fallback if script.js not loaded yet (shouldn't happen)
+            badgeContainer.innerHTML = `<span class="topic-badge">${currentProfileUser.role ? currentProfileUser.role.toUpperCase() : 'USER'}</span>`;
+        }
     }
+    
+    // Initial badge render
+    updateBadges();
+    
+    // Store updateBadges globally so language toggle can call it
+    window.updateProfileBadges = updateBadges;
+
 
     // 3. Stats
     document.getElementById("stat-reputation").textContent = user.reputation || 0;

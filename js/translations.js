@@ -85,7 +85,19 @@ window.APP_TRANSLATIONS = {
     reportSubmitting: "Submitting...",
     reportSuccess: "Report submitted successfully. Thank you for helping keep the community safe.",
     reportError: "Failed to submit report",
+    reportError: "Failed to submit report",
     reportLoginRequired: "Please login to report content.",
+    
+    // === BADGES ===
+    role_super_admin: "Super Admin",
+    role_admin: "Admin",
+    role_senior_mod: "Senior Mod",
+    role_moderator: "Moderator",
+    badge_guru: "BMW Guru",
+    badge_expert: "Expert",
+    badge_pro: "Pro",
+    badge_member: "Member",
+    badge_newcomer: "Newcomer",
   },
   ru: {
     // === HOME ===
@@ -170,7 +182,19 @@ window.APP_TRANSLATIONS = {
     reportSubmitting: "Отправка...",
     reportSuccess: "Жалоба отправлена. Спасибо за помощь в поддержании безопасности сообщества.",
     reportError: "Не удалось отправить жалобу",
+    reportError: "Не удалось отправить жалобу",
     reportLoginRequired: "Войдите, чтобы пожаловаться.",
+    
+    // === BADGES ===
+    role_super_admin: "Супер Админ",
+    role_admin: "Админ",
+    role_senior_mod: "Ст. Модератор",
+    role_moderator: "Модератор",
+    badge_guru: "BMW Гуру",
+    badge_expert: "Эксперт",
+    badge_pro: "Профи",
+    badge_member: "Участник",
+    badge_newcomer: "Новичок",
     
     // === BOT SCENARIOS ===
     bot_misfire: "Обнаружены пропуски зажигания",
@@ -324,7 +348,19 @@ window.APP_TRANSLATIONS = {
     reportSubmitting: "იგზავნება...",
     reportSuccess: "რეპორტი გაიგზავნა. გმადლობთ საზოგადოების უსაფრთხოებაში დახმარებისთვის.",
     reportError: "რეპორტის გაგზავნა ვერ მოხერხდა",
+    reportError: "რეპორტის გაგზავნა ვერ მოხერხდა",
     reportLoginRequired: "შედით რეპორტის გასაგზავნად.",
+    
+    // === BADGES ===
+    role_super_admin: "სუპერ ადმინი",
+    role_admin: "ადმინი",
+    role_senior_mod: "უფრ. მოდერატორი",
+    role_moderator: "მოდერატორი",
+    badge_guru: "BMW გურუ",
+    badge_expert: "ექსპერტი",
+    badge_pro: "პრო",
+    badge_member: "წევრი",
+    badge_newcomer: "ახალბედა",
   },
 
 

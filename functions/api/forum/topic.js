@@ -18,7 +18,7 @@ export async function onRequest(context) {
       const topic = await db
         .prepare(
           `
-          SELECT t.*, u.avatar_url as author_avatar, u.role_id as author_role 
+          SELECT t.*, u.avatar_url as author_avatar, u.role_id as author_role, u.reputation as author_reputation
           FROM topics t
           LEFT JOIN users u ON t.user_id = u.id
           WHERE t.id = ?
@@ -40,6 +40,7 @@ export async function onRequest(context) {
     p.*,
     u.avatar_url as author_avatar,  -- Достаем аватарку автора
     u.role_id as author_role,          -- Достаем роль автора
+    u.reputation as author_reputation, -- Достаем репутацию автора
     (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
     EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) as is_liked
   FROM posts p 
