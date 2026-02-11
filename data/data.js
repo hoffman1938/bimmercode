@@ -70,39 +70,8 @@ function getMockData() {
       category: "Electrical",
       severity: "Medium",
     },
-    {
-      code: "A0B4",
-      title: {
-        en: "CAS: Engine Start, Starter Operation",
-        ru: "CAS: Пуск двигателя, работа стартера",
-        ka: "CAS: ძრავის დაქოქვა, სტარტერის მუშაობა",
-      },
-      description: {
-        en: "The CAS module attempts to start the engine, but the starter does not respond or crank.",
-        ru: "Модуль CAS инициирует запуск, но стартер не вращается или не отвечает.",
-        ka: "CAS მოდული ცდილობს ძრავის დაქოქვას, მაგრამ სტარტერი არ პასუხობს.",
-      },
-      solutions: {
-        en: [
-          "Check starter motor",
-          "Inspect engine ground strap (common issue on E90/E60)",
-          "Check battery voltage and CAS relay",
-        ],
-        ru: [
-          "Проверить исправность стартера",
-          "Осмотреть провод заземления (массу) двигателя",
-          "Проверить напряжение АКБ и реле в блоке CAS",
-        ],
-        ka: [
-          "შეამოწმეთ სტარტერი",
-          "შეამოწმეთ ძრავის 'მასა' (Ground strap)",
-          "შეამოწმეთ აკუმულატორის ძაბვა",
-        ],
-      },
-      applicableModels: ["E90", "E60", "E87", "E70"],
-      category: "Electrical",
-      severity: "High",
-    },
+    // Duplicate A0B4 removed
+
     {
       code: "102001",
       pCodes: ["P00BC", "P0102"], // <-- НОВОЕ: OBD-II аналоги
@@ -949,7 +918,7 @@ function getMockData() {
       software: ["INPA", "ISTA", "Carly"],
     },
     {
-      code: "5088",
+      code: "93A8",
       title: {
         en: "Seat Belt Pretensioner, Driver: Circuit Open",
         ru: "Преднатяжитель ремня безопасности, водитель: Обрыв цепи",
@@ -4664,7 +4633,7 @@ function getMockData() {
       applicableModels: ["F10", "F15", "F30", "G20", "G30", "G11", "G12"],
       engineCodes: ["N55", "B58", "S58", "B48"],
       category: "Cooling",
-      severity: "Medium",
+      severity: "Critical",
       software: ["ISTA", "MHD"],
     },
     {
@@ -6324,16 +6293,19 @@ function getMockData() {
           "Replace starter motor",
           "Check engine ground strap",
           "Check CAS wiring",
+          "Check battery voltage and CAS relay",
         ],
         ru: [
           "Заменить стартер",
           "Проверить провод массы двигателя",
           "Проверить проводку CAS",
+          "Проверить напряжение АКБ и реле CAS",
         ],
         ka: [
           "შეცვალეთ სტარტერი",
           "შეამოწმეთ ძრავის მასის კაბელი",
           "შეამოწმეთ CAS გაყვანილობა",
+          "შეამოწმეთ აკუმულატორის ძაბვა და CAS რელე",
         ],
       },
       applicableModels: ["E60", "E90", "E70", "E87"],
@@ -7249,5 +7221,145 @@ function getMockData() {
       severity: "Medium",
       software: ["INPA", "ISTA"],
     },
+    // --- COOLING (WATER PUMP) ---
+    {
+      code: "2E82",
+      title: {
+        en: "Electric coolant pump, cutoff",
+        ru: "Электрический насос охлаждающей жидкости, отключение",
+        ka: "წყლის ელექტრო ტუმბო, გათიშვა",
+      },
+      description: {
+        en: "The water pump has shut down completely due to a blockage or electrical fault. Engine will overheat rapidly.",
+        ru: "Помпа полностью отключилась из-за блокировки или электрической неисправности. Двигатель быстро перегреется.",
+        ka: "ტუმბო გაითიშა. ძრავა სწრაფად გადახურდება.",
+      },
+      solutions: {
+        en: ["Replace electric water pump immediately"],
+        ru: ["Срочно заменить электропомпу"],
+        ka: ["სასწრაფოდ შეცვალეთ წყლის ტუმბო"],
+      },
+      applicableModels: ["E60", "E90", "E70", "F10", "F30"],
+      engineCodes: ["N52", "N54", "N55"],
+      category: "Cooling",
+      severity: "Critical",
+    },
+
+    // --- FUEL SYSTEM ---
+    {
+      code: "2AAF",
+      title: {
+        en: "Fuel pump, plausibility",
+        ru: "Топливный насос, достоверность",
+        ka: "საწვავის ტუმბო, სანდოობა",
+      },
+      description: {
+         en: "The DME detects a discrepancy in fuel pump operation. Often a 'shadow code' but can indicate a failing low-pressure fuel pump (LPFP).",
+         ru: "DME обнаружил расхождение в работе топливного насоса. Часто это 'теневая ошибка', но может указывать на умирающий насос низкого давления (LPFP).",
+         ka: "DME ხედავს პრობლემას ბენზონასოსის მუშაობაში. ხშირად 'ჩრდილოვანი კოდია', მაგრამ შეიძლება ნიშნავდეს ბაკის ნასოსის გაფუჭებას.",
+      },
+      solutions: {
+         en: ["Check low pressure fuel sensor", "Check fuel pump (LPFP)", "Replace fuel filter"],
+         ru: ["Проверить датчик низкого давления топлива", "Проверить бензонасос (LPFP)", "Заменить топливный фильтр"],
+         ka: ["შეამოწმეთ დაბალი წნევის სენსორი", "შეამოწმეთ ბენზონასოსი", "შეცვალეთ ფილტრი"],
+      },
+      applicableModels: ["E90", "E60", "E82", "E70"],
+      engineCodes: ["N54", "N55", "N52"],
+      category: "Fuel System",
+      severity: "Low",
+    },
+
+    // --- CATALYTIC CONVERTER ---
+    {
+       code: "29F4",
+       title: {
+         en: "Catalytic converter conversion, bank 1",
+         ru: "Эффективность катализатора, банк 1",
+         ka: "კატალიზატორის ეფექტურობა, ბანკი 1",
+       },
+       description: {
+         en: "Catalytic converter efficiency is below threshold. The cat might be clogged or failing.",
+         ru: "Эффективность каталитического нейтрализатора ниже порога. Катализатор может быть забит или неисправен.",
+         ka: "კატალიზატორის ეფექტრობა დაბალია. შესაძლოა გაჭედილია ან გაფუჭებული.",
+       },
+       solutions: {
+          en: ["Replace catalytic converter", "Check O2 sensors", "Install O2 spacers (for downpipes)"],
+          ru: ["Заменить катализатор", "Проверить лямбда-зонды", "Установить обманки (если безкат)"],
+          ka: ["შეცვალეთ კატალიზატორი", "შეამოწმეთ ლამბდა ზონდები", "დააყენეთ 'აილაიტერები'"],
+       },
+       applicableModels: ["E90", "E60", "E70"],
+       engineCodes: ["N52", "N54", "N55"],
+       category: "Emissions",
+       severity: "Medium",
+    },
+    {
+       code: "29F5",
+       title: {
+         en: "Catalytic converter conversion, bank 2",
+         ru: "Эффективность катализатора, банк 2",
+         ka: "კატალიზატორის ეფექტურობა, ბანკი 2",
+       },
+       description: {
+         en: "Catalytic converter efficiency is below threshold (Bank 2).",
+         ru: "Эффективность катализатора ниже порога (Банк 2).",
+         ka: "კატალიზატორის ეფექტრობა დაბალია (ბანკი 2).",
+       },
+       solutions: {
+          en: ["Replace catalytic converter", "Check O2 sensors"],
+          ru: ["Заменить катализатор", "Проверить лямбда-зонды"],
+          ka: ["შეცვალეთ კატალიზატორი", "შეამოწმეთ ლამბდა ზონდები"],
+       },
+       applicableModels: ["E90", "E60", "E70"],
+       engineCodes: ["N52", "N54", "N55"],
+       category: "Emissions",
+       severity: "Medium",
+    },
+
+    // --- CAS / ELECTRICAL ---
+    {
+       code: "A0B2",
+       title: {
+         en: "CAS: Supply, terminal 30E/30L",
+         ru: "CAS: Питание, клемма 30E/30L",
+         ka: "CAS: კვება, ტერმინალი 30E/30L",
+       },
+       description: {
+          en: "Voltage supply fault to the Car Access System (CAS). Can prevent starting.",
+          ru: "Ошибка питания системы доступа в автомобиль (CAS). Может не заводиться.",
+          ka: "CAS ბლოკის კვების ხარვეზი. მანქანა შეიძლება არ დაიქოქოს.",
+       },
+       solutions: {
+          en: ["Check battery voltage", "Check CAS fuses", "Check CAS connector pins"],
+          ru: ["Проверить напряжение АКБ", "Проверить предохранители CAS", "Проверить пины разъема CAS"],
+          ka: ["შეამოწმეთ აკუმულატორი", "შეამოწმეთ CAS-ის დამცველები", "შეამოწმეთ შტეკერი"],
+       },
+       applicableModels: ["E90", "E60", "E70"],
+       category: "Electrical",
+       severity: "High",
+    },
+    
+    // --- ABS/DSC ---
+    {
+       code: "5E20",
+       title: {
+          en: "DSC: Hydraulic unit, pressure sensor 1",
+          ru: "DSC: Гидроблок, датчик давления 1",
+          ka: "DSC: ჰიდრობლოკი, წნევის სენსორი 1",
+       },
+       description: {
+          en: "Internal pressure sensor in the DSC/ABS pump unit has failed. Common on E90/E87 models.",
+          ru: "Отказал внутренний датчик давления в блоке ABS/DSC. Частая проблема на E90.",
+          ka: "ABS/DSC ბლოკის შიდა წნევის სენსორი გაფუჭდა. ხშირია E90-ზე.",
+       },
+       solutions: {
+          en: ["Replace/repair DSC hydro unit", "Check brake fluid level"],
+          ru: ["Ремонт или замена гидроблока DSC", "Проверить уровень тормозной жидкости"],
+          ka: ["DSC ბლოკის შეკეთება ან შეცვლა", "შეამოწმეთ ტორმუზის სითხე"],
+       },
+       applicableModels: ["E90", "E87", "E60"],
+       category: "ABS/DSC",
+       severity: "High",
+    },
+
   ];
 }
