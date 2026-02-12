@@ -129,6 +129,14 @@ function displayCodeDetail(code) {
       </div>
     </div>
   `;
+  
+  // Initialize Parts Finder
+  const partsContainer = document.getElementById("parts-finder-container");
+  if (partsContainer && typeof PartsFinderUI !== 'undefined') {
+    partsContainer.classList.remove("hidden");
+    const partsFinder = new PartsFinderUI('parts-finder-container');
+    partsFinder.loadParts(code.code);
+  }
 }
 
 // --- FAVORITES LOGIC ---
@@ -215,6 +223,7 @@ window.hideDetail = function () {
   const detailEl = document.getElementById("code-detail");
   const searchEl = document.getElementById("search-container");
   const forumModal = document.getElementById("code-detail-modal");
+  const partsContainer = document.getElementById("parts-finder-container");
 
   if (forumModal) {
     forumModal.classList.remove("active");
@@ -223,6 +232,7 @@ window.hideDetail = function () {
 
   if (detailEl) detailEl.classList.add("hidden");
   if (searchEl) searchEl.classList.remove("hidden");
+  if (partsContainer) partsContainer.classList.add("hidden");
 
   if (typeof selectedCode !== "undefined") {
     selectedCode = null;
