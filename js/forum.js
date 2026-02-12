@@ -221,15 +221,22 @@ function updateForumLanguage() {
     t.offTopic,
   ];
   navItems.forEach((item, i) => {
-    if (navTexts[i]) {
+    // Use modulo to handle duplicated menus (desktop + mobile) if they exist
+    const text = navTexts[i % navTexts.length];
+    if (text) {
       const icon = item.querySelector("i");
       item.innerHTML = "";
       if (icon) item.appendChild(icon);
-      item.appendChild(document.createTextNode(" " + navTexts[i]));
+      item.appendChild(document.createTextNode(" " + text));
     }
   });
 
-  // Сайдбар
+  // Re-render user sidebar if logged in (this updates Profile/Logout buttons)
+  if (typeof updateSidebarUser === 'function' && localStorage.getItem("user_data")) {
+      updateSidebarUser();
+  }
+
+  // Сайдбар - для незалогиненных users
   const sidebarInfo = document.getElementById("user-sidebar-info");
   if (sidebarInfo && !localStorage.getItem("user_data")) {
     sidebarInfo.innerHTML = `
@@ -588,10 +595,10 @@ function updateSidebarUser() {
         
         <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
             <a href="/profile" class="btn" style="padding: 8px; font-size: 13px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: #ddd;">
-                <i class="fas fa-user-circle"></i> Profile
+                <i class="fas fa-user-circle"></i> ${t.profile || 'Profile'}
             </a>
             <button onclick="logout()" class="btn" style="padding: 8px; font-size: 13px; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.3); color: #e74c3c;">
-                <i class="fas fa-sign-out-alt"></i> Logout
+                <i class="fas fa-sign-out-alt"></i> ${t.logout || 'Logout'}
             </button>
         </div>
       </div>
