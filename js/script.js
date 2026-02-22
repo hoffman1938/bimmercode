@@ -1053,6 +1053,13 @@ function renderResults(codes) {
           <div style="flex: 1;" onclick="displayCodeDetail(selectedCodeRef)">
             <div class="code-header">
               <span class="code-identifier" style="color:${severityColor}">${code.code}</span>
+              <a href="/code/${encodeURIComponent(code.code)}?lang=${currentLanguage}" 
+                 title="Open code page" 
+                 onclick="event.stopPropagation()"
+                 style="margin-left:6px; opacity:0.5; font-size:0.7em; color:inherit; text-decoration:none; vertical-align:middle;"
+                 target="_blank" rel="noopener">
+                <i class="fas fa-external-link-alt"></i>
+              </a>
               <span class="code-title">${code.title[currentLanguage]}</span>
             </div>
             <div class="code-meta">

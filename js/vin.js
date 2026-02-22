@@ -29,6 +29,17 @@ const translations = {
     extText:
       "Our database provides technical specs. To see specific options (M-Sport, Leather, etc.), use these deep decoders:",
     btnFullOptions: "View Full Options List",
+
+    deepDecodeTitle: "Deep Decode & History Utilities",
+    deepDecodeDesc: "Use these specialized external tools to get full factory options and verify auction/salvage history (Copart/IAA).",
+    bidfaxTitle: "Auction History",
+    bidfaxDesc: "BidFax (Copart & IAAI Data)",
+    statvinTitle: "Salvage Search",
+    statvinDesc: "Stat.vin (Analytics)",
+    factoryDocsTitle: "Factory Options",
+    factoryDocsDesc: "M-Decoder (S-Codes & Equip)",
+    bimmerWorkTitle: "bimmer.work",
+    bimmerWorkDesc: "Alternative Option Decoder",
   },
   ru: {
     homeBtn: "Главная",
@@ -56,6 +67,17 @@ const translations = {
     extText:
       "Наша база показывает технические данные. Для просмотра списка опций (M-пакет, кожа и т.д.) используйте эти сервисы:",
     btnFullOptions: "Посмотреть список опций",
+
+    deepDecodeTitle: "Глубокая Расшифровка и История",
+    deepDecodeDesc: "Используйте эти сторонние инструменты, чтобы узнать полную заводскую комплектацию и проверить историю аукционов (Copart/IAA).",
+    bidfaxTitle: "История Аукционов",
+    bidfaxDesc: "BidFax (базы Copart и IAAI)",
+    statvinTitle: "Поиск Повреждений",
+    statvinDesc: "Stat.vin (Статистика)",
+    factoryDocsTitle: "Заводские Опции",
+    factoryDocsDesc: "M-Decoder (S-коды и опции)",
+    bimmerWorkTitle: "bimmer.work",
+    bimmerWorkDesc: "Альтернативный Декодер опций",
   },
   ka: {
     homeBtn: "მთავარი",
@@ -83,6 +105,17 @@ const translations = {
     extText:
       "ჩვენი ბაზა გაჩვენებთ ტექნიკურ მონაცემებს. ოპციების სანახავად (M-პაკეტი, ტყავი) გამოიყენეთ:",
     btnFullOptions: "ოპციების სრული სია",
+
+    deepDecodeTitle: "ღრმა გაშიფრვა და ისტორია",
+    deepDecodeDesc: "გამოიყენეთ ეს გარე ინსტრუმენტები ქარხნული ოპციების გასაგებად და აუქციონის ისტორიის (Copart/IAA) შესამოწმებლად.",
+    bidfaxTitle: "აუქციონის ისტორია",
+    bidfaxDesc: "BidFax (Copart და IAAI მონაცემები)",
+    statvinTitle: "დაზიანებების ძიება",
+    statvinDesc: "Stat.vin (სტატისტიკა)",
+    factoryDocsTitle: "ქარხნული ოპციები",
+    factoryDocsDesc: "M-Decoder (S-კოდები და სხვა)",
+    bimmerWorkTitle: "bimmer.work",
+    bimmerWorkDesc: "ალტერნატიული ოპციების დეკოდერი",
   },
 };
 
@@ -238,9 +271,11 @@ async function decodeVin() {
     document.getElementById("res-plant").innerText = plantCity;
     document.getElementById("res-weight").innerText = weight;
 
-    document.getElementById("link-mdecoder").href =
-      `https://www.mdecoder.com/decode/${vin}`;
-    document.getElementById("link-bimmerwork").href = `https://bimmer.work/`;
+    document.getElementById("link-mdecoder").href = `https://www.mdecoder.com/decode/${vin}`;
+    // The href assignments have been replaced by the dynamic submitExternalSearch function below
+    
+    // Показываем секцию
+    document.getElementById("deep-decode-section").style.display = "block";
 
     const shortTitle = `${year} ${model}`;
     saveToHistory(vin, shortTitle);
@@ -276,4 +311,49 @@ if (document.getElementById("vin-input")) {
     .addEventListener("keypress", function (e) {
       if (e.key === "Enter") decodeVin();
     });
+}
+
+// Динамическое перенаправление на внешние сервисы
+function submitExternalSearch(serviceId) {
+  const vinInput = document.getElementById("vin-input");
+  if (!vinInput) return;
+  const vin = vinInput.value.trim().toUpperCase();
+  if (!vin || vin.length !== 17) return;
+
+  let url = "";
+  
+  switch(serviceId) {
+    case 'bidfax':
+      url = `https://en.bidfax.info/?do=search&subaction=search&story=${vin}`;
+      break;
+    case 'statvin':
+      url = `https://stat.vin/cars?vin=${vin}`;
+      break;
+    case 'mdecoder':
+      // M-Decoder needs 'vin' in POST or direct query
+      url = `https://www.mdecoder.com/decode/${vin}`;
+      fetch(`https://www.mdecoder.com/decode/${vin}`, { mode: 'no-cors' }).catch(()=>{}); // Pre-warm
+      break;
+    case 'bimmerwork':
+      // bimmer.work requires POST to /decode
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://bimmer.work/';
+      form.target = '_blank';
+      
+      const vinInputHf = document.createElement('input');
+      vinInputHf.type = 'hidden';
+      vinInputHf.name = 'vin';
+      vinInputHf.value = vin;
+      
+      form.appendChild(vinInputHf);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      return; 
+  }
+  
+  if (url) {
+    window.open(url, "_blank");
+  }
 }

@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <p class="footer-subtext">Not affiliated with BMW AG.</p>
         </div>
         <div class="footer-links">
+             <a href="all.html">All Codes</a>
              <a href="terms.html">Terms</a>
              <a href="privacy.html">Privacy</a>
              <a href="contact.html">Contact</a>
