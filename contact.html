@@ -332,21 +332,9 @@
 
     <footer><!-- Content injected by js/footer.js --></footer>
 
-    <!-- EmailJS SDK (free tier) -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="./js/footer.js"></script>
 
     <script>
-    // ─── EmailJS Config ────────────────────────────────────────────────────────
-    // Fill in your own keys from https://www.emailjs.com/
-    const EMAILJS_SERVICE_ID  = 'service_4nxmsa4';   // e.g. 'service_abc123'
-    const EMAILJS_TEMPLATE_ID = 'template_al8f3ot';  // e.g. 'template_xyz456'
-    const EMAILJS_PUBLIC_KEY  = 'eRUc849lRX8Bq85Zj';    // e.g. 'ABC123defGHI'
-    const RECIPIENT_EMAIL     = 'codesbimmer@gmail.com';
-
-    const emailjsReady = EMAILJS_SERVICE_ID !== 'service_4nxmsa4';
-    if (emailjsReady) emailjs.init(EMAILJS_PUBLIC_KEY);
-
     // ─── i18n ─────────────────────────────────────────────────────────────────
     function getLang() { return localStorage.getItem('language') || 'en'; }
     function t(key) {
@@ -357,7 +345,7 @@
         document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
         document.querySelectorAll('option[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
     }
-    applyTranslations(); // Call directly — DOM is ready at body-bottom
+    applyTranslations();
     window.addEventListener('languageChanged', applyTranslations);
 
     // ─── Language Switcher ────────────────────────────────────────────────────
@@ -371,7 +359,6 @@
         applyTranslations();
         window.dispatchEvent(new Event('languageChanged'));
     }
-    // Init lang display
     document.getElementById('page-lang-display').textContent = LANG_LABELS[getLang()] || 'EN';
 
     // ─── Tab Switching ─────────────────────────────────────────────────────────
@@ -382,11 +369,13 @@
         document.getElementById('card-' + tab).classList.add('visible');
     }
 
-    // ─── Gmail Form (EmailJS) ──────────────────────────────────────────────────
+    // ─── Gmail Form (server-side via /api/contact) ────────────────────────────
+    // Credentials are stored in .dev.vars (locally) and Cloudflare env vars (production).
+    // They are NEVER exposed to the browser.
     document.getElementById('gmail-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn    = document.getElementById('gmail-btn');
-        const status = document.getElementById('gmail-status');
+        const btn      = document.getElementById('gmail-btn');
+        const status   = document.getElementById('gmail-status');
         const fallback = document.getElementById('gmail-fallback');
 
         const name    = document.getElementById('g-name').value.trim();
@@ -402,32 +391,26 @@
         status.className = 'form-status';
         fallback.style.display = 'none';
 
-        // Build mailto href for fallback
-        const mailtoHref = `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent('[BimmerCodes] ' + subject + ' from ' + name)}&body=${encodeURIComponent('From: ' + name + '\nEmail: ' + email + '\n\n' + message)}`;
+        // Build mailto href as a fallback in case the API fails
+        const mailtoHref = `mailto:codesbimmer@gmail.com?subject=${encodeURIComponent('[BimmerCodes] ' + subject + ' from ' + name)}&body=${encodeURIComponent('From: ' + name + '\nEmail: ' + email + '\n\n' + message)}`;
         document.getElementById('mailto-link').href = mailtoHref;
 
-        if (!emailjsReady) {
-            // No keys configured → show mailto fallback immediately
-            status.textContent = t('contactError');
-            status.className = 'form-status error';
-            fallback.style.display = 'block';
-            btn.disabled = false;
-            btn.querySelector('span').textContent = t('contactSend');
-            return;
-        }
-
         try {
-            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                from_name:    name,
-                from_email:   email,
-                subject:      subject,
-                message:      message,
-                to_email:     RECIPIENT_EMAIL,
+            const res  = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, subject, message, type: 'gmail' })
             });
-            status.textContent = t('contactSuccessGmail');
-            status.className = 'form-status success';
-            e.target.reset();
+            const data = await res.json();
+            if (data.success) {
+                status.textContent = t('contactSuccessGmail');
+                status.className = 'form-status success';
+                e.target.reset();
+            } else {
+                throw new Error(data.error || 'Unknown error');
+            }
         } catch (err) {
+            console.error('Gmail send error:', err);
             status.textContent = t('contactError');
             status.className = 'form-status error';
             fallback.style.display = 'block';
