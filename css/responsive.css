@@ -1,280 +1,429 @@
 /* ==========================================================================
-   RESPONSIVE.CSS (Mobile Only Overrides)
-   Fixed: Full-screen Modal & Input Bugs
+   RESPONSIVE.CSS (Mobile First Approach Overrides)
+   Targeting: Mobile (320px+), Tablet (768px+), Desktop (1024px+)
    ========================================================================== */
+
+/* --- SHARED UTILITIES --- */
+.desktop-only {
+  display: flex !important;
+}
+
+.burger-btn {
+  display: none; /* Hidden on desktop */
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  margin-right: 15px;
+  transition: all 0.2s;
+}
+
+.burger-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* OFF-CANVAS MENU (Hidden by default) */
+.mobile-offcanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: rgba(18, 20, 24, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 2000;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-offcanvas.active {
+  transform: translateX(0);
+}
+
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.mobile-menu-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.offcanvas-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.offcanvas-header h2 {
+  font-size: 20px;
+  color: white;
+  margin: 0;
+}
+
+.close-offcanvas {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.offcanvas-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Off-canvas Nav Items */
+.offcanvas-content .nav-item {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+}
+.offcanvas-content .nav-item.active {
+  background: rgba(0, 102, 179, 0.2);
+  border-color: #0066b3;
+}
+
 
 /* --- TABLETS & SMALL LAPTOPS (Max 1024px) --- */
 @media (max-width: 1024px) {
-  main.container {
-    width: 95%;
-    margin-top: 20px;
+  /* Hide Desktop Elements */
+  .desktop-only {
+    display: none !important;
   }
 
-  .chat-window {
-    width: 360px;
-    height: 550px;
-    bottom: 100px;
-    right: 20px;
+  .share-buttons {
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
   }
+  
+  /* Show Burger */
+  .burger-btn {
+    display: flex;
+  }
+  
+  /* Hide Sidebar on Forum Main */
+  .forum-layout .sidebar {
+    display: none;
+  }
+  .topic-view-layout .sidebar {
+    display: none;
+  }
+  
+  /* Single Column Layouts */
+  .forum-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .topic-view-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* Header adjustments */
+  header {
+    padding: 10px 15px;
+    height: auto;
+  }
+  
+  /* HIDE HEADER TEXT ON MOBILE */
+  .logo-container h1 {
+     display: none;
+  }
+  
+  /* Make controls smaller */
+  .controls {
+     gap: 5px;
+  }
+  
+  .controls .btn span {
+     display: none; /* Icon only buttons */
+  }
+  
+  .controls .btn {
+     padding: 8px; /* Square-ish buttons */
+     min-width: 50px;
+     place-content: center;
+  }
+
+  /* Fix Header Alignment on Mobile */
+  .topics-header {
+    flex-direction: column-reverse; /* Search on top, button on bottom or vice versa? Actually Search usually top. */
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .topics-header .search-box {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .topics-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Fix Double Border on Search Input */
+  .search-box input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    height: auto !important;
+  }
+  
+  .search-box {
+    /* Ensure wrapper has the styles */
+    background: var(--f-glass-heavy);
+    border: 1px solid var(--f-glass-border);
+    border-radius: 30px;
+    padding: 12px 20px;
+  }
+  
+  /* --- PROFILE & EDIT RESPONSIVENESS --- */
+  .profile-header-panel {
+     padding: 0;
+     border-radius: var(--f-radius-lg);
+  }
+  
+  .profile-cover-bg {
+     height: 150px;
+  }
+  
+  .profile-avatar-large {
+     width: 120px;
+     height: 120px;
+  }
+  
+  .profile-stats-grid {
+     grid-template-columns: 1fr; /* Stack stats on mobile */
+  }
+  
+  /* EDIT PROFILE MODAL FIXES */
+  #edit-profile-modal .auth-content {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      padding: 20px;
+      justify-content: flex-start;
+      overflow-y: auto;
+  }
+  
+  .auth-input, .edit-textarea {
+      font-size: 16px; /* Stop iOS zoom */
+  }
+  
 }
 
 /* --- MOBILE DEVICES (Max 768px) --- */
 @media (max-width: 768px) {
-  /* 1. HEADER FIX */
-  header {
-    height: auto;
-    min-height: 60px;
-    padding: 10px 15px;
-    padding-top: calc(10px + env(safe-area-inset-top));
+  
+  /* 1. TOPIC LIST CARDS */
+  .topic-row {
+    display: flex !important; /* Force Flex over Grid */
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 15px;
+    position: relative;
+  }
+  
+  /* Avatar & Title Row */
+  .topic-row {
+    position: relative;
+    padding-left: 20px;
+  }
+  
+  .topic-status-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    border-radius: 50%; /* Rounded on mobile */
+  }
+
+  .topic-main-content {
+    width: 100%;
+  }
+
+  .topic-main-content h3 {
+    font-size: 16px;
+    padding-right: 50px; /* Space for icon */
+    margin-bottom: 12px;
+  }
+
+  /* Reflow Meta Line */
+  .topic-meta-line {
     flex-wrap: wrap;
     gap: 10px;
+    font-size: 12px;
+  }
+  
+  .topic-badge {
+    font-size: 10px;
+    padding: 3px 8px;
   }
 
-  .logo {
-    width: 36px;
-    height: 36px;
-  }
-
-  /* Скрываем длинный текст */
-  .logo-container h1 {
-    font-size: 16px;
-    display: none;
-  }
-
-  .controls {
-    gap: 8px;
-    margin-left: auto;
-  }
-
-  /* Иконки вместо кнопок */
-  .controls .btn {
-    padding: 0;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    justify-content: center;
-    font-size: 0 !important;
-    gap: 0;
-  }
-
-  .controls .btn i {
-    font-size: 18px !important;
-    margin: 0;
-  }
-
-  .controls .btn span {
-    display: none;
-  }
-
-  /* 2. SEARCH BAR */
-  #search-container {
-    margin-top: 15px;
-  }
-
-  #search-input {
-    height: 50px;
-    font-size: 16px;
-    padding-left: 20px;
-    border-radius: 25px;
-  }
-
-  /* 3. RESULT CARDS */
-  .code-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px;
-    padding-right: 50px;
-    gap: 8px;
-  }
-
-  .code-item > div[style*="flex: 1"] {
+  /* Stats Row at bottom */
+  .topic-stats {
+    flex-direction: row;
+    align-items: center;
     width: 100%;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    gap: 15px;
+    text-align: left;
+    justify-content: flex-start;
+  }
+  
+  .topic-stats div {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
 
-  .code-header {
+  /* 2. TOPIC VIEW MOBILE */
+  
+  /* Header Info */
+  .topic-header-row {
     flex-direction: column;
+  }
+  
+  .topic-header-main h1 {
+    font-size: 20px;
+  }
+  
+  .topic-header-meta {
+    flex-direction: column;
+    gap: 10px;
     align-items: flex-start;
-    gap: 4px;
   }
-
-  .code-identifier {
-    font-size: 18px;
+  
+  /* Post Card Layout */
+  .post-card {
+    grid-template-columns: 1fr; /* Stacked */
   }
-  .code-title {
-    font-size: 15px;
-    line-height: 1.4;
+  
+  .post-user-panel {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 15px;
+    text-align: left;
+    border-right: none;
+    border-bottom: 1px solid var(--f-glass-border);
+    background: rgba(0,0,0,0.3);
   }
-
-  .star-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+  
+  .post-user-avatar {
     width: 40px;
     height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 50%;
+    font-size: 18px;
+    margin-bottom: 0;
+    margin-right: 12px;
   }
-
-  .fa-chevron-right {
-    display: none;
-  }
-
-  /* 4. DETAIL VIEW (FULL SCREEN FIX) */
-  #code-detail {
-    /* Трюк для растягивания блока на всю ширину экрана (Full Bleed) */
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-
-    border-radius: 0;
-    border: none;
-    border-top: 1px solid var(--glass-border);
+  
+  .post-content-panel {
     padding: 20px;
-    min-height: 100vh; /* Занимает весь экран */
+  }
+  
+  .post-text-body pre {
+    overflow-x: auto; /* Ensure code blocks scroll */
+    max-width: 100%;
   }
 
-  .detail-header {
-    flex-direction: column;
-    gap: 15px;
+  /* Sticky Action Bar (Optional enhancement, sticking to flow for now to avoid complexity) */
+  .post-footer-actions {
+    justify-content: space-between;
   }
-  .header-title-wrapper h2 {
-    font-size: 24px;
-    word-break: break-all;
+  
+  .btn-action span {
+    display: inline; /* Keep text visible if space permits, or hide? */
   }
-  .parts-buttons {
-    flex-direction: column;
-  }
-  .btn-part {
-    width: 100%;
-    height: 48px;
-  }
-
-  /* 5. VIN PAGE MOBILE FIXES */
-  .vin-hero h1 {
-    font-size: 2rem !important;
-  }
-
-  /* Сброс стилей контейнера поиска */
-  .vin-search-box {
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 8px !important;
-    border-radius: 24px !important;
-    gap: 10px !important;
+  
+  /* 3. MODALS FULLSCREEN */
+  .auth-content, .modal-content {
     width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
-    box-sizing: border-box !important;
-    height: auto !important;
-  }
-
-  .vin-search-box input {
-    width: 100% !important;
-    min-width: 0 !important;
-    text-align: center;
-    border: none !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    margin: 0 !important;
-    padding: 15px !important;
-    border-radius: 20px !important;
-    font-size: 18px !important;
-    background: transparent !important;
-  }
-
-  .vin-btn {
-    width: 100% !important;
-    height: 50px !important;
-    border-radius: 20px !important;
-    margin: 0 !important;
-  }
-
-  .specs-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    width: 100%;
-  }
-
-  .spec-card {
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    display: flex;
     flex-direction: column;
-    text-align: center;
-    align-items: center;
-    padding: 15px 10px;
+    justify-content: flex-start; /* Align to top to prevent cut-off */
+    padding: 20px;
+    padding-bottom: 40px; /* Space for bottom scroll */
+    overflow-y: auto !important; /* Force scroll */
   }
-
-  .ext-btn-grid {
-    flex-direction: column;
+  
+  .auth-modal {
+    padding: 0; /* Remove padding around modal */
   }
-  .ext-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  /* 6. FULLSCREEN CHAT */
+  
+  /* 4. CHAT WIDGET */
   .chat-window {
     width: 100%;
     height: 100%;
-    max-height: 100%;
     bottom: 0;
     right: 0;
-    left: 0;
-    top: 0;
     border-radius: 0;
-    border: none;
-    z-index: 9999;
-    transform: translateY(110%);
-    display: flex;
-    flex-direction: column;
   }
-
-  .chat-window.active {
-    transform: translateY(0);
-  }
-
-  .chat-header {
-    padding-top: calc(15px + env(safe-area-inset-top));
-    flex-shrink: 0;
-  }
-
-  .chat-footer {
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
-    background: #121418;
-    flex-shrink: 0;
-  }
-
-  .wizard-fab {
-    width: 56px;
-    height: 56px;
-    bottom: 20px;
-    right: 20px;
+  
+  /* Contact Form Mobile Fix */
+  .legal-container {
+      margin: 20px 10px !important;
+      padding: 15px !important;
   }
 }
 
-/* --- SMALL MOBILE --- */
-@media (max-width: 400px) {
+/* --- SMALL MOBILE (Max 375px) --- */
+@media (max-width: 375px) {
   .logo-container h1 {
-    display: none;
+    display: none; /* Hide text logo on very small screens */
   }
-  .controls .btn {
-    width: 40px;
-    height: 40px;
+  
+  .controls .btn span {
+    display: none; /* Hide auth text */
   }
-  .specs-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* --- LANDSCAPE --- */
-@media (max-height: 500px) and (orientation: landscape) {
-  header {
-    position: relative;
-  }
-  .chat-window {
-    height: 100%;
-    top: 0;
+  
+  .search-box input {
+    font-size: 14px;
   }
 }

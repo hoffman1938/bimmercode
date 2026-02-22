@@ -8,12 +8,14 @@
     />
     <title>BMW VIN Decoder</title>
 
-    <link rel="stylesheet" href="./css/responsive.css" />
-    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/style.css?v=2.91" />
+    <link rel="stylesheet" href="./css/responsive.css?v=2.91" />
+    <link rel="stylesheet" href="./css/notifications.css?v=2.91" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+
     <link
       rel="shortcut icon"
       href="./assets/icons/ico.svg"
@@ -27,6 +29,9 @@
         text-align: center;
         margin: 80px 0 40px;
       }
+      .notification-btn {
+  display: none!important;
+}
       .vin-hero h1 {
         font-size: 3rem;
         background: linear-gradient(45deg, #fff, #6f9bd1);
@@ -175,51 +180,45 @@
         line-height: 1.2;
       }
 
-      /* Внешние ссылки */
-      .external-links {
-        max-width: 800px;
-        margin: 40px auto 0;
-        text-align: center;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 30px;
-      }
-      .external-links h3 {
-        color: white;
-        margin-bottom: 10px;
-        font-size: 20px;
-      }
-      .ext-btn-grid {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-        margin-top: 25px;
-      }
-
       .ext-btn {
         background: linear-gradient(135deg, #0066b3 0%, #004e8a 100%);
-        border: none;
-        padding: 15px 30px;
-        border-radius: 50px;
+        border: 1px solid rgba(255,255,255,0.05);
+        padding: 16px 20px;
+        border-radius: 12px;
         color: white;
         text-decoration: none;
         font-weight: bold;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
         transition: 0.3s;
         font-size: 15px;
-        box-shadow: 0 5px 15px rgba(0, 102, 179, 0.3);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       }
       .ext-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0, 102, 179, 0.5);
-        background: linear-gradient(135deg, #0077d1 0%, #005fa8 100%);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 102, 179, 0.4);
+        border-color: rgba(255,255,255,0.2);
       }
       .ext-btn i {
-        font-size: 18px;
+        font-size: 24px;
+        width: 30px;
+        text-align: center;
+      }
+      .ext-btn-content {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+      }
+      .ext-btn-content span {
+        font-size: 15px;
+        line-height: 1.2;
+      }
+      .ext-btn-content small {
+        font-weight: normal;
+        font-size: 12px;
+        opacity: 0.75;
+        margin-top: 4px;
       }
 
       .loader {
@@ -260,19 +259,25 @@
         </a>
       </div>
       <div class="controls">
-        <button id="language-toggle" class="btn">
-          <i class="fas fa-globe"></i> <span>EN</span>
-        </button>
-        <a href="forum.html" class="btn">
-          <i class="fas fa-comments"></i> <span>Forum</span>
-        </a>
         <a href="index.html" class="btn"
           ><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a
         >
+        <a href="forum.html" class="btn">
+          <i class="fas fa-comments"></i> 
+          <span data-i18n="forumBtn">Forum</span>
+        </a>
+        <button id="language-toggle" class="btn">
+          <i class="fas fa-globe"></i> <span>EN</span>
+        </button>
       </div>
     </header>
 
     <main class="container">
+      <!-- Top Ad Banner -->
+      <div class="ad-container ad-header">
+          <span style="color: #444; font-size: 12px;">Advertisement</span>
+      </div>
+
       <div class="vin-hero">
         <h1 data-i18n="vinTitle">Decode Your VIN</h1>
         <p style="color: #94a3b8" data-i18n="vinSubtitle">
@@ -393,47 +398,64 @@
             </div>
           </div>
         </div>
-
-        <div class="external-links">
-          <h3 data-i18n="extTitle">Looking for full options list (S-Codes)?</h3>
-          <p
-            style="color: #94a3b8; margin-bottom: 20px; font-size: 13px"
-            data-i18n="extText"
-          >
-            Our database provides technical specs. To see specific options
-            (M-Sport, Leather, etc.), use these deep decoders:
+        <div class="external-links" id="deep-decode-section" style="margin-top: 40px; text-align: left; display: none;">
+          <h3 style="color: #4da8ff; margin-bottom: 15px; font-size: 20px; border-bottom: 1px solid rgba(0, 102, 179, 0.3); padding-bottom: 15px;">
+            <i class="fas fa-tools" style="margin-right:8px;"></i> <span data-i18n="deepDecodeTitle">Deep Decode & History Utilities</span>
+          </h3>
+          <p style="color: #94a3b8; margin-bottom: 25px; font-size: 14px;" data-i18n="deepDecodeDesc">
+            Use these specialized external tools to get full factory options, verify auction history (Copart/IAA), find OEM parts, or check safety recalls for this specific VIN.
           </p>
 
-          <div class="ext-btn-grid">
-            <a href="#" id="link-mdecoder" target="_blank" class="ext-btn">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+            
+            <!-- Auction History -->
+            <a href="javascript:void(0)" id="link-bidfax" class="ext-btn" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);" onclick="submitExternalSearch('bidfax')">
+              <i class="fas fa-gavel"></i>
+              <div class="ext-btn-content">
+                <span data-i18n="bidfaxTitle">Auction History</span>
+                <small data-i18n="bidfaxDesc">BidFax (Copart & IAAI Data)</small>
+              </div>
+            </a>
+            
+            <a href="javascript:void(0)" id="link-statvin" class="ext-btn" style="background: linear-gradient(135deg, #d35400 0%, #a04000 100%);" onclick="submitExternalSearch('statvin')">
+              <i class="fas fa-car-crash"></i>
+              <div class="ext-btn-content">
+                <span data-i18n="statvinTitle">Salvage Search</span>
+                <small data-i18n="statvinDesc">Stat.vin (Analytics)</small>
+              </div>
+            </a>
+
+            <!-- Factory Options -->
+            <a href="javascript:void(0)" id="link-mdecoder" class="ext-btn" style="background: linear-gradient(135deg, #00b09b 0%, #009381 100%);" onclick="submitExternalSearch('mdecoder')">
               <i class="fas fa-list-ul"></i>
-              <span data-i18n="btnFullOptions">View Full Options List</span>
+              <div class="ext-btn-content">
+                <span data-i18n="factoryDocsTitle">Factory Options</span>
+                <small data-i18n="factoryDocsDesc">M-Decoder (S-Codes & Equip)</small>
+              </div>
             </a>
-            <a
-              href="#"
-              id="link-bimmerwork"
-              target="_blank"
-              class="ext-btn"
-              style="
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid white;
-              "
-            >
-              <i class="fas fa-external-link-alt"></i> bimmer.work
+            
+            <!-- Alternative Decoder -->
+            <a href="javascript:void(0)" id="link-bimmerwork" class="ext-btn" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255,255,255,0.1); color: #ccc;" onclick="submitExternalSearch('bimmerwork')">
+              <i class="fas fa-file-invoice"></i>
+              <div class="ext-btn-content">
+                <span data-i18n="bimmerWorkTitle">bimmer.work</span>
+                <small data-i18n="bimmerWorkDesc">Alternative Option Decoder</small>
+              </div>
             </a>
+            
           </div>
         </div>
       </div>
+      
+      <!-- Bottom Ad Banner -->
+      <div class="ad-container ad-footer">
+          <span style="color: #444; font-size: 12px;">Advertisement</span>
+      </div>
     </main>
     <footer>
-      <p>BMW DTC Bot © 2026 • All BMW codes and series supported</p>
-      <p>
-        <small
-          >BMW is a registered trademark of Bayerische Motoren Werke AG. This
-          site is not affiliated with BMW AG.</small
-        >
-      </p>
+      <!-- Content injected by js/footer.js -->
     </footer>
+    <script src="./js/footer.js"></script>
 
     <script src="./js/vin.js"></script>
     <script>
@@ -471,6 +493,6 @@
       }
       animate();
     </script>
-    <script src="./js/live.js"></script>
+    <script src="./js/live.js?v=2.91"></script>
   </body>
 </html>

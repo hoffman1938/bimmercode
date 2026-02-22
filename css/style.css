@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap");
+@import url("./notifications.css");
 
 :root {
   /* Colors */
@@ -27,6 +28,15 @@
   --sab: env(safe-area-inset-bottom);
   --sal: env(safe-area-inset-left);
   --sar: env(safe-area-inset-right);
+
+  /* Fluid Typography & Spacing */
+  --font-size-base: clamp(14px, 1.5vw, 16px);
+  --font-size-h1: clamp(24px, 5vw, 40px);
+  --font-size-h2: clamp(20px, 4vw, 32px);
+  --font-size-h3: clamp(18px, 3vw, 24px);
+  
+  --container-padding: clamp(16px, 5vw, 40px);
+  --header-height: clamp(60px, 10vh, 80px);
 }
 
 /* Reset & Base */
@@ -202,7 +212,8 @@ main.container {
   /* padding-right: 50px; — можно оставить или убрать для форума */
   border-radius: var(--radius-xl);
   color: #fff;
-  font-size: 16px;
+  font-size: 13px;
+  height: 50px;
   font-family: "Exo 2", sans-serif;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -220,7 +231,7 @@ main.container {
 
 .search-icon {
   position: absolute;
-  right: 20px;
+  right: 35px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--bmw-blue);
@@ -619,13 +630,29 @@ main.container {
 }
 
 /* Empty State & No Results */
+/* Empty State & No Results */
 .message-container {
   text-align: center;
-  padding: 60px 20px;
-  background: var(--glass-bg);
+  padding: 80px 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
   border-radius: var(--radius-xl);
-  border: 1px solid var(--glass-border);
-  animation: fadeInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0 auto;
+  max-width: 600px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.message-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
 }
 
 .message-container.hidden {
@@ -633,251 +660,46 @@ main.container {
 }
 
 @keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.98) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .message-container i {
-  font-size: 48px;
-  color: var(--bmw-blue);
-  margin-bottom: 20px;
-  display: block;
-  animation: iconFloat 3s ease-in-out infinite;
+  font-size: 64px;
+  margin-bottom: 24px;
+  display: inline-block;
+  background: linear-gradient(135deg, var(--bmw-blue), #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 10px 20px rgba(0, 102, 179, 0.3));
+  animation: iconFloat 4s ease-in-out infinite;
 }
 
 @keyframes iconFloat {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .message {
-  font-size: 1.2rem;
+  place-self: center;
+  font-size: 1rem;
+  font-weight: 200;
   color: #fff;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
+
 .sub-message {
-  font-size: 14px;
+  font-size: 1rem;
   color: var(--text-muted);
+  font-weight: 400;
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.6;
 }
 
-/* --- AI CHAT WIDGET --- */
-#wizard-widget {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  z-index: 2000;
-}
+/* --- AI CHAT WIDGET (REMOVED) --- */
 
-.wizard-fab {
-  position: fixed;
-  bottom: max(30px, var(--sab));
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  background: var(--bmw-blue);
-  border-radius: 50%;
-  box-shadow: 0 0 20px rgba(0, 102, 179, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 2001;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  font-size: 28px;
-  color: white;
-}
-.wizard-fab:hover {
-  transform: scale(1.1);
-  background: white;
-  color: var(--bmw-blue);
-}
-
-.chat-window {
-  position: fixed;
-  bottom: 100px;
-  right: 30px;
-  width: 380px;
-  height: 600px;
-  max-height: calc(100vh - 120px);
-  background: rgba(18, 20, 24, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  transform: translateY(20px) scale(0.9);
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-}
-.chat-window.active {
-  transform: translateY(0) scale(1);
-  opacity: 1;
-  pointer-events: all;
-}
-
-.chat-header {
-  padding: 15px;
-  background: linear-gradient(90deg, var(--bmw-dark-blue), var(--bmw-blue));
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 20px 20px 0 0;
-}
-.bot-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.bot-avatar {
-  width: 36px;
-  height: 36px;
-  background: white;
-  border-radius: 50%;
-  color: var(--bmw-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.bot-status {
-  font-size: 11px;
-  opacity: 0.8;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.status-dot {
-  width: 6px;
-  height: 6px;
-  background: #2ecc71;
-  border-radius: 50%;
-}
-
-.chat-body {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.message {
-  justify-self: center;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  line-height: 1.4;
-  max-width: 85%;
-}
-.message.bot {
-  background: rgba(255, 255, 255, 0.1);
-  border-bottom-left-radius: 2px;
-  align-self: flex-start;
-}
-.message.user {
-  background: var(--bmw-blue);
-  border-bottom-right-radius: 2px;
-  align-self: flex-end;
-}
-
-.chat-footer {
-  padding: 15px;
-  background: rgba(0, 0, 0, 0.3);
-  border-top: 1px solid var(--glass-border);
-  display: flex;
-  gap: 10px;
-  border-radius: 0 0 20px 20px;
-}
-.chat-input {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 10px 15px;
-  color: white;
-  outline: none;
-  font-size: 16px;
-}
-.chat-send-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bmw-blue);
-  border: none;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-/* Chat Quick Options */
-.chat-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-}
-.chat-option-btn {
-  background: transparent;
-  border: 1px solid var(--bmw-blue);
-  color: var(--bmw-sky);
-  padding: 6px 12px;
-  border-radius: 15px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.chat-option-btn:hover {
-  background: var(--bmw-blue);
-  color: white;
-}
-
-/* Typing Indicator */
-.typing-indicator {
-  display: none;
-  gap: 4px;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 15px;
-  align-self: flex-start;
-  width: fit-content;
-}
-.typing-dot {
-  width: 6px;
-  height: 6px;
-  background: #ccc;
-  border-radius: 50%;
-  animation: typing 1.4s infinite ease-in-out both;
-}
-.typing-dot:nth-child(1) {
-  animation-delay: -0.32s;
-}
-.typing-dot:nth-child(2) {
-  animation-delay: -0.16s;
-}
-@keyframes typing {
-  0%,
-  80%,
-  100% {
-    transform: scale(0);
-  }
-  40% {
-    transform: scale(1);
-  }
-}
 
 /* Favorites Modal */
 .favorites-modal {
@@ -957,6 +779,7 @@ footer {
   border-top: 1px solid var(--glass-border);
 }
 
+
 /* Helpers */
 .hidden {
   display: none !important;
@@ -985,10 +808,11 @@ footer {
   z-index: 10000;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; /* Centered by default */
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 20px; /* Add padding wrapper to prevent touching edges */
 }
 
 .auth-modal.active {
@@ -1003,8 +827,12 @@ footer {
   background: #121418;
   border: 1px solid var(--glass-border);
   width: 90%;
-  max-width: 400px;
-  padding: 30px;
+  max-width: 400px; /* Keep this constraint */
+  max-height: 90vh; /* Viewport safety */
+  overflow-y: auto; /* Enable scrolling */
+  display: flex;
+  flex-direction: column;
+  padding: 30px; /* Keep padding */
   border-radius: 20px;
   position: relative;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
@@ -1041,6 +869,88 @@ footer {
   color: white;
   transform: rotate(90deg);
 }
+
+/* Auth Forms & Inputs */
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  color: #8ba4b6;
+  font-size: 13px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.auth-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: white;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--bmw-blue);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 102, 179, 0.2);
+}
+
+.auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--bmw-blue);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 10px;
+  box-shadow: 0 10px 20px rgba(0, 102, 179, 0.3);
+}
+
+.submit-btn:hover {
+  background: var(--bmw-dark-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(0, 102, 179, 0.4);
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 12px;
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 30px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+
+.btn-logout:hover {
+  background: rgba(231, 76, 60, 0.2);
+  border-color: #e74c3c;
+}
+
 
 /* Tabs */
 .auth-tabs {
@@ -1125,4 +1035,195 @@ footer {
   font-size: 13px;
   text-align: center;
   min-height: 20px;
+}
+
+/* Generic Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal.active {
+  opacity: 1;
+  visibility: visible;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-content {
+  background: #121418;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9) translateY(20px);
+  opacity: 1;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow-y: auto;
+  min-height: 200px;
+}
+
+.modal.active .modal-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-content .close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: #aaa;
+  font-size: 24px;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s;
+}
+
+.modal-content .close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Footer & Main Layout */
+main {
+  flex: 1; /* Sticky footer push */
+}
+
+footer {
+  margin-top: auto;
+  background: rgba(0, 0, 0, 0.8);
+  border-top: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  width: 100%;
+}
+
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+}
+
+.footer-text {
+  margin: 0;
+  color: #aaa;
+}
+
+.footer-subtext {
+  font-size: 0.8em;
+  color: #666;
+  margin: 5px 0 0 0;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: var(--text-muted, #aaa);
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--bmw-blue);
+}
+/* Report Modal Specifics */
+#report-modal {
+    z-index: 2000; /* Ensure it's above everything */
+}
+#report-modal .auth-content {
+    background: rgba(18, 20, 24, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+#report-modal textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    resize: vertical;
+}
+/* --- AdSense Containers --- */
+.ad-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    min-height: 90px; /* Default for leaderboard */
+    background: rgba(255, 255, 255, 0.02); /* Subtle placeholder bg */
+    border: 1px dashed rgba(255, 255, 255, 0.1); /* Helper border for dev (remove later if needed) */
+    border-radius: var(--radius-md);
+}
+
+.ad-container.ad-header {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    max-width: 728px;
+}
+
+.ad-container.ad-footer {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    max-width: 728px;
+}
+
+.ad-container.ad-sidebar {
+    min-height: 250px;
+    max-width: 300px;
+}
+
+.ad-container.ad-in-content {
+    margin: 30px auto;
+    max-width: 728px;
+}
+
+/* Mobile Adjustments for Ads */
+@media (max-width: 768px) {
+    .ad-container {
+        min-height: 50px;
+    }
+    .ad-container.ad-sidebar {
+        margin: 20px auto; /* Center sidebar ads on mobile if stacked */
+    }
 }

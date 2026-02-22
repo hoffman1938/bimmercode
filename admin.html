@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BMW Diagnostic Codes</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="./css/admin.css">
+    <link rel="stylesheet" href="./css/notifications.css">
+    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
+    </head>
+<body class="bmw-pattern">
+    <header>
+        <div class="logo-container">
+            <button id="sidebar-toggle" class="action-btn" style="margin-right: 15px; display: none;" onclick="toggleAdminSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="main_logo_refr" href="index.html">
+                <div class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black"/>
+                        <circle cx="50" cy="50" r="35" fill="white"/>
+                        <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0"/>
+                        <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white"/>
+                        <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white"/>
+                        <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0"/>
+                    </svg>
+                </div>
+                <h1>Admin Panel</h1>
+            </a>
+        </div>
+        <div class="controls">
+            <a href="index.html" class="btn"><i class="fas fa-home"></i> Back to Site</a>
+            <button class="btn" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" onclick="switchTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" onclick="switchTab('users')"><i class="fas fa-users"></i> Users</a></li>
+                <li><a href="#" onclick="switchTab('forum')"><i class="fas fa-layer-group"></i> Forum Structure</a></li>
+                <li><a href="#" onclick="switchTab('reports')"><i class="fas fa-flag"></i> Reports</a></li>
+                <li><a href="#" onclick="switchTab('messages')"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="#" onclick="switchTab('logs')"><i class="fas fa-history"></i> Audit Logs</a></li>
+                <li><a href="#" onclick="switchTab('settings')"><i class="fas fa-cogs"></i> Settings</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <div id="tab-dashboard" class="dashboard-section">
+                <h2>Overview</h2>
+                <!-- Realtime Stats -->
+                <div class="dashboard-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(15, 23, 42, 0.4)); border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="margin:0; color: #60a5fa;">Real-Time Activity</h3>
+                            <p style="margin: 5px 0 0 0; color: #94a3b8;">Users active in last 15 minutes</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span id="active-users-count" style="font-size: 3rem; font-weight: 800; color: white; text-shadow: 0 0 20px rgba(59,130,246,0.5);">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Stats Grid -->
+                <div class="stat-grid" id="stats-container">
+                    <!-- Loading Stats -->
+                    <div class="stat-card"><div class="stat-value">...</div><div>Total Users</div></div>
+                    <div class="stat-card"><div class="stat-value">...</div><div>Posts</div></div>
+                    <div class="stat-card"><div class="stat-value">...</div><div>Reports</div></div>
+                </div>
+                
+                <!-- Charts -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="dashboard-card">
+                        <h3>Traffic Pattern (24h)</h3>
+                        <canvas id="trafficChart" height="200"></canvas>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Device Usage</h3>
+                        <canvas id="deviceChart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>Top Pages</h3>
+                    <table class="data-table">
+                        <tbody id="top-pages-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- User Management Section -->
+            <div id="tab-users" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>User Management</h2>
+                    <div class="search-box" style="width: 300px;">
+                        <input type="text" id="user-search" placeholder="Search by username or email..." style="width: 100%;">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <!-- Filters -->
+                <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                    <select id="role-filter" onchange="loadUsers()" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 5px; border-radius: 4px;">
+                        <option value="">All Roles</option>
+                        <option value="admin_role">Admins</option>
+                        <option value="moderator_role">Moderators</option>
+                        <option value="user_role">Users</option>
+                        <option value="banned">Banned</option>
+                    </select>
+                </div>
+                <div class="dashboard-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Reputation</th>
+                                <th>Level</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                    <div id="users-pagination" style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;"></div>
+                    <div id="users-loading" style="text-align: center; padding: 20px;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forum Management Section -->
+            <div id="tab-forum" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Forum Structure</h2>
+                    <button class="btn" onclick="openCategoryModal()"> <i class="fas fa-plus"></i> New Category</button>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>Categories</h3>
+                    <div id="categories-list" class="categories-list-admin">
+                        <!-- Populated JS -->
+                        <p style="padding: 20px; text-align: center;">Loading categories...</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card" style="margin-top: 20px;">
+                    <div class="dashboard-header" style="margin-bottom: 10px;">
+                        <h3>Tags</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="new-tag-name" placeholder="Tag Name" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 5px; border-radius: 4px;">
+                            <input type="color" id="new-tag-color" value="#3498db" style="border: none; padding: 0; background: none; height: 30px; width: 30px; cursor: pointer;">
+                            <button class="action-btn" onclick="createTag()">Add Tag</button>
+                        </div>
+                    </div>
+                    <div id="tags-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="tab-reports" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Reports Queue</h2>
+                    <div style="display:flex; gap:10px;">
+                        <button class="action-btn" onclick="loadReports('pending')" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                        <select id="report-status-filter" onchange="loadReports(this.value)">
+                            <option value="pending">Pending</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="dismissed">Dismissed</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Reported Item</th>
+                                <th>Reason</th>
+                                <th>Reporter</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                    <div id="reports-loading" style="text-align: center; padding: 20px; display:none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Section -->
+            <div id="tab-messages" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Messages</h2>
+                    <button class="action-btn" onclick="loadMessages()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+                <div id="messages-list">
+                    <!-- JS -->
+                </div>
+            </div>
+
+            <!-- Logs Section -->
+            <div id="tab-logs" class="dashboard-section hidden">
+                <h2>Audit Logs</h2>
+                <div class="dashboard-card">
+                    <table class="data-table">
+                         <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Target</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                         <tbody id="logs-table-body">
+                             <!-- JS -->
+                         </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Settings Section -->
+            <div id="tab-settings" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>System Configuration</h2>
+                    <button class="btn" onclick="saveSettings()"> <i class="fas fa-save"></i> Save Changes</button>
+                </div>
+
+                 <div class="dashboard-card" style="max-width: 800px;">
+                    <h3>General Settings</h3>
+                    <form id="settings-form" onsubmit="event.preventDefault(); saveSettings();">
+                        <div class="input-group">
+                            <label>Site Name</label>
+                            <input type="text" id="set-site-name" class="form-input" placeholder="BMW Diagnostic Codes">
+                        </div>
+
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div>
+                                <strong style="color: white; display: block;">Maintenance Mode</strong>
+                                <span style="font-size: 0.85em; color: #aaa;">Only admins can access the site when enabled.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="set-maintenance">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div>
+                                <strong style="color: white; display: block;">Open Registration</strong>
+                                <span style="font-size: 0.85em; color: #aaa;">Allow new users to sign up.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="set-registration">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+                        <h3>Announcement Banner</h3>
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <label style="margin:0;">Show Banner</label>
+                            <label class="switch">
+                                <input type="checkbox" id="set-banner-active">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Banner Message</label>
+                            <input type="text" id="set-banner-msg" class="form-input" placeholder="e.g., Server maintenance scheduled for...">
+                        </div>
+                        
+                         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                         
+                         <h3>Global Push Notification</h3>
+                         <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 15px; border-radius: 8px;">
+                            <p style="margin-top:0; font-size:0.9em; color:#93c5fd;">Send a permanent notification to ALL active users. Use sparingly.</p>
+                            <div class="input-group">
+                                <label>Message</label>
+                                <input type="text" id="broadcast-msg" class="form-input" placeholder="e.g., New features are now live!">
+                            </div>
+                            <button class="btn" style="width:100%; background: var(--admin-primary);" onclick="sendBroadcast(event)"><i class="fas fa-paper-plane"></i> Send to All Users</button>
+                         </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="category-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeCategoryModal()"><i class="fas fa-times"></i></button>
+             <h2 id="cat-modal-title">New Category</h2>
+             <form id="category-form">
+                 <input type="hidden" id="cat-id">
+                 
+                 <div class="input-group">
+                     <label>Title</label>
+                     <input type="text" id="cat-title" required class="form-input">
+                 </div>
+                 
+                 <div class="input-group">
+                     <label>Description</label>
+                     <textarea id="cat-desc" class="form-input"></textarea>
+                 </div>
+                 
+                 <div class="input-group">
+                     <label>Icon (FontAwesome class)</label>
+                     <input type="text" id="cat-icon" placeholder="fas fa-folder" class="form-input">
+                 </div>
+
+                 <div class="input-group">
+                     <label>Sort Order</label>
+                     <input type="number" id="cat-order" value="0" class="form-input">
+                 </div>
+                 
+                 <button type="submit" class="submit-btn">Save</button>
+             </form>
+        </div>
+    </div>
+
+    <div id="action-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeActionModal()"><i class="fas fa-times"></i></button>
+            <h2 id="action-title">Action</h2>
+            <form id="action-form">
+                <input type="hidden" id="target-user-id">
+                <input type="hidden" id="action-type">
+                
+                <div class="input-group">
+                    <label style="display: block; margin-bottom: 5px; color: #ccc;">Reason</label>
+                    <textarea id="action-reason" required style="width: 100%; height: 100px; background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 10px; border-radius: 5px;"></textarea>
+                </div>
+
+                <div id="ban-options" class="hidden">
+                    <p style="color: #e74c3c; font-size: 13px; margin-bottom: 10px;">This will permanently ban the user.</p>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="action-submit-btn">Execute</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Role Edit Modal -->
+    <div id="role-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeRoleModal()"><i class="fas fa-times"></i></button>
+            <h2>Assign Role</h2>
+            <p>User: <strong id="role-username-display" style="color:white;"></strong></p>
+            
+            <input type="hidden" id="role-user-id">
+            
+            <div class="input-group" style="margin-top:20px;">
+                <label>Select Role</label>
+                <select id="role-select" class="form-input">
+                    <option value="user_role">User</option>
+                    <option value="moderator_role">Moderator</option>
+                    <option value="senior_moderator_role">Senior Moderator</option>
+                    <option value="admin_role">Administrator</option>
+                    <option value="super_admin_role">Super Administrator</option>
+                    <option value="banned">Banned</option>
+                </select>
+            </div>
+            
+            <button class="submit-btn" onclick="saveRole()">Save Role</button>
+        </div>
+    </div>
+
+    <!-- Report Details Modal -->
+    <div id="report-details-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeReportDetailsModal()"><i class="fas fa-times"></i></button>
+            <h2>Report Details</h2>
+            <div id="report-details-content" style="margin-top: 20px;">
+                <!-- Populated by JS -->
+                <p>Loading...</p>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-danger" id="btn-report-ban" onclick="">Ban User</button>
+                <button class="btn" id="btn-report-dismiss" onclick="">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Admin Logic -->
+    <script src="./js/admin_utils.js"></script>
+    <!-- User Inspector Modal -->
+    <div id="inspector-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>User Inspector</h2>
+                <button class="close-modal" onclick="closeInspectorModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="inspector-body">
+                <div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/admin.js"></script>
+    <script src="./js/admin_users.js"></script>
+    <script src="./js/admin_forum.js"></script>
+    <script src="./js/admin_logs.js"></script>
+    <script src="./js/admin_messages.js"></script>
+    <script src="./js/admin_settings.js"></script>
+    <script src="./js/admin_reports.js"></script>
+</body>
+</html>

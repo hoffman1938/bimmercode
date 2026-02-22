@@ -3,27 +3,39 @@ export async function onRequestPost(context) {
   try {
     const { type, id, user_id } = await request.json(); // type: 'topic' или 'post'
 
+    // Check user role
+    const user = await env.DB.prepare("SELECT role_id FROM users WHERE id = ?").bind(user_id).first();
+    const isAdmin = user && (user.role_id === 'admin_role' || user.role_id === 'super_admin_role');
+
     if (type === "post") {
-      // Проверяем владельца и удаляем пост
-      const result = await env.DB.prepare(
-        "DELETE FROM posts WHERE id = ? AND user_id = ?",
-      )
-        .bind(id, user_id)
-        .run();
+      let query = "DELETE FROM posts WHERE id = ?";
+      const params = [id];
+      
+      // If not admin, enforce ownership
+      if (!isAdmin) {
+          query += " AND user_id = ?";
+          params.push(user_id);
+      }
+
+      const result = await env.DB.prepare(query).bind(...params).run();
+      
       if (result.meta.changes > 0)
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     }
 
     if (type === "topic") {
-      // Удаляем тему и все её посты
-      await env.DB.prepare("DELETE FROM posts WHERE topic_id = ?")
-        .bind(id)
-        .run();
-      const result = await env.DB.prepare(
-        "DELETE FROM topics WHERE id = ? AND user_id = ?",
-      )
-        .bind(id, user_id)
-        .run();
+      // Check ownership first if not admin
+      if (!isAdmin) {
+         const topic = await env.DB.prepare("SELECT user_id FROM topics WHERE id = ?").bind(id).first();
+         if (!topic || topic.user_id !== user_id) {
+             return new Response(JSON.stringify({ error: "Access denied" }), { status: 403 });
+         }
+      }
+
+      // Delete topic and its posts
+      await env.DB.prepare("DELETE FROM posts WHERE topic_id = ?").bind(id).run();
+      const result = await env.DB.prepare("DELETE FROM topics WHERE id = ?").bind(id).run();
+
       if (result.meta.changes > 0)
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     }

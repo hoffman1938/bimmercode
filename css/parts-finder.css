@@ -1,0 +1,351 @@
+/* =====================================================
+   PARTS FINDER STYLES
+   ===================================================== */
+
+.parts-finder-container {
+  margin: 30px 0;
+  padding: 20px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.05));
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.parts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.parts-header h3 {
+  font-size: 1.5rem;
+  color: var(--primary-color, #1e90ff);
+  margin: 0;
+}
+
+.estimated-cost {
+  text-align: right;
+}
+
+.estimated-cost span {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-muted, #999);
+}
+
+.estimated-cost strong {
+  font-size: 1.3rem;
+  color: var(--success-color, #4caf50);
+}
+
+/* Parts Sections */
+.parts-section {
+  margin-bottom: 30px;
+}
+
+.parts-section h4 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: var(--text-color, #fff);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.primary-parts h4 { color: #ff5252; }
+.secondary-parts h4 { color: #ffa726; }
+.optional-parts h4 { color: #42a5f5; }
+
+/* Part Card */
+.part-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.part-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--primary-color, #1e90ff);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.part-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.part-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.part-title h5 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-color, #fff);
+}
+
+/* Badges */
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-oem {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.badge-aftermarket {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.difficulty-easy {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.difficulty-medium {
+  background: rgba(255, 167, 38, 0.2);
+  color: #ffa726;
+  border: 1px solid rgba(255, 167, 38, 0.3);
+}
+
+.difficulty-hard {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.difficulty-professional {
+  background: rgba(156, 39, 176, 0.2);
+  color: #9c27b0;
+  border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+/* Part Details */
+.part-details {
+  margin-bottom: 15px;
+}
+
+.part-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-row .label {
+  color: var(--text-muted, #999);
+  font-size: 0.9rem;
+}
+
+.info-row .value {
+  color: var(--text-color, #fff);
+  font-weight: 500;
+}
+
+.info-row .value code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: var(--primary-color, #1e90ff);
+}
+
+.info-row .price {
+  color: var(--success-color, #4caf50);
+  font-weight: 600;
+}
+
+/* Rating */
+.part-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+}
+
+.stars {
+  color: #ffc107;
+}
+
+.stars i {
+  margin-right: 2px;
+}
+
+/* Compatibility */
+.compatibility-info {
+  background: rgba(66, 165, 245, 0.1);
+  border-left: 3px solid #42a5f5;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #42a5f5;
+}
+
+.part-notes {
+  background: rgba(255, 193, 7, 0.1);
+  border-left: 3px solid #ffc107;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #ffc107;
+}
+
+/* Buy Links */
+.buy-links {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.buy-links-header {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-color, #fff);
+}
+
+.marketplace-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.marketplace-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.marketplace-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary-color, #1e90ff);
+  transform: translateY(-2px);
+}
+
+.marketplace-link.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.marketplace-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-color, #fff);
+}
+
+.marketplace-info i {
+  font-size: 1.2rem;
+}
+
+.price-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price-info .price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--success-color, #4caf50);
+}
+
+.free-shipping {
+  font-size: 0.75rem;
+  color: #4caf50;
+}
+
+.shipping {
+  font-size: 0.75rem;
+  color: var(--text-muted, #999);
+}
+
+.out-of-stock {
+  font-size: 0.8rem;
+  color: #f44336;
+}
+
+/* Loading & Error States */
+.parts-loading,
+.parts-error {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted, #999);
+}
+
+.parts-loading i {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: var(--primary-color, #1e90ff);
+}
+
+.parts-error i {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #f44336;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .parts-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .estimated-cost {
+    text-align: left;
+  }
+  
+  .part-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .marketplace-links {
+    grid-template-columns: 1fr;
+  }
+}

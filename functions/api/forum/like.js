@@ -24,6 +24,15 @@ export async function onRequestPost(context) {
         .prepare("DELETE FROM post_likes WHERE user_id = ? AND post_id = ?")
         .bind(user_id, post_id)
         .run();
+        
+      // REPUTATION: -1 point
+       const postInfo = await db.prepare("SELECT user_id FROM posts WHERE id = ?").bind(post_id).first();
+       if (postInfo && String(postInfo.user_id) !== String(user_id)) {
+           await db.prepare("UPDATE users SET reputation = MAX(0, COALESCE(reputation, 0) - 1) WHERE id = ?")
+             .bind(postInfo.user_id)
+             .run();
+       }
+
     } else {
       // Ставим лайк (Like)
       await db
@@ -49,24 +58,36 @@ export async function onRequestPost(context) {
 
       if (
         post &&
-        post.user_id !== parseInt(user_id) &&
-        post.user_id !== user_id
+        String(post.user_id) !== String(user_id)
       ) {
-        // Проверка типов ID
+        
+        // REPUTATION: +1 point
+        await db.prepare("UPDATE users SET reputation = COALESCE(reputation, 0) + 1 WHERE id = ?")
+            .bind(post.user_id)
+            .run();
+
+        // Notification V2
+        const metadata = JSON.stringify({
+            sender_id: user_id,
+            sender_name: senderName,
+            topic_id: post.topic_id,
+            post_id: post_id
+        });
+
         await db
           .prepare(
             `
-          INSERT INTO notifications (id, user_id, sender_id, sender_name, type, topic_id, topic_title)
-          VALUES (?, ?, ?, ?, 'like', ?, ?)
+          INSERT INTO notifications (id, user_id, type, title, text, link, icon, metadata)
+          VALUES (?, ?, 'like', ?, ?, ?, 'fa-heart', ?)
         `,
           )
           .bind(
             crypto.randomUUID(),
             post.user_id,
-            user_id,
-            senderName,
-            post.topic_id,
-            post.title,
+            "New like",
+            senderName + " liked your post",
+            `/topic?id=${post.topic_id}#post-${post_id}`,
+            metadata
           )
           .run();
       }

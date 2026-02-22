@@ -311,13 +311,15 @@
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
 
     <!-- Preload critical resources -->
-    <link rel="preload" href="./css/style.css" as="style" />
-    <link rel="preload" href="./css/responsive.css" as="style" />
+    <link rel="preload" href="./css/style.css?v=2.91" as="style" />
+    <link rel="preload" href="./css/responsive.css?v=2.91" as="style" />
     <link rel="preload" href="./data/data.js" as="script" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/responsive.css" />
+    <link rel="stylesheet" href="./css/style.css?v=2.91" />
+    <link rel="stylesheet" href="./css/responsive.css?v=2.91" />
+    <link rel="stylesheet" href="./css/notifications.css?v=2.91" />
+    <link rel="stylesheet" href="./css/parts-finder.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -359,6 +361,9 @@
         height: 1px;
         overflow: hidden;
       }
+      .notification-btn {
+  display: none!important;
+}
     </style>
   </head>
   <body class="bmw-pattern">
@@ -388,16 +393,19 @@
       </div>
       <div class="controls">
         <a href="vin.html" class="btn">
-          <i class="fas fa-barcode"></i> VIN Check</a
-        >
+          <i class="fas fa-barcode">
+          </i>
+          <span data-i18n="vinBtn">VIN Check</span>
+        </a>
         <button id="language-toggle" class="btn">
           <i class="fas fa-globe"></i> <span>EN</span>
         </button>
         <button class="btn" onclick="toggleFavoritesModal()">
           <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
         </button>
-        <a href="forum.html" class="hidden btn">
-          <i class="fas fa-comments"></i> <span>Forum</span>
+        <a href="forum.html" class="btn">
+          <i class="fas fa-comments"></i> 
+          <span data-i18n="forumBtn">Forum</span>
         </a>
         <a
           href="#"
@@ -411,6 +419,12 @@
       </div>
     </header>
     <main class="container">
+      <!-- Top Ad Banner -->
+      <div class="ad-container ad-header">
+          <!-- Google AdSense Placeholder -->
+          <span style="color: #444; font-size: 12px;">Advertisement</span>
+      </div>
+
       <div id="search-container">
         <div class="search-box">
           <input
@@ -435,8 +449,18 @@
         </div>
       </div>
       <div id="code-detail" class="hidden"></div>
+      
+      <!-- Parts Finder Container -->
+      <div id="parts-finder-container" class="hidden"></div>
+
+      <!-- Bottom Ad Banner -->
+      <div class="ad-container ad-footer">
+          <!-- Google AdSense Placeholder -->
+          <span style="color: #444; font-size: 12px;">Advertisement</span>
+      </div>
 
       <!-- SEO Content (скрыт визуально, индексируется поисковиками) -->
+      <section class="seo-content">
       <section class="seo-content">
         <h2>BMW Diagnostic Trouble Codes Database</h2>
         <p>
@@ -480,14 +504,9 @@
     </main>
 
     <footer>
-      <p>BMW DTC Bot © 2025 • All BMW codes and series supported</p>
-      <p>
-        <small
-          >BMW is a registered trademark of Bayerische Motoren Werke AG. This
-          site is not affiliated with BMW AG.</small
-        >
-      </p>
+      <!-- Content injected by js/footer.js -->
     </footer>
+    <script src="./js/footer.js"></script>
     <div id="favorites-modal" class="favorites-modal">
       <div class="favorites-content">
         <div class="favorites-header">
@@ -500,10 +519,11 @@
           </button>
         </div>
         <div class="favorites-body" id="favorites-list"></div>
-      </div>
     </div>
+    <script src="./js/translations.js?v=2.91"></script>
     <script src="./data/data.js"></script>
-    <script src="./js/script.js"></script>
+    <script src="./js/parts-finder.js"></script>
+    <script src="./js/script.js?v=2.91"></script>
 
     <!-- Google Analytics -->
     <script
@@ -578,7 +598,7 @@
         </div>
 
         <form id="login-form" class="auth-form active">
-          <h2>Welcome Back</h2>
+          <h2>Welcome</h2>
           <div class="input-group">
             <i class="fas fa-envelope"></i>
             <input type="email" id="login-email" placeholder="Email" required />
@@ -591,6 +611,9 @@
               placeholder="Password"
               required
             />
+          </div>
+          <div style="text-align: right; margin-bottom: 15px;">
+              <a href="#" onclick="showRecoveryModal(); return false;" style="color: var(--bmw-blue); font-size: 13px; text-decoration: none;">Forgot Password?</a>
           </div>
           <button type="submit" class="submit-btn">Sign In</button>
           <p class="auth-msg" id="login-msg"></p>
@@ -621,11 +644,64 @@
               minlength="8"
             />
           </div>
-          <button type="submit" class="submit-btn">Create Account</button>
+          
+          <div class="input-group" style="margin-top: 15px;">
+            <i class="fas fa-question-circle"></i>
+            <select id="reg-question" required style="width: 100%; background: transparent; border: none; color: white; outline: none; padding: 10px;">
+                <option value="" disabled selected>Select Security Question</option>
+                <option value="first_pet">What was your first pet's name?</option>
+                <option value="mother_maiden">What is your mother's maiden name?</option>
+                <option value="first_car">What was your first car model?</option>
+                <option value="city_born">In which city were you born?</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-key"></i>
+            <input type="text" id="reg-answer" placeholder="Security Answer" required />
+          </div>
+
+          <button type="submit" class="submit-btn" style="margin-top: 15px;">Create Account</button>
           <p class="auth-msg" id="reg-msg"></p>
         </form>
       </div>
     </div>
+
+    <!-- Password Recovery Modal -->
+    <div id="recovery-modal" class="auth-modal">
+      <div class="auth-content">
+        <button class="close-auth" onclick="closeRecoveryModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h2>Reset Password</h2>
+        
+        <!-- Step 1: Email -->
+        <form id="recovery-step-1" class="auth-form active">
+            <p style="text-align: center; color: #ccc; margin-bottom: 20px; font-size: 14px;">Enter your email to find your account.</p>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="rec-email" placeholder="Email Address" required />
+            </div>
+            <button type="submit" class="submit-btn">Continue</button>
+            <p class="auth-msg" id="rec-msg-1"></p>
+        </form>
+
+        <!-- Step 2: Question & New Password -->
+        <form id="recovery-step-2" class="auth-form">
+            <p id="rec-question-display" style="text-align: center; color: #fff; margin-bottom: 20px; font-weight: bold;"></p>
+            
+            <div class="input-group">
+                <i class="fas fa-key"></i>
+                <input type="text" id="rec-answer" placeholder="Your Answer" required />
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="rec-new-password" placeholder="New Password" required minlength="8" />
+            </div>
+
+            <button type="submit" class="submit-btn">Reset Password</button>
+            <p class="auth-msg" id="rec-msg-2"></p>
+        </form>
     <div id="profile-modal" class="auth-modal">
       <div class="auth-content" style="max-width: 400px">
         <button class="close-auth" onclick="toggleProfileModal()">
@@ -774,6 +850,6 @@
         </form>
       </div>
     </div>
-    <script src="./js/live.js"></script>
+    <script src="./js/live.js?v=2.91"></script>
   </body>
 </html>

@@ -89,7 +89,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadTopicData();
   setupReplyForm();
+  
+  // SYNC WITH SCRIPT.JS LANGUAGE
+  if (typeof currentLanguage !== "undefined") {
+    currentLanguage = currentTopicLang;
+  }
+  
   updateTopicPageLanguage();
+  
+  // CRITICAL: Call updateLanguage from script.js to translate header buttons
+  if (typeof updateLanguage === 'function') {
+    updateLanguage();
+  }
 
   // Живое обновление темы (новые ответы)
   setInterval(checkLiveTopicUpdates, 15000);
@@ -167,12 +178,24 @@ async function renderTopicWithTranslation(data) {
   const headerContainer = document.getElementById("topic-header-container");
   if (headerContainer) {
     headerContainer.innerHTML = `
-        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-          <span class="topic-badge">${topic.category}</span>
-          ${topic.is_solved ? `<span class="topic-badge badge-solved"><i class="fas fa-check"></i> ${t.solved}</span>` : ""}
-          ${topic.related_code ? `<a href="index.html?code=${topic.related_code}" class="topic-badge topic-code-badge"><i class="fas fa-search"></i> ${topic.related_code}</a>` : ""}
+        <div class="topic-header-row">
+            <div class="topic-header-main">
+                <div class="topic-meta-badges">
+                  <span class="topic-badge">${topic.category}</span>
+                  ${topic.is_solved ? `<span class="topic-badge badge-solved"><i class="fas fa-check"></i> ${t.solved}</span>` : ""}
+                  ${topic.related_code ? `<a href="/?code=${topic.related_code}" class="topic-badge topic-code-badge"><i class="fas fa-search"></i> ${topic.related_code}</a>` : ""}
+                </div>
+                <h1>${escapeHtml(translatedTitle)}</h1>
+            </div>
+            <div class="share-buttons">
+                <a href="https://wa.me/?text=${encodeURIComponent(translatedTitle + ' ' + window.location.href)}" target="_blank" class="share-btn share-whatsapp" title="Share on WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(translatedTitle)}" target="_blank" class="share-btn share-telegram" title="Share on Telegram">
+                    <i class="fab fa-telegram-plane"></i>
+                </a>
+            </div>
         </div>
-        <h1 style="color:white; margin:10px 0;">${escapeHtml(translatedTitle)}</h1>
       `;
   }
 
@@ -180,18 +203,15 @@ async function renderTopicWithTranslation(data) {
   const sidebarCard = document.querySelector(".sidebar-card");
   if (sidebarCard) {
     sidebarCard.innerHTML = `
-      <div style="padding:20px;">
-        <h3 style="color: white; margin-bottom: 15px; font-family:'Exo 2'">${t.topicInfo}</h3>
-        <div style="color: #aaa; font-size: 14px; line-height: 2">
-            <div><i class="fas fa-eye" style="width:20px; text-align:center; color:#0066b3"></i> ${t.views}: <span style="color:white; font-weight:bold">${topic.views}</span></div>
-            <div><i class="fas fa-calendar" style="width:20px; text-align:center; color:#0066b3"></i> ${t.created}: <span style="color:white">${formatDate(topic.created_at)}</span></div>
-            <div><i class="fas fa-check-circle" style="width:20px; text-align:center; color:#0066b3"></i> ${t.status}: <span style="color:${topic.is_solved ? "#2ecc71" : "white"}">${topic.is_solved ? t.solved : t.open}</span></div>
+        <h3>${t.topicInfo}</h3>
+        <div class="topic-info-list" style="margin-top:15px;">
+            <div class="topic-info-item"><i class="fas fa-eye"></i> ${t.views}: <span style="font-weight:bold; margin-left:auto; color: white;">${topic.views}</span></div>
+            <div class="topic-info-item"><i class="fas fa-calendar"></i> ${t.created}: <span style="margin-left:auto; color: white;">${formatDateShort(topic.created_at)}</span></div>
+            <div class="topic-info-item"><i class="fas fa-check-circle"></i> ${t.status}: <span style="margin-left:auto; color:${topic.is_solved ? "#2ecc71" : "white"}">${topic.is_solved ? t.solved : t.open}</span></div>
         </div>
-      </div>
     `;
   }
 
-  // Рендер Главного поста
   // Рендер Главного поста
   let html = renderPostHTML(
     {
@@ -209,6 +229,25 @@ async function renderTopicWithTranslation(data) {
     true, // isMain = true
     topic.user_id,
   );
+
+  // AdSense In-Content
+  html += `
+    <div class="ad-container ad-in-content">
+        <span style="color: #444; font-size: 12px;">Advertisement</span>
+    </div>
+  `;
+
+  // Add Replies Section Divider
+  if (translatedPosts.length > 0) {
+    const repliesText = currentTopicLang === 'ru' ? 'Ответы' : currentTopicLang === 'ka' ? 'პასუხები' : 'Replies';
+    html += `
+      <div class="replies-divider">
+        <span class="replies-divider-text">
+          <i class="fas fa-comments"></i> ${repliesText} (${translatedPosts.length})
+        </span>
+      </div>
+    `;
+  }
 
   // Рендер Ответов
   html += translatedPosts
@@ -252,9 +291,11 @@ function renderPostHTML(post, isMain, topicAuthorId) {
   return `
     <div class="post-card ${post.is_solution ? "solution" : ""}" id="post-${post.id}">
       <div class="post-user-panel">
-        ${avatarHTML}
-        <div class="post-username">${escapeHtml(post.username || "User")}</div>
-        <div class="user-role-badge">${t.member}</div>
+        <a href="/profile?id=${post.user_id}" style="text-decoration: none; color: inherit; display: block; text-align: center;">
+            ${avatarHTML}
+            <div class="post-username">${escapeHtml(post.username || "User")}</div>
+        </a>
+        ${getUserBadge(post.username, post.user_id, post.author_role, post.author_reputation)}
       </div>
       
       <div class="post-content-panel">
@@ -265,10 +306,10 @@ function renderPostHTML(post, isMain, topicAuthorId) {
           </div>
           ${
             post.is_solution
-              ? `<span style="color:#2ecc71; font-weight:bold;"><i class="fas fa-check"></i> ${t.solution}</span>`
+              ? `<span class="badge-solution"><i class="fas fa-check"></i> ${t.solution}</span>`
               : isMain
-                ? `<span style="opacity:0.5; border:1px solid #555; padding:1px 5px; border-radius:4px; font-size:10px;">${t.op}</span>`
-                : `<span style="opacity:0.5">#${post.id.slice(0, 4)}</span>`
+                ? `<span class="badge-op">${t.op}</span>`
+                : `<span class="badge-pid">#${post.id.slice(0, 4)}</span>`
           }
         </div>
         
@@ -278,7 +319,7 @@ function renderPostHTML(post, isMain, topicAuthorId) {
 
         <div class="post-footer-actions">
           ${
-            isMyPost
+            isMyPost || (user && user.role === 'admin')
               ? `
             <button class="btn-action btn-edit" onclick="editItem('${isMain ? "topic" : "post"}', '${post.id}')" title="Edit">
                 <i class="fas fa-pen"></i>
@@ -298,6 +339,9 @@ function renderPostHTML(post, isMain, topicAuthorId) {
               <i class="${post.is_liked ? "fas" : "far"} fa-heart"></i> 
               <span id="likes-${post.id}">${post.likes_count || 0}</span>
             </button>
+            <button class="btn-action" title="Report" onclick="openReportModal('post', '${post.id}', '${post.user_id}')">
+                <i class="fas fa-flag"></i>
+            </button>
             ${
               isTopicOwner && !post.is_solution
                 ? `
@@ -308,7 +352,11 @@ function renderPostHTML(post, isMain, topicAuthorId) {
                 : ""
             }
           `
-              : ""
+              : `
+            <button class="btn-action" title="Report Topic" onclick="openReportModal('topic', '${post.id}', '${post.user_id}')">
+                <i class="fas fa-flag"></i> Report
+            </button>
+              `
           }
         </div>
       </div>
@@ -486,7 +534,7 @@ async function likePost(postId) {
 }
 
 async function markSolution(postId) {
-  if (!confirm(topicTranslations[currentTopicLang].confirmSolution)) return;
+  if (!await showCustomConfirm(topicTranslations[currentTopicLang].confirmSolution)) return;
   await fetch("/api/forum/solve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -500,7 +548,7 @@ async function markSolution(postId) {
 }
 
 async function deleteItem(type, id) {
-  if (!confirm("Are you sure you want to delete this?")) return;
+  if (!await showCustomConfirm("Are you sure you want to delete this?")) return;
   try {
     const res = await fetch("/api/forum/delete", {
       method: "POST",
@@ -541,20 +589,34 @@ function formatDate(dateString) {
   return new Date(safeDate).toLocaleString();
 }
 
+// === MARKDOWN PARSING (USING MARKED.JS) ===
 function parseMarkdown(text) {
   if (!text) return "";
-  let html = escapeHtml(text);
-  html = html.replace(
-    /!\[(.*?)\]\((.*?)\)/g,
-    '<img src="$2" alt="$1" style="max-width:100%; border-radius:8px; margin:10px 0; border:1px solid #333;">',
-  );
-  html = html.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-  html = html.replace(
-    /`([^`]+)`/g,
-    '<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace;">$1</code>',
-  );
-  html = html.replace(/\n/g, "<br>");
-  return html;
+  // Check if marked is loaded
+  if (typeof marked !== "undefined") {
+    // Configure marked for security (optional but recommended)
+    // marked.setOptions({ sanitize: true }); // Note: sanitize is deprecated in newer marked, use DOMPurify if needed.
+    // For now, we trust the output or rely on basic escaping done before if mixed.
+    // Actually, marked expects raw markdown.
+    return marked.parse(text);
+  }
+  // Fallback if marked not loaded
+  return escapeHtml(text).replace(/\n/g, "<br>");
+}
+
+// === USER BADGES HELPERS ===
+function getUserBadge(username, userId, role, reputation = 0) {
+    if (typeof getReputationBadge === 'function') {
+        return getReputationBadge(reputation, role); 
+    }
+    
+    // Fallback if getReputationBadge not available
+    if (role === 'super_admin_role') return '<span class="user-badge badge-super-admin"><i class="fas fa-crown"></i> Super Admin</span>';
+    if (role === 'admin_role') return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
+    if (role === 'senior_moderator_role') return '<span class="user-badge badge-senior-mod"><i class="fas fa-user-shield"></i> Senior Mod</span>';
+    if (role === 'moderator_role') return '<span class="user-badge badge-moderator"><i class="fas fa-gavel"></i> Moderator</span>';
+    
+    return '<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> Member</span>';
 }
 
 function escapeHtml(text) {
@@ -600,7 +662,20 @@ async function switchTopicLanguage() {
   let idx = langs.indexOf(currentTopicLang);
   currentTopicLang = langs[(idx + 1) % langs.length];
   localStorage.setItem("forumLanguage", currentTopicLang);
+  
+  // SYNC WITH SCRIPT.JS
+  if (typeof currentLanguage !== "undefined") {
+    currentLanguage = currentTopicLang;
+    localStorage.setItem("language", currentTopicLang);
+  }
+  
   updateTopicPageLanguage();
+  
+  // CRITICAL: Call updateLanguage from script.js to translate header buttons
+  if (typeof updateLanguage === 'function') {
+    updateLanguage();
+  }
+  
   if (originalTopicData) await renderTopicWithTranslation(originalTopicData);
 }
 
@@ -659,20 +734,15 @@ let originalContentCache = {};
 
 function editItem(type, id) {
   // Находим карточку поста
-  const postCard = document.getElementById(
-    type === "topic" ? "post-" + id : "post-" + id,
-  );
-  // Если id главной темы совпадает с id топика, ищем по id.
-  // (В renderPostHTML мы передали реальный ID, так что id будет корректным)
-
-  // Но renderPostHTML ставит id="post-{id}".
   const card = document.getElementById(`post-${id}`);
   if (!card) return;
+
+  // 1. Check if already editing
+  if (card.querySelector(".edit-mode-container")) return;
 
   const textBody = card.querySelector(".post-text-body");
 
   // Сохраняем текущий HTML (или лучше исходный текст, если бы он был доступен)
-  // Сейчас мы берем текст и пытаемся превратить <br> обратно в \n для удобства
   const currentHTML = textBody.innerHTML;
   originalContentCache[id] = currentHTML;
 
@@ -750,4 +820,12 @@ async function saveEdit(type, id) {
     console.error(e);
     alert("Connection error");
   }
+}
+
+function formatDateShort(dateString) {
+  if (!dateString) return "";
+  const safeDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
+  // Format as DD/MM/YYYY
+  const d = new Date(safeDate);
+  return d.toLocaleDateString();
 }

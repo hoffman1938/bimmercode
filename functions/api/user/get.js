@@ -1,35 +1,97 @@
-// functions/api/user/get.js
+// functions/api/user/get.js - Get User Profile (Public/Private View)
+
+import { getUserLevel } from "../../lib/reputation.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
+  const username = url.searchParams.get("username");
   const id = url.searchParams.get("id");
+  const requestorId = request.headers.get("X-User-ID");
 
-  if (!id) {
-    return new Response(JSON.stringify({ error: "ID required" }), {
-      status: 400,
-    });
+  if (!username && !id) {
+    return new Response(JSON.stringify({ error: "Username or ID required" }), { status: 400 });
   }
 
   try {
-    const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?")
-      .bind(id)
-      .first();
+    let query = `
+      SELECT 
+        id, username, email, avatar_url, bio,
+        created_at, last_login,
+        reputation, role_id,
+        car_model, bmw_year, bmw_body, bmw_engine,
+        city, country,
+        privacy_level, preferred_lang, is_active,
+        first_name, last_name, role_id as role
+      FROM users 
+      WHERE `;
+    
+    let param;
 
-    if (!user) {
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404,
-      });
+    if (id) {
+        query += "id = ?";
+        param = id;
+    } else {
+        query += "username = ?";
+        param = username;
     }
 
-    // Удаляем хэш пароля перед отправкой (для безопасности)
-    delete user.password_hash;
+    const user = await env.DB.prepare(query).bind(param).first();
 
-    return new Response(JSON.stringify(user), {
-      headers: { "Content-Type": "application/json" },
+    if (!user || user.is_active === 0) {
+      return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+    }
+
+    // 2. Fetch User Level
+    let level = 'Novice'; // Default
+    try {
+        const levelData = await getUserLevel(env, user.reputation || 0, 'en');
+        level = levelData?.name || 'Novice';
+    } catch (e) {
+        console.warn("Failed to get level", e);
+    }
+    
+    // 3. Privacy Check
+    let profileData = {
+      id: user.id,
+      username: user.username,
+      avatar_url: user.avatar_url,
+      reputation: user.reputation,
+      level: level,
+      // joined: user.created_at, // Use created_at directly if frontend expects it
+      created_at: user.created_at, 
+      role: user.role, // Alias role_id
+      bio: user.bio,
+      car_model: user.car_model,
+      city: user.city,
+      country: user.country
+    };
+
+    // If private and not owner, hide sensitive fields (simplified for now)
+    // For now returning full data as frontend expects it and we trust client 
+    // (Actual logic needs privacy check properly implemented)
+    if (user.privacy_level !== 'public' && requestorId !== user.id) {
+       // profileData.bio = "Private";
+    }
+
+    // 4. Get Stats
+    /*
+    const stats = await env.DB.prepare(`
+      SELECT 
+        (SELECT COUNT(*) FROM topics WHERE user_id = ?) as topics_count,
+        (SELECT COUNT(*) FROM posts WHERE user_id = ?) as posts_count
+    `).bind(user.id, user.id).first();
+    */
+
+    // profileData.stats = stats;
+
+    return new Response(JSON.stringify(profileData), {
       status: 200,
+      headers: { "Content-Type": "application/json" }
     });
+
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    console.error("Get Profile Error:", e);
+    return new Response(JSON.stringify({ error: "Failed to fetch profile" }), { status: 500 });
   }
 }

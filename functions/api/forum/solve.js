@@ -52,21 +52,35 @@ export async function onRequestPost(context) {
       .bind(user_id)
       .first();
 
+    // 3. REPUTATION: +10 points to solution author
     if (post && String(post.user_id) !== String(user_id)) {
+        await db.prepare("UPDATE users SET reputation = COALESCE(reputation, 0) + 10 WHERE id = ?")
+            .bind(post.user_id)
+            .run();
+    }
+
+    if (post && String(post.user_id) !== String(user_id)) {
+        const metadata = JSON.stringify({
+            sender_id: user_id,
+            sender_name: sender.username,
+            topic_id: topic_id,
+            post_id: post_id
+        });
+
       await db
         .prepare(
           `
-        INSERT INTO notifications (id, user_id, sender_id, sender_name, type, topic_id, topic_title)
-        VALUES (?, ?, ?, ?, 'solve', ?, ?)
+        INSERT INTO notifications (id, user_id, type, title, text, link, icon, metadata)
+        VALUES (?, ?, 'solve', ?, ?, ?, 'fa-check-circle', ?)
       `,
         )
         .bind(
           crypto.randomUUID(),
           post.user_id,
-          user_id,
-          sender.username,
-          topic_id,
-          topic.title,
+          "Solution marked",
+          sender.username + " marked your post as solution",
+          `/topic?id=${topic_id}#post-${post_id}`,
+          metadata
         )
         .run();
     }

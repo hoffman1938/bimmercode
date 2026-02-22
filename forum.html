@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BMW Diagnostic Forum</title>
 
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/responsive.css" />
-    <link rel="stylesheet" href="./css/forum.css" />
+    <link rel="stylesheet" href="./css/style.css?v=2.92" />
+    <link rel="stylesheet" href="./css/forum.css?v=2.92" />
+    <link rel="stylesheet" href="./css/responsive.css?v=2.92" />
+    <link rel="stylesheet" href="./css/notifications.css?v=2.92" />
+
     <link
       rel="shortcut icon"
       href="./assets/icons/ico.svg"
@@ -17,63 +19,298 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- MAINTENANCE MODE: hides the real forum — remove when going live -->
+    <style>
+      body > *:not(#maintenance-overlay):not(style) { display: none !important; }
+    </style>
   </head>
   <body>
+    <!-- ══════════════════════════════════════════════════════════
+         MAINTENANCE MODE — remove this block when forum goes live
+         ══════════════════════════════════════════════════════════ -->
+    <style> body { overflow: hidden; } </style>
+    <div id="maintenance-overlay" style="
+        position: fixed; inset: 0; z-index: 99999;
+        background: radial-gradient(ellipse at 30% 40%, #0a1628 0%, #050d1a 60%, #000 100%);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        overflow: hidden;
+    ">
+        <!-- Animated background particles -->
+        <style>
+            @keyframes float   { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-20px) rotate(5deg)} }
+            @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+            @keyframes pulse   { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:.8;transform:scale(1.05)} }
+            @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+            @keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0} }
+            .mnt-orb {
+                position: absolute; border-radius: 50%;
+                background: radial-gradient(circle, rgba(0,102,179,.25) 0%, transparent 70%);
+                animation: pulse 4s ease-in-out infinite;
+            }
+            .mnt-card {
+                background: rgba(255,255,255,.04);
+                border: 1px solid rgba(0,102,179,.3);
+                backdrop-filter: blur(20px);
+                border-radius: 24px;
+                padding: 56px 48px;
+                max-width: 520px;
+                width: 90%;
+                text-align: center;
+                position: relative;
+                box-shadow: 0 0 80px rgba(0,102,179,.15), 0 32px 64px rgba(0,0,0,.5);
+                animation: float 6s ease-in-out infinite;
+            }
+            .mnt-gear-wrap {
+                width: 96px; height: 96px;
+                margin: 0 auto 28px;
+                position: relative;
+            }
+            .mnt-gear-wrap .gear-outer {
+                width: 96px; height: 96px;
+                border: 3px solid rgba(0,102,179,.5);
+                border-radius: 50%;
+                display: flex; align-items:center; justify-content:center;
+                animation: spin 8s linear infinite;
+                position: relative;
+            }
+            .mnt-gear-wrap .gear-outer::before,
+            .mnt-gear-wrap .gear-outer::after {
+                content:'';
+                position: absolute;
+                width: 100%; height: 100%;
+                border: 3px solid transparent;
+                border-top-color: #0066b3;
+                border-radius: 50%;
+            }
+            .mnt-gear-wrap .gear-outer::after {
+                animation: spin 3s linear infinite reverse;
+                border-top-color: rgba(0,160,255,.6);
+                width: 70%; height: 70%;
+            }
+            .mnt-gear-wrap i {
+                font-size: 36px;
+                color: #0066b3;
+                position: absolute;
+                animation: spin 8s linear infinite reverse;
+            }
+            .mnt-badge {
+                display: inline-flex; align-items: center; gap: 8px;
+                background: rgba(0,102,179,.15);
+                border: 1px solid rgba(0,102,179,.4);
+                border-radius: 100px;
+                padding: 6px 16px;
+                font-size: 11px;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                color: #4da8ff;
+                margin-bottom: 24px;
+            }
+            .mnt-badge .blink-dot {
+                width: 7px; height: 7px;
+                background: #0f6;
+                border-radius: 50%;
+                animation: blink 1.2s ease-in-out infinite;
+            }
+            .mnt-title {
+                font-size: 2rem; font-weight: 700;
+                color: #fff;
+                line-height: 1.2;
+                margin-bottom: 8px;
+                background: linear-gradient(135deg, #fff 0%, #4da8ff 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .mnt-subtitle {
+                font-size: .95rem; color: rgba(255,255,255,.55);
+                line-height: 1.6; margin-bottom: 36px;
+            }
+            .mnt-divider {
+                height: 1px;
+                background: linear-gradient(90deg, transparent, rgba(0,102,179,.4), transparent);
+                margin: 0 0 32px;
+            }
+            .mnt-checks {
+                display: flex; flex-direction: column; gap: 12px;
+                margin-bottom: 36px; text-align: left;
+            }
+            .mnt-check-item {
+                display: flex; align-items: center; gap: 12px;
+                font-size: .875rem; color: rgba(255,255,255,.65);
+            }
+            .mnt-check-item i { color: #0066b3; width: 16px; flex-shrink: 0; }
+            .mnt-check-item.done i { color: #2ecc71; }
+            .mnt-check-item.done span { color: rgba(255,255,255,.4); text-decoration: line-through; }
+            .mnt-home-btn {
+                display: inline-flex; align-items: center; gap: 10px;
+                background: linear-gradient(135deg, #0066b3, #004a80);
+                color: #fff; border: none; border-radius: 12px;
+                padding: 14px 32px; font-size: .95rem; font-weight: 600;
+                text-decoration: none; cursor: pointer;
+                transition: transform .2s, box-shadow .2s;
+                box-shadow: 0 4px 24px rgba(0,102,179,.4);
+            }
+            .mnt-home-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 32px rgba(0,102,179,.6);
+                color: #fff; text-decoration: none;
+            }
+        </style>
+
+        <!-- Background orbs -->
+        <div class="mnt-orb" style="width:500px;height:500px;top:-150px;left:-150px;animation-delay:0s"></div>
+        <div class="mnt-orb" style="width:300px;height:300px;bottom:-100px;right:-100px;animation-delay:2s"></div>
+
+        <div class="mnt-card">
+            <!-- Animated gear icon -->
+            <div class="mnt-gear-wrap">
+                <div class="gear-outer">
+                    <i class="fas fa-cog"></i>
+                </div>
+            </div>
+
+            <!-- Status badge -->
+            <div class="mnt-badge">
+                <div class="blink-dot"></div>
+                <span data-mnt-key="badge"></span>
+            </div>
+
+            <h1 class="mnt-title" data-mnt-key="title"></h1>
+            <p class="mnt-subtitle" data-mnt-key="subtitle"></p>
+
+            <div class="mnt-divider"></div>
+
+            <div class="mnt-checks">
+                <div class="mnt-check-item done">
+                    <i class="fas fa-check-circle"></i>
+                    <span data-mnt-key="check1"></span>
+                </div>
+                <div class="mnt-check-item done">
+                    <i class="fas fa-check-circle"></i>
+                    <span data-mnt-key="check2"></span>
+                </div>
+                <div class="mnt-check-item done">
+                    <i class="fas fa-check-circle"></i>
+                    <span data-mnt-key="check3"></span>
+                </div>
+                <div class="mnt-check-item">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <span data-mnt-key="check4"></span>
+                </div>
+            </div>
+
+            <a href="/" class="mnt-home-btn">
+                <i class="fas fa-home"></i>
+                <span data-mnt-key="homeBtn"></span>
+            </a>
+        </div>
+    </div>
+    <!-- ══ END MAINTENANCE MODE ══ -->
+    <script>
+    (function() {
+        var lang = localStorage.getItem('language') || 'en';
+        var T = {
+            en: {
+                badge:    'In Progress',
+                title:    'Forum Coming Soon',
+                subtitle: 'We are actively building the BimmerCodes community forum.<br>Soon you will have a place to discuss codes, errors and tips.',
+                check1:   'Code database & diagnostics',
+                check2:   'VIN decoder',
+                check3:   'Contact page',
+                check4:   'Community forum — in development',
+                homeBtn:  'Back to Home'
+            },
+            ru: {
+                badge:    'В работе',
+                title:    'Форум скоро откроется',
+                subtitle: 'Мы активно работаем над созданием форума BMW‑диагностики.<br>Совсем скоро здесь появится место для обсуждения кодов, ошибок и советов.',
+                check1:   'База кодов и диагностика',
+                check2:   'VIN декодер',
+                check3:   'Страница контактов',
+                check4:   'Форум сообщества — в разработке',
+                homeBtn:  'На главную'
+            },
+            ka: {
+                badge:    'მიმდინარეობს',
+                title:    'ფორუმი მალე გაიხსნება',
+                subtitle: 'ჩვენ აქტიურად ვამზადებთ BMW-ს დიაგნოსტიკის ფორუმს.<br>მალე აქ გამოჩნდება ადგილი კოდების, შეცდომებისა და რჩევების განსახილველად.',
+                check1:   'კოდების ბაზა და დიაგნოსტიკა',
+                check2:   'VIN დეკოდერი',
+                check3:   'საკონტაქტო გვერდი',
+                check4:   'საზოგადოების ფორუმი — მუშავდება',
+                homeBtn:  'მთავარ გვერდზე'
+            }
+        };
+        var t = T[lang] || T.en;
+        document.querySelectorAll('[data-mnt-key]').forEach(function(el) {
+            var key = el.getAttribute('data-mnt-key');
+            if (t[key] !== undefined) el.innerHTML = t[key];
+        });
+    })();
+    </script>
+
     <div id="webgl-container"></div>
 
+
     <header>
-      <a href="index.html" class="logo-container">
+      <button class="burger-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <a href="/forum" class="logo-container">
         <div class="logo">
           <i class="fas fa-comments" style="color: #0066b3"></i>
         </div>
         <h1>BimmerCodes <span style="color: var(--bmw-sky)">Forum</span></h1>
       </a>
       <div class="controls">
-        <!-- Кнопка языка -->
+        <a href="/" class="btn">
+          <i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span>
+        </a>
+        <button class="btn" onclick="toggleFavoritesModal()">
+          <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
+        </button>
+        <a href="vin.html" class="btn">
+          <i class="fas fa-barcode"></i> <span data-i18n="vinBtn">VIN Check</span>
+        </a>
         <button
           class="btn"
           id="forum-language-toggle"
           onclick="switchForumLanguage()"
-          style="
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            min-width: 50px;
-          "
         >
           <i class="fas fa-globe"></i> <span id="forum-lang-display">EN</span>
         </button>
-
-        <div class="notification-btn" onclick="toggleNotifications()">
-          <i class="fas fa-bell"></i>
-          <span id="notif-badge" class="notif-badge">0</span>
-        </div>
-
-        <a
-          href="index.html"
-          class="btn"
-          style="background: transparent; border: none"
-        >
-          <i class="fas fa-home"></i>
-        </a>
         <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal()">
-          <i class="fas fa-user"></i> <span id="btn-login-text">Login</span>
+          <i class="fas fa-user"></i> <span data-i18n="loginBtn">Login</span>
         </a>
       </div>
 
-      <div id="notifications-dropdown" class="notifications-dropdown">
-        <div class="notif-header">Notifications</div>
-        <div class="notif-list" id="notif-list">
-          <div style="padding: 20px; text-align: center; color: #666">
-            No notifications
-          </div>
-        </div>
-      </div>
+
     </header>
 
+    <!-- MOBILE OFF-CANVAS MENU -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    <aside class="mobile-offcanvas">
+        <div class="offcanvas-header">
+            <h2>Menu</h2>
+            <button class="close-offcanvas" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="offcanvas-content" id="mobile-menu-content">
+            <!-- Content will be injected by JS -->
+        </div>
+    </aside>
+
     <main class="container">
+      <!-- Top Ad Banner -->
+      <div class="ad-container ad-header">
+          <span style="color: #444; font-size: 12px;">Advertisement</span>
+      </div>
+
       <div class="topics-header">
-        <div class="search-box" style="margin: 0; max-width: 400px">
+        <div class="search-box">
           <input
             type="text"
             id="forum-search"
@@ -125,6 +362,11 @@
                 ><i class="fas fa-coffee"></i> Off-Topic</a
               >
             </div>
+          </div>
+          
+          <!-- Sidebar Ad -->
+          <div class="ad-container ad-sidebar">
+               <span style="color: #444; font-size: 12px;">Advertisement</span>
           </div>
         </aside>
 
@@ -215,10 +457,10 @@
         </button>
 
         <div class="auth-tabs">
-          <button class="tab-btn active" onclick="switchAuthTab('login')">
+          <button class="tab-btn active" onclick="switchAuthTab('login')" data-i18n="loginTab">
             Login
           </button>
-          <button class="tab-btn" onclick="switchAuthTab('register')">
+          <button class="tab-btn" onclick="switchAuthTab('register')" data-i18n="registerTab">
             Register
           </button>
         </div>
@@ -227,7 +469,7 @@
         <form id="login-form" class="auth-form active">
           <div class="input-group">
             <i class="fas fa-envelope"></i>
-            <input type="email" id="login-email" placeholder="Email" required />
+            <input type="text" id="login-email" placeholder="Email/Username" data-i18n-placeholder="emailUsernamePlaceholder" required />
           </div>
           <div class="input-group">
             <i class="fas fa-lock"></i>
@@ -235,23 +477,18 @@
               type="password"
               id="login-password"
               placeholder="Password"
+              data-i18n-placeholder="passwordPlaceholder"
               required
             />
           </div>
-          <button type="submit" class="submit-btn">Sign In</button>
+          <button type="submit" class="submit-btn" data-i18n="signInBtn">Sign In</button>
+                    <div style="text-align: right; margin-bottom: 15px;">
+              <a href="#" onclick="showRecoveryModal(); return false;" style="color: var(--bmw-blue); font-size: 13px; text-decoration: none;" data-i18n="forgotPasswordLink">Forgot Password?</a>
+          </div>
           <p
             id="login-msg"
             style="text-align: center; margin-top: 10px; min-height: 20px"
           ></p>
-
-          <div class="auth-divider">
-            <span>or continue with</span>
-          </div>
-
-          <div
-            id="google-signin-btn"
-            style="display: flex; justify-content: center"
-          ></div>
         </form>
 
         <!-- Register Form -->
@@ -262,12 +499,52 @@
               type="text"
               id="reg-username"
               placeholder="Username"
+              data-i18n-placeholder="usernamePlaceholder"
               required
             />
           </div>
+          
+          <!-- First Name -->
+          <div class="input-group">
+            <i class="fas fa-id-card"></i>
+            <input
+              type="text"
+              id="reg-first-name"
+              placeholder="First Name"
+              data-i18n-placeholder="firstNamePlaceholder"
+              required
+            />
+          </div>
+          
+          <!-- Last Name -->
+          <div class="input-group">
+            <i class="fas fa-id-card"></i>
+            <input
+              type="text"
+              id="reg-last-name"
+              placeholder="Last Name"
+              data-i18n-placeholder="lastNamePlaceholder"
+              required
+            />
+          </div>
+          
+          <!-- Age -->
+          <div class="input-group">
+            <i class="fas fa-calendar"></i>
+            <input
+              type="number"
+              id="reg-age"
+              placeholder="Age"
+              data-i18n-placeholder="agePlaceholder"
+              min="13"
+              max="120"
+              required
+            />
+          </div>
+          
           <div class="input-group">
             <i class="fas fa-envelope"></i>
-            <input type="email" id="reg-email" placeholder="Email" required />
+            <input type="email" id="reg-email" placeholder="Email" data-i18n-placeholder="emailPlaceholder" required />
           </div>
           <div class="input-group">
             <i class="fas fa-lock"></i>
@@ -275,11 +552,27 @@
               type="password"
               id="reg-password"
               placeholder="Password (min 6 chars)"
+              data-i18n-placeholder="registerPasswordPlaceholder"
               minlength="6"
               required
             />
           </div>
-          <button type="submit" class="submit-btn">Create Account</button>
+
+          <div class="input-group" style="margin-top: 15px;">
+            <select id="reg-question" required style="height: 44px; width: 100%; background: transparent; border: none; color: white; outline: none; padding: 10px;">
+                <option value="" disabled selected data-i18n="securityQuestionPlaceholder">Select Security Question</option>
+                <option value="first_pet" data-i18n="q_first_pet">What was your first pet's name?</option>
+                <option value="mother_maiden" data-i18n="q_mother_maiden">What is your mother's maiden name?</option>
+                <option value="first_car" data-i18n="q_first_car">What was your first car model?</option>
+                <option value="city_born" data-i18n="q_city_born">In which city were you born?</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-key"></i>
+            <input type="text" id="reg-answer" placeholder="Security Answer" data-i18n-placeholder="securityAnswerPlaceholder" required />
+          </div>
+
+          <button type="submit" class="submit-btn" style="margin-top: 15px;" data-i18n="createAccountBtn">Create Account</button>
           <p
             id="reg-msg"
             style="text-align: center; margin-top: 10px; min-height: 20px"
@@ -287,95 +580,83 @@
         </form>
       </div>
     </div>
+
+    <!-- Password Recovery Modal -->
+    <div id="recovery-modal" class="auth-modal">
+      <div class="auth-content">
+        <button class="close-auth" onclick="closeRecoveryModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h2 style="
+    font-size: 23px;
+    text-align: center;
+    margin-bottom: 10px;
+">Reset Password</h2>
+        
+        <!-- Step 1: Email -->
+        <form id="recovery-step-1" class="auth-form active">
+            <p style="text-align: center; color: #ccc; margin-bottom: 20px; font-size: 14px;">Enter your email to find your account.</p>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="rec-email" placeholder="Email Address" required />
+            </div>
+            <button type="submit" class="submit-btn">Continue</button>
+            <p class="auth-msg" id="rec-msg-1"></p>
+        </form>
+
+        <!-- Step 2: Question & New Password -->
+        <form id="recovery-step-2" class="auth-form">
+            <p id="rec-question-display" style="text-align: center; color: #fff; margin-bottom: 20px; font-weight: bold;"></p>
+            
+            <div class="input-group">
+                <i class="fas fa-key"></i>
+                <input type="text" id="rec-answer" placeholder="Your Answer" required />
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="rec-new-password" placeholder="New Password" required minlength="8" />
+            </div>
+
+            <button type="submit" class="submit-btn">Reset Password</button>
+            <p class="auth-msg" id="rec-msg-2"></p>
+        </form>
+      </div>
+    </div>
+
     <div id="profile-modal" class="auth-modal">
       <div class="auth-content" style="max-width: 400px">
         <button class="close-auth" onclick="toggleProfileModal()">
           <i class="fas fa-times"></i>
         </button>
 
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-          "
-        >
-          <h2 style="color: white; margin: 0">Edit Profile</h2>
-          <button
-            onclick="logout()"
-            style="
-              background: rgba(231, 76, 60, 0.2);
-              color: #e74c3c;
-              border: 1px solid #e74c3c;
-              padding: 5px 10px;
-              border-radius: 5px;
-              cursor: pointer;
-              font-size: 12px;
-            "
-          >
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-          </button>
+        <div style="text-align: center; margin-bottom: 25px;">
+          <h2 style="color: white; margin: 0; font-size: 24px;">Edit Profile</h2>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">Update your avatar and details</p>
         </div>
 
         <div class="avatar-editor-container">
-          <div
-            id="current-avatar-view"
-            style="
-              width: 120px;
-              height: 120px;
-              border-radius: 50%;
-              overflow: hidden;
-              margin: 0 auto;
-              border: 3px solid var(--bmw-blue);
-              background: #222;
-            "
-          >
-            <img
-              id="profile-preview-img"
-              src=""
-              style="width: 100%; height: 100%; object-fit: cover"
-            />
+          <div id="current-avatar-view" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; margin: 0px auto; border: 3px solid var(--bmw-blue); background: rgb(34, 34, 34); display: block; position: relative;">
+            <img id="profile-preview-img" src="./assets/icons/ico.svg" onerror="this.onerror=null; this.src='./assets/icons/ico.svg'" style="width: 100%; height: 100%; object-fit: cover">
           </div>
 
           <div id="canvas-container" style="display: none; text-align: center">
-            <canvas
-              id="avatar-canvas"
-              width="250"
-              height="250"
-              style="
+            <canvas id="avatar-canvas" width="250" height="250" style="
                 border-radius: 50%;
                 border: 3px solid var(--bmw-sky);
                 cursor: grab;
-              "
-            ></canvas>
+              "></canvas>
 
-            <div
-              style="
+            <div style="
                 margin-top: 10px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 10px;
-              "
-            >
-              <i
-                class="fas fa-search-minus"
-                style="font-size: 12px; color: #aaa"
-              ></i>
-              <input
-                type="range"
-                id="zoom-slider"
-                min="1"
-                max="3"
-                step="0.1"
-                value="1"
-                style="width: 150px"
-              />
-              <i
-                class="fas fa-search-plus"
-                style="font-size: 12px; color: #aaa"
-              ></i>
+              ">
+              <i class="fas fa-search-minus" style="font-size: 12px; color: #aaa"></i>
+              <input type="range" id="zoom-slider" min="1" max="3" step="0.1" value="1" style="width: 150px">
+              <i class="fas fa-search-plus" style="font-size: 12px; color: #aaa"></i>
             </div>
             <p style="font-size: 11px; color: #aaa; margin-top: 5px">
               Drag to move • Scale to zoom
@@ -383,60 +664,165 @@
           </div>
 
           <div style="text-align: center; margin-top: 15px">
-            <button
-              class="btn"
-              onclick="document.getElementById('avatar-upload').click()"
-              style="
+            <button class="btn" onclick="document.getElementById('avatar-upload').click()" style="
                 font-size: 12px;
                 padding: 8px 15px;
-                border: 1px solid #444;
-                background: #333;
-              "
-            >
+                border: 1px solid rgba(255,255,255,0.2);
+                background: rgba(255,255,255,0.05);
+                border-radius: 20px;
+              ">
               <i class="fas fa-camera"></i> Change Photo
             </button>
-            <input type="file" id="avatar-upload" hidden accept="image/*" />
+            <input type="file" id="avatar-upload" hidden accept="image/*">
           </div>
         </div>
 
-        <form
-          id="profile-form"
-          class="auth-form active"
-          style="margin-top: 20px"
-        >
-          <div class="input-group">
-            <i class="fas fa-car"></i>
-            <input
-              type="text"
-              id="profile-car"
-              placeholder="Your Car (e.g. BMW E60 530i)"
-            />
+        <form id="profile-form" class="auth-form active" style="margin-top: 20px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+          
+          <!-- Account Section -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="color: var(--bmw-blue); font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-user-shield"></i> Account Information
+            </h3>
+            
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="profile-username" class="auth-input" placeholder="Username" required />
+            </div>
+            
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="profile-email" class="auth-input" placeholder="Email" required />
+            </div>
           </div>
-          <div class="input-group">
-            <textarea
-              id="profile-bio"
-              rows="3"
-              placeholder="Bio..."
-              style="
-                width: 100%;
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: white;
-                border-radius: 10px;
-                padding: 10px;
-                resize: none;
-                font-family: inherit;
-              "
-            ></textarea>
+
+          <!-- Personal Info Section -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="color: var(--bmw-blue); font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-id-card"></i> Personal Information
+            </h3>
+            
+            <div class="form-row" style="display: flex; gap: 10px;">
+              <div class="form-group" style="flex: 1;">
+                <label>First Name</label>
+                <input type="text" id="profile-first-name" class="auth-input" placeholder="First Name" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>Last Name</label>
+                <input type="text" id="profile-last-name" class="auth-input" placeholder="Last Name" />
+              </div>
+            </div>
+            
+            <div class="form-row" style="display: flex; gap: 10px;">
+              <div class="form-group" style="width: 80px;">
+                <label>Age</label>
+                <input type="number" id="profile-age" class="auth-input" placeholder="Age" min="13" max="120" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>City</label>
+                <input type="text" id="profile-city" class="auth-input" placeholder="City" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>Country</label>
+                <input type="text" id="profile-country" class="auth-input" placeholder="Country" />
+              </div>
+            </div>
           </div>
+
+          <!-- Profile Details Section -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="color: var(--bmw-blue); font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-car"></i> BMW Vehicle Details
+            </h3>
+            
+            <div class="form-group">
+              <label>Car Model</label>
+              <div class="input-group" style="margin-bottom:10px;">
+                <i class="fas fa-car" style="position: absolute; left: 15px; color: #8ba4b6;"></i>
+                <input type="text" id="profile-car" class="auth-input" style="padding-left: 40px;" placeholder="e.g. BMW 530i">
+              </div>
+            </div>
+            
+            <div class="form-row" style="display: flex; gap: 10px;">
+              <div class="form-group" style="flex: 1;">
+                <label>Year</label>
+                <input type="number" id="profile-year" class="auth-input" placeholder="e.g. 2008" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>Chassis</label>
+                <input type="text" id="profile-body" class="auth-input" placeholder="e.g. E60" />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>Engine</label>
+                <input type="text" id="profile-engine" class="auth-input" placeholder="e.g. N54" />
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Bio</label>
+              <textarea id="profile-bio" class="auth-input" rows="3" placeholder="Tell the community about yourself..."></textarea>
+            </div>
+          </div>
+
+          <!-- Password Confirmation (REQUIRED) -->
+          <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+            <h3 style="color: #e74c3c; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-lock"></i> Confirm Your Password
+            </h3>
+            <p style="font-size: 12px; color: #ccc; margin-bottom: 10px;">Required to save any changes</p>
+            <input type="password" id="profile-password-confirm" class="auth-input" placeholder="Enter your current password" required style="border-color: rgba(231, 76, 60, 0.5);" />
+          </div>
+
           <button type="submit" class="submit-btn" id="save-profile-btn">
             Save Changes
+          </button>
+          
+          <button type="button" onclick="logout()" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
           </button>
         </form>
       </div>
     </div>
-    <script src="./js/script.js"></script>
-    <script src="./js/forum.js"></script>
-    <script src="./js/live.js"></script>
+      </div>
+    </div>
+    <!-- FAVORITES MODAL (Duplicated from index.html) -->
+    <div id="favorites-modal" class="favorites-modal">
+      <div class="favorites-content">
+        <div class="favorites-header">
+          <h3>
+            <i class="fas fa-star" style="color: #f1c40f"></i>
+            <span data-i18n="savedTitle">Saved Codes</span>
+          </h3>
+          <button class="close-button" onclick="toggleFavoritesModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="favorites-body" id="favorites-list"></div>
+      </div>
+    </div>
+
+    <!-- CODE DETAIL MODAL (Hidden by default) -->
+    <div id="code-detail-modal" class="modal">
+      <div class="modal-content" style="max-width: 600px; width: 90%;">
+        <span class="close-btn" onclick="document.getElementById('code-detail-modal').classList.remove('active')">&times;</span>
+        <div id="code-detail" class="hidden">
+           <!-- Content injected by script.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden Search Container (required for script.js compatibility) -->
+    <div id="search-container" style="display:none;"></div>
+    
+    <footer>
+      <!-- Content injected by js/footer.js -->
+    </footer>
+    <script src="./js/footer.js"></script>
+
+    <script src="./data/data.js"></script>
+    <script src="./js/translations.js?v=2.91"></script>
+    <script src="./js/script.js?v=2.91"></script>
+    <script src="./js/forum.js?v=2.91"></script>
+    <script src="./js/live.js?v=2.91"></script>
   </body>
 </html>

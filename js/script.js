@@ -27,75 +27,11 @@ let bmwCodes = [];
 let selectedCode = null;
 let chatOpen = false;
 let debounceTimer;
+
 // UI Text Translations
-const translations = {
-  en: {
-    savedBtn: "Saved",
-    savedTitle: "Saved Codes",
-    emptySaved: "You haven't saved any codes yet.",
-    forumBtn: "Forum",
-    searchPlaceholder: "Enter DTC code (e.g. 102613) or P-code...",
-    emptyStateMessage: "BMW Diagnostic Database",
-    emptyStateSubMessage: "Search for engine, transmission, and body codes.",
-    noResultsMessage: "No codes found",
-    description: "System Diagnosis",
-    possibleSolutions: "Repair Plan",
-    applicableModels: "Models",
-    engineCodes: "Engines",
-    category: "System",
-    footer: "BMW DTC Bot © 2026 • Diagnostic Data",
-    partsBtn: "RealOEM (Parts)",
-    catalogBtn: "Catalog Search",
-    obdLabel: "OBD-II Code:",
-    chatTitle: "BMW AI Expert",
-    chatStatus: "Connected to Database",
-    chatPlaceholder: "Describe issue (e.g. 'smoke', 'misfire')...",
-  },
-  ru: {
-    savedBtn: "Избранное",
-    savedTitle: "Избранные коды",
-    emptySaved: "Вы еще не сохранили ни одного кода.",
-    forumBtn: "Форум",
-    searchPlaceholder: "Введите код ошибки (напр. 102613)...",
-    emptyStateMessage: "База диагностики BMW",
-    emptyStateSubMessage: "Поиск кодов двигателя, трансмиссии и кузова.",
-    noResultsMessage: "Код не найден",
-    description: "Диагностика системы",
-    possibleSolutions: "План ремонта",
-    applicableModels: "Модели",
-    engineCodes: "Двигатели",
-    category: "Система",
-    footer: "BMW DTC Bot © 2026 • Диагностика",
-    partsBtn: "Запчасти (RealOEM)",
-    catalogBtn: "Поиск в каталоге",
-    obdLabel: "Код OBD-II:",
-    chatTitle: "ИИ Эксперт BMW",
-    chatStatus: "Подключено к базе",
-    chatPlaceholder: "Опишите проблему (напр. 'дым', 'троит')...",
-  },
-  ka: {
-    savedBtn: "შენახული",
-    savedTitle: "შენახული კოდები",
-    emptySaved: "თქვენ ჯერ არ შეგინახავთ კოდები.",
-    forumBtn: "ფორუმი",
-    searchPlaceholder: "შეიყვანეთ კოდი (მაგ. 102613)...",
-    emptyStateMessage: "BMW დიაგნოსტიკური ბაზა",
-    emptyStateSubMessage: "მოძებნეთ ძრავის და სისტემის კოდები.",
-    noResultsMessage: "კოდი ვერ მოიძებნა",
-    description: "სისტემის დიაგნოსტიკა",
-    possibleSolutions: "შეკეთების გეგმა",
-    applicableModels: "მოდელები",
-    engineCodes: "ძრავები",
-    category: "სისტემა",
-    footer: "BMW DTC Bot © 2026 • დიაგნოსტიკის კოდები",
-    partsBtn: "ნაწილები (RealOEM)",
-    catalogBtn: "კატალოგში ძებნა",
-    obdLabel: "OBD-II კოდი:",
-    chatTitle: "BMW-ს AI ექსპერტი",
-    chatStatus: "დაკავშირებულია ბაზასთან",
-    chatPlaceholder: "აღწერეთ პრობლემა (მაგ. 'ბოლი')...",
-  },
-};
+// Removed local translations object in favor of global APP_TRANSLATIONS in js/translations.js
+// UI Text Translations
+// Removed local translations object in favor of global APP_TRANSLATIONS in js/translations.js
 
 // ==========================================
 // 2. CORE FUNCTIONS
@@ -103,12 +39,23 @@ const translations = {
 
 function displayCodeDetail(code) {
   selectedCode = code;
-  const lang = currentLanguage;
-  const t = translations[lang];
+  const lang = currentLanguage || "en";
+  const t = APP_TRANSLATIONS[lang] || APP_TRANSLATIONS["en"];
 
-  searchContainer.classList.add("hidden");
-  codeDetail.classList.remove("hidden");
-  window.scrollTo(0, 0);
+  // FORUM COMPATIBILITY KEY:
+  const forumModal = document.getElementById("code-detail-modal");
+  
+  if (forumModal) {
+      // We are on forum page -> Open modal
+      forumModal.classList.add("active");
+      const codeDetail = document.getElementById("code-detail");
+      if(codeDetail) codeDetail.classList.remove("hidden");
+  } else {
+      // Main page behavior
+      if(searchContainer) searchContainer.classList.add("hidden");
+      if(codeDetail) codeDetail.classList.remove("hidden");
+      window.scrollTo(0, 0);
+  }
 
   // Безопасная проверка данных
   const engine =
@@ -182,6 +129,14 @@ function displayCodeDetail(code) {
       </div>
     </div>
   `;
+  
+  // Initialize Parts Finder
+  const partsContainer = document.getElementById("parts-finder-container");
+  if (partsContainer && typeof PartsFinderUI !== 'undefined') {
+    partsContainer.classList.remove("hidden");
+    const partsFinder = new PartsFinderUI('parts-finder-container');
+    partsFinder.loadParts(code.code);
+  }
 }
 
 // --- FAVORITES LOGIC ---
@@ -220,7 +175,7 @@ window.toggleFavoritesModal = function () {
 function renderFavoritesList() {
   const list = document.getElementById("favorites-list");
   const favorites = JSON.parse(localStorage.getItem("bmwFavorites")) || [];
-  const t = translations[currentLanguage];
+  const t = APP_TRANSLATIONS[currentLanguage] || APP_TRANSLATIONS["en"];
 
   list.innerHTML = "";
 
@@ -267,9 +222,17 @@ function renderFavoritesList() {
 window.hideDetail = function () {
   const detailEl = document.getElementById("code-detail");
   const searchEl = document.getElementById("search-container");
+  const forumModal = document.getElementById("code-detail-modal");
+  const partsContainer = document.getElementById("parts-finder-container");
+
+  if (forumModal) {
+    forumModal.classList.remove("active");
+    // Also clear content or reset if needed
+  }
 
   if (detailEl) detailEl.classList.add("hidden");
   if (searchEl) searchEl.classList.remove("hidden");
+  if (partsContainer) partsContainer.classList.add("hidden");
 
   if (typeof selectedCode !== "undefined") {
     selectedCode = null;
@@ -278,267 +241,9 @@ window.hideDetail = function () {
 };
 
 // ==========================================
-// 3. AI WIZARD & CHAT
+// 3. AI WIZARD & CHAT (REMOVED)
 // ==========================================
 
-function initWizard() {
-  if (document.getElementById("wizard-widget")) return;
-
-  const lang = currentLanguage;
-  const t = translations[lang];
-
-  const wizardHTML = `
-    <div id="wizard-widget">
-      <div class="wizard-fab" id="wizard-fab" onclick="toggleChat()">
-        <i class="fas fa-robot"></i>
-      </div>
-      
-      <div class="chat-window" id="chat-window">
-        <div class="chat-header">
-          <div class="bot-info">
-            <div class="bot-avatar"><i class="fas fa-microchip"></i></div>
-            <div>
-              <div id="chat-bot-title" style="font-weight:bold; color:#fff;">${t.chatTitle}</div>
-              <div class="bot-status"><div class="status-dot"></div> ${t.chatStatus}</div>
-            </div>
-          </div>
-          <div style="cursor:pointer;" onclick="toggleChat()"><i class="fas fa-times" style="color:#fff;"></i></div>
-        </div>
-        
-        <div class="chat-body" id="chat-body">
-          <div class="typing-indicator" id="typing-indicator">
-            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
-          </div>
-        </div>
-
-        <div class="chat-footer">
-          <input type="text" id="chat-input" class="chat-input" placeholder="${t.chatPlaceholder}" autocomplete="off">
-          <button class="chat-send-btn" onclick="handleUserMessage()">
-            <i class="fas fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.insertAdjacentHTML("beforeend", wizardHTML);
-
-  document
-    .getElementById("chat-input")
-    .addEventListener("keypress", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        handleUserMessage();
-      }
-    });
-}
-
-window.toggleChat = function () {
-  const chatWindow = document.getElementById("chat-window");
-  const chatBody = document.getElementById("chat-body");
-  const input = document.getElementById("chat-input");
-
-  chatOpen = !chatOpen;
-
-  if (chatOpen) {
-    chatWindow.classList.add("active");
-    input.focus();
-    if (chatBody.querySelectorAll(".message").length === 0) {
-      sendBotGreeting();
-    }
-  } else {
-    chatWindow.classList.remove("active");
-  }
-};
-
-function sendBotGreeting() {
-  const lang = currentLanguage;
-  const greetings = {
-    en: "Hello! I have full access to the diagnostic database. Describe your problem (e.g., 'engine shaking', 'abs light', 'smoke') or enter a code.",
-    ru: "Привет! У меня есть доступ ко всей базе ошибок. Опишите проблему (например: 'троит двигатель', 'дым', 'вибрация') или введите код.",
-    ka: "გამარჯობა! აღმიწერეთ პრობლემა (მაგ: 'ძრავის ძაგძაგი', 'ბოლი') ან შეიყვანეთ კოდი.",
-  };
-  addMessage(greetings[lang], "bot");
-  showQuickChips();
-}
-
-window.handleUserMessage = function () {
-  const input = document.getElementById("chat-input");
-  const text = input.value.trim();
-  if (!text) return;
-
-  addMessage(text, "user");
-  input.value = "";
-
-  const indicator = document.getElementById("typing-indicator");
-  const chatBody = document.getElementById("chat-body");
-  indicator.style.display = "flex";
-  chatBody.scrollTop = chatBody.scrollHeight;
-
-  setTimeout(() => {
-    analyzeRequest(text);
-  }, 1000);
-};
-
-function analyzeRequest(query) {
-  const indicator = document.getElementById("typing-indicator");
-  indicator.style.display = "none";
-  const lang = currentLanguage;
-
-  const terms = query
-    .toLowerCase()
-    .split(" ")
-    .filter((t) => t.length > 2);
-  if (terms.length === 0 && query.length > 0) terms.push(query.toLowerCase());
-
-  let matches = bmwCodes.map((code) => {
-    let score = 0;
-    if (code.code.toLowerCase().includes(query.toLowerCase())) score += 100;
-    if (
-      code.pCodes &&
-      code.pCodes.some((p) => p.toLowerCase().includes(query.toLowerCase()))
-    )
-      score += 100;
-
-    terms.forEach((term) => {
-      if (code.title[lang] && code.title[lang].toLowerCase().includes(term))
-        score += 10;
-      if (
-        code.description[lang] &&
-        code.description[lang].toLowerCase().includes(term)
-      )
-        score += 5;
-      if (
-        code.solutions[lang] &&
-        code.solutions[lang].join(" ").toLowerCase().includes(term)
-      )
-        score += 3;
-      if (code.title.en.toLowerCase().includes(term)) score += 2;
-    });
-    return { code, score };
-  });
-
-  const results = matches
-    .filter((m) => m.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
-
-  if (results.length > 0) {
-    const phrases = {
-      en: `I found ${results.length} relevant entries in the database based on "${query}":`,
-      ru: `Я нашел несколько записей в базе по запросу "${query}":`,
-      ka: `ვიპოვე რამოდენიმე ჩანაწერი "${query}"-ზე:`,
-    };
-    addMessage(phrases[lang], "bot");
-
-    const chatBody = document.getElementById("chat-body");
-    const resultsDiv = document.createElement("div");
-    resultsDiv.style.display = "flex";
-    resultsDiv.style.flexDirection = "column";
-    resultsDiv.style.gap = "5px";
-    resultsDiv.style.marginBottom = "10px";
-
-    results.forEach((item) => {
-      const btn = document.createElement("div");
-      btn.className = "chat-result-link";
-      btn.innerHTML = `
-                <div style="flex:1;">
-                    <div class="chat-result-code">${item.code.code}</div>
-                    <div style="font-size:12px; line-height:1.2;">${item.code.title[lang]}</div>
-                </div>
-                <i class="fas fa-chevron-right"></i>
-            `;
-      btn.onclick = () => {
-        toggleChat();
-        displayCodeDetail(item.code);
-      };
-      resultsDiv.appendChild(btn);
-    });
-    chatBody.insertBefore(
-      resultsDiv,
-      document.getElementById("typing-indicator"),
-    );
-  } else {
-    const notFound = {
-      en: "I couldn't find exact matches in my database. Try using keywords like 'Turbo', 'Misfire', 'Sensor' or a specific code.",
-      ru: "Я не нашел точных совпадений. Попробуйте общие слова: 'Турбина', 'Пропуски', 'Датчик' или код ошибки.",
-      ka: "ვერ ვიპოვე. სცადეთ სიტყვები: 'ტურბინა', 'სენსორი' ან კოდი.",
-    };
-    addMessage(notFound[lang], "bot");
-    showQuickChips();
-  }
-  const chatBody = document.getElementById("chat-body");
-  chatBody.scrollTop = chatBody.scrollHeight;
-}
-
-function addMessage(text, sender) {
-  const chatBody = document.getElementById("chat-body");
-  const indicator = document.getElementById("typing-indicator");
-  const msgDiv = document.createElement("div");
-  msgDiv.className = `message ${sender}`;
-  msgDiv.innerHTML = text;
-  chatBody.insertBefore(msgDiv, indicator);
-  chatBody.scrollTop = chatBody.scrollHeight;
-}
-
-function showQuickChips() {
-  const chatBody = document.getElementById("chat-body");
-  const indicator = document.getElementById("typing-indicator");
-  const lang = currentLanguage;
-
-  const chipsData = [
-    {
-      label: { en: "Engine Misfire", ru: "Троит мотор", ka: "ძრავის ძაგძაგი" },
-      query: "misfire",
-    },
-    {
-      label: { en: "Boost Pressure", ru: "Нет наддува", ka: "ტურბო წნევა" },
-      query: "boost pressure",
-    },
-    {
-      label: { en: "Battery", ru: "Аккумулятор", ka: "აკუმულატორი" },
-      query: "battery",
-    },
-  ];
-
-  const chipsDiv = document.createElement("div");
-  chipsDiv.className = "chat-options";
-
-  chipsData.forEach((chip) => {
-    const btn = document.createElement("button");
-    btn.className = "chat-option-btn";
-    btn.textContent = chip.label[lang];
-    btn.onclick = () => {
-      chipsDiv.remove();
-      const input = document.getElementById("chat-input");
-      input.value = chip.label[lang];
-      handleUserMessage();
-    };
-    chipsDiv.appendChild(btn);
-  });
-  chatBody.insertBefore(chipsDiv, indicator);
-  chatBody.scrollTop = chatBody.scrollHeight;
-}
-
-function updateChatUI() {
-  const t = translations[currentLanguage];
-  const titleEl = document.getElementById("chat-bot-title");
-  const statusEl = document.querySelector("#chat-window .bot-status");
-  const inputEl = document.getElementById("chat-input");
-
-  if (titleEl) titleEl.innerText = t.chatTitle;
-  if (statusEl)
-    statusEl.innerHTML = `<div class="status-dot"></div> ${t.chatStatus}`;
-  if (inputEl) inputEl.placeholder = t.chatPlaceholder;
-
-  const chatBody = document.getElementById("chat-body");
-  if (chatBody) {
-    chatBody.innerHTML = `
-      <div class="typing-indicator" id="typing-indicator">
-        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
-      </div>`;
-    if (chatOpen) sendBotGreeting();
-  }
-}
 
 // ==========================================
 // AUTH SYSTEM (Login & Register)
@@ -569,31 +274,194 @@ function switchAuthTab(tab) {
 }
 
 // 2. Логика Регистрации
+
+// --- Recovery Logic (Global Scope) ---
+window.showRecoveryModal = function() {
+  toggleAuthModal(); // Close auth modal
+  const modal = document.getElementById("recovery-modal");
+  if(modal) {
+      modal.classList.add("active");
+      document.getElementById("recovery-step-1").classList.add("active");
+      document.getElementById("recovery-step-2").classList.remove("active");
+      const msg = document.getElementById("rec-msg-1");
+      if(msg) msg.textContent = "";
+      document.getElementById("rec-email").value = "";
+  }
+};
+
+window.closeRecoveryModal = function() {
+  const modal = document.getElementById("recovery-modal");
+  if(modal) modal.classList.remove("active");
+};
+
 function setupRegisterForm() {
   const regForm = document.getElementById("register-form");
+
+  // Recovery Event Listeners (Ensure they attach even if regForm is missing)
+  const step1 = document.getElementById("recovery-step-1");
+  if (step1) {
+      step1.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("rec-email").value;
+        const msg = document.getElementById("rec-msg-1");
+        const btn = e.target.querySelector("button");
+        
+        try {
+            btn.textContent = "Checking...";
+            msg.textContent = "";
+            
+            const res = await fetch("/api/auth/password-recovery/init", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ identifier: email }) // Updated payload key
+            });
+            
+            const data = await res.json();
+            
+            if(res.ok) {
+                // Store recovery token for next step
+                window.recoveryToken = data.recovery_token;
+                
+                document.getElementById("recovery-step-1").classList.remove("active");
+                document.getElementById("recovery-step-2").classList.add("active");
+                
+                const qMap = {
+                    "first_pet": "What was your first pet's name?",
+                    "mother_maiden": "What is your mother's maiden name?",
+                    "first_car": "What was your first car model?",
+                    "city_born": "In which city were you born?"
+                };
+                const qText = qMap[data.security_question] || data.security_question;
+                const display = document.getElementById("rec-question-display");
+                if(display) display.textContent = qText;
+                
+            } else {
+                msg.textContent = data.error || "User not found";
+                msg.style.color = "#e74c3c";
+            }
+        } catch(err) {
+            console.error(err);
+            msg.textContent = "Connection error";
+        } finally {
+            btn.textContent = "Continue";
+        }
+      });
+  }
+
+  const step2 = document.getElementById("recovery-step-2");
+  if (step2) {
+      step2.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("rec-email").value;
+        const answer = document.getElementById("rec-answer").value;
+        const newPassword = document.getElementById("rec-new-password").value;
+        const msg = document.getElementById("rec-msg-2");
+        const btn = e.target.querySelector("button");
+
+        try {
+            btn.textContent = "Resetting...";
+            msg.textContent = "";
+            
+            // 1. Verify Answer -> Get Reset Token
+            const verifyRes = await fetch("/api/auth/password-recovery/verify", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ 
+                    recovery_token: window.recoveryToken,
+                    security_answer: answer 
+                })
+            });
+            
+            const verifyData = await verifyRes.json();
+            
+            if (!verifyRes.ok) throw new Error(verifyData.error || "Incorrect answer");
+            
+            // 2. Reset Password using Reset Token
+            const resetRes = await fetch("/api/auth/password-recovery/reset", {
+                 method: "POST",
+                 headers: {"Content-Type": "application/json"},
+                 body: JSON.stringify({
+                     reset_token: verifyData.reset_token,
+                     new_password: newPassword
+                 })
+            });
+            
+            const resetData = await resetRes.json();
+            
+            if(resetRes.ok) {
+                msg.textContent = "Success! Login now.";
+                msg.style.color = "#2ecc71";
+                // Clear token
+                window.recoveryToken = null;
+                
+                setTimeout(() => {
+                    closeRecoveryModal();
+                    toggleAuthModal();
+                }, 2000);
+            } else {
+                throw new Error(resetData.error || "Failed to reset password");
+            }
+        } catch(err) {
+            console.error(err);
+            msg.textContent = err.message || "Connection error";
+            msg.style.color = "#e74c3c";
+        } finally {
+            btn.textContent = "Reset Password";
+        }
+      });
+  }
+
   if (!regForm) return;
+
+// Listeners moved to global scope setup
+// ...
 
   regForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("reg-username").value;
+    const firstName = document.getElementById("reg-first-name").value;
+    const lastName = document.getElementById("reg-last-name").value;
+    const age = parseInt(document.getElementById("reg-age").value);
     const email = document.getElementById("reg-email").value;
     const password = document.getElementById("reg-password").value;
+    const question = document.getElementById("reg-question").value;
+    const answer = document.getElementById("reg-answer").value;
     const msg = document.getElementById("reg-msg");
+
+    if(!question || !answer) {
+        msg.textContent = "Please select a security question and answer.";
+        msg.style.color = "#e74c3c";
+        return;
+    }
+    
+    // Validate age
+    if (age < 13 || age > 120) {
+        msg.textContent = "Age must be between 13 and 120";
+        msg.style.color = "#e74c3c";
+        return;
+    }
 
     msg.style.color = "#aaa";
     msg.textContent = "Processing...";
+    const payload = {
+          username,
+          first_name: firstName,
+          last_name: lastName,
+          age,
+          email,
+          password,
+          language: (typeof currentLanguage !== 'undefined') ? currentLanguage : "en",
+          security_question: question,
+          security_answer: answer
+    };
+    console.log("Sending Registration:", payload);
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // currentLanguage берем из вашей переменной в script.js
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          language: currentLanguage,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -655,7 +523,7 @@ function setupLoginForm() {
 
         // 3. Показываем успех и закрываем окно
         msg.style.color = "#2ecc71";
-        msg.textContent = "Welcome back!";
+        msg.textContent = "Welcome!";
 
         setTimeout(() => {
           toggleAuthModal(); // Закрываем модалку
@@ -676,7 +544,6 @@ function setupLoginForm() {
 }
 
 // 4. Проверка статуса (Обновление UI)
-// 4. Проверка статуса (Обновление UI)
 function checkAuthStatus() {
   const token = localStorage.getItem("auth_token");
   const user = JSON.parse(localStorage.getItem("user_data"));
@@ -685,14 +552,25 @@ function checkAuthStatus() {
   if (!authBtn) return;
 
   // СБРОС КНОПКИ (Важно для корректного переключения без перезагрузки)
-  // Мы возвращаем её в исходное состояние, а потом заполняем данными
+  // Используем data-i18n для перевода "Login"
+  // Проверяем наличие глобальных переводов, иначе фоллбэк
+  let loginText = "Login";
+  if (typeof APP_TRANSLATIONS !== 'undefined' && typeof currentLanguage !== 'undefined') {
+      loginText = APP_TRANSLATIONS[currentLanguage]?.loginBtn || "Login";
+  }
+
+  // Set innerHTML with data-i18n attribute
   authBtn.innerHTML =
-    '<i class="fas fa-user-circle"></i> <span id="btn-login-text">Login</span>';
-  const btnText = document.getElementById("btn-login-text");
+    `<i class="fas fa-user-circle"></i> <span data-i18n="loginBtn">${loginText}</span>`;
+  
+  const span = authBtn.querySelector("span");
 
   if (token && user) {
-    // Если вошли
-    btnText.textContent = user.username;
+    // Если вошли - убираем data-i18n, чтобы не переводило никнейм
+    if (span) {
+        span.removeAttribute("data-i18n");
+        span.textContent = user.username;
+    }
 
     // Ставим аватарку
     if (user.avatar_url) {
@@ -704,11 +582,26 @@ function checkAuthStatus() {
 
     authBtn.onclick = (e) => {
       e.preventDefault();
+      // Если мы на форуме и есть profile.html, то может быть другое поведение?
+      // Но пока оставим стандартное модальное окно, так как оно есть на всех страницах
       toggleProfileModal();
     };
+    
+    // Если мы на форуме, возможно forum.js захочет переопределить поведение.
+    // Но script.js выполняется позже (из-за async init), поэтому он выигрывает.
+    // Чтобы поддержать редирект на profile.html (если он есть), нужно проверять URL.
+    if (window.location.pathname.includes('/forum') || window.location.pathname.includes('/topic')) {
+        authBtn.onclick = (e) => {
+             // Optional: if profile.html exists, uncomment next line
+             // window.location.href = "profile.html";
+             e.preventDefault();
+             toggleProfileModal();
+        };
+    }
+
   } else {
     // Если вышли
-    if (btnText) btnText.textContent = "Login";
+    // Text already set correctly with data-i18n above
     authBtn.onclick = toggleAuthModal;
   }
 }
@@ -733,7 +626,7 @@ async function init() {
     await refreshUserData();
     // 1. Инициализация (как было)
     if (typeof getMockData === "function") bmwCodes = getMockData();
-    const response = await fetch("../data/codes.json");
+    const response = await fetch("/data/codes.json");
     if (response.ok) {
       const data = await response.json();
       bmwCodes = [...bmwCodes, ...data.codes];
@@ -744,7 +637,7 @@ async function init() {
     setupEventListeners();
     updateLanguage();
     init3DBackground();
-    initWizard();
+
 
     // 2. ЛОГИКА РЕДАКТОРА ФОТО (ИСПРАВЛЕННАЯ)
     const urlParams = new URLSearchParams(window.location.search);
@@ -790,6 +683,11 @@ async function init() {
 
       drawEditor();
     }
+
+    // Initialize Mobile Menu
+    initMobileMenu();
+
+
 
     // Функция: Отрисовка
     function drawEditor() {
@@ -884,6 +782,52 @@ async function init() {
         btn.disabled = true;
 
         const user = JSON.parse(localStorage.getItem("user_data"));
+        
+        // Get all form values
+        const username = document.getElementById("profile-username")?.value;
+        const email = document.getElementById("profile-email")?.value;
+        const firstName = document.getElementById("profile-first-name")?.value;
+        const lastName = document.getElementById("profile-last-name")?.value;
+        const age = parseInt(document.getElementById("profile-age")?.value) || null;
+        
+        const city = document.getElementById("profile-city")?.value;
+        const country = document.getElementById("profile-country")?.value;
+        
+        const carModel = document.getElementById("profile-car")?.value;
+        const bmwYear = parseInt(document.getElementById("profile-year")?.value) || null;
+        const bmwBody = document.getElementById("profile-body")?.value;
+        const bmwEngine = document.getElementById("profile-engine")?.value;
+        
+        const bio = document.getElementById("profile-bio")?.value;
+        const currentPassword = document.getElementById("profile-password-confirm")?.value;
+        
+        console.log("DEBUG FORM VALUES:", {
+          username,
+          email,
+          firstName,
+          lastName,
+          age,
+          carModel,
+          bio,
+          currentPassword: currentPassword ? "***" : "(empty)"
+        });
+        
+        // Validate password is provided
+        if (!currentPassword) {
+          alert("Please enter your current password to save changes");
+          btn.textContent = originalText;
+          btn.disabled = false;
+          return;
+        }
+        
+        // Validate age
+        if (age && (age < 13 || age > 120)) {
+          alert("Age must be between 13 and 120");
+          btn.textContent = originalText;
+          btn.disabled = false;
+          return;
+        }
+
         let finalAvatarUrl = user.avatar_url;
 
         try {
@@ -903,25 +847,50 @@ async function init() {
             if (upData.url) finalAvatarUrl = upData.url;
           }
 
-          // Обновляем профиль
+          // Обновляем профиль с подтверждением пароля
           const updateRes = await fetch("/api/user/update", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               id: user.id,
+              current_password: currentPassword,
+              username,
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              age,
+              city,
+              country,
               avatar_url: finalAvatarUrl,
-              car_model: document.getElementById("profile-car").value,
-              bio: document.getElementById("profile-bio").value,
+              car_model: carModel,
+              bmw_year: bmwYear,
+              bmw_body: bmwBody,
+              bmw_engine: bmwEngine,
+              bio,
             }),
           });
 
           const updateData = await updateRes.json();
-          if (updateData.success) {
-            localStorage.setItem("user_data", JSON.stringify(updateData.user));
-            alert("Saved!");
-            location.reload();
+          
+          if (updateRes.ok && updateData.success) {
+            // Clear password field
+            document.getElementById("profile-password-confirm").value = "";
+            
+            // Refresh user data
+            await refreshUserData();
+            
+            alert("Profile updated successfully!");
+            
+            // Reload if username changed (affects display everywhere)
+            if (username !== user.username) {
+              location.reload();
+            } else {
+              // Just close modal and update UI
+              toggleProfileModal();
+              checkAuthStatus();
+            }
           } else {
-            alert("Error: " + updateData.error);
+            alert("Error: " + (updateData.error || "Update failed"));
           }
         } catch (err) {
           console.error(err);
@@ -975,13 +944,13 @@ function setupEventListeners() {
       if (selectedCode) displayCodeDetail(selectedCode);
       else handleSearch();
 
-      updateChatUI();
+
     });
   }
 }
 
 function updateLanguage() {
-  const langLabels = { en: "EN", ru: "RU", ka: "KA" };
+  const langLabels = { en: "EN", ru: "RU", ka: "GE" };
 
   // 1. Обновляем кнопку языка (если она есть)
   if (languageToggle) {
@@ -989,7 +958,7 @@ function updateLanguage() {
     if (span) span.textContent = langLabels[currentLanguage];
   }
 
-  const text = translations[currentLanguage];
+  const text = APP_TRANSLATIONS[currentLanguage];
 
   // 2. Обновляем поиск (если он есть)
   if (searchInput) {
@@ -1008,17 +977,37 @@ function updateLanguage() {
   safeSetText("#no-results .message", text.noResultsMessage);
   safeSetText("footer p", text.footer);
 
+  // 4. Update elements with data-i18n attribute
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (text[key]) el.textContent = text[key];
+  });
+
+  // 5. Update elements with data-i18n-placeholder attribute
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (text[key]) el.placeholder = text[key];
+  });
+
   // Обновляем чат
-  updateChatUI();
+
+  
+  // Re-render mobile menu with new language
+  if (typeof initMobileMenu === 'function') {
+      initMobileMenu();
+  }
 }
 
 function handleSearch() {
+  // Fix for Forum/Other pages where search input might not exist
+  if (!searchInput || !resultsContainer) return;
+
   const term = searchInput.value.trim().toLowerCase();
 
   if (term === "") {
     resultsContainer.classList.add("hidden");
-    emptyState.classList.remove("hidden");
-    noResults.classList.add("hidden");
+    if(emptyState) emptyState.classList.remove("hidden");
+    if(noResults) noResults.classList.add("hidden");
     return;
   }
 
@@ -1064,6 +1053,13 @@ function renderResults(codes) {
           <div style="flex: 1;" onclick="displayCodeDetail(selectedCodeRef)">
             <div class="code-header">
               <span class="code-identifier" style="color:${severityColor}">${code.code}</span>
+              <a href="/code/${encodeURIComponent(code.code)}?lang=${currentLanguage}" 
+                 title="Open code page" 
+                 onclick="event.stopPropagation()"
+                 style="margin-left:6px; opacity:0.5; font-size:0.7em; color:inherit; text-decoration:none; vertical-align:middle;"
+                 target="_blank" rel="noopener">
+                <i class="fas fa-external-link-alt"></i>
+              </a>
               <span class="code-title">${code.title[currentLanguage]}</span>
             </div>
             <div class="code-meta">
@@ -1094,7 +1090,8 @@ function renderResults(codes) {
 
 function init3DBackground() {
   if (typeof THREE === "undefined") {
-    console.warn("THREE.js not loaded yet");
+    // Retry initialization if library is not ready
+    setTimeout(init3DBackground, 100);
     return;
   }
   const container = document.getElementById("webgl-container");
@@ -1180,11 +1177,39 @@ window.toggleProfileModal = async function () {
     const user = JSON.parse(localStorage.getItem("user_data"));
 
     if (user) {
-      // Заполняем поля
+      // Заполняем все поля
+      const usernameInput = document.getElementById("profile-username");
+      const emailInput = document.getElementById("profile-email");
+      const firstNameInput = document.getElementById("profile-first-name");
+      const lastNameInput = document.getElementById("profile-last-name");
+      const ageInput = document.getElementById("profile-age");
       const carInput = document.getElementById("profile-car");
       const bioInput = document.getElementById("profile-bio");
+      
+      if (usernameInput) usernameInput.value = user.username || "";
+      if (emailInput) emailInput.value = user.email || "";
+      if (firstNameInput) firstNameInput.value = user.first_name || "";
+      if (lastNameInput) lastNameInput.value = user.last_name || "";
+      if (ageInput) ageInput.value = user.age || "";
       if (carInput) carInput.value = user.car_model || "";
       if (bioInput) bioInput.value = user.bio || "";
+      
+      // New Fields
+      const cityInput = document.getElementById("profile-city");
+      const countryInput = document.getElementById("profile-country");
+      const yearInput = document.getElementById("profile-year");
+      const bodyInput = document.getElementById("profile-body");
+      const engineInput = document.getElementById("profile-engine");
+      
+      if (cityInput) cityInput.value = user.city || "";
+      if (countryInput) countryInput.value = user.country || "";
+      if (yearInput) yearInput.value = user.bmw_year || "";
+      if (bodyInput) bodyInput.value = user.bmw_body || "";
+      if (engineInput) engineInput.value = user.bmw_engine || "";
+      
+      // Clear password field
+      const passwordInput = document.getElementById("profile-password-confirm");
+      if (passwordInput) passwordInput.value = "";
 
       // Сбрасываем редактор фото в начальное состояние
       const previewContainer = document.getElementById("current-avatar-view");
@@ -1218,23 +1243,338 @@ async function refreshUserData() {
   if (!user) return; // Если не залогинен - выходим
 
   try {
-    // Запрашиваем свежие данные из базы
-    const res = await fetch(`/api/user/get?id=${user.id}`);
+    // Check and fix bad avatar URL in local cache immediately
+    if (user.avatar_url && user.avatar_url.includes('avatar-placeholder.png')) {
+        user.avatar_url = './assets/icons/ico.svg';
+        localStorage.setItem("user_data", JSON.stringify(user));
+    }
+
+    // Запрашиваем свежие данные из базы (с anti-cache)
+    const res = await fetch(`/api/user/get?id=${user.id}&t=${Date.now()}`);
+    
+    if (res.status === 404) {
+        console.warn("User ID not found in DB (stale session). Logging out.");
+        logout(); // Assumes logout() is globally available or defined in script.js
+        return;
+    }
+
     if (res.ok) {
       const freshUser = await res.json();
 
-      // Сравниваем данные. Если что-то изменилось - обновляем LocalStorage
-      if (JSON.stringify(freshUser) !== JSON.stringify(user)) {
+      // Сравниваем только важные поля, чтобы избежать перезагрузки из-за таймстампов
+      const importantKeys = ['username', 'avatar_url', 'reputation', 'role', 'email'];
+      const hasChanges = importantKeys.some(key => freshUser[key] !== user[key]);
+
+      if (hasChanges) {
         console.log("Updating user profile cache...");
+        // Сохраняем полный объект, но триггерим UI только при важных изменениях
         localStorage.setItem("user_data", JSON.stringify(freshUser));
 
         // Обновляем шапку сайта сразу же
         checkAuthStatus();
-        // Если мы на странице форума - обновляем сайдбар
+        // Если мы на странице форума - обновляем сайдбар и хедер
         if (typeof updateSidebarUser === "function") updateSidebarUser();
+        if (typeof updateHeaderAuth === "function") updateHeaderAuth();
+      } else {
+        // Если изменились только таймстампы, просто тихо обновляем сторадж
+        if (JSON.stringify(freshUser) !== JSON.stringify(user)) {
+             localStorage.setItem("user_data", JSON.stringify(freshUser));
+        }
       }
     }
   } catch (e) {
     console.warn("Failed to refresh user data", e);
   }
 }
+
+// === SERVICE WORKER REGISTRATION (PWA) ===
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log("SW registered");
+      })
+      .catch((err) => {
+        console.log("SW registration failed: ", err);
+      });
+  });
+}
+
+// === AUTO-REFRESH USER DATA ===
+// Custom Alert & Confirm Implementation
+function createCustomModal(type) {
+    let overlay = document.querySelector('.custom-alert-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay'; // Reuses existing styles
+        document.body.appendChild(overlay);
+    }
+    
+    // Reset content for new usage
+    overlay.innerHTML = `
+        <div class="custom-alert-box">
+            <div class="custom-alert-icon"><i class="fas"></i></div>
+            <div class="custom-alert-message"></div>
+            <div class="custom-alert-actions"></div>
+        </div>
+    `;
+    
+    const icon = overlay.querySelector('.custom-alert-icon i');
+    if (type === 'error') {
+        icon.className = 'fas fa-exclamation-circle';
+        icon.style.color = '#e74c3c';
+    } else if (type === 'success') {
+        icon.className = 'fas fa-check-circle';
+        icon.style.color = '#2ecc71';
+    } else if (type === 'confirm') {
+        icon.className = 'fas fa-question-circle';
+        icon.style.color = '#f1c40f';
+    } else {
+        icon.className = 'fas fa-info-circle';
+        icon.style.color = '#0066b3';
+    }
+    
+    return overlay;
+}
+
+function showCustomAlert(message, type = 'info') {
+    return new Promise((resolve) => {
+        const overlay = createCustomModal(type);
+        overlay.querySelector('.custom-alert-message').textContent = message;
+        
+        const btn = document.createElement('button');
+        btn.className = 'custom-alert-btn';
+        btn.textContent = 'OK';
+        btn.onclick = () => {
+            closeCustomModal();
+            resolve();
+        };
+        
+        overlay.querySelector('.custom-alert-actions').appendChild(btn);
+        
+        // Show
+        setTimeout(() => overlay.classList.add('active'), 10);
+    });
+}
+
+function showCustomConfirm(message) {
+    return new Promise((resolve) => {
+        const overlay = createCustomModal('confirm');
+        overlay.querySelector('.custom-alert-message').textContent = message;
+        
+        const actions = overlay.querySelector('.custom-alert-actions');
+        
+        const btnCancel = document.createElement('button');
+        btnCancel.className = 'custom-alert-btn cancel';
+        btnCancel.textContent = 'Cancel';
+        btnCancel.onclick = () => {
+            closeCustomModal();
+            resolve(false);
+        };
+        
+        const btnOk = document.createElement('button');
+        btnOk.className = 'custom-alert-btn';
+        btnOk.textContent = 'Confirm';
+        btnOk.onclick = () => {
+            closeCustomModal();
+            resolve(true);
+        };
+        
+        actions.appendChild(btnCancel);
+        actions.appendChild(btnOk);
+        
+        setTimeout(() => overlay.classList.add('active'), 10);
+    });
+}
+
+function closeCustomModal() {
+    const overlay = document.querySelector('.custom-alert-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            if(overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }, 300);
+    }
+}
+
+// Override native alert
+window.alert = function(msg) {
+    showCustomAlert(msg);
+};
+
+// Start of original script
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof refreshUserData === "function") {
+    refreshUserData();
+  }
+
+
+  // Check for search params
+  const params = new URLSearchParams(window.location.search);
+  const codeParam = params.get("code");
+  if (codeParam && searchInput) {
+      searchInput.value = codeParam;
+      
+      // Poll until bmwCodes is populated
+      const checkData = setInterval(() => {
+          if (bmwCodes && bmwCodes.length > 0) {
+              clearInterval(checkData);
+              if (typeof handleSearch === "function") handleSearch();
+          }
+      }, 100);
+      
+      // Safety timeout to stop polling
+      setTimeout(() => clearInterval(checkData), 5000);
+  }
+});
+
+// ==========================================
+// 5. BADGE SYSTEM
+// ==========================================
+window.getReputationBadge = function(reputation, role) {
+    // Get translations with fallback
+    const lang = localStorage.getItem('forumLanguage') || localStorage.getItem('language') || 'en';
+    const t = (typeof APP_TRANSLATIONS !== 'undefined' && APP_TRANSLATIONS[lang]) ? APP_TRANSLATIONS[lang] : {};
+    
+    // Role-based badges (highest priority)
+    if (role === 'super_admin_role') {
+        return `<span class="user-badge badge-super-admin"><i class="fas fa-crown"></i> ${t.role_super_admin || 'Super Admin'}</span>`;
+    }
+    if (role === 'admin_role') {
+        return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> ${t.role_admin || 'Admin'}</span>`;
+    }
+    if (role === 'senior_moderator_role') {
+        return `<span class="user-badge badge-senior-mod"><i class="fas fa-user-shield"></i> ${t.role_senior_mod || 'Senior Mod'}</span>`;
+    }
+    if (role === 'moderator_role') {
+        return `<span class="user-badge badge-moderator"><i class="fas fa-gavel"></i> ${t.role_moderator || 'Moderator'}</span>`;
+    }
+    
+    // Reputation-based badges
+    const rep = parseInt(reputation) || 0;
+    
+    if (rep >= 2000) {
+        return `<span class="user-badge badge-guru"><i class="fas fa-crown"></i> ${t.badge_guru || 'BMW Guru'}</span>`;
+    } else if (rep >= 500) {
+        return `<span class="user-badge badge-expert"><i class="fas fa-star"></i> ${t.badge_expert || 'Expert'}</span>`;
+    } else if (rep >= 100) {
+        return `<span class="user-badge badge-pro"><i class="fas fa-wrench"></i> ${t.badge_pro || 'Pro'}</span>`;
+    } else if (rep >= 10) {
+        return `<span class="user-badge badge-member"><i class="fas fa-user"></i> ${t.badge_member || 'Member'}</span>`;
+    } else {
+        return `<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> ${t.badge_newcomer || 'Newcomer'}</span>`;
+    }
+};
+
+// ==========================================
+// 6. MOBILE MENU LOGIC
+// ==========================================
+window.toggleMobileMenu = function() {
+    const offcanvas = document.querySelector('.mobile-offcanvas');
+    const overlay = document.querySelector('.mobile-menu-overlay');
+    if (offcanvas && overlay) {
+        offcanvas.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = offcanvas.classList.contains('active') ? 'hidden' : '';
+    }
+};
+
+window.initMobileMenu = function() {
+    const menuContent = document.getElementById('mobile-menu-content');
+    if (!menuContent) return;
+    
+    // Clear previous usage if needed
+    menuContent.innerHTML = '';
+    
+    // 0. Manual Navigation Links (Fallback if no sidebar)
+    const topicPageNav = document.querySelector('.mobile-offcanvas .nav-item');
+    if (topicPageNav) {
+         menuContent.appendChild(topicPageNav); // Keep the back button if it was there
+    }
+
+    // Clear existing content to allow re-rendering
+    menuContent.innerHTML = '';
+
+    // 1. Clone Navigation items from Sidebar (if exists)
+    const sidebarNav = document.querySelector('.sidebar .nav-menu');
+    if (sidebarNav) {
+        const navClone = sidebarNav.cloneNode(true);
+        navClone.style.marginTop = "0";
+        navClone.style.flexDirection = "column";
+        
+        // Remove 'active' class duplication issues if needed
+        navClone.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                 // Close menu on click
+                 toggleMobileMenu();
+            });
+        });
+        
+        menuContent.appendChild(navClone);
+    }
+
+    // 2. Clone User Info / Auth Buttons
+    const authContainer = document.createElement('div');
+    authContainer.style.marginTop = '20px';
+    authContainer.style.paddingTop = '20px';
+    authContainer.style.borderTop = '1px solid rgba(255,255,255,0.1)';
+    
+    // Safely get user data
+    let user = null;
+    try {
+        user = JSON.parse(localStorage.getItem("user_data"));
+    } catch(e) {}
+
+    const t = (typeof APP_TRANSLATIONS !== 'undefined' && APP_TRANSLATIONS[currentLanguage]) 
+        ? APP_TRANSLATIONS[currentLanguage] 
+        : {
+            loginRegister: "Login / Register",
+            profile: "Profile",
+            logout: "Logout"
+        };
+
+
+    if (user) {
+         authContainer.innerHTML = `
+             <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                 <img src="${user.avatar_url || ''}" onerror="this.onerror=null; this.src='./assets/icons/ico.svg'" style="width:40px; height:40px; border-radius:50%; background:#333; object-fit:cover;">
+                 <div>
+                     <div style="font-weight:bold; color:white;">${user.username}</div>
+                     <div style="font-size:12px; color:#aaa;">${user.email}</div>
+                 </div>
+             </div>
+             <a href="/profile" class="btn" style="width:100%; justify-content:center; margin-bottom:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); display:flex;">
+                <i class="fas fa-user-circle"></i> ${t.profile}
+             </a>
+             <button onclick="logout()" class="btn" style="width:100%; justify-content:center; background:rgba(231, 76, 60, 0.2); color:#e74c3c; border:1px solid rgba(231, 76, 60, 0.3); display:flex;">
+                <i class="fas fa-sign-out-alt"></i> ${t.logout}
+             </button>
+         `;
+    } else {
+         authContainer.innerHTML = `
+             <button class="btn" onclick="toggleMobileMenu(); toggleAuthModal()" style="width:100%; justify-content:center; background:var(--bmw-blue); border:none; display:flex;">
+                 <i class="fas fa-sign-in-alt"></i> ${t.loginRegister}
+             </button>
+         `;
+    }
+    
+    menuContent.appendChild(authContainer);
+    
+    // 3. Clone Language Toggle
+    const langToggle = document.getElementById('forum-language-toggle');
+    const topicLangToggle = document.getElementById('topic-language-toggle');
+    const targetToggle = langToggle || topicLangToggle;
+    
+    if(targetToggle) {
+        const langClone = targetToggle.cloneNode(true);
+        langClone.onclick = () => {
+             if (typeof switchForumLanguage === 'function') switchForumLanguage();
+             else if (typeof switchTopicLanguage === 'function') switchTopicLanguage();
+        };
+        langClone.style.marginTop = "20px";
+        langClone.style.width = "100%";
+        langClone.style.display = "flex";
+        authContainer.appendChild(langClone);
+    }
+};

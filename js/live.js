@@ -1,226 +1,315 @@
-// js/live.js
+// js/live.js - Notification System 2.0
 
-const API_BASE = "/api";
-let lastNotificationCount = 0;
+const NOTIFICATION_POLL_INTERVAL = 15000; // 15 seconds
 
-// 1. Управление кликом по колокольчику
-window.toggleNotifications = function () {
-  const dropdown = document.getElementById("notifications-dropdown");
-  if (dropdown) {
-    dropdown.classList.toggle("active");
-  }
-};
-
-// 2. Клик по конкретному уведомлению
-window.handleNotificationClick = async function (topicId, notifId) {
-  const userDataStr = localStorage.getItem("user_data");
-  if (!userDataStr) {
-    window.location.href = `topic.html?id=${topicId}`;
-    return;
-  }
-  const user = JSON.parse(userDataStr);
-
-  try {
-    // Помечаем КОНКРЕТНОЕ уведомление как прочитанное
-    fetch(`${API_BASE}/notifications`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: user.id,
-        notification_ids: [notifId],
-      }),
-    });
-    window.location.href = `topic.html?id=${topicId}`;
-  } catch (e) {
-    window.location.href = `topic.html?id=${topicId}`;
-  }
-};
-
-// 3. НОВОЕ: Прочитать всё
-window.markAllRead = async function (event) {
-  if (event) event.stopPropagation(); // Чтобы меню не закрылось
-
-  const userDataStr = localStorage.getItem("user_data");
-  if (!userDataStr) return;
-  const user = JSON.parse(userDataStr);
-
-  try {
-    // Отправляем запрос БЕЗ ID уведомлений -> сервер поймет, что нужно отметить ВСЕ
-    await fetch(`${API_BASE}/notifications`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: user.id }),
-    });
-
-    // Мгновенно обновляем интерфейс
-    const badges = document.querySelectorAll(".notif-badge");
-    badges.forEach((b) => {
-      b.classList.remove("visible");
-      b.textContent = "0";
-    });
-
-    const unreadItems = document.querySelectorAll(".notif-item.unread");
-    unreadItems.forEach((item) => item.classList.remove("unread"));
-
-    // Убираем кнопку "Прочитать все"
-    updateHeaderUI(0);
-  } catch (e) {
-    console.error("Error marking all read:", e);
-  }
-};
-
-// Закрытие при клике вне
-document.addEventListener("click", (e) => {
-  const dropdown = document.getElementById("notifications-dropdown");
-  const btn = document.querySelector(".notification-btn");
-
-  if (dropdown && dropdown.classList.contains("active")) {
-    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
-      dropdown.classList.remove("active");
-    }
-  }
+document.addEventListener("DOMContentLoaded", () => {
+    initNotifications();
 });
 
-// Основной цикл
-async function checkLiveNotifications() {
-  const userDataStr = localStorage.getItem("user_data");
-  if (!userDataStr) return;
+// Handle Back/Forward Cache & Visibility
+window.addEventListener("pageshow", () => loadNotifications());
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === 'visible') loadNotifications();
+});
 
-  let user;
-  try {
-    user = JSON.parse(userDataStr);
-  } catch (e) {
-    return;
-  }
+function initNotifications() {
+     // Check auth
+     const user = JSON.parse(localStorage.getItem("user_data"));
+     if (!user || !user.id) return;
 
-  if (!user || !user.id) return;
-
-  try {
-    const res = await fetch(`${API_BASE}/notifications?user_id=${user.id}`);
-    if (!res.ok) return;
-
-    const data = await res.json();
-
-    let notifications = [];
-    if (Array.isArray(data)) {
-      notifications = data;
-    } else if (data.notifications) {
-      notifications = data.notifications;
-    }
-
-    const unreadCount = notifications.filter((n) => !n.is_read).length;
-
-    // Обновляем бейдж
-    updateBadgeUI(unreadCount);
-
-    // Обновляем заголовок (добавляем/убираем кнопку)
-    updateHeaderUI(unreadCount);
-
-    // Обновляем список (только если массив изменился, можно добавить проверку)
-    updateDropdownUI(notifications);
-  } catch (e) {}
+     // Initial load
+     loadNotifications();
+     
+     // Start polling
+     setInterval(loadNotifications, NOTIFICATION_POLL_INTERVAL);
 }
 
-function updateBadgeUI(count) {
-  const badges = document.querySelectorAll(".notif-badge");
-  badges.forEach((badge) => {
-    if (count > 0) {
-      badge.classList.add("visible");
-      badge.textContent = count > 99 ? "99+" : count;
-      if (count > lastNotificationCount) {
-        badge.classList.add("pulse-animation");
-        setTimeout(() => badge.classList.remove("pulse-animation"), 1000);
-      }
-    } else {
-      badge.classList.remove("visible");
+// State
+let currentNotifications = [];
+
+async function loadNotifications() {
+    const user = JSON.parse(localStorage.getItem("user_data"));
+    if (!user || !user.id) return;
+
+    try {
+        const res = await fetch(`/api/notifications?user_id=${user.id}&_=${Date.now()}`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+        currentNotifications = data.notifications || [];
+        const unreadCount = data.unread_count || 0;
+
+        updateNotificationUI(unreadCount);
+    } catch (e) {
+        console.error("Failed to load notifications", e);
     }
-  });
-  lastNotificationCount = count;
 }
 
-// НОВАЯ ФУНКЦИЯ: Обновление заголовка выпадашки
-function updateHeaderUI(unreadCount) {
-  const header = document.querySelector(".notif-header");
-  if (!header) return;
+function updateNotificationUI(unreadCount) {
+    const t = getTranslations();
 
-  // Если есть непрочитанные - показываем кнопку
-  if (unreadCount > 0) {
-    header.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <span>Notifications</span>
-                <button onclick="markAllRead(event)" 
-                        style="background:none; border:none; color:#0066b3; font-size:11px; cursor:pointer; font-weight:bold; text-transform:uppercase;">
-                    Mark all read
-                </button>
+    // 1. Ensure Bell Icon Exists
+    injectBellIconIfNeeded();
+
+    // 2. Update Badge
+    const badge = document.getElementById("notif-badge");
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.style.display = "block";
+            badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+        } else {
+            badge.style.display = "none";
+        }
+    }
+
+    // 3. Update Dropdown List
+    const list = document.getElementById("notif-list");
+    if (list) {
+        if (currentNotifications.length === 0) {
+            list.innerHTML = `
+                <div style="padding:40px 20px; text-align:center; color:#666;">
+                    <i class="far fa-bell" style="font-size:24px; margin-bottom:10px; opacity:0.5;"></i>
+                    <p style="font-size:14px;">${t.noNotifications}</p>
+                </div>`;
+        } else {
+            list.innerHTML = currentNotifications.map(n => renderNotificationItem(n)).join('');
+        }
+    }
+}
+
+function renderNotificationItem(n) {
+    const isUnread = !n.is_read;
+    const bgStyle = isUnread ? 'background: rgba(0, 102, 179, 0.1); border-left: 3px solid #0066b3;' : 'border-left: 3px solid transparent;';
+    const time = timeAgo(n.created_at);
+    
+    // Icon mapping
+    const iconClass = n.icon || 'fa-bell';
+    const iconColor = n.type === 'like' ? '#e74c3c' : (n.type === 'solve' ? '#2ecc71' : '#3498db');
+    
+    // Fix: Escape quotes properly for HTML attribute and JS string
+    const safeText = n.text ? n.text.replace(/`/g, '\\`').replace(/"/g, '&quot;') : '';
+
+    return `
+        <div class="notif-item" id="notif-${n.id}" style="${bgStyle}; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; gap: 12px; align-items: start; transition: background 0.2s;">
+            <div style="font-size:16px; color:${iconColor}; margin-top: 2px;">
+                <i class="fas ${iconClass}"></i>
+            </div>
+            <div style="flex: 1;" onclick="handleNotifClick('${n.id}', '${n.link || ""}', \`${safeText}\`)">
+                <div class="notif-text-body" style="font-weight: ${isUnread ? '600' : '400'};">
+                    ${n.text}
+                </div>
+                <div style="font-size:11px; color:#666; margin-top:4px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>${time}</span>
+                </div>
+            </div>
+             <button onclick="deleteNotification(event, '${n.id}')" style="background:transparent; border:none; color:#444; cursor:pointer; padding:5px;" title="Remove">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+}
+
+// === ACTIONS ===
+
+// Notification Modal
+function openNotificationModal(text, link) {
+    let modal = document.getElementById('notif-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'notif-modal';
+        
+        // Use structure matching CSS
+        modal.innerHTML = `
+            <div class="modal-content">
+                <button class="modal-close-icon" onclick="closeNotifModal()"><i class="fas fa-times"></i></button>
+                <h3>Notification</h3>
+                <p id="notif-modal-content"></p>
+                <div id="notif-modal-actions" class="notif-modal-actions">
+                     <!-- Buttons will be injected here -->
+                </div>
             </div>
         `;
-  } else {
-    header.innerHTML = "Notifications";
-  }
+        document.body.appendChild(modal);
+        
+        // Event Listeners
+        modal.addEventListener('click', (e) => {
+           if (e.target === modal) closeNotifModal();
+        });
+    }
+    
+    document.getElementById('notif-modal-content').textContent = text;
+    
+    // Update Actions
+    const actionsContainer = document.getElementById('notif-modal-actions') || modal.querySelector('.modal-content > div:last-child');
+    
+    // Default Close button (Secondary)
+    let buttonsHtml = `<button class="notif-btn secondary" onclick="closeNotifModal()">Close</button>`;
+    
+    if (link && link !== '#' && link !== 'null' && link !== 'undefined') {
+        // Open button (Primary)
+        buttonsHtml = `
+            <button class="notif-btn secondary" onclick="closeNotifModal()">Cancel</button>
+            <a href="${link}" class="notif-btn primary">Open Link</a>
+        `;
+    }
+    
+    if (actionsContainer) actionsContainer.innerHTML = buttonsHtml;
+    
+    // Show
+    requestAnimationFrame(() => {
+        modal.classList.add('active');
+    });
 }
 
-function updateDropdownUI(notifications) {
-  const list = document.getElementById("notif-list");
-  if (!list) return;
+function closeNotifModal() {
+    const modal = document.getElementById('notif-modal');
+    if(modal) modal.classList.remove('active');
+}
 
-  if (notifications.length === 0) {
-    list.innerHTML = `<div style="padding:20px; text-align:center; color:#666;">No notifications</div>`;
-    return;
-  }
+async function handleNotifClick(id, link, fullText) {
+    // Optimistic Update: Mark as read immediately in UI
+    const el = document.getElementById(`notif-${id}`);
+    if (el) {
+        el.style.background = 'transparent';
+        el.style.borderLeftColor = 'transparent';
+        const textEl = el.querySelector('.notif-text-body') || el.querySelector('div[style*="font-weight: 600"]');
+        if (textEl) {
+            textEl.style.fontWeight = '400';
+        }
+    }
+    
+    // Reduce badge count locally
+    const badge = document.getElementById("notif-badge");
+    if(badge && badge.textContent !== '0') {
+         let count = parseInt(badge.textContent) || 0;
+         if(count > 0) count--;
+         badge.textContent = count;
+         if(count === 0) badge.style.display = 'none';
+    }
 
-  // Простая перерисовка (для надежности)
-  list.innerHTML = notifications
-    .map(
-      (n) => `
-        <div class="notif-item ${!n.is_read ? "unread" : ""}" 
-             onclick="handleNotificationClick('${n.topic_id}', '${n.id}')">
-            <div class="notif-icon">
-                <i class="fas ${getIconByType(n.type)}"></i>
+    // API Call (Fire and forget)
+    try {
+         fetch(`/api/notifications/${id}/read`, { method: 'POST' }).catch(e => console.error(e));
+    } catch (e) { console.error(e); }
+
+    // Logic: Always open modal to let user read full text
+    openNotificationModal(fullText, link);
+}
+
+async function markAllRead() {
+    // Optimistic UI
+    document.querySelectorAll('.notif-item').forEach(el => {
+        el.style.background = 'transparent';
+        el.style.borderLeftColor = 'transparent';
+    });
+    const badge = document.getElementById("notif-badge");
+    if(badge) badge.style.display = 'none';
+
+    // API Call
+    const user = JSON.parse(localStorage.getItem("user_data"));
+    if (user) {
+        await fetch('/api/notifications/read-all', { 
+            method: 'POST',
+            body: JSON.stringify({ user_id: user.id }) 
+        });
+    }
+    
+    // Refresh to be sure
+    setTimeout(loadNotifications, 1000);
+}
+
+async function deleteNotification(e, id) {
+    e.stopPropagation(); // Don't trigger click action
+    
+    // Optimistic UI
+    const el = document.getElementById(`notif-${id}`);
+    if(el) {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+    }
+
+    // API Call
+    try {
+        await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+    } catch (err) {
+        console.error("Delete failed", err);
+    }
+}
+
+// === HELPERS ===
+
+function injectBellIconIfNeeded() {
+    const existingBtn = document.querySelector(".notification-btn") || document.getElementById("notif-btn-wrapper");
+    if (existingBtn) return; // Already there
+
+    const headerRight = document.querySelector("header .header-right") || document.querySelector("header .controls");
+    if (!headerRight) return;
+
+    const t = getTranslations();
+    const wrapper = document.createElement("div");
+    wrapper.id = "notif-btn-wrapper";
+    wrapper.className = "btn notification-btn"; // Use existing class for style
+    wrapper.style.position = "relative";
+    wrapper.onclick = toggleNotifications;
+    
+    wrapper.innerHTML = `
+        <i class="fas fa-bell"></i>
+        <span id="notif-badge" class="notif-badge" style="display:none;">0</span>
+        
+        <div id="notifications-dropdown" class="notifications-dropdown" onclick="event.stopPropagation()">
+            <div class="notif-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>${t.notifications}</span>
+                <button onclick="markAllRead()" style="background:transparent; border:none; color:var(--bmw-blue); font-size:12px; cursor:pointer;">${t.markAllRead}</button>
             </div>
-            <div>
-                <div style="font-weight:bold; font-size:13px; color:white;">${escapeHtml(n.sender_name)}</div>
-                <div style="font-size:12px; color:#aaa;">
-                    ${getTextByType(n.type)} "${escapeHtml(n.topic_title || "Topic")}"
-                </div>
-                <div style="font-size:10px; color:#666; margin-top:2px;">${timeAgoShort(n.created_at)}</div>
-            </div>
+            <div class="notif-list" id="notif-list"></div>
         </div>
-    `,
-    )
-    .join("");
+    `;
+
+    // Insert before the last element (Auth btn)
+    headerRight.insertBefore(wrapper, headerRight.lastElementChild);
 }
 
-function getIconByType(type) {
-  if (type === "like") return "fa-heart";
-  if (type === "solve") return "fa-check";
-  return "fa-reply";
+function toggleNotifications() {
+    const dd = document.getElementById("notifications-dropdown");
+    if (dd) dd.classList.toggle("active");
 }
 
-function getTextByType(type) {
-  if (type === "like") return "liked your post in";
-  if (type === "solve") return "marked solution in";
-  return "replied to";
+function timeAgo(dateString) {
+    if(!dateString) return '';
+    const safeDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
+    const date = new Date(safeDate);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}d ago`;
+    return date.toLocaleDateString();
 }
 
-function timeAgoShort(dateString) {
-  if (!dateString) return "";
-  const cleanDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
-  const seconds = Math.floor((new Date() - new Date(cleanDate)) / 1000);
-  if (seconds < 60) return "Just now";
-  if (seconds < 3600) return Math.floor(seconds / 60) + "m ago";
-  if (seconds < 86400) return Math.floor(seconds / 3600) + "h ago";
-  return Math.floor(seconds / 86400) + "d ago";
+function getTranslations() {
+    // Simple fallback logic
+    const lang = (typeof currentForumLang !== 'undefined') ? currentForumLang : (localStorage.getItem("forumLanguage") || "en");
+    const dict = {
+        en: { notifications: "Notifications", noNotifications: "No new notifications", markAllRead: "Mark all as read" },
+        ru: { notifications: "Уведомления", noNotifications: "Нет новых уведомлений", markAllRead: "Прочитать все" },
+        ka: { notifications: "შეტყობინებები", noNotifications: "ახალი შეტყობინებები არ არის", markAllRead: "ყველას წაკითხვა" }
+    };
+    return dict[lang] || dict['en'];
 }
 
-function escapeHtml(text) {
-  if (!text) return "";
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-setInterval(checkLiveNotifications, 5000);
-document.addEventListener("DOMContentLoaded", checkLiveNotifications);
+// Close dropdown on outside click
+document.addEventListener('click', (e) => {
+    const wrapper = document.getElementById("notif-btn-wrapper") || document.querySelector(".btn.notification-btn");
+    const dd = document.getElementById("notifications-dropdown");
+    
+    if (wrapper && dd && dd.classList.contains('active')) {
+         if (!wrapper.contains(e.target)) {
+             dd.classList.remove("active");
+         }
+    }
+});
