@@ -18,3 +18,4 @@ yarn-error.log*
 
 # Cloudflare Wrangler
 .wrangler/
+.dev.vars
