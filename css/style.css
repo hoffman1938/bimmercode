@@ -779,6 +779,7 @@ footer {
   border-top: 1px solid var(--glass-border);
 }
 
+
 /* Helpers */
 .hidden {
   display: none !important;

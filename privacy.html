@@ -4,61 +4,205 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - BimmerCodes</title>
-    <link rel="stylesheet" href="./css/style.css?v=2.92">
-    <link rel="stylesheet" href="./css/forum.css?v=2.92">
+    <meta name="description" content="BimmerCodes Privacy Policy - How we collect, use, and protect your data.">
+    <link rel="stylesheet" href="./css/style.css?v=2.93">
+    <link rel="stylesheet" href="./css/notifications.css?v=2.93">
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="./js/translations.js?v=2.93"></script>
     <style>
-        .legal-container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            background: rgba(16, 16, 16, 0.8);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ccc;
+        .legal-page { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+        .legal-hero {
+            background: linear-gradient(135deg, rgba(79,0,179,0.15) 0%, rgba(0,0,0,0) 70%);
+            border: 1px solid rgba(79,0,179,0.2); border-radius: 20px;
+            padding: 50px 40px; margin-bottom: 40px; text-align: center; position: relative; overflow: hidden;
         }
-        .legal-container h1 { color: white; margin-bottom: 20px; }
-        .legal-container h2 { color: var(--bmw-blue); margin-top: 20px; margin-bottom: 10px; }
-        .legal-container p { line-height: 1.6; margin-bottom: 15px; }
+        .legal-hero::before { content:''; position:absolute; top:-60px; right:-60px; width:220px; height:220px; background:radial-gradient(circle, rgba(79,0,179,0.18) 0%, transparent 70%); }
+        .legal-hero-icon { font-size: 3rem; color: #8b5cf6; margin-bottom: 16px; }
+        .legal-hero h1 { font-size: clamp(1.8rem,4vw,2.6rem); font-weight: 800; color: white; margin-bottom: 12px; }
+        .legal-hero .updated { font-size: 13px; color: #888; }
+        .legal-hero .intro { color: #bbb; font-size: 1rem; line-height: 1.7; max-width: 580px; margin: 16px auto 0; }
+        .privacy-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:36px; }
+        .privacy-stat { background:rgba(18,20,24,0.85); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:20px; text-align:center; }
+        .privacy-stat-icon { font-size:1.6rem; color:#8b5cf6; margin-bottom:10px; }
+        .privacy-stat-label { color:#888; font-size:12px; }
+        .privacy-stat-value { color:white; font-weight:700; font-size:1rem; margin-bottom:4px; }
+        .legal-toc { background:rgba(18,20,24,0.8); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:24px 28px; margin-bottom:36px; }
+        .legal-toc h3 { color:#aaa; font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; }
+        .legal-toc ol { list-style:decimal; padding-left:20px; display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; }
+        @media(max-width:600px){.legal-toc ol{grid-template-columns:1fr;}}
+        .legal-toc li a { color:#8b5cf6; text-decoration:none; font-size:13.5px; transition:color 0.2s; }
+        .legal-toc li a:hover { color:#a78bfa; }
+        .legal-section { background:rgba(18,20,24,0.85); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:28px 32px; margin-bottom:20px; transition:border-color 0.3s; }
+        .legal-section:hover { border-color:rgba(79,0,179,0.3); }
+        .legal-section-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+        .legal-section-icon { width:42px; height:42px; min-width:42px; border-radius:11px; background:rgba(79,0,179,0.12); display:flex; align-items:center; justify-content:center; color:#8b5cf6; font-size:16px; }
+        .legal-section h2 { color:white; font-size:1.05rem; font-weight:700; margin:0; }
+        .legal-section p { color:#bbb; line-height:1.75; margin-bottom:12px; font-size:0.95rem; }
+        .legal-section p:last-child { margin-bottom:0; }
+        .legal-section ul { color:#bbb; line-height:1.8; padding-left:20px; font-size:0.95rem; }
+        .legal-section ul li { margin-bottom:5px; }
+        .data-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13px; }
+        .data-table th { background:rgba(79,0,179,0.15); color:#a78bfa; padding:10px 14px; text-align:left; font-weight:600; }
+        .data-table td { padding:10px 14px; color:#bbb; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .data-table tr:last-child td { border-bottom:none; }
+        .rights-list { list-style:none; padding:0; }
+        .rights-list li { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); color:#bbb; font-size:0.95rem; }
+        .rights-list li:last-child { border-bottom:none; }
+        .rights-list li i { margin-top:3px; flex-shrink:0; }
+        .highlight-box { background:rgba(79,0,179,0.10); border-left:3px solid #8b5cf6; border-radius:0 8px 8px 0; padding:12px 16px; margin:14px 0; color:#c4b5fd; font-size:0.9rem; }
+        .legal-footer-links { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:48px; }
+        .legal-footer-links a { padding:10px 22px; border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:#aaa; text-decoration:none; font-size:13px; transition:all 0.2s; }
+        .legal-footer-links a:hover { border-color:#8b5cf6; color:white; }
+        .notification-btn { display: none!important; }
     </style>
 </head>
 <body class="bmw-pattern">
     <header>
-      <a href="/" class="logo-container">
-        <div class="logo">
-          <i class="fas fa-user-shield" style="color: #0066b3"></i>
+        <a href="/" class="logo-container">
+            <div class="logo"><i class="fas fa-user-shield" style="color:#8b5cf6"></i></div>
+            <h1>BimmerCodes <span style="color:#a78bfa">Privacy</span></h1>
+        </a>
+        <div class="controls">
+            <a href="/" class="btn"><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a>
+            <button class="btn" onclick="switchPageLang()">
+                <i class="fas fa-globe"></i> <span id="page-lang-display">EN</span>
+            </button>
+            <a href="/contact" class="btn"><i class="fas fa-envelope"></i> Contact</a>
         </div>
-        <h1>BimmerCodes <span style="color: var(--bmw-sky)">Privacy</span></h1>
-      </a>
-      <div class="controls">
-         <a href="/" class="btn"><i class="fas fa-home"></i> Home</a>
-      </div>
     </header>
 
-    <main class="container">
-        <div class="legal-container">
-            <h1>Privacy Policy</h1>
-            <p>Last updated: February 2026</p>
+    <main>
+        <div class="legal-page">
 
-            <h2>1. Information Collection</h2>
-            <p>We collect information you provide directly to us, such as when you create an account, update your profile, or post on our forum.</p>
+            <div class="legal-hero">
+                <div class="legal-hero-icon"><i class="fas fa-user-shield"></i></div>
+                <h1 data-i18n="privacyTitle">Privacy Policy</h1>
+                <div class="updated" data-i18n="privacyUpdated">Last updated: February 2026</div>
+                <p class="intro" data-i18n="privacyIntro">Your privacy matters to us. This policy explains how we collect, use, and protect your information.</p>
+            </div>
 
-            <h2>2. Use of Information</h2>
-            <p>We use the information we collect to operate and maintain our Service, improve user experience, and communicate with you.</p>
+            <div class="privacy-stats">
+                <div class="privacy-stat">
+                    <div class="privacy-stat-icon"><i class="fas fa-database"></i></div>
+                    <div class="privacy-stat-value" data-i18n="privacyStat1Val">Minimal</div>
+                    <div class="privacy-stat-label" data-i18n="privacyStat1Lbl">Data collected</div>
+                </div>
+                <div class="privacy-stat">
+                    <div class="privacy-stat-icon"><i class="fas fa-share-alt"></i></div>
+                    <div class="privacy-stat-value" data-i18n="privacyStat2Val">Never sold</div>
+                    <div class="privacy-stat-label" data-i18n="privacyStat2Lbl">Your data</div>
+                </div>
+                <div class="privacy-stat">
+                    <div class="privacy-stat-icon"><i class="fas fa-lock"></i></div>
+                    <div class="privacy-stat-value" data-i18n="privacyStat3Val">Encrypted</div>
+                    <div class="privacy-stat-label" data-i18n="privacyStat3Lbl">Storage</div>
+                </div>
+                <div class="privacy-stat">
+                    <div class="privacy-stat-icon"><i class="fas fa-trash-alt"></i></div>
+                    <div class="privacy-stat-value" data-i18n="privacyStat4Val">On request</div>
+                    <div class="privacy-stat-label" data-i18n="privacyStat4Lbl">Account deletion</div>
+                </div>
+            </div>
 
-            <h2>3. Cookies</h2>
-            <p>We use cookies to store session information and user preferences (like your preferred language). You can instruct your browser to refuse all cookies.</p>
+            <div class="legal-toc">
+                <h3><i class="fas fa-list"></i> <span data-i18n="privacyTocTitle">Contents</span></h3>
+                <ol>
+                    <li><a href="#collection" data-i18n="privacyToc1">Information We Collect</a></li>
+                    <li><a href="#use" data-i18n="privacyToc2">How We Use Your Data</a></li>
+                    <li><a href="#cookies" data-i18n="privacyToc3">Cookies</a></li>
+                    <li><a href="#sharing" data-i18n="privacyToc4">Data Sharing</a></li>
+                    <li><a href="#security" data-i18n="privacyToc5">Data Security</a></li>
+                    <li><a href="#rights" data-i18n="privacyToc6">Your Rights</a></li>
+                    <li><a href="#retention" data-i18n="privacyToc7">Data Retention</a></li>
+                    <li><a href="#children" data-i18n="privacyToc8">Age Restriction</a></li>
+                    <li><a href="#changes" data-i18n="privacyToc9">Changes to Policy</a></li>
+                    <li><a href="#contact" data-i18n="privacyToc10">Contact</a></li>
+                </ol>
+            </div>
 
-            <h2>4. Data Security</h2>
-            <p>We implement security measures designed to protect your information from unauthorized access. Your password is hashed using strong encryption standards.</p>
+            <div class="legal-section" id="collection">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-database"></i></div><h2 data-i18n="privacyH1">1. Information We Collect</h2></div>
+                <div data-i18n-html="privacySec1"><p>We collect the minimum amount of data necessary to provide and improve our Service.</p><table class="data-table"><tr><th>Data</th><th>When</th><th>Purpose</th></tr><tr><td>Email address</td><td>Registration</td><td>Login, notifications</td></tr><tr><td>Username</td><td>Registration</td><td>Forum identity</td></tr><tr><td>Forum posts</td><td>When you post</td><td>Community platform</td></tr><tr><td>IP address</td><td>Page visits</td><td>Security, rate limiting</td></tr><tr><td>Language preference</td><td>Language switch</td><td>LocalStorage only</td></tr><tr><td>Saved codes</td><td>Bookmark</td><td>LocalStorage only</td></tr></table><p>We do <strong>not</strong> collect payment info, phone numbers, or physical addresses.</p></div>
+            </div>
+
+            <div class="legal-section" id="use">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-cogs"></i></div><h2 data-i18n="privacyH2">2. How We Use Your Data</h2></div>
+                <div data-i18n-html="privacySec2"><p>We use the information we collect to:</p><ul><li>Provide, maintain, and improve the Service</li><li>Authenticate users and maintain account security</li><li>Display forum posts and enable community features</li><li>Investigate abuse, spam, and violations of our Terms</li></ul><p>We do <strong>not</strong> use your data for targeted advertising or third-party marketing.</p></div>
+            </div>
+
+            <div class="legal-section" id="cookies">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-cookie-bite"></i></div><h2 data-i18n="privacyH3">3. Cookies</h2></div>
+                <div data-i18n-html="privacySec3"><p>We use minimal cookies and browser storage:</p><ul><li><strong>Session token</strong> — secure HTTP-only cookie to keep you logged in</li><li><strong>Language preference</strong> — LocalStorage (never sent to servers)</li><li><strong>Saved codes</strong> — LocalStorage (never sent to servers)</li></ul><div class="highlight-box"><i class="fas fa-info-circle"></i> We do not use tracking, advertising, or third-party analytics cookies.</div></div>
+            </div>
+
+            <div class="legal-section" id="sharing">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-share-alt"></i></div><h2 data-i18n="privacyH4">4. Data Sharing</h2></div>
+                <div data-i18n-html="privacySec4"><p>We do <strong>not</strong> sell or rent your personal information. Data may only be shared in limited circumstances:</p><ul><li><strong>Legal compliance</strong> — if required by law or court order</li><li><strong>Infrastructure</strong> — Cloudflare processes requests as part of delivering the Service</li><li><strong>Public forum posts</strong> — content you post is publicly visible to other users</li></ul></div>
+            </div>
+
+            <div class="legal-section" id="security">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-lock"></i></div><h2 data-i18n="privacyH5">5. Data Security</h2></div>
+                <div data-i18n-html="privacySec5"><p>We implement security measures to protect your data:</p><ul><li>Passwords are hashed (never stored in plain text)</li><li>All data transmission is encrypted via HTTPS/TLS</li><li>Session tokens are cryptographically signed and expire automatically</li><li>Database access is restricted to server-side code only</li></ul><div class="highlight-box"><i class="fas fa-shield-alt"></i> No method of internet transmission is 100% secure. Use a strong, unique password.</div></div>
+            </div>
+
+            <div class="legal-section" id="rights">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-balance-scale"></i></div><h2 data-i18n="privacyH6">6. Your Rights</h2></div>
+                <div data-i18n-html="privacySec6"><p>You have the following rights regarding your personal data:</p><ul class="rights-list"><li><i class="fas fa-check-circle" style="color:#2ecc71"></i><div><strong>Access</strong> — Contact us to ask what data we hold about your account</div></li><li><i class="fas fa-check-circle" style="color:#2ecc71"></i><div><strong>Correction</strong> — Update your username and email from your Profile page at any time</div></li><li><i class="fas fa-check-circle" style="color:#2ecc71"></i><div><strong>Account Deletion</strong> — Request account deactivation by contacting us. Public forum posts may remain visible</div></li><li><i class="fas fa-info-circle" style="color:#f0a500"></i><div><strong>Data Export</strong> — No automated export tool exists; you may copy your posts manually</div></li></ul><p>To make a request, contact us at <a href="mailto:codesbimmer@gmail.com" style="color:#8b5cf6;">codesbimmer@gmail.com</a>.</p></div>
+            </div>
+
+            <div class="legal-section" id="retention">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-history"></i></div><h2 data-i18n="privacyH7">7. Data Retention</h2></div>
+                <div data-i18n-html="privacySec7"><p>We retain account data (email, username, password hash) for as long as your account exists. Forum posts are retained indefinitely as they are part of the public community knowledge base.</p><p>If you request account deactivation, your profile will be removed and you will no longer be able to log in. Forum posts may remain visible under your username as part of existing threads.</p></div>
+            </div>
+
+            <div class="legal-section" id="children">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-child"></i></div><h2 data-i18n="privacyH8">8. Age Restriction</h2></div>
+                <div data-i18n-html="privacySec8"><p>BimmerCodes is intended for users who are at least 16 years of age. By registering, you confirm that you meet this age requirement. We do not knowingly collect data from minors. If you believe a minor has registered, please contact us and we will remove the account.</p></div>
+            </div>
+
+            <div class="legal-section" id="changes">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-bell"></i></div><h2 data-i18n="privacyH9">9. Changes to This Policy</h2></div>
+                <div data-i18n-html="privacySec9"><p>We may update this Privacy Policy from time to time. We will notify you of significant changes by updating the "Last updated" date at the top of this page.</p></div>
+            </div>
+
+            <div class="legal-section" id="contact">
+                <div class="legal-section-header"><div class="legal-section-icon"><i class="fas fa-envelope"></i></div><h2 data-i18n="privacyToc10">10. Contact</h2></div>
+                <div data-i18n-html="privacySec10"><p>Questions about this Privacy Policy? Contact us at <a href="mailto:codesbimmer@gmail.com" style="color:#8b5cf6;">codesbimmer@gmail.com</a> or via our <a href="/contact" style="color:#8b5cf6;">Contact Page</a>.</p></div>
+            </div>
+
+            <div class="legal-footer-links">
+                <a href="/terms"><i class="fas fa-file-contract"></i> <span data-i18n="privacyFooterTerms">Terms of Service</span></a>
+                <a href="/contact"><i class="fas fa-envelope"></i> <span data-i18n="termsFooterContact">Contact Us</span></a>
+                <a href="/"><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a>
+            </div>
         </div>
     </main>
 
-    <footer>
-        <!-- Content injected by js/footer.js -->
-    </footer>
-
+    <footer><!-- Content injected by js/footer.js --></footer>
     <script src="./js/footer.js"></script>
+    <script>
+        function getLang() { return localStorage.getItem('language') || 'en'; }
+        function t(key) { return window.APP_TRANSLATIONS?.[getLang()]?.[key] || window.APP_TRANSLATIONS?.en?.[key] || key; }
+        function applyI18n() {
+            document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                var val = t(el.getAttribute('data-i18n-html'));
+                if (val !== el.getAttribute('data-i18n-html')) el.innerHTML = val;
+            });
+        }
+        var LANGS = ['en', 'ru', 'ka'];
+        var LANG_LABELS = { en: 'EN', ru: 'RU', ka: 'KA' };
+        function switchPageLang() {
+            var cur = getLang();
+            var next = LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length];
+            localStorage.setItem('language', next);
+            document.getElementById('page-lang-display').textContent = LANG_LABELS[next];
+            applyI18n();
+        }
+        applyI18n();
+        document.getElementById('page-lang-display').textContent = LANG_LABELS[getLang()] || 'EN';
+        window.addEventListener('languageChanged', applyI18n);
+    </script>
 </body>
 </html>

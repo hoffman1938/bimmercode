@@ -4,137 +4,480 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - BimmerCodes</title>
-    <link rel="stylesheet" href="./css/style.css?v=2.92">
-    <link rel="stylesheet" href="./css/forum.css?v=2.92">
+    <meta name="description" content="Contact BimmerCodes - Report bugs, inquire about advertising, or send suggestions.">
+    <link rel="stylesheet" href="./css/style.css?v=2.93">
+    <link rel="stylesheet" href="./css/responsive.css?v=2.93">
+    <link rel="stylesheet" href="./css/notifications.css?v=2.93">
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="./js/translations.js?v=2.93"></script>
     <style>
-        .legal-container {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-            background: rgba(16, 16, 16, 0.8);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ccc;
+        /* ─── Page Layout ─── */
+        .contact-page { padding: 40px 20px 80px; max-width: 1100px; margin: 0 auto; }
+        /* ─── Hero Banner ─── */
+        .contact-hero {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, rgba(0,102,179,0.15) 0%, rgba(0,0,0,0) 60%);
+            border-radius: 20px;
+            border: 1px solid rgba(0,102,179,0.2);
+            position: relative;
+            overflow: hidden;
         }
-        .legal-container h1 { color: white; margin-bottom: 20px; text-align: center; }
-        .contact-group { margin-bottom: 20px; }
-        .contact-group label { display: block; margin-bottom: 5px; color: #aaa; }
-        .contact-input { 
-            width: 100%; 
-            padding: 10px; 
-            border-radius: 5px; 
-            border: 1px solid #444; 
-            background: #222; 
-            color: white; 
+        .contact-hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(0,102,179,0.12) 0%, transparent 60%);
         }
-        .contact-btn {
+        .contact-hero h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .contact-hero h1 span { color: var(--bmw-sky, #4db8ff); }
+        .contact-hero p { font-size: 1.1rem; color: #aaa; max-width: 550px; margin: 0 auto; line-height: 1.6; }
+
+        /* ─── Tab Switcher ─── */
+        .contact-tabs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 36px;
+        }
+        .contact-tab-btn {
+            padding: 12px 28px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.04);
+            color: #aaa;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.25s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .contact-tab-btn.active, .contact-tab-btn:hover {
+            background: var(--bmw-blue, #0066b3);
+            border-color: var(--bmw-blue, #0066b3);
+            color: white;
+        }
+
+        /* ─── Two-panel grid ─── */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 28px;
+        }
+        @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
+
+        /* ─── Form Cards ─── */
+        .contact-card {
+            background: rgba(18, 20, 24, 0.9);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 32px;
+            backdrop-filter: blur(12px);
+            transition: border-color 0.3s;
+            display: none;
+        }
+        .contact-card.visible { display: block; }
+        .contact-card:hover { border-color: rgba(0,102,179,0.35); }
+
+        .contact-card-header { margin-bottom: 24px; }
+        .contact-card-header h2 { color: white; font-size: 1.25rem; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+        .contact-card-header h2 i { color: var(--bmw-blue, #0066b3); font-size: 1rem; }
+        .contact-card-header p { color: #999; font-size: 0.9rem; line-height: 1.5; }
+
+        /* ─── Form Elements ─── */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; color: #aaa; font-size: 13px; margin-bottom: 7px; font-weight: 500; }
+        .form-input {
             width: 100%;
-            padding: 12px;
-            background: var(--bmw-blue);
+            padding: 11px 14px;
+            border-radius: 9px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 14px;
+            transition: border-color 0.2s, background 0.2s;
+            box-sizing: border-box;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--bmw-blue, #0066b3);
+            background: rgba(0,102,179,0.08);
+        }
+        .form-input option { background: #1a1a2e; color: white; }
+        textarea.form-input { resize: vertical; min-height: 130px; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            background: var(--bmw-blue, #0066b3);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-weight: bold;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .contact-btn:hover { background: #005691; }
+        .submit-btn:hover { background: #005696; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,102,179,0.35); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .form-status {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 13px;
+            min-height: 20px;
+            line-height: 1.5;
+        }
+        .form-status.success { color: #2ecc71; }
+        .form-status.error { color: #e74c3c; }
+
+        /* ─── Fallback mailto ─── */
+        .mailto-fallback {
+            margin-top: 16px;
+            padding: 14px;
+            border: 1px solid rgba(255,200,0,0.3);
+            border-radius: 9px;
+            background: rgba(255,200,0,0.05);
+            display: none;
+        }
+        .mailto-fallback p { color: #f0c040; font-size: 13px; margin-bottom: 10px; }
+        .mailto-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 18px;
+            background: rgba(255,200,0,0.15);
+            border: 1px solid rgba(255,200,0,0.4);
+            border-radius: 6px;
+            color: #f0c040;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .mailto-btn:hover { background: rgba(255,200,0,0.25); }
+
+        /* ─── Info Card (sidebar) ─── */
+        .contact-info-card {
+            background: rgba(18,20,24,0.9);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 32px;
+            margin-top: 28px;
+        }
+        .contact-info-card h3 { color: white; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .contact-info-card h3 i { color: var(--bmw-blue, #0066b3); }
+        .info-row { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .info-row:last-child { border-bottom: none; }
+        .info-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 10px; background: rgba(0,102,179,0.15); display: flex; align-items: center; justify-content: center; color: var(--bmw-blue, #0066b3); }
+        .info-text strong { display: block; color: white; font-size: 13px; margin-bottom: 3px; }
+        .info-text span { color: #888; font-size: 12px; }
+
+        /* ─── Header override ─── */
+        header { background: rgba(10,12,16,0.95); backdrop-filter: blur(15px); }
     </style>
 </head>
 <body class="bmw-pattern">
     <header>
-      <a href="/" class="logo-container">
-        <div class="logo">
-          <i class="fas fa-envelope" style="color: #0066b3"></i>
+        <a href="/" class="logo-container">
+            <div class="logo"><i class="fas fa-envelope" style="color:#0066b3"></i></div>
+            <h1>BimmerCodes <span style="color:var(--bmw-sky)">Contact</span></h1>
+        </a>
+        <div class="controls">
+            <a href="/" class="btn"><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a>
+            <button class="btn" onclick="switchPageLang()">
+                <i class="fas fa-globe"></i> <span id="page-lang-display">EN</span>
+            </button>
         </div>
-        <h1>BimmerCodes <span style="color: var(--bmw-sky)">Contact</span></h1>
-      </a>
-      <div class="controls">
-         <a href="/" class="btn"><i class="fas fa-home"></i> Home</a>
-      </div>
     </header>
 
-    <main class="container">
-        <div class="legal-container">
-            <h1>Contact Support</h1>
-            <p style="text-align: center; margin-bottom: 30px;">Have a question or found a bug? Send us a message.</p>
+    <main>
+        <div class="contact-page">
 
-            <form id="contact-form">
-                <div class="contact-group">
-                    <label>Your Name</label>
-                    <input type="text" id="contact-name" class="contact-input" required>
-                </div>
-                <div class="contact-group">
-                    <label>Email Address</label>
-                    <input type="email" id="contact-email" class="contact-input" required>
-                </div>
-                <div class="contact-group">
-                    <label>Subject</label>
-                    <select id="contact-subject" class="contact-input">
-                        <option value="General Inquiry">General Inquiry</option>
-                        <option value="Bug Report">Bug Report</option>
-                        <option value="Advertising">Advertising</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="contact-group">
-                    <label>Message</label>
-                    <textarea id="contact-message" class="contact-input" rows="5" required></textarea>
-                </div>
-                <button type="submit" class="contact-btn">Send Message</button>
-                <p id="contact-msg" style="text-align: center; margin-top: 15px; min-height: 20px;"></p>
-            </form>
+            <!-- Hero -->
+            <div class="contact-hero">
+                <h1 data-i18n="contactTitle">Contact Us</h1>
+                <p data-i18n="contactSubtitle">Have a question, found a bug, or want to advertise? We'd love to hear from you.</p>
+            </div>
 
-            <script>
-                document.getElementById('contact-form').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const btn = e.target.querySelector('button');
-                    const msg = document.getElementById('contact-msg');
-                    
-                    const name = document.getElementById('contact-name').value;
-                    const email = document.getElementById('contact-email').value;
-                    const subject = document.getElementById('contact-subject').value;
-                    const message = document.getElementById('contact-message').value;
-                    
-                    btn.disabled = true;
-                    btn.textContent = "Sending...";
-                    msg.textContent = "";
-                    msg.style.color = "#ccc";
+            <!-- Tab Switcher -->
+            <div class="contact-tabs">
+                <button class="contact-tab-btn active" onclick="switchTab('gmail')" id="tab-gmail">
+                    <i class="fab fa-google"></i> <span data-i18n="contactGmailTab">Email Us</span>
+                </button>
+                <button class="contact-tab-btn" onclick="switchTab('admin')" id="tab-admin">
+                    <i class="fas fa-inbox"></i> <span data-i18n="contactAdminTab">Message Inbox</span>
+                </button>
+            </div>
 
-                    try {
-                        const res = await fetch('/api/contact', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name, email, subject, message })
-                        });
-                        
-                        const data = await res.json();
-                        
-                        if (data.success) {
-                            msg.style.color = "var(--bmw-blue)";
-                            msg.textContent = "Message sent successfully! We will get back to you soon.";
-                            e.target.reset();
-                        } else {
-                            msg.style.color = "#e74c3c";
-                            msg.textContent = "Error: " + (data.error || "Failed to send message");
-                        }
-                    } catch (err) {
-                         msg.style.color = "#e74c3c";
-                         msg.textContent = "Connection error. Please try again.";
-                    } finally {
-                        btn.disabled = false;
-                        btn.textContent = "Send Message";
-                    }
-                });
-            </script>
+            <!-- Grid: both forms side by side (one visible at a time for mobile, both for desktop) -->
+            <div class="contact-grid">
+
+                <!-- ═══ FORM 1: Gmail via EmailJS ═══ -->
+                <div class="contact-card visible" id="card-gmail">
+                    <div class="contact-card-header">
+                        <h2><i class="fab fa-google"></i> <span data-i18n="contactGmailTitle">Send Email to Gmail</span></h2>
+                        <p data-i18n="contactGmailDesc">Send your message directly to our email. We'll reply within 24 hours.</p>
+                    </div>
+                    <form id="gmail-form" novalidate>
+                        <div class="form-group">
+                            <label data-i18n="contactName">Your Name</label>
+                            <input type="text" id="g-name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="contactEmail">Email Address</label>
+                            <input type="email" id="g-email" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="contactSubject">Subject</label>
+                            <select id="g-subject" class="form-input">
+                                <option value="Bug Report" data-i18n="contactSubjectBug">Bug Report</option>
+                                <option value="Advertising" data-i18n="contactSubjectAds">Advertising</option>
+                                <option value="Suggestion" data-i18n="contactSubjectSuggestion">Suggestion</option>
+                                <option value="Other" data-i18n="contactSubjectOther">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="contactMessage">Message</label>
+                            <textarea id="g-message" class="form-input" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn" id="gmail-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            <span data-i18n="contactSend">Send Message</span>
+                        </button>
+                        <div class="form-status" id="gmail-status"></div>
+                        <!-- mailto fallback -->
+                        <div class="mailto-fallback" id="gmail-fallback">
+                            <p><i class="fas fa-exclamation-triangle"></i> <span data-i18n="contactFallback">Having trouble? Click here to open your email client:</span></p>
+                            <a href="#" id="mailto-link" class="mailto-btn">
+                                <i class="fas fa-envelope"></i>
+                                <span data-i18n="contactFallbackBtn">Open Email Client</span>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ═══ FORM 2: Admin DB Inbox ═══ -->
+                <div class="contact-card" id="card-admin">
+                    <div class="contact-card-header">
+                        <h2><i class="fas fa-inbox"></i> <span data-i18n="contactAdminTitle">Send to Admins</span></h2>
+                        <p data-i18n="contactAdminDesc">Your message will be saved in our admin panel and reviewed shortly.</p>
+                    </div>
+                    <form id="admin-form" novalidate>
+                        <div class="form-group">
+                            <label data-i18n="contactName">Your Name</label>
+                            <input type="text" id="a-name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="contactEmail">Email Address</label>
+                            <input type="email" id="a-email" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="contactSubject">Subject</label>
+                            <select id="a-subject" class="form-input">
+                                <option value="Bug Report" data-i18n="contactSubjectBug">Bug Report</option>
+                                <option value="Advertising" data-i18n="contactSubjectAds">Advertising</option>
+                                <option value="Suggestion" data-i18n="contactSubjectSuggestion">Suggestion</option>
+                                <option value="Other" data-i18n="contactSubjectOther">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="contactMessage">Message</label>
+                            <textarea id="a-message" class="form-input" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn" id="admin-btn">
+                            <i class="fas fa-inbox"></i>
+                            <span data-i18n="contactSend">Send Message</span>
+                        </button>
+                        <div class="form-status" id="admin-status"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Row -->
+            <div class="contact-info-card">
+                <h3><i class="fas fa-info-circle"></i> <span data-i18n="contactInfoTitle">Other Ways to Reach Us</span></h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0;">
+                    <div class="info-row">
+                        <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="info-text">
+                            <strong data-i18n="contactInfoEmail">Direct Email</strong>
+                            <span>codesbimmer@gmail.com</span>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-icon"><i class="fas fa-clock"></i></div>
+                        <div class="info-text">
+                            <strong data-i18n="contactInfoResponse">Response Time</strong>
+                            <span data-i18n="contactInfoResponseVal">Within 24 hours</span>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-icon"><i class="fas fa-language"></i></div>
+                        <div class="info-text">
+                            <strong data-i18n="contactInfoLang">Languages</strong>
+                            <span data-i18n="contactInfoLangVal">English, Russian, Georgian</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
-    <footer>
-        <!-- Content injected by js/footer.js -->
-    </footer>
+    <footer><!-- Content injected by js/footer.js --></footer>
 
+    <!-- EmailJS SDK (free tier) -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="./js/footer.js"></script>
+
+    <script>
+    // ─── EmailJS Config ────────────────────────────────────────────────────────
+    // Fill in your own keys from https://www.emailjs.com/
+    const EMAILJS_SERVICE_ID  = 'service_4nxmsa4';   // e.g. 'service_abc123'
+    const EMAILJS_TEMPLATE_ID = 'template_al8f3ot';  // e.g. 'template_xyz456'
+    const EMAILJS_PUBLIC_KEY  = 'eRUc849lRX8Bq85Zj';    // e.g. 'ABC123defGHI'
+    const RECIPIENT_EMAIL     = 'codesbimmer@gmail.com';
+
+    const emailjsReady = EMAILJS_SERVICE_ID !== 'service_4nxmsa4';
+    if (emailjsReady) emailjs.init(EMAILJS_PUBLIC_KEY);
+
+    // ─── i18n ─────────────────────────────────────────────────────────────────
+    function getLang() { return localStorage.getItem('language') || 'en'; }
+    function t(key) {
+        const lang = getLang();
+        return (window.APP_TRANSLATIONS?.[lang]?.[key]) || (window.APP_TRANSLATIONS?.['en']?.[key]) || key;
+    }
+    function applyTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+        document.querySelectorAll('option[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+    }
+    applyTranslations(); // Call directly — DOM is ready at body-bottom
+    window.addEventListener('languageChanged', applyTranslations);
+
+    // ─── Language Switcher ────────────────────────────────────────────────────
+    const LANGS = ['en', 'ru', 'ka'];
+    const LANG_LABELS = { en: 'EN', ru: 'RU', ka: 'KA' };
+    function switchPageLang() {
+        const cur = getLang();
+        const next = LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length];
+        localStorage.setItem('language', next);
+        document.getElementById('page-lang-display').textContent = LANG_LABELS[next];
+        applyTranslations();
+        window.dispatchEvent(new Event('languageChanged'));
+    }
+    // Init lang display
+    document.getElementById('page-lang-display').textContent = LANG_LABELS[getLang()] || 'EN';
+
+    // ─── Tab Switching ─────────────────────────────────────────────────────────
+    function switchTab(tab) {
+        document.querySelectorAll('.contact-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.contact-card').forEach(c => c.classList.remove('visible'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.getElementById('card-' + tab).classList.add('visible');
+    }
+
+    // ─── Gmail Form (EmailJS) ──────────────────────────────────────────────────
+    document.getElementById('gmail-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn    = document.getElementById('gmail-btn');
+        const status = document.getElementById('gmail-status');
+        const fallback = document.getElementById('gmail-fallback');
+
+        const name    = document.getElementById('g-name').value.trim();
+        const email   = document.getElementById('g-email').value.trim();
+        const subject = document.getElementById('g-subject').value;
+        const message = document.getElementById('g-message').value.trim();
+
+        if (!name || !email || !message) return;
+
+        btn.disabled = true;
+        btn.querySelector('span').textContent = t('contactSending');
+        status.textContent = '';
+        status.className = 'form-status';
+        fallback.style.display = 'none';
+
+        // Build mailto href for fallback
+        const mailtoHref = `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent('[BimmerCodes] ' + subject + ' from ' + name)}&body=${encodeURIComponent('From: ' + name + '\nEmail: ' + email + '\n\n' + message)}`;
+        document.getElementById('mailto-link').href = mailtoHref;
+
+        if (!emailjsReady) {
+            // No keys configured → show mailto fallback immediately
+            status.textContent = t('contactError');
+            status.className = 'form-status error';
+            fallback.style.display = 'block';
+            btn.disabled = false;
+            btn.querySelector('span').textContent = t('contactSend');
+            return;
+        }
+
+        try {
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                from_name:    name,
+                from_email:   email,
+                subject:      subject,
+                message:      message,
+                to_email:     RECIPIENT_EMAIL,
+            });
+            status.textContent = t('contactSuccessGmail');
+            status.className = 'form-status success';
+            e.target.reset();
+        } catch (err) {
+            status.textContent = t('contactError');
+            status.className = 'form-status error';
+            fallback.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.querySelector('span').textContent = t('contactSend');
+        }
+    });
+
+    // ─── Admin Form ────────────────────────────────────────────────────────────
+    document.getElementById('admin-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn    = document.getElementById('admin-btn');
+        const status = document.getElementById('admin-status');
+
+        const name    = document.getElementById('a-name').value.trim();
+        const email   = document.getElementById('a-email').value.trim();
+        const subject = document.getElementById('a-subject').value;
+        const message = document.getElementById('a-message').value.trim();
+
+        if (!name || !email || !message) return;
+
+        btn.disabled = true;
+        btn.querySelector('span').textContent = t('contactSending');
+        status.textContent = '';
+        status.className = 'form-status';
+
+        try {
+            const res  = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, subject, message })
+            });
+            const data = await res.json();
+            if (data.success) {
+                status.textContent = t('contactSuccessAdmin');
+                status.className = 'form-status success';
+                e.target.reset();
+            } else {
+                status.textContent = t('contactError');
+                status.className = 'form-status error';
+            }
+        } catch {
+            status.textContent = t('contactError');
+            status.className = 'form-status error';
+        } finally {
+            btn.disabled = false;
+            btn.querySelector('span').textContent = t('contactSend');
+        }
+    });
+    </script>
 </body>
 </html>
