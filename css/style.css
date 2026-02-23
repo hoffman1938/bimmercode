@@ -206,19 +206,18 @@ main.container {
 #forum-search {
   /* <--- Добавили этот ID */
   width: 100%;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
+  background: rgba(0, 20, 50, 0.65);
+  border: 2px solid rgba(0, 102, 179, 0.6);
   padding: 18px 25px;
-  /* padding-right: 50px; — можно оставить или убрать для форума */
   border-radius: var(--radius-xl);
   color: #fff;
-  font-size: 13px;
-  height: 50px;
+  font-size: 15px;
+  height: 56px;
   font-family: "Exo 2", sans-serif;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   transition: var(--transition);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 20px rgba(0, 102, 179, 0.25), 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 #search-input:focus,
@@ -1129,8 +1128,7 @@ footer {
   max-width: 1100px;
   margin: 0 auto;
   display: flex;
-  place-content: center!important;
-  justify-content: center!important;
+  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 20px;
@@ -1140,17 +1138,21 @@ footer {
 .footer-text {
   margin: 0;
   color: #aaa;
+  text-align: center;
 }
 
 .footer-subtext {
   font-size: 0.8em;
   color: #666;
   margin: 5px 0 0 0;
+  text-align: center;
 }
 
 .footer-links {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .footer-links a {
