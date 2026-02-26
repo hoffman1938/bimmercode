@@ -1,4 +1,4 @@
-const CACHE_NAME = "bimmercodes-v29-fix-profile-topics";
+const CACHE_NAME = "bimmercodes-v30-fix-css-loops";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
