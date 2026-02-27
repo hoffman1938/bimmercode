@@ -356,18 +356,45 @@
     />
     <link rel="manifest" href="./site.webmanifest" />
 
-    <!-- SEO Content Styles (скрыт визуально, индексируется поисковиками) -->
+    <!-- SEO Content Styles -->
     <style>
       .seo-content {
-        position: absolute;
-        left: -9999px;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
+        margin-top: 50px;
+        margin-bottom: 30px;
+        padding: 30px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        color: #e2e8f0;
+        line-height: 1.6;
+      }
+      .seo-content h2 {
+        font-family: "Exo 2", sans-serif;
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        color: var(--bmw-sky);
+        margin-bottom: 15px;
+        margin-top: 0;
+      }
+      .seo-content h3 {
+        font-family: "Exo 2", sans-serif;
+        font-size: 1.25rem;
+        color: #fff;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        border-left: 3px solid var(--bmw-blue);
+        padding-left: 10px;
+      }
+      .seo-content p {
+        margin-bottom: 15px;
+      }
+      .seo-content p:last-child {
+        margin-bottom: 0;
       }
       .notification-btn {
-  display: none!important;
-}
+        display: none!important;
+      }
     </style>
   </head>
   <body class="bmw-pattern">
@@ -463,8 +490,7 @@
           <span style="color: #444; font-size: 12px;">Advertisement</span>
       </div>
 
-      <!-- SEO Content (скрыт визуально, индексируется поисковиками) -->
-      <section class="seo-content">
+      <!-- SEO/Page Content -->
       <section class="seo-content">
         <h2>BMW Diagnostic Trouble Codes Database</h2>
         <p>
