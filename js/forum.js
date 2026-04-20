@@ -1,729 +1,625 @@
-// js/forum.js
+// js/forum.js — Forum v2 client
+// Cursor-based pagination, infinite scroll, sort & filter tabs, skeleton UI,
+// i18n-aware rendering, Turnstile-safe form submission.
 
-// Переводы UI
-// Translations are now loaded from js/translations.js
-// using APP_TRANSLATIONS global object
+(function () {
+  "use strict";
 
-let currentForumLang = localStorage.getItem("forumLanguage") || "en";
-let currentSearchTerm = "";
-let originalTopicsData = [];
+  // ============================================================ State
+  const state = {
+    lang: localStorage.getItem("forumLanguage") || localStorage.getItem("language") || "en",
+    category: "all",
+    tab: "all",
+    sort: "newest",
+    search: "",
+    cursor: null,
+    hasMore: true,
+    loading: false,
+    categories: [],
+    topics: [],
+  };
 
-// Кэш переводов
-let translationCache = JSON.parse(
-  localStorage.getItem("translationCache") || "{}"
-);
+  const PAGE_SIZE = 20;
 
-// Load Categories dynamically
-async function loadForumCategories() {
+  // ============================================================ Helpers
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  function t(key, fallback) {
     try {
-        const res = await fetch('/api/categories');
-        const data = await res.json();
-        
-        if (data.success && data.categories) {
-            renderSidebarCategories(data.categories);
-            renderModalCategories(data.categories);
-        }
-    } catch (e) {
-        console.error("Failed to load categories", e);
-    }
-}
-
-function renderSidebarCategories(categories) {
-    const navMenu = document.querySelector('.nav-menu');
-    if (!navMenu) return; // Guard
-    
-    // Keep "All Topics"
-    let html = `<a href="#" class="nav-item active" onclick="filterTopics('all')"><i class="fas fa-stream"></i> All Topics</a>`;
-    
-    categories.forEach(cat => {
-        html += `<a href="#" class="nav-item" onclick="filterTopics('${cat.slug}')"><i class="${cat.icon || 'fas fa-folder'}"></i> ${cat.title}</a>`;
-    });
-    
-    navMenu.innerHTML = html;
-}
-
-function renderModalCategories(categories) {
-    const select = document.getElementById('topic-category');
-    if (!select) return;
-    
-    let html = '';
-    categories.forEach(cat => {
-        html += `<option value="${cat.slug}">${cat.title}</option>`;
-    });
-    
-    select.innerHTML = html;
-}
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadForumCategories();
-
-  // Only run forum-specific logic if on the main
-  const isForumMain = !!document.querySelector(".sidebar");
-
-  if (isForumMain) {
-      fetchTopics();
-      updateSidebarUser();
-      setupForumSearch();
-  } else {
-      // On profile page, we might just want generic stuff or nothing from here
-  }
-  
-  checkNotifications();
-
-  // Ensure global currentLanguage matches forum language
-  if (typeof currentLanguage !== "undefined") {
-      currentLanguage = currentForumLang;
-  }
-  
-  updateForumLanguage();
-  setupSimilarTopics();
-  updateHeaderAuth(); // New function
-  
-  // Check for pre-fill params from AI Chat
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get("new_topic") === "true") {
-      const title = urlParams.get("title");
-      if (title) {
-          setTimeout(() => {
-              openNewTopicModal();
-              const titleInput = document.getElementById("topic-title");
-              if (titleInput) {
-                  titleInput.value = title;
-                  // Trigger input event to show similar topics
-                  titleInput.dispatchEvent(new Event('input'));
-              }
-          }, 500); // Small delay to ensure translations loaded
-      }
+      return (window.APP_TRANSLATIONS?.[state.lang]?.[key]) ||
+             (window.APP_TRANSLATIONS?.en?.[key]) ||
+             fallback || key;
+    } catch { return fallback || key; }
   }
 
-  setInterval(checkNotifications, 15000);
-});
-
-// === НОВАЯ ФУНКЦИЯ: ОПРЕДЕЛЕНИЕ ЯЗЫКА ТЕКСТА ===
-function detectContentLanguage(text) {
-  if (!text) return "en";
-
-  // Проверка на грузинские символы (Unicode range)
-  const kaRegex = /[\u10A0-\u10FF]/;
-  // Проверка на кириллицу (Русский)
-  const ruRegex = /[\u0400-\u04FF]/;
-
-  if (kaRegex.test(text)) return "ka";
-  if (ruRegex.test(text)) return "ru";
-
-  return "en"; // По умолчанию
-}
-
-// === БЕСПЛАТНЫЙ ПЕРЕВОД ===
-async function translateText(text, targetLang) {
-  if (!text || text.trim().length < 2) return text;
-
-  const cacheKey = `${text.substring(0, 100)}_${targetLang}`;
-  if (translationCache[cacheKey]) return translationCache[cacheKey];
-
-  try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    let translated = "";
-    if (data && data[0]) {
-      for (let i = 0; i < data[0].length; i++) {
-        if (data[0][i][0]) translated += data[0][i][0];
-      }
-    }
-
-    if (translated && translated !== text) {
-      translationCache[cacheKey] = translated;
-      const keys = Object.keys(translationCache);
-      if (keys.length > 500) {
-        for (let i = 0; i < 100; i++) delete translationCache[keys[i]];
-      }
-      localStorage.setItem(
-        "translationCache",
-        JSON.stringify(translationCache),
-      );
-      return translated;
-    }
-    return text;
-  } catch (error) {
-    return text;
-  }
-}
-
-// === ПОИСК ===
-function setupForumSearch() {
-  const searchInput = document.getElementById("forum-search");
-  if (!searchInput) return;
-
-  let debounceTimer;
-  searchInput.addEventListener("input", (e) => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      currentSearchTerm = e.target.value.trim();
-      fetchTopics("all", currentSearchTerm);
-    }, 300);
-  });
-}
-
-// === ПЕРЕКЛЮЧЕНИЕ ЯЗЫКА ===
-async function switchForumLanguage() {
-  const langs = ["en", "ru", "ka"];
-  let idx = langs.indexOf(currentForumLang);
-  currentForumLang = langs[(idx + 1) % langs.length];
-  localStorage.setItem("forumLanguage", currentForumLang);
-  
-  // SYNC WITH CHATBOT/SCRIPT.JS
-  if (typeof currentLanguage !== "undefined") {
-    currentLanguage = currentForumLang;
-    localStorage.setItem("language", currentForumLang); // Sync persistence
-    if (window.updateChatbotUI) window.updateChatbotUI();
-  }
-  
-  updateForumLanguage();
-
-  // Перерендерим с переводом
-  if (originalTopicsData.length > 0) {
-    await renderTopicsWithTranslation(originalTopicsData);
+  function escapeHtml(str) {
+    if (str == null) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
-  // Refresh Mobile Menu with new language
-  if (typeof initMobileMenu === 'function') {
-      initMobileMenu();
-  }
-}
-
-function updateForumLanguage() {
-  if (!APP_TRANSLATIONS) return;
-  const t = APP_TRANSLATIONS[currentForumLang] || APP_TRANSLATIONS["en"];
-  if (!t) return;
-  
-  const langLabels = { en: "EN", ru: "RU", ka: "GE" };
-
-  const langDisplay = document.getElementById("forum-lang-display");
-  if (langDisplay) langDisplay.textContent = langLabels[currentForumLang];
-
-  const searchInput = document.getElementById("forum-search");
-  if (searchInput) searchInput.placeholder = t.searchPlaceholder;
-
-  const newTopicBtn = document.querySelector(".topics-header .btn");
-  if (newTopicBtn)
-    newTopicBtn.innerHTML = `<i class="fas fa-plus"></i> ${t.newTopic}`;
-
-  // Навигация
-  const navItems = document.querySelectorAll(".nav-item");
-  const navTexts = [
-    t.allTopics,
-    t.diagnostics,
-    t.codingSoft,
-    t.partsRepair,
-    t.offTopic,
-  ];
-  navItems.forEach((item, i) => {
-    // Use modulo to handle duplicated menus (desktop + mobile) if they exist
-    const text = navTexts[i % navTexts.length];
-    if (text) {
-      const icon = item.querySelector("i");
-      item.innerHTML = "";
-      if (icon) item.appendChild(icon);
-      item.appendChild(document.createTextNode(" " + text));
-    }
-  });
-
-  // Re-render user sidebar if logged in (this updates Profile/Logout buttons)
-  if (typeof updateSidebarUser === 'function' && localStorage.getItem("user_data")) {
-      updateSidebarUser();
+  function timeAgo(dateString) {
+    if (!dateString) return "";
+    const clean = dateString.endsWith("Z") ? dateString : dateString + "Z";
+    const then = new Date(clean).getTime();
+    const sec = Math.max(0, Math.floor((Date.now() - then) / 1000));
+    if (sec < 45)  return t("justNow", "Just now");
+    if (sec < 3600) return `${Math.floor(sec / 60)}${t("minShort", "m")}`;
+    if (sec < 86400) return `${Math.floor(sec / 3600)}${t("hourShort", "h")}`;
+    if (sec < 2592000) return `${Math.floor(sec / 86400)}${t("dayShort", "d")}`;
+    if (sec < 31536000) return `${Math.floor(sec / 2592000)}${t("monthShort", "mo")}`;
+    return `${Math.floor(sec / 31536000)}${t("yearShort", "y")}`;
   }
 
-  // Сайдбар - для незалогиненных users
-  const sidebarInfo = document.getElementById("user-sidebar-info");
-  if (sidebarInfo && !localStorage.getItem("user_data")) {
-    sidebarInfo.innerHTML = `
-      <div style="text-align: center; padding: 20px 0">
-        <p style="color: #aaa; margin-bottom: 10px">${t.loginToPost}</p>
-        <button class="submit-btn" onclick="toggleAuthModal()">${t.loginRegister}</button>
-      </div>
-    `;
+  function debounce(fn, ms = 300) {
+    let h;
+    return (...args) => {
+      clearTimeout(h);
+      h = setTimeout(() => fn(...args), ms);
+    };
   }
 
-  // Модалка
-  const modalTitle = document.querySelector("#new-topic-modal h2");
-  if (modalTitle) modalTitle.textContent = t.createTopic;
-
-  const submitBtn = document.querySelector("#create-topic-form .submit-btn");
-  if (submitBtn) submitBtn.textContent = t.publish;
-
-  const notifHeader = document.querySelector(".notif-header");
-  if (notifHeader) notifHeader.textContent = t.notifications;
-  
-  // Generic data-i18n support
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const key = el.getAttribute("data-i18n");
-    if (t[key]) el.textContent = t[key];
-  });
-
-  // Generic data-i18n-placeholder support
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    if (t[key]) el.placeholder = t[key];
-  });
-
-  // REAL-TIME VALIDATION FOR CODE INPUT
-  const codeInput = document.getElementById("topic-code");
-  if (codeInput) {
-      // Remove any existing feedback to prevent duplicates
-      const existing = document.getElementById("code-validation-feedback");
-      if (existing) existing.remove();
-
-      // Create feedback element
-      const feedback = document.createElement("div");
-      feedback.id = "code-validation-feedback";
-      feedback.style.fontSize = "12px";
-      feedback.style.marginTop = "5px";
-      feedback.style.height = "20px"; // Reserve space
-      feedback.style.transition = "all 0.3s ease";
-      codeInput.parentNode.appendChild(feedback);
-
-      codeInput.addEventListener("input", (e) => {
-           const val = e.target.value.trim().toLowerCase();
-           if (!val) {
-               codeInput.style.borderColor = "";
-               feedback.textContent = "";
-               return;
-           }
-
-           const found = bmwCodes && bmwCodes.find(c => c.code.toLowerCase() === val);
-           
-           if (found) {
-               codeInput.style.borderColor = "#2ecc71";
-               feedback.style.color = "#2ecc71";
-               feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${found.code} - ${found.title[currentForumLang] || found.title['en']}`;
-           } else {
-               codeInput.style.borderColor = "#e74c3c";
-               feedback.style.color = "#e74c3c";
-               feedback.textContent = APP_TRANSLATIONS[currentForumLang].invalidCodeError || "Code not found in database";
-           }
-      });
+  function detectContentLanguage(text) {
+    if (!text) return "en";
+    if (/[\u10A0-\u10FF]/.test(text)) return "ka";
+    if (/[\u0400-\u04FF]/.test(text)) return "ru";
+    return "en";
   }
 
-
-}
-
-// === ЗАГРУЗКА ТЕМ ===
-// === ЗАГРУЗКА ТЕМ ===
-let currentForumPage = 1;
-const FORUM_ITEMS_PER_PAGE = 20;
-
-async function fetchTopics(category = "all", search = "", page = 1) {
-  currentForumPage = page;
-  const container = document.getElementById("topics-list-container");
-  const t = APP_TRANSLATIONS[currentForumLang];
-  
-  // SKELETON LOADING
-  container.innerHTML = Array(5).fill(0).map(() => `
-    <div class="skeleton-row">
-      <div class="skeleton-icon"></div>
-      <div class="skeleton-content">
-        <div class="skeleton-line long"></div>
-        <div class="skeleton-line short"></div>
-      </div>
-    </div>
-  `).join('');
-
-  try {
-    let url = `/api/forum/topics?category=${category}&page=${page}&limit=${FORUM_ITEMS_PER_PAGE}`;
-    if (search) {
-        url += `&search=${encodeURIComponent(search)}`;
-    }
-    
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("API Error");
-    const data = await res.json();
-    
-    // Handle new response structure
-    // Handle new response structure
-    let topics = data.topics;
-    if (!Array.isArray(topics)) {
-        // Fallback or empty if invalid
-        topics = []; 
-    }
-    const total = data.total || 0;
-    const totalPages = data.totalPages || 1;
-
-    if (topics.length === 0) {
-      container.innerHTML = `<div style="padding:40px; text-align:center; color:#666;">${t.noTopics}</div>`;
-      return;
-    }
-
-    originalTopicsData = topics;
-    await renderTopicsWithTranslation(topics);
-    renderPagination(totalPages, page, category, search);
-
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = `<p style="color:#e74c3c; text-align:center; padding:20px;">${t.loadError}</p>`;
-  }
-}
-
-function renderPagination(totalPages, currentPage, category, search) {
-    const container = document.getElementById("topics-list-container");
-    
-    if (totalPages <= 1) return;
-
-    const nav = document.createElement("div");
-    nav.className = "pagination-controls";
-    nav.style.display = "flex";
-    nav.style.justifyContent = "center";
-    nav.style.gap = "10px";
-    nav.style.marginTop = "20px";
-    nav.style.marginBottom = "20px";
-
-    // Prev
-    if (currentPage > 1) {
-        const prev = document.createElement("button");
-        prev.className = "btn secondary";
-        prev.innerHTML = "<i class='fas fa-chevron-left'></i>";
-        prev.onclick = () => fetchTopics(category, search, currentPage - 1);
-        nav.appendChild(prev);
-    }
-
-    // Info
-    const info = document.createElement("span");
-    info.style.alignSelf = "center";
-    info.style.color = "#888";
-    info.textContent = `Page ${currentPage} of ${totalPages}`;
-    nav.appendChild(info);
-
-    // Next
-    if (currentPage < totalPages) {
-        const next = document.createElement("button");
-        next.className = "btn secondary";
-        next.innerHTML = "<i class='fas fa-chevron-right'></i>";
-        next.onclick = () => fetchTopics(category, search, currentPage + 1);
-        nav.appendChild(next);
-    }
-
-    container.appendChild(nav);
-}
-
-async function renderTopicsWithTranslation(topics) {
-  const container = document.getElementById("topics-list-container");
-  const t = APP_TRANSLATIONS[currentForumLang];
-  
-  if (!Array.isArray(topics)) {
-      console.error("renderTopicsWithTranslation: topics is not an array", topics);
-      topics = [];
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem("user_data") || "null"); }
+    catch { return null; }
   }
 
-  container.innerHTML = `<div style="padding:40px; text-align:center;"><i class="fas fa-language fa-spin"></i> ${t.translating}</div>`;
+  // ============================================================ Reputation badge
+  function reputationLevel(rep = 0, role = "user_role") {
+    if (role === "admin_role") return { key: "admin", icon: "fa-crown", label: t("roleAdmin", "Admin") };
+    if (role === "moderator_role") return { key: "mod", icon: "fa-shield-alt", label: t("roleMod", "Moderator") };
+    if (rep >= 3000) return { key: "master",  icon: "fa-star",        label: t("lvlMaster",  "Master") };
+    if (rep >= 1000) return { key: "expert",  icon: "fa-award",       label: t("lvlExpert",  "Expert") };
+    if (rep >= 250)  return { key: "regular", icon: "fa-user-check",  label: t("lvlRegular", "Regular") };
+    if (rep >= 50)   return { key: "member",  icon: "fa-user",        label: t("lvlMember",  "Member") };
+    return               { key: "newcomer", icon: "fa-seedling",    label: t("lvlNewcomer", "Newcomer") };
+  }
 
-  const translatedTopics = await Promise.all(
-    topics.map(async (topic) => ({
-      ...topic,
-      translatedTitle: await translateText(topic.title, currentForumLang),
-    })),
-  );
+  function repBadgeHtml(rep, role) {
+    const lvl = reputationLevel(rep || 0, role || "user_role");
+    return `<span class="rep-badge rep-${lvl.key}" title="${escapeHtml(lvl.label)}"><i class="fas ${lvl.icon}"></i> ${escapeHtml(lvl.label)}</span>`;
+  }
 
-  container.innerHTML = translatedTopics
-    .map(
-      (topic) => `
-      <div class="topic-row" onclick="window.location.href='/topic?id=${topic.id}'">
-        <div class="topic-status-icon ${topic.is_solved ? "solved" : ""}">
-          <i class="fas ${topic.is_solved ? "fa-check-circle" : "fa-comment-alt"}"></i>
+  // ============================================================ Skeleton
+  function renderSkeleton(n = 5) {
+    const host = $("#topics-list-container");
+    if (!host) return;
+    host.setAttribute("aria-busy", "true");
+    host.innerHTML = Array.from({ length: n }).map(() => `
+      <div class="skeleton-card" aria-hidden="true">
+        <div class="skeleton circle" style="width:44px;height:44px;"></div>
+        <div>
+          <div class="skeleton skeleton-line long" style="margin-bottom:8px;"></div>
+          <div class="skeleton skeleton-line medium"></div>
         </div>
-        <div class="topic-main-content">
-          <h3>
-            ${escapeHtml(topic.translatedTitle || topic.title)}
-            <span class="lang-badge" title="Original language: ${topic.lang || "en"}">
-                <i class="fas fa-globe"></i> ${topic.lang ? topic.lang.toUpperCase() : "EN"}
-            </span>
+        <div class="skeleton skeleton-line short" style="height:10px;"></div>
+      </div>
+    `).join("");
+  }
+
+  // ============================================================ Empty / error states
+  function renderEmpty() {
+    $("#topics-list-container").innerHTML = `
+      <div class="empty-state">
+        <i class="far fa-comments empty-icon" aria-hidden="true"></i>
+        <h3>${escapeHtml(t("noTopicsTitle", "No topics here yet"))}</h3>
+        <p>${escapeHtml(t("noTopicsSubtitle", "Be the first to start a discussion."))}</p>
+        <button class="btn btn-primary" onclick="openNewTopicModal()">
+          <i class="fas fa-plus"></i> ${escapeHtml(t("newTopic", "New Topic"))}
+        </button>
+      </div>`;
+  }
+
+  function renderError(msg) {
+    $("#topics-list-container").innerHTML = `
+      <div class="error-state">
+        <i class="fas fa-exclamation-triangle"></i>
+        ${escapeHtml(msg || t("loadError", "Failed to load topics."))}
+      </div>`;
+  }
+
+  // ============================================================ Topic card
+  function renderTopicCard(topic) {
+    const solved = topic.is_solved;
+    const pinned = topic.is_pinned;
+    const locked = topic.is_locked;
+
+    const classes = ["topic-card"];
+    if (pinned) classes.push("pinned");
+    if (locked) classes.push("locked");
+
+    const iconClass = solved ? "fa-check-circle" :
+                      locked ? "fa-lock" :
+                      pinned ? "fa-thumbtack" :
+                               "fa-comment-alt";
+
+    const iconTone = solved ? "solved" : pinned ? "pinned" : locked ? "locked" : "";
+
+    const badges = [];
+    if (pinned) badges.push(`<span class="badge badge-pinned"><i class="fas fa-thumbtack"></i> ${escapeHtml(t("pinned", "Pinned"))}</span>`);
+    if (solved) badges.push(`<span class="badge badge-solved"><i class="fas fa-check"></i> ${escapeHtml(t("solved", "Solved"))}</span>`);
+    if (locked) badges.push(`<span class="badge badge-locked"><i class="fas fa-lock"></i> ${escapeHtml(t("locked", "Locked"))}</span>`);
+
+    if (topic.related_code) {
+      badges.push(`<span class="badge badge-code" title="${escapeHtml(t("relatedCode", "Related code"))}"><i class="fas fa-code"></i> ${escapeHtml(topic.related_code)}</span>`);
+    }
+    if (topic.lang) {
+      badges.push(`<span class="badge badge-lang" title="${escapeHtml(topic.lang)}">${escapeHtml(topic.lang.toUpperCase())}</span>`);
+    }
+    (topic.tags || []).slice(0, 3).forEach((tag) => {
+      const color = tag.color ? `style="--color-primary-alpha-10: ${tag.color}22; color: ${tag.color}; border-color: ${tag.color}55;"` : "";
+      badges.push(`<span class="badge badge-tag" ${color}>#${escapeHtml(tag.name)}</span>`);
+    });
+
+    const authorAvatar = topic.author_avatar
+      ? `<img src="${escapeHtml(topic.author_avatar)}" alt="" loading="lazy" onerror="this.remove()">`
+      : "";
+
+    const lastReply = topic.last_reply_username
+      ? `<span>${escapeHtml(t("by", "by"))} ${escapeHtml(topic.last_reply_username)} · ${escapeHtml(timeAgo(topic.last_reply_at))}</span>`
+      : `<span>${escapeHtml(timeAgo(topic.created_at))}</span>`;
+
+    return `
+      <a class="${classes.join(" ")}" href="/topic?id=${encodeURIComponent(topic.id)}" data-topic-id="${escapeHtml(topic.id)}">
+        <div class="topic-icon ${iconTone}"><i class="fas ${iconClass}" aria-hidden="true"></i></div>
+        <div class="topic-body">
+          <h3 class="topic-title">
+            <span class="title-text">${escapeHtml(topic.title)}</span>
           </h3>
-          <div class="topic-meta-line">
-            ${topic.is_solved ? `<span class="topic-badge" style="color:#2ecc71; border-color:#2ecc71;">${t.solved}</span>` : ""}
-            ${topic.related_code ? `<a href="/?code=${topic.related_code}" class="topic-badge topic-code-badge" style="text-decoration:none; color:inherit;"><i class="fas fa-search"></i> ${topic.related_code}</a>` : ""}
-            <span class="topic-badge">${topic.category}</span>
-            <span>${t.by} <span style="color:#fff">${topic.username}</span></span>
-            <span>${timeAgo(topic.created_at)}</span>
+          <div class="topic-meta">
+            ${badges.join("")}
+            <span class="author">${authorAvatar} ${escapeHtml(topic.username)}</span>
+            <span class="sep" aria-hidden="true"></span>
+            ${lastReply}
           </div>
         </div>
         <div class="topic-stats">
-          <div><span class="stat-number">${topic.reply_count || 0}</span> ${t.replies}</div>
-          <div>${topic.views || 0} ${t.views}</div>
+          <div class="stat"><span class="stat-number">${topic.reply_count || 0}</span><span class="stat-label">${escapeHtml(t("replies", "replies"))}</span></div>
+          <div class="stat"><span class="stat-number">${topic.views || 0}</span><span class="stat-label">${escapeHtml(t("views", "views"))}</span></div>
         </div>
-      </div>
-    `,
-    )
-    .join("");
-}
-
-// Notification logic is handled by js/live.js
-async function checkNotifications() {
-  // Deprecated in favor of live.js
-  return;
-}
-
-// Duplicate toggleNotifications removed (handled by live.js)
-
-
-function getNotifIcon(type) {
-  return type === "like"
-    ? "fa-heart"
-    : type === "solve"
-      ? "fa-check"
-      : "fa-reply";
-}
-
-function getNotifText(type, t) {
-  return type === "like"
-    ? t.likedPost
-    : type === "solve"
-      ? t.markedSolution
-      : t.repliedTo;
-}
-
-// Создание темы
-document
-  .getElementById("create-topic-form")
-  ?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const user = JSON.parse(localStorage.getItem("user_data"));
-    if (!user) {
-      alert("Please login first");
-      return;
-    }
-
-    const btn = e.target.querySelector("button");
-    btn.textContent = "Publishing...";
-    btn.disabled = true;
-
-    // Берем данные
-    const title = document.getElementById("topic-title").value;
-    const content = document.getElementById("topic-content").value;
-    const relatedCode = document.getElementById("topic-code").value.trim();
-
-    // VALIDATION: Check if code exists in bmwCodes
-    if (relatedCode) {
-         // Using global bmwCodes from script.js
-         const exists = bmwCodes && bmwCodes.some(c => c.code.toLowerCase() === relatedCode.toLowerCase());
-         if (!exists) {
-             alert(APP_TRANSLATIONS[currentForumLang].invalidCodeError || "Invalid error code. Please enter a valid code from our database or leave it empty.");
-             btn.disabled = false;
-             btn.textContent = APP_TRANSLATIONS[currentForumLang].publish;
-             return; 
-         }
-    }
-
-    // ОПРЕДЕЛЯЕМ ЯЗЫК НА ОСНОВЕ ТОГО, ЧТО НАПИСАЛ ЮЗЕР
-    const detectedLang = detectContentLanguage(title + " " + content);
-
-    try {
-      const res = await fetch("/api/forum/topics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: user.id,
-          username: user.username,
-          category: document.getElementById("topic-category").value,
-          title: title,
-          content: content,
-          related_code: relatedCode || null,
-          lang: detectedLang, // Используем определенный язык!
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        window.location.href = `/topic?id=${data.topicId}`;
-      } else {
-        alert("Error: " + data.error);
-        btn.textContent = APP_TRANSLATIONS[currentForumLang].publish;
-        btn.disabled = false;
-      }
-    } catch (err) {
-      alert("Connection error");
-    }
-  });
-
-function openNewTopicModal() {
-  if (!localStorage.getItem("auth_token")) {
-    toggleAuthModal();
-    return;
-  }
-  document.getElementById("new-topic-modal").classList.add("active");
-}
-
-function filterTopics(cat) {
-  document
-    .querySelectorAll(".nav-item")
-    .forEach((el) => el.classList.remove("active"));
-  event.currentTarget.classList.add("active");
-  fetchTopics(cat, currentSearchTerm);
-}
-
-// Внутри js/forum.js
-
-function updateSidebarUser() {
-  const user = JSON.parse(localStorage.getItem("user_data"));
-  const container = document.getElementById("user-sidebar-info");
-  const t = APP_TRANSLATIONS[currentForumLang];
-
-  if (user && container) {
-    // Проверяем, есть ли ссылка на фото
-    let avatarHTML;
-    if (user.avatar_url) {
-      avatarHTML = `<img src="${user.avatar_url}" onerror="this.onerror=null; this.src='./assets/icons/ico.svg'" class="user-avatar-large" style="object-fit:cover;">`;
-    } else {
-      avatarHTML = `<div class="user-avatar-large">${user.username[0].toUpperCase()}</div>`;
-    }
-
-    // Determine role badge
-    let roleBadge = "";
-    if (typeof getReputationBadge === "function") {
-      roleBadge = getReputationBadge(user.reputation, user.role);
-    } else {
-      roleBadge = `<span class="user-badge badge-newcomer" style="margin-top:5px; display:inline-block;"><i class="fas fa-user"></i> ${t.member}</span>`;
-      if (user.role === 'admin_role') roleBadge = '<span class="user-badge badge-admin" style="margin-top:5px; display:inline-block;"><i class="fas fa-shield-alt"></i> Admin</span>';
-    }
-
-    container.innerHTML = `
-      <div class="user-mini-profile">
-        ${avatarHTML}
-        <h3 style="color:white; margin:10px 0 5px;">${escapeHtml(user.username)}</h3>
-        ${roleBadge}
-        
-        <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
-            <a href="/profile" class="btn" style="padding: 8px; font-size: 13px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: #ddd;">
-                <i class="fas fa-user-circle"></i> ${t.profile || 'Profile'}
-            </a>
-            <button onclick="logout()" class="btn" style="padding: 8px; font-size: 13px; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.3); color: #e74c3c;">
-                <i class="fas fa-sign-out-alt"></i> ${t.logout || 'Logout'}
-            </button>
-        </div>
-      </div>
+      </a>
     `;
   }
-}
 
-function timeAgo(dateString) {
-  const cleanDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
-  const date = new Date(cleanDate);
-  const now = new Date();
-  const seconds = Math.floor((now - date) / 1000);
-  let unit = "sec";
-  let value = seconds;
-  if (seconds < 60) return "Just now";
-  const intervals = {
-    year: 31536000,
-    month: 2592000,
-    day: 86400,
-    hour: 3600,
-    minute: 60,
-  };
-  if (seconds >= intervals.year) {
-    value = Math.floor(seconds / intervals.year);
-    unit = "y";
-  } else if (seconds >= intervals.month) {
-    value = Math.floor(seconds / intervals.month);
-    unit = "mo";
-  } else if (seconds >= intervals.day) {
-    value = Math.floor(seconds / intervals.day);
-    unit = "d";
-  } else if (seconds >= intervals.hour) {
-    value = Math.floor(seconds / intervals.hour);
-    unit = "h";
-  } else {
-    value = Math.floor(seconds / intervals.minute);
-    unit = "m";
-  }
-  return `${value}${unit} ago`;
-}
-
-function escapeHtml(text) {
-  if (!text) return "";
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-// === SIMILAR TOPICS SUGGESTIONS ===
-function setupSimilarTopics() {
-  const titleInput = document.getElementById("topic-title");
-  if (!titleInput) return;
-
-  // Create suggestions container
-  let similarContainer = document.getElementById("similar-topics-suggestions");
-  if (!similarContainer) {
-    similarContainer = document.createElement("div");
-    similarContainer.id = "similar-topics-suggestions";
-    similarContainer.style.cssText =
-      "max-height:0; overflow:hidden; transition:max-height 0.3s; margin-top:5px;";
-    titleInput.parentNode.appendChild(similarContainer);
+  function appendTopics(topics) {
+    const host = $("#topics-list-container");
+    if (!host) return;
+    host.removeAttribute("aria-busy");
+    const existing = host.querySelectorAll(".skeleton-card");
+    existing.forEach((el) => el.remove());
+    const frag = document.createElement("div");
+    frag.innerHTML = topics.map(renderTopicCard).join("");
+    for (const el of Array.from(frag.children)) host.appendChild(el);
   }
 
-  titleInput.addEventListener("input", (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    if (query.length < 3) {
-      similarContainer.style.maxHeight = "0";
+  function clearTopics() {
+    $("#topics-list-container").innerHTML = "";
+  }
+
+  // ============================================================ Data fetching
+  async function fetchTopics({ reset = false } = {}) {
+    if (state.loading) return;
+    state.loading = true;
+    $("#load-more-status")?.removeAttribute("hidden");
+
+    if (reset) {
+      state.cursor = null;
+      state.hasMore = true;
+      state.topics = [];
+      renderSkeleton();
+    }
+
+    const params = new URLSearchParams({
+      category: state.category,
+      tab: state.tab,
+      sort: state.sort,
+      limit: String(PAGE_SIZE),
+      lang: state.lang,
+    });
+    if (state.search) params.set("search", state.search);
+    if (state.cursor) params.set("cursor", state.cursor);
+
+    try {
+      const res = await fetch(`/api/forum/topics?${params.toString()}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      const topics = Array.isArray(data.topics) ? data.topics : [];
+
+      if (reset) {
+        clearTopics();
+        if (topics.length === 0) {
+          renderEmpty();
+          state.hasMore = false;
+          return;
+        }
+      }
+
+      state.topics = state.topics.concat(topics);
+      appendTopics(topics);
+
+      state.cursor = data.nextCursor || null;
+      state.hasMore = !!data.hasMore;
+    } catch (err) {
+      console.error("fetchTopics error:", err);
+      if (reset) renderError(err.message);
+    } finally {
+      state.loading = false;
+      $("#load-more-status")?.setAttribute("hidden", "");
+    }
+  }
+
+  // ============================================================ Infinite scroll
+  function setupInfiniteScroll() {
+    const sentinel = $("#infinite-sentinel");
+    if (!sentinel || !("IntersectionObserver" in window)) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && state.hasMore && !state.loading) {
+            fetchTopics({ reset: false });
+          }
+        }
+      },
+      { rootMargin: "400px 0px" }
+    );
+    obs.observe(sentinel);
+  }
+
+  // ============================================================ Categories sidebar
+  async function loadCategories() {
+    try {
+      const res = await fetch(`/api/categories?lang=${encodeURIComponent(state.lang)}`);
+      const data = await res.json();
+      if (!data.success) return;
+      state.categories = data.categories || [];
+      renderCategoriesNav();
+      renderCategoryOptions();
+    } catch (e) { console.error("loadCategories error:", e); }
+  }
+
+  function renderCategoriesNav() {
+    const nav = $("#categories-nav");
+    if (!nav) return;
+    const active = state.category;
+    const allClass = active === "all" ? "nav-item active" : "nav-item";
+    let html = `
+      <a href="#" class="${allClass}" data-category="all" onclick="event.preventDefault(); __forum.setCategory('all');">
+        <i class="fas fa-stream nav-icon" aria-hidden="true"></i>
+        <span>${escapeHtml(t("allTopics", "All Topics"))}</span>
+      </a>
+    `;
+    for (const cat of state.categories) {
+      const cls = active === cat.slug ? "nav-item active" : "nav-item";
+      const count = cat.topics_count
+        ? `<span class="nav-count">${cat.topics_count}</span>`
+        : "";
+      html += `
+        <a href="#" class="${cls}" data-category="${escapeHtml(cat.slug)}"
+           onclick="event.preventDefault(); __forum.setCategory('${escapeHtml(cat.slug)}');">
+          <i class="${escapeHtml(cat.icon)} nav-icon" style="color:${escapeHtml(cat.color || '')};" aria-hidden="true"></i>
+          <span>${escapeHtml(cat.title)}</span>
+          ${count}
+        </a>
+      `;
+    }
+    nav.innerHTML = html;
+  }
+
+  function renderCategoryOptions() {
+    const select = $("#topic-category");
+    if (!select) return;
+    select.innerHTML = state.categories
+      .map((c) => `<option value="${escapeHtml(c.slug)}">${escapeHtml(c.title)}</option>`)
+      .join("");
+  }
+
+  // ============================================================ Tags sidebar (popular)
+  async function loadPopularTags() {
+    try {
+      const res = await fetch("/api/forum/tags?limit=12");
+      const data = await res.json();
+      if (!data.success || !data.tags?.length) return;
+      const card = $("#popular-tags-card");
+      const host = $("#popular-tags");
+      if (!card || !host) return;
+      card.hidden = false;
+      host.innerHTML = data.tags
+        .map((tag) =>
+          `<button class="chip" data-tag="${escapeHtml(tag.name)}" onclick="__forum.setTag('${escapeHtml(tag.name)}')">
+            #${escapeHtml(tag.name)} <span style="color:var(--color-text-muted);">${tag.usage_count || 0}</span>
+          </button>`
+        )
+        .join("");
+    } catch (e) { console.error("loadPopularTags error:", e); }
+  }
+
+  // ============================================================ Sidebar user card
+  function renderUserCard() {
+    const user = getUser();
+    const host = $("#user-sidebar-card");
+    if (!host) return;
+    if (!user) {
+      host.innerHTML = `
+        <div class="guest-card">
+          <p>${escapeHtml(t("loginToPost", "Join the community to post"))}</p>
+          <button class="btn btn-primary" onclick="toggleAuthModal()">${escapeHtml(t("loginRegister", "Login / Register"))}</button>
+        </div>`;
       return;
     }
+    const avatar = user.avatar_url
+      ? `<img class="avatar" src="${escapeHtml(user.avatar_url)}" alt="" onerror="this.src='./assets/icons/ico.svg'">`
+      : `<div class="avatar" style="display:flex;align-items:center;justify-content:center;font-weight:700;">${escapeHtml((user.username || '?')[0]?.toUpperCase())}</div>`;
 
-    // Search in originalTopicsData
-    const matches = originalTopicsData
-      .filter((t) => t.title.toLowerCase().includes(query))
-      .slice(0, 3);
-
-    if (matches.length > 0) {
-      similarContainer.innerHTML = `
-                <div style="font-size:12px; color:#aaa; margin-bottom:5px;">Similar topics found:</div>
-                ${matches
-                  .map(
-                    (m) => `
-                    <div style="background:rgba(255,255,255,0.05); padding:8px; margin-bottom:5px; border-radius:4px; font-size:13px;">
-                        <a href="/topic?id=${m.id}" target="_blank" style="color:white; text-decoration:none; display:block; display:flex; align-items:center; gap:5px;">
-                            <i class="fas fa-external-link-alt" style="font-size:10px; color:#0066b3;"></i> 
-                            <span>${escapeHtml(m.title)}</span>
-                        </a>
-                    </div>
-                `,
-                  )
-                  .join("")}
-            `;
-      similarContainer.style.maxHeight = "300px";
-    } else {
-      similarContainer.style.maxHeight = "0";
-    }
-  });
-}
-
-function updateHeaderAuth() {
-  const user = JSON.parse(localStorage.getItem("user_data"));
-  const authBtn = document.getElementById("auth-btn");
-  if (!authBtn) return;
-
-  if (user) {
-    let avatarIcon = '<i class="fas fa-user"></i>';
-    if (user.avatar_url) {
-        avatarIcon = `<img src="${user.avatar_url}" style="width:20px; height:20px; border-radius:50%; object-fit:cover;">`;
-    }
-
-    authBtn.innerHTML = `${avatarIcon} <span style="font-size:12px; margin-left:5px;">${user.username}</span>`;
-    authBtn.onclick = (e) => {
-        // Redirect to profile
-        window.location.href = "profile.html"; 
-    };
-    authBtn.href = "profile.html";
-    authBtn.title = "Go to Profile";
-  } else {
-    // Guest
-    const loginText = APP_TRANSLATIONS[currentForumLang]?.loginBtn || "Login";
-    authBtn.innerHTML = `<i class="fas fa-user-circle"></i> <span data-i18n="loginBtn">${loginText}</span>`;
-    authBtn.onclick = toggleAuthModal;
-    authBtn.href = "#";
-    authBtn.title = "Login / Register";
+    host.innerHTML = `
+      <div class="user-card">
+        ${avatar}
+        <div class="username">${escapeHtml(user.username)}</div>
+        ${repBadgeHtml(user.reputation, user.role_id || user.role)}
+        <div class="actions">
+          <a href="/profile" class="btn btn-ghost"><i class="fas fa-user-circle"></i> ${escapeHtml(t("profile", "Profile"))}</a>
+          <button class="btn btn-danger" onclick="logout && logout()"><i class="fas fa-sign-out-alt"></i> ${escapeHtml(t("logout", "Logout"))}</button>
+        </div>
+      </div>`;
   }
-}
+
+  function renderHeaderAuth() {
+    const user = getUser();
+    const btn = $("#auth-btn");
+    if (!btn) return;
+    if (user) {
+      btn.innerHTML = user.avatar_url
+        ? `<img src="${escapeHtml(user.avatar_url)}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;"> <span>${escapeHtml(user.username)}</span>`
+        : `<i class="fas fa-user"></i> <span>${escapeHtml(user.username)}</span>`;
+      btn.onclick = () => (window.location.href = "/profile");
+      btn.setAttribute("href", "/profile");
+    } else {
+      btn.innerHTML = `<i class="fas fa-user"></i> <span>${escapeHtml(t("loginBtn", "Login"))}</span>`;
+      btn.onclick = (e) => { e.preventDefault(); toggleAuthModal(); };
+    }
+  }
+
+  // ============================================================ Filter/sort controls
+  function bindFilters() {
+    $$("#filter-chips .chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        $$("#filter-chips .chip").forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        state.tab = chip.dataset.filter || "all";
+        fetchTopics({ reset: true });
+      });
+    });
+
+    const sort = $("#sort-select");
+    if (sort) {
+      sort.addEventListener("change", () => {
+        state.sort = sort.value;
+        fetchTopics({ reset: true });
+      });
+    }
+
+    const search = $("#forum-search");
+    if (search) {
+      const onSearch = debounce(() => {
+        state.search = (search.value || "").trim();
+        fetchTopics({ reset: true });
+      }, 350);
+      search.addEventListener("input", onSearch);
+    }
+
+    // "/" keyboard shortcut focuses search
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/i.test(document.activeElement?.tagName || "")) {
+        e.preventDefault();
+        search?.focus();
+      }
+    });
+  }
+
+  // ============================================================ Language toggle
+  function applyI18n() {
+    const dict = window.APP_TRANSLATIONS?.[state.lang] || {};
+    $$("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      if (dict[key]) el.textContent = dict[key];
+    });
+    $$("[data-i18n-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (dict[key]) el.placeholder = dict[key];
+    });
+    const disp = $("#forum-lang-display");
+    if (disp) disp.textContent = { en: "EN", ru: "RU", ka: "GE" }[state.lang] || "EN";
+  }
+
+  window.switchForumLanguage = function switchForumLanguage() {
+    const order = ["en", "ru", "ka"];
+    state.lang = order[(order.indexOf(state.lang) + 1) % order.length];
+    localStorage.setItem("forumLanguage", state.lang);
+    localStorage.setItem("language", state.lang);
+    applyI18n();
+    renderUserCard();
+    loadCategories(); // Reload category i18n titles
+    renderHeaderAuth();
+  };
+
+  // ============================================================ Public: filter/category/tag setters
+  window.__forum = {
+    setCategory(slug) {
+      state.category = slug;
+      renderCategoriesNav();
+      fetchTopics({ reset: true });
+    },
+    setTag(tag) {
+      state.search = `#${tag}`;
+      const input = $("#forum-search");
+      if (input) input.value = state.search;
+      fetchTopics({ reset: true });
+    },
+  };
+
+  window.filterTopicsByCategory = (slug) => window.__forum.setCategory(slug);
+
+  // ============================================================ New topic modal
+  window.openNewTopicModal = function openNewTopicModal() {
+    if (!localStorage.getItem("auth_token")) {
+      toggleAuthModal();
+      return;
+    }
+    openModal("new-topic-modal");
+  };
+
+  window.openModal = function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  };
+  window.closeModal = function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("active");
+  };
+
+  function setupTopicForm() {
+    const form = $("#create-topic-form");
+    const textarea = $("#topic-content");
+    const counter = $("#topic-content-count");
+    const publish = $("#publish-btn");
+    if (!form) return;
+
+    textarea?.addEventListener("input", () => {
+      if (counter) counter.textContent = String(textarea.value.length);
+    });
+
+    const codeInput = $("#topic-code");
+    const codeFeedback = $("#topic-code-feedback");
+    codeInput?.addEventListener("input", () => {
+      const val = codeInput.value.trim().toLowerCase();
+      if (!val) { if (codeFeedback) codeFeedback.textContent = ""; codeInput.style.borderColor = ""; return; }
+      const found = window.bmwCodes && window.bmwCodes.find((c) => c.code.toLowerCase() === val);
+      if (found) {
+        codeInput.style.borderColor = "var(--color-success)";
+        if (codeFeedback) {
+          codeFeedback.innerHTML = `<i class="fas fa-check-circle" style="color:var(--color-success)"></i> ${escapeHtml(found.code)} — ${escapeHtml((found.title?.[state.lang]) || found.title?.en || "")}`;
+        }
+      } else {
+        codeInput.style.borderColor = "var(--color-danger)";
+        if (codeFeedback) codeFeedback.textContent = t("invalidCodeError", "Code not found in database");
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const user = getUser();
+      if (!user) { toggleAuthModal(); return; }
+
+      const title = $("#topic-title").value.trim();
+      const content = $("#topic-content").value.trim();
+      const relatedCode = $("#topic-code").value.trim();
+      const tagsRaw = $("#topic-tags").value.trim();
+      const category = $("#topic-category").value;
+
+      if (relatedCode) {
+        const exists = window.bmwCodes?.some((c) => c.code.toLowerCase() === relatedCode.toLowerCase());
+        if (!exists) {
+          $("#topic-title-error").textContent = t("invalidCodeError", "Invalid error code — leave empty or use a valid one.");
+          return;
+        }
+      }
+      $("#topic-title-error").textContent = "";
+
+      const body = {
+        user_id: user.id,
+        username: user.username,
+        category,
+        title,
+        content,
+        related_code: relatedCode || null,
+        lang: detectContentLanguage(title + " " + content),
+        tags: tagsRaw ? tagsRaw.split(",").map((x) => x.trim()).filter(Boolean) : [],
+      };
+
+      // Turnstile
+      const turnstileToken = window.turnstile?.getResponse?.(document.querySelector("#turnstile-topic"));
+      if (turnstileToken) body.turnstile_token = turnstileToken;
+
+      publish.disabled = true;
+      publish.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> ${escapeHtml(t("publishing", "Publishing…"))}`;
+
+      try {
+        const token = localStorage.getItem("auth_token");
+        const res = await fetch("/api/forum/topics", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || data.reason || `HTTP ${res.status}`);
+        }
+        window.location.href = `/topic?id=${data.topicId}`;
+      } catch (err) {
+        $("#topic-title-error").textContent = err.message || t("publishError", "Failed to publish");
+        publish.disabled = false;
+        publish.innerHTML = `<i class="fas fa-paper-plane"></i> <span>${escapeHtml(t("publish", "Publish"))}</span>`;
+      }
+    });
+  }
+
+  // ============================================================ Auth modal helpers (shared w/ script.js)
+  window.toggleAuthModal = function toggleAuthModal() {
+    document.getElementById("auth-modal")?.classList.toggle("active");
+  };
+
+  window.switchAuthTab = function switchAuthTab(tab) {
+    $("#tab-login")?.classList.toggle("active", tab === "login");
+    $("#tab-register")?.classList.toggle("active", tab === "register");
+    const login = $("#login-form");
+    const reg = $("#register-form");
+    if (login) login.style.display = tab === "login" ? "" : "none";
+    if (reg) reg.style.display = tab === "register" ? "" : "none";
+  };
+
+  // Compatibility with script.js — alias for old `filterTopics` signature
+  window.filterTopics = (slug) => window.__forum.setCategory(slug);
+
+  // ============================================================ Mobile menu stub
+  window.toggleMobileMenu = function toggleMobileMenu() {
+    document.querySelector(".mobile-menu-overlay")?.classList.toggle("active");
+    document.querySelector(".mobile-offcanvas")?.classList.toggle("active");
+  };
+
+  // Notifications bell (delegated to live.js if available)
+  window.toggleNotifications = function toggleNotifications() {
+    if (window.__notifications?.toggle) return window.__notifications.toggle();
+    alert(t("notifsComingSoon", "Notifications coming soon"));
+  };
+
+  // ============================================================ Boot
+  document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("forum-page");
+    applyI18n();
+    renderHeaderAuth();
+    renderUserCard();
+    bindFilters();
+    setupTopicForm();
+    setupInfiniteScroll();
+
+    await loadCategories();
+    loadPopularTags();
+    fetchTopics({ reset: true });
+  });
+})();

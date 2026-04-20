@@ -1,4 +1,16 @@
 {
+  "name": "bimmercodes",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler pages dev . --compatibility-date=2024-01-01 --port 8788",
+    "db:migrate:local": "wrangler d1 migrations apply bmw-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply bmw-db --remote",
+    "db:exec:local": "wrangler d1 execute bmw-db --local --file",
+    "db:exec:remote": "wrangler d1 execute bmw-db --remote --file",
+    "db:console:local": "wrangler d1 execute bmw-db --local --command",
+    "kv:create:ratelimit": "wrangler kv:namespace create RATE_LIMIT_KV",
+    "deploy": "wrangler pages deploy ."
+  },
   "devDependencies": {
     "wrangler": "^4.61.1"
   },

@@ -173,17 +173,22 @@
                 </div>
             </div>
 
-            <!-- Reports Section -->
+            <!-- Reports / Moderation Section -->
             <div id="tab-reports" class="dashboard-section hidden">
                 <div class="dashboard-header">
-                    <h2>Reports Queue</h2>
-                    <div style="display:flex; gap:10px;">
-                        <button class="action-btn" onclick="loadReports('pending')" title="Refresh"><i class="fas fa-sync-alt"></i></button>
-                        <select id="report-status-filter" onchange="loadReports(this.value)">
-                            <option value="pending">Pending</option>
+                    <h2>Moderation Queue</h2>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <div class="tab-switcher" style="display:inline-flex;gap:4px;background:rgba(255,255,255,0.05);padding:4px;border-radius:8px;">
+                            <button class="action-btn" id="mod-tab-reports" onclick="ModDash.setTab('reports'); this.classList.add('active'); document.getElementById('mod-tab-ai').classList.remove('active');"><i class="fas fa-flag"></i> User reports</button>
+                            <button class="action-btn" id="mod-tab-ai" onclick="ModDash.setTab('ai_flagged'); this.classList.add('active'); document.getElementById('mod-tab-reports').classList.remove('active');"><i class="fas fa-robot"></i> AI flagged</button>
+                        </div>
+                        <select id="report-status-filter" onchange="ModDash.setStatus(this.value)">
+                            <option value="open">Open</option>
+                            <option value="reviewing">Reviewing</option>
                             <option value="resolved">Resolved</option>
                             <option value="dismissed">Dismissed</option>
                         </select>
+                        <button class="action-btn" onclick="ModDash.load()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     </div>
                 </div>
                 

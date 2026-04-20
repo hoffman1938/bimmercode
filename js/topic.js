@@ -1,831 +1,603 @@
-// js/topic.js
-
-// === ПЕРЕВОДЫ ИНТЕРФЕЙСА ===
-const topicTranslations = {
-  en: {
-    backToTopics: "Back to topics",
-    topicInfo: "Topic Info",
-    views: "Views",
-    created: "Created",
-    status: "Status",
-    open: "Open",
-    solved: "Solved",
-    solution: "Solution",
-    markSolution: "Mark Solution",
-    writeReply: "Write a reply... (Drag & drop images or click 📎)",
-    loginToReply: "Please login to reply.",
-    login: "login",
-    member: "Member",
-    op: "Author",
-    confirmSolution: "Mark this post as the solution?",
-    errorLoading: "Error loading topic",
-    errorSending: "Error sending reply",
-    translating: "Translating...",
-    uploading: "Processing & Uploading...",
-    uploadError: "Error uploading image",
-  },
-  ru: {
-    backToTopics: "Назад к темам",
-    topicInfo: "Информация",
-    views: "Просмотры",
-    created: "Создано",
-    status: "Статус",
-    open: "Открыто",
-    solved: "Решено",
-    solution: "Решение",
-    markSolution: "Отметить как решение",
-    writeReply: "Напишите ответ... (Перетащите фото или нажмите 📎)",
-    loginToReply: "Войдите, чтобы ответить.",
-    login: "войти",
-    member: "Участник",
-    op: "Автор",
-    confirmSolution: "Отметить этот пост как решение?",
-    errorLoading: "Ошибка загрузки темы",
-    errorSending: "Ошибка отправки ответа",
-    translating: "Перевод...",
-    uploading: "Обработка и загрузка...",
-    uploadError: "Ошибка загрузки фото",
-  },
-  ka: {
-    backToTopics: "თემებზე დაბრუნება",
-    topicInfo: "ინფორმაცია",
-    views: "ნახვები",
-    created: "შექმნილია",
-    status: "სტატუსი",
-    open: "ღია",
-    solved: "გადაწყვეტილი",
-    solution: "გადაწყვეტა",
-    markSolution: "მონიშვნა გადაწყვეტად",
-    writeReply: "დაწერეთ პასუხი... (ჩააგდეთ ფოტო ან დააჭირეთ 📎)",
-    loginToReply: "შედით პასუხის დასაწერად.",
-    login: "შესვლა",
-    member: "მონაწილე",
-    op: "ავტორი",
-    confirmSolution: "მონიშნოთ ეს პოსტი როგორც გადაწყვეტა?",
-    errorLoading: "თემის ჩატვირთვის შეცდომა",
-    errorSending: "პასუხის გაგზავნის შეცდომა",
-    translating: "ითარგმნება...",
-    uploading: "მუშავდება და იტვირთება...",
-    uploadError: "ფოტოს ატვირთვის შეცდომა",
-  },
-};
-
-// === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-const params = new URLSearchParams(window.location.search);
-const topicId = params.get("id");
-const user = JSON.parse(localStorage.getItem("user_data"));
-let currentTopicLang = localStorage.getItem("forumLanguage") || "en";
-let translationCache = JSON.parse(
-  localStorage.getItem("translationCache") || "{}",
-);
-let originalTopicData = null;
-
-// === ИНИЦИАЛИЗАЦИЯ ===
-document.addEventListener("DOMContentLoaded", () => {
-  if (!topicId) {
-    window.location.href = "forum.html";
-    return;
-  }
-
-  loadTopicData();
-  setupReplyForm();
-  
-  // SYNC WITH SCRIPT.JS LANGUAGE
-  if (typeof currentLanguage !== "undefined") {
-    currentLanguage = currentTopicLang;
-  }
-  
-  updateTopicPageLanguage();
-  
-  // CRITICAL: Call updateLanguage from script.js to translate header buttons
-  if (typeof updateLanguage === 'function') {
-    updateLanguage();
-  }
-
-  // Живое обновление темы (новые ответы)
-  setInterval(checkLiveTopicUpdates, 15000);
-
-  // Управление видимостью формы ответа
-  if (user) {
-    if (document.getElementById("reply-form"))
-      document.getElementById("reply-form").style.display = "flex";
-    if (document.getElementById("login-to-reply"))
-      document.getElementById("login-to-reply").style.display = "none";
-  } else {
-    if (document.getElementById("reply-form"))
-      document.getElementById("reply-form").style.display = "none";
-    if (document.getElementById("login-to-reply"))
-      document.getElementById("login-to-reply").style.display = "block";
-  }
-});
-
-// === ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ЯЗЫКА ТЕКСТА ===
-function detectContentLanguage(text) {
-  if (!text) return "en";
-  const kaRegex = /[\u10A0-\u10FF]/;
-  const ruRegex = /[\u0400-\u04FF]/;
-  if (kaRegex.test(text)) return "ka";
-  if (ruRegex.test(text)) return "ru";
-  return "en";
-}
-
-// === ЗАГРУЗКА ДАННЫХ ===
-async function loadTopicData() {
-  const t = topicTranslations[currentTopicLang];
-
-  try {
-    const userIdParam = user ? `&user_id=${user.id}` : "";
-    const res = await fetch(`/api/forum/topic?id=${topicId}${userIdParam}`);
-    const data = await res.json();
-
-    if (data.error) throw new Error(data.error);
-
-    originalTopicData = data;
-    await renderTopicWithTranslation(data);
-  } catch (err) {
-    console.error(err);
-    document.getElementById("posts-container").innerHTML =
-      `<p style="color:red; text-align:center; margin-top:20px;">${t.errorLoading}: ${err.message}</p>`;
-  }
-}
-
-// === РЕНДЕРИНГ И ПЕРЕВОД ===
-async function renderTopicWithTranslation(data) {
-  const t = topicTranslations[currentTopicLang];
-  const topic = data.topic;
-
-  const container = document.getElementById("posts-container");
-  if (!container.hasChildNodes()) {
-    container.innerHTML = `<div style="text-align:center; padding:40px; color:#aaa;"><i class="fas fa-language fa-spin"></i> ${t.translating}</div>`;
-  }
-
-  // Перевод
-  const [translatedTitle, translatedContent] = await Promise.all([
-    translateText(topic.title, currentTopicLang),
-    translateText(topic.content, currentTopicLang),
-  ]);
-
-  const translatedPosts = await Promise.all(
-    data.posts.map(async (post) => ({
-      ...post,
-      translatedContent: await translateText(post.content, currentTopicLang),
-    })),
-  );
-
-  document.title = `${translatedTitle} | BimmerCodes`;
-
-  // Хедер темы
-  const headerContainer = document.getElementById("topic-header-container");
-  if (headerContainer) {
-    headerContainer.innerHTML = `
-        <div class="topic-header-row">
-            <div class="topic-header-main">
-                <div class="topic-meta-badges">
-                  <span class="topic-badge">${topic.category}</span>
-                  ${topic.is_solved ? `<span class="topic-badge badge-solved"><i class="fas fa-check"></i> ${t.solved}</span>` : ""}
-                  ${topic.related_code ? `<a href="/?code=${topic.related_code}" class="topic-badge topic-code-badge"><i class="fas fa-search"></i> ${topic.related_code}</a>` : ""}
-                </div>
-                <h1>${escapeHtml(translatedTitle)}</h1>
-            </div>
-            <div class="share-buttons">
-                <a href="https://wa.me/?text=${encodeURIComponent(translatedTitle + ' ' + window.location.href)}" target="_blank" class="share-btn share-whatsapp" title="Share on WhatsApp">
-                    <i class="fab fa-whatsapp"></i>
-                </a>
-                <a href="https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(translatedTitle)}" target="_blank" class="share-btn share-telegram" title="Share on Telegram">
-                    <i class="fab fa-telegram-plane"></i>
-                </a>
-            </div>
-        </div>
-      `;
-  }
-
-  // Сайдбар
-  const sidebarCard = document.querySelector(".sidebar-card");
-  if (sidebarCard) {
-    sidebarCard.innerHTML = `
-        <h3>${t.topicInfo}</h3>
-        <div class="topic-info-list" style="margin-top:15px;">
-            <div class="topic-info-item"><i class="fas fa-eye"></i> ${t.views}: <span style="font-weight:bold; margin-left:auto; color: white;">${topic.views}</span></div>
-            <div class="topic-info-item"><i class="fas fa-calendar"></i> ${t.created}: <span style="margin-left:auto; color: white;">${formatDateShort(topic.created_at)}</span></div>
-            <div class="topic-info-item"><i class="fas fa-check-circle"></i> ${t.status}: <span style="margin-left:auto; color:${topic.is_solved ? "#2ecc71" : "white"}">${topic.is_solved ? t.solved : t.open}</span></div>
-        </div>
-    `;
-  }
-
-  // Рендер Главного поста
-  let html = renderPostHTML(
-    {
-      id: topic.id, // <-- ВАЖНО: Передаем реальный ID темы, а не "topic-main"
-      user_id: topic.user_id,
-      username: topic.username,
-      content: translatedContent,
-      created_at: topic.created_at,
-      is_solution: false,
-      likes_count: 0,
-      is_liked: false,
-      lang: topic.lang,
-      author_avatar: topic.author_avatar,
-    },
-    true, // isMain = true
-    topic.user_id,
-  );
-
-  // AdSense In-Content
-  html += `
-    <div class="ad-container ad-in-content">
-        <span style="color: #444; font-size: 12px;">Advertisement</span>
-    </div>
-  `;
-
-  // Add Replies Section Divider
-  if (translatedPosts.length > 0) {
-    const repliesText = currentTopicLang === 'ru' ? 'Ответы' : currentTopicLang === 'ka' ? 'პასუხები' : 'Replies';
-    html += `
-      <div class="replies-divider">
-        <span class="replies-divider-text">
-          <i class="fas fa-comments"></i> ${repliesText} (${translatedPosts.length})
-        </span>
-      </div>
-    `;
-  }
-
-  // Рендер Ответов
-  html += translatedPosts
-    .map((post) =>
-      renderPostHTML(
-        { ...post, content: post.translatedContent },
-        false,
-        topic.user_id,
-      ),
-    )
-    .join("");
-
-  container.innerHTML = html;
-}
-
-// === ГЕНЕРАЦИЯ HTML ПОСТА (ИСПРАВЛЕННАЯ) ===
-function renderPostHTML(post, isMain, topicAuthorId) {
-  const t = topicTranslations[currentTopicLang];
-  const isTopicOwner = user && String(topicAuthorId) === String(user.id);
-
-  // Проверка: автор ли это?
-  const isMyPost = user && String(post.user_id) === String(user.id);
-
-  // Язык
-  const originLang = post.lang ? post.lang.toUpperCase() : "EN";
-
-  // === АВАТАРКА ===
-  let avatarHTML;
-  // Берем author_avatar с сервера, либо user.avatar_url если это текущий пользователь
-  const currentUser = JSON.parse(localStorage.getItem("user_data"));
-  const avatarUrl =
-    post.author_avatar ||
-    (isMyPost && currentUser ? currentUser.avatar_url : null);
-
-  if (avatarUrl) {
-    avatarHTML = `<img src="${avatarUrl}" class="post-user-avatar" style="object-fit:cover;">`;
-  } else {
-    avatarHTML = `<div class="post-user-avatar">${post.username ? post.username[0].toUpperCase() : "?"}</div>`;
-  }
-
-  return `
-    <div class="post-card ${post.is_solution ? "solution" : ""}" id="post-${post.id}">
-      <div class="post-user-panel">
-        <a href="/profile?id=${post.user_id}" style="text-decoration: none; color: inherit; display: block; text-align: center;">
-            ${avatarHTML}
-            <div class="post-username">${escapeHtml(post.username || "User")}</div>
-        </a>
-        ${getUserBadge(post.username, post.user_id, post.author_role, post.author_reputation)}
-      </div>
-      
-      <div class="post-content-panel">
-        <div class="post-header-meta">
-          <div style="display:flex; align-items:center; gap:10px;">
-              <span><i class="far fa-clock"></i> ${formatDate(post.created_at)}</span>
-              <span class="lang-badge" title="Original language"><i class="fas fa-language"></i> ${originLang}</span>
-          </div>
-          ${
-            post.is_solution
-              ? `<span class="badge-solution"><i class="fas fa-check"></i> ${t.solution}</span>`
-              : isMain
-                ? `<span class="badge-op">${t.op}</span>`
-                : `<span class="badge-pid">#${post.id.slice(0, 4)}</span>`
-          }
-        </div>
-        
-        <div class="post-text-body">
-          ${parseMarkdown(post.content)}
-        </div>
-
-        <div class="post-footer-actions">
-          ${
-            isMyPost || (user && user.role === 'admin')
-              ? `
-            <button class="btn-action btn-edit" onclick="editItem('${isMain ? "topic" : "post"}', '${post.id}')" title="Edit">
-                <i class="fas fa-pen"></i>
-            </button>
-
-            <button class="btn-action btn-delete" onclick="deleteItem('${isMain ? "topic" : "post"}', '${post.id}')" title="Delete">
-                <i class="fas fa-trash"></i>
-            </button>
-          `
-              : '<div style="margin-right:auto;"></div>'
-          }
-
-          ${
-            !isMain
-              ? `
-            <button class="btn-action ${post.is_liked ? "liked" : ""}" onclick="likePost('${post.id}')">
-              <i class="${post.is_liked ? "fas" : "far"} fa-heart"></i> 
-              <span id="likes-${post.id}">${post.likes_count || 0}</span>
-            </button>
-            <button class="btn-action" title="Report" onclick="openReportModal('post', '${post.id}', '${post.user_id}')">
-                <i class="fas fa-flag"></i>
-            </button>
-            ${
-              isTopicOwner && !post.is_solution
-                ? `
-              <button class="btn-action" onclick="markSolution('${post.id}')" style="color:#2ecc71; border-color:rgba(46,204,113,0.3);">
-                <i class="fas fa-check"></i> ${t.markSolution}
-              </button>
-            `
-                : ""
-            }
-          `
-              : `
-            <button class="btn-action" title="Report Topic" onclick="openReportModal('topic', '${post.id}', '${post.user_id}')">
-                <i class="fas fa-flag"></i> Report
-            </button>
-              `
-          }
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// === ФОРМА ОТВЕТА И ЗАГРУЗКА ФОТО (WebP) ===
-function setupReplyForm() {
-  const form = document.getElementById("reply-form");
-  const textarea = document.getElementById("reply-content");
-  const attachBtn = document.getElementById("attach-btn");
-  const fileInput = document.getElementById("file-input");
-
-  if (!form || !textarea) return;
-
-  if (attachBtn && fileInput) {
-    attachBtn.addEventListener("click", () => fileInput.click());
-    fileInput.addEventListener("change", (e) => {
-      if (e.target.files.length > 0) processAndUpload(e.target.files[0]);
-    });
-  }
-
-  textarea.addEventListener("paste", handlePasteImage);
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const content = textarea.value;
-    if (!content.trim()) return;
-
-    const btn = form.querySelector("button[type='submit']");
-    btn.disabled = true;
-
-    // Авто-определение языка
-    const detectedLang = detectContentLanguage(content);
-
-    try {
-      const res = await fetch("/api/forum/topic", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic_id: topicId,
-          user_id: user.id,
-          username: user.username,
-          content: content,
-          lang: detectedLang,
-        }),
-      });
-
-      if (res.ok) {
-        textarea.value = "";
-        loadTopicData();
-      } else {
-        throw new Error("Failed to post");
-      }
-    } catch (err) {
-      alert(topicTranslations[currentTopicLang].errorSending);
-    }
-    btn.disabled = false;
-  });
-}
-
-async function handlePasteImage(e) {
-  const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-  for (let index in items) {
-    const item = items[index];
-    if (item.kind === "file" && item.type.includes("image/")) {
-      processAndUpload(item.getAsFile());
-    }
-  }
-}
-
-async function processAndUpload(file) {
-  const textarea = document.getElementById("reply-content");
-  const t = topicTranslations[currentTopicLang];
-
-  const cursor = textarea.selectionStart;
-  const loadingTag = `\n![${t.uploading}...]`;
-  textarea.value =
-    textarea.value.slice(0, cursor) + loadingTag + textarea.value.slice(cursor);
-
-  try {
-    const webpFile = await convertToWebP(file);
-    const formData = new FormData();
-    formData.append("file", webpFile);
-
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-
-    if (data.url) {
-      textarea.value = textarea.value.replace(
-        loadingTag,
-        `\n![image](${data.url})`,
-      );
-    } else {
-      textarea.value = textarea.value.replace(
-        loadingTag,
-        `\n[${t.uploadError}]`,
-      );
-    }
-  } catch (err) {
-    console.error(err);
-    textarea.value = textarea.value.replace(
-      loadingTag,
-      `\n[Error: ${err.message}]`,
-    );
-  }
-}
-
-function convertToWebP(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 1920;
-        const scale = Math.min(1, MAX_WIDTH / img.width);
-
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return reject(new Error("Canvas conversion failed"));
-            const fileName = file.name.split(".")[0] + ".webp";
-            const newFile = new File([blob], fileName, { type: "image/webp" });
-            resolve(newFile);
-          },
-          "image/webp",
-          0.8,
-        );
-      };
-      img.onerror = (e) => reject(e);
-    };
-    reader.onerror = (e) => reject(e);
-  });
-}
-
-// === ЛАЙКИ, РЕШЕНИЯ, УДАЛЕНИЕ ===
-async function likePost(postId) {
-  if (!user) return toggleAuthModal();
-
-  const countSpan = document.getElementById(`likes-${postId}`);
-  const btn = countSpan.parentElement;
-  const icon = btn.querySelector("i");
-
-  let count = parseInt(countSpan.textContent);
-
-  if (btn.classList.contains("liked")) {
-    count--;
-    btn.classList.remove("liked");
-    icon.classList.remove("fas");
-    icon.classList.add("far");
-  } else {
-    count++;
-    btn.classList.add("liked");
-    icon.classList.remove("far");
-    icon.classList.add("fas");
-  }
-  countSpan.textContent = count;
-
-  try {
-    await fetch("/api/forum/like", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ post_id: postId, user_id: user.id }),
-    });
-  } catch (e) {}
-}
-
-async function markSolution(postId) {
-  if (!await showCustomConfirm(topicTranslations[currentTopicLang].confirmSolution)) return;
-  await fetch("/api/forum/solve", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      topic_id: topicId,
-      post_id: postId,
-      user_id: user.id,
-    }),
-  });
-  loadTopicData();
-}
-
-async function deleteItem(type, id) {
-  if (!await showCustomConfirm("Are you sure you want to delete this?")) return;
-  try {
-    const res = await fetch("/api/forum/delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, id, user_id: user.id }),
-    });
-    if (res.ok) {
-      if (type === "topic") window.location.href = "forum.html";
-      else loadTopicData();
-    } else {
-      alert("Error deleting item");
-    }
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-async function checkLiveTopicUpdates() {
-  if (!originalTopicData) return;
-  const currentPostCount = document.querySelectorAll(".post-card").length;
-  const currentReplyCount = currentPostCount > 0 ? currentPostCount - 1 : 0;
-  try {
-    const userIdParam = user ? `&user_id=${user.id}` : "";
-    const res = await fetch(`/api/forum/topic?id=${topicId}${userIdParam}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.posts.length > currentReplyCount) {
-      originalTopicData = data;
-      renderTopicWithTranslation(data);
-    }
-  } catch (e) {}
-}
-
-// === УТИЛИТЫ ===
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const safeDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
-  return new Date(safeDate).toLocaleString();
-}
-
-// === MARKDOWN PARSING (USING MARKED.JS) ===
-function parseMarkdown(text) {
-  if (!text) return "";
-  // Check if marked is loaded
-  if (typeof marked !== "undefined") {
-    // Configure marked for security (optional but recommended)
-    // marked.setOptions({ sanitize: true }); // Note: sanitize is deprecated in newer marked, use DOMPurify if needed.
-    // For now, we trust the output or rely on basic escaping done before if mixed.
-    // Actually, marked expects raw markdown.
-    return marked.parse(text);
-  }
-  // Fallback if marked not loaded
-  return escapeHtml(text).replace(/\n/g, "<br>");
-}
-
-// === USER BADGES HELPERS ===
-function getUserBadge(username, userId, role, reputation = 0) {
-    if (typeof getReputationBadge === 'function') {
-        return getReputationBadge(reputation, role); 
-    }
-    
-    // Fallback if getReputationBadge not available
-    if (role === 'super_admin_role') return '<span class="user-badge badge-super-admin"><i class="fas fa-crown"></i> Super Admin</span>';
-    if (role === 'admin_role') return '<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>';
-    if (role === 'senior_moderator_role') return '<span class="user-badge badge-senior-mod"><i class="fas fa-user-shield"></i> Senior Mod</span>';
-    if (role === 'moderator_role') return '<span class="user-badge badge-moderator"><i class="fas fa-gavel"></i> Moderator</span>';
-    
-    return '<span class="user-badge badge-newcomer"><i class="fas fa-user"></i> Member</span>';
-}
-
-function escapeHtml(text) {
-  if (!text) return "";
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-async function translateText(text, targetLang) {
-  if (!text || text.trim().length < 2) return text;
-  const cacheKey = `${text.substring(0, 100)}_${targetLang}`;
-  if (translationCache[cacheKey]) return translationCache[cacheKey];
-  try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
-    const response = await fetch(url);
-    const data = await response.json();
-    let translated = "";
-    if (data && data[0]) {
-      for (let i = 0; i < data[0].length; i++) {
-        if (data[0][i][0]) translated += data[0][i][0];
-      }
-    }
-    if (translated && translated !== text) {
-      translationCache[cacheKey] = translated;
-      localStorage.setItem(
-        "translationCache",
-        JSON.stringify(translationCache),
-      );
-      return translated;
-    }
-    return text;
-  } catch (error) {
-    return text;
-  }
-}
-
-async function switchTopicLanguage() {
-  const langs = ["en", "ru", "ka"];
-  let idx = langs.indexOf(currentTopicLang);
-  currentTopicLang = langs[(idx + 1) % langs.length];
-  localStorage.setItem("forumLanguage", currentTopicLang);
-  
-  // SYNC WITH SCRIPT.JS
-  if (typeof currentLanguage !== "undefined") {
-    currentLanguage = currentTopicLang;
-    localStorage.setItem("language", currentTopicLang);
-  }
-  
-  updateTopicPageLanguage();
-  
-  // CRITICAL: Call updateLanguage from script.js to translate header buttons
-  if (typeof updateLanguage === 'function') {
-    updateLanguage();
-  }
-  
-  if (originalTopicData) await renderTopicWithTranslation(originalTopicData);
-}
-
-function updateTopicPageLanguage() {
-  const t = topicTranslations[currentTopicLang];
-  const langLabels = { en: "EN", ru: "RU", ka: "KA" };
-  const langDisplay = document.getElementById("topic-lang-display");
-  if (langDisplay) langDisplay.textContent = langLabels[currentTopicLang];
-
-  const backLink = document.querySelector(".back-link");
-  if (backLink)
-    backLink.innerHTML = `<i class="fas fa-chevron-left"></i> ${t.backToTopics}`;
-
-  const replyContent = document.getElementById("reply-content");
-  if (replyContent) replyContent.placeholder = t.writeReply;
-}
-
-// === LIGHTBOX LOGIC (ОТКРЫТИЕ ФОТО) ===
-document.addEventListener("DOMContentLoaded", () => {
-  const modal = document.getElementById("lightbox-modal");
-  const modalImg = document.getElementById("lightbox-img");
-  const closeBtn = document.querySelector(".close-lightbox");
-
-  if (!modal || !modalImg) return;
-
-  document.addEventListener("click", (e) => {
-    if (e.target.tagName === "IMG" && e.target.closest(".post-text-body")) {
-      modalImg.src = e.target.src;
-      modal.classList.add("active");
-      document.body.style.overflow = "hidden";
-    }
-  });
-
-  window.closeLightbox = function (e) {
-    modal.classList.remove("active");
-    document.body.style.overflow = "";
-    setTimeout(() => {
-      modalImg.src = "";
-    }, 300);
+// js/topic.js — Topic view v2
+// Markdown rendering, emoji reactions, reputation badges, JSON-LD update,
+// reply composer with preview + drag-and-drop images.
+
+(function () {
+  "use strict";
+
+  const $  = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  const state = {
+    lang: localStorage.getItem("forumLanguage") || localStorage.getItem("language") || "en",
+    topicId: new URLSearchParams(window.location.search).get("id"),
+    topic: null,
+    posts: [],
+    user: null,
   };
 
-  if (closeBtn) closeBtn.addEventListener("click", window.closeLightbox);
+  // Reload user from localStorage
+  try { state.user = JSON.parse(localStorage.getItem("user_data") || "null"); } catch {}
 
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) window.closeLightbox();
-  });
+  const REACTION_EMOJIS = ["👍", "❤️", "🔥", "🚗", "🔧", "😂", "😮", "🎉"];
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("active")) {
-      window.closeLightbox();
-    }
-  });
-});
+  // ========================================================== Helpers
+  function t(k, fb) {
+    return window.APP_TRANSLATIONS?.[state.lang]?.[k]
+        || window.APP_TRANSLATIONS?.en?.[k]
+        || fb || k;
+  }
 
-let originalContentCache = {};
+  function esc(s) {
+    if (s == null) return "";
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+  }
 
-function editItem(type, id) {
-  // Находим карточку поста
-  const card = document.getElementById(`post-${id}`);
-  if (!card) return;
+  function timeAgo(dateString) {
+    if (!dateString) return "";
+    const clean = dateString.endsWith("Z") ? dateString : dateString + "Z";
+    const sec = Math.max(0, Math.floor((Date.now() - new Date(clean).getTime()) / 1000));
+    if (sec < 45) return t("justNow", "just now");
+    if (sec < 3600) return `${Math.floor(sec / 60)}${t("minShort", "m")}`;
+    if (sec < 86400) return `${Math.floor(sec / 3600)}${t("hourShort", "h")}`;
+    if (sec < 2592000) return `${Math.floor(sec / 86400)}${t("dayShort", "d")}`;
+    return new Date(clean).toLocaleDateString(state.lang);
+  }
 
-  // 1. Check if already editing
-  if (card.querySelector(".edit-mode-container")) return;
+  function reputationLevel(rep = 0, role = "user_role") {
+    if (role === "admin_role")      return { key: "admin",   icon: "fa-crown",       label: t("roleAdmin", "Admin") };
+    if (role === "moderator_role")  return { key: "mod",     icon: "fa-shield-alt",  label: t("roleMod", "Moderator") };
+    if (rep >= 3000)                return { key: "master",  icon: "fa-star",        label: t("lvlMaster", "Master") };
+    if (rep >= 1000)                return { key: "expert",  icon: "fa-award",       label: t("lvlExpert", "Expert") };
+    if (rep >= 250)                 return { key: "regular", icon: "fa-user-check",  label: t("lvlRegular", "Regular") };
+    if (rep >= 50)                  return { key: "member",  icon: "fa-user",        label: t("lvlMember", "Member") };
+    return                            { key: "newcomer", icon: "fa-seedling",    label: t("lvlNewcomer", "Newcomer") };
+  }
 
-  const textBody = card.querySelector(".post-text-body");
+  function repBadgeHtml(rep, role) {
+    const lvl = reputationLevel(rep || 0, role || "user_role");
+    return `<span class="rep-badge rep-${lvl.key}"><i class="fas ${lvl.icon}"></i> ${esc(lvl.label)}</span>`;
+  }
 
-  // Сохраняем текущий HTML (или лучше исходный текст, если бы он был доступен)
-  const currentHTML = textBody.innerHTML;
-  originalContentCache[id] = currentHTML;
+  function renderMarkdown(src) {
+    try {
+      if (window.marked) {
+        window.marked.setOptions({ breaks: true, gfm: true });
+        // Basic sanitizer — disallow raw HTML tags we don't want.
+        const html = window.marked.parse(String(src || ""));
+        return html.replace(/<script[\s\S]*?<\/script>/gi, "")
+                   .replace(/ on\w+="[^"]*"/gi, "");
+      }
+    } catch (e) { console.warn("marked error:", e); }
+    return esc(src).replace(/\n/g, "<br>");
+  }
 
-  // Конвертируем HTML обратно в простой текст для редактора (очень упрощенно)
-  let textForEdit = currentHTML
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<b>(.*?)<\/b>/g, "**$1**")
-    .replace(/<img src="(.*?)" alt="(.*?)".*?>/g, "![$2]($1)")
-    .replace(/<code.*?>(.*?)<\/code>/g, "`$1`")
-    // Убираем HTML-экранирование для редактирования
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"');
+  // ========================================================== JSON-LD
+  function updateJsonLd(topic, posts) {
+    const el = document.getElementById("topic-jsonld");
+    if (!el) return;
+    try {
+      const data = {
+        "@context": "https://schema.org",
+        "@type": "DiscussionForumPosting",
+        "headline": topic.title,
+        "articleBody": (topic.content || "").slice(0, 4000),
+        "dateCreated": topic.created_at?.endsWith("Z") ? topic.created_at : (topic.created_at || "") + "Z",
+        "inLanguage": topic.lang || "en",
+        "author": { "@type": "Person", "name": topic.username || "Anonymous" },
+        "interactionStatistic": [
+          { "@type": "InteractionCounter", "interactionType": "https://schema.org/ViewAction", "userInteractionCount": topic.views || 0 },
+          { "@type": "InteractionCounter", "interactionType": "https://schema.org/ReplyAction", "userInteractionCount": topic.reply_count || (posts?.length || 0) },
+        ],
+        "url": window.location.href,
+        "commentCount": posts?.length || 0,
+        "comment": (posts || []).slice(0, 10).map((p) => ({
+          "@type": "Comment",
+          "text": (p.content || "").slice(0, 1000),
+          "author": { "@type": "Person", "name": p.username || "Anonymous" },
+          "dateCreated": p.created_at,
+        })),
+      };
+      el.textContent = JSON.stringify(data);
+    } catch (e) { console.warn("jsonld error:", e); }
+  }
 
-  // Очищаем лишние пробелы по краям
-  textForEdit = textForEdit.trim();
+  // ========================================================== Rendering
+  function renderTopic() {
+    const host = $("#topic-content");
+    if (!host) return;
+    const { topic, posts } = state;
 
-  // Заменяем содержимое на форму
-  textBody.innerHTML = `
-        <div class="edit-mode-container">
-            <textarea id="edit-area-${id}" class="edit-textarea">${textForEdit}</textarea>
-            <div class="edit-actions">
-                <button class="btn-cancel-edit" onclick="cancelEdit('${id}')">Cancel</button>
-                <button class="btn-save-edit" onclick="saveEdit('${type}', '${id}')">Save Changes</button>
-            </div>
+    const tags = (topic.tags || []).map((tg) => {
+      const color = tg.color || "#1C69D4";
+      return `<span class="badge badge-tag" style="color:${color};border-color:${color}55;background:${color}14;">#${esc(tg.name)}</span>`;
+    }).join("");
+
+    const badges = [];
+    if (topic.is_pinned) badges.push(`<span class="badge badge-pinned"><i class="fas fa-thumbtack"></i> ${esc(t("pinned","Pinned"))}</span>`);
+    if (topic.is_solved) badges.push(`<span class="badge badge-solved"><i class="fas fa-check"></i> ${esc(t("solved","Solved"))}</span>`);
+    if (topic.is_locked) badges.push(`<span class="badge badge-locked"><i class="fas fa-lock"></i> ${esc(t("locked","Locked"))}</span>`);
+    if (topic.related_code) badges.push(`<span class="badge badge-code"><i class="fas fa-code"></i> ${esc(topic.related_code)}</span>`);
+
+    host.innerHTML = `
+      <article class="topic-header-card">
+        <div class="topic-meta" style="margin-bottom:var(--space-sm);">
+          ${badges.join("")}
+          ${tags}
         </div>
+        <h1>${esc(topic.title)}</h1>
+        <div class="topic-header-meta">
+          <span>${esc(t("by","by"))} <strong>${esc(topic.username)}</strong></span>
+          ${repBadgeHtml(topic.author_reputation, topic.author_role)}
+          <span class="sep" aria-hidden="true"></span>
+          <span>${esc(timeAgo(topic.created_at))}</span>
+          <span class="sep" aria-hidden="true"></span>
+          <span><i class="fas fa-eye"></i> ${topic.views || 0}</span>
+          <span class="sep" aria-hidden="true"></span>
+          <span><i class="fas fa-reply"></i> ${posts.length}</span>
+        </div>
+      </article>
+
+      <div class="posts-stream" id="posts-stream">
+        ${renderPostCard(topic, { isOriginal: true })}
+        ${posts.map((p) => renderPostCard(p)).join("")}
+      </div>
+
+      ${renderComposer()}
     `;
-}
 
-function cancelEdit(id) {
-  const card = document.getElementById(`post-${id}`);
-  if (card && originalContentCache[id]) {
-    card.querySelector(".post-text-body").innerHTML = originalContentCache[id];
-    delete originalContentCache[id];
+    // Bind reactions delegation
+    host.addEventListener("click", onStreamClick);
+
+    // Sidebar info
+    const sideHost = $("#topic-info-body");
+    const sideCard = $("#topic-info-card");
+    if (sideHost && sideCard) {
+      sideCard.hidden = false;
+      sideHost.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm);color:var(--color-text-secondary);font-size:var(--font-size-sm);">
+          <div><i class="fas fa-eye" style="width:18px;"></i> ${topic.views || 0} ${esc(t("views","views"))}</div>
+          <div><i class="fas fa-reply" style="width:18px;"></i> ${posts.length} ${esc(t("replies","replies"))}</div>
+          <div><i class="fas fa-globe" style="width:18px;"></i> ${esc((topic.lang || "en").toUpperCase())}</div>
+          <div><i class="fas fa-calendar" style="width:18px;"></i> ${esc(new Date((topic.created_at || "").replace(/Z?$/,"Z")).toLocaleDateString(state.lang))}</div>
+        </div>
+      `;
+    }
+
+    setupComposer();
+    updateJsonLd(topic, posts);
+    document.title = `${topic.title} — BimmerCodes Forum`;
   }
-}
 
-async function saveEdit(type, id) {
-  const textarea = document.getElementById(`edit-area-${id}`);
-  const newContent = textarea.value;
-  const user = JSON.parse(localStorage.getItem("user_data"));
+  function renderPostCard(p, { isOriginal = false } = {}) {
+    const solved = p.is_solution || p.id === state.topic?.solution_post_id;
+    const avatar = p.author_avatar
+      ? `<img class="avatar" src="${esc(p.author_avatar)}" alt="" loading="lazy" onerror="this.src='./assets/icons/ico.svg'">`
+      : `<div class="avatar" style="display:flex;align-items:center;justify-content:center;font-weight:700;font-size:28px;">${esc((p.username||'?')[0]?.toUpperCase())}</div>`;
+    const isOP = isOriginal;
+    const rep = p.author_reputation || 0;
 
-  if (!newContent.trim()) {
-    alert("Content cannot be empty");
-    return;
+    // Reactions row
+    const reactions = (p.reactions || []);
+    const mine = new Set(p.my_reactions || []);
+    const reactionsHtml = reactions.length
+      ? reactions.map((r) => {
+          const active = mine.has(r.emoji) ? " active" : "";
+          return `<button class="react-btn${active}" data-react-post="${esc(p.id)}" data-emoji="${esc(r.emoji)}">${r.emoji} ${r.count}</button>`;
+        }).join("")
+      : "";
+
+    const body = renderMarkdown(p.content || "");
+
+    const postId = isOriginal ? `op` : `post-${esc(p.id)}`;
+
+    return `
+      <article class="post-card${solved ? " is-solution" : ""}" id="${postId}">
+        <div class="post-author">
+          ${avatar}
+          <div class="username">${esc(p.username)}</div>
+          ${repBadgeHtml(rep, p.author_role)}
+          ${isOP ? `<div class="rep-score">${esc(t("opLabel","Original poster"))}</div>` : `<div class="rep-score">${rep} rep</div>`}
+        </div>
+        <div class="post-body">
+          <div class="post-meta">
+            <a class="permalink" href="#${postId}"><i class="fas fa-link"></i> ${esc(timeAgo(p.created_at))}</a>
+            ${solved ? `<span class="badge badge-solved"><i class="fas fa-check"></i> ${esc(t("solution","Solution"))}</span>` : ""}
+          </div>
+          <div class="post-text">${body}</div>
+          <div class="post-actions">
+            <button class="react-btn" data-react-open="${esc(p.id)}" aria-label="React">
+              <i class="far fa-smile"></i>
+            </button>
+            ${reactionsHtml}
+            <span style="flex:1"></span>
+            ${!isOP && canMarkSolution() && !state.topic?.is_solved ? `<button class="react-btn" data-action="solve" data-post="${esc(p.id)}"><i class="fas fa-check"></i> ${esc(t("markSolution","Mark as solution"))}</button>` : ""}
+            ${canEdit(p) ? `<button class="react-btn" data-action="edit" data-post="${esc(p.id)}"><i class="fas fa-edit"></i> ${esc(t("edit","Edit"))}</button>` : ""}
+            ${canDelete(p) ? `<button class="react-btn" data-action="delete" data-post="${esc(p.id)}"><i class="fas fa-trash"></i> ${esc(t("delete","Delete"))}</button>` : ""}
+            ${state.user && !isOP ? `<button class="react-btn" data-action="report" data-post="${esc(p.id)}"><i class="fas fa-flag"></i> ${esc(t("report","Report"))}</button>` : ""}
+          </div>
+        </div>
+      </article>`;
   }
 
-  try {
-    const res = await fetch("/api/forum/edit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: type, // 'topic' или 'post'
-        id: id,
-        user_id: user.id,
-        content: newContent,
-      }),
+  function canMarkSolution() {
+    return state.user && state.topic && String(state.user.id) === String(state.topic.user_id);
+  }
+  function canEdit(post) {
+    return state.user && String(state.user.id) === String(post.user_id);
+  }
+  function canDelete(post) {
+    if (!state.user) return false;
+    if (String(state.user.id) === String(post.user_id)) return true;
+    return state.user.role === "admin_role" || state.user.role === "moderator_role";
+  }
+
+  function renderComposer() {
+    if (state.topic?.is_locked) {
+      return `<div class="composer" style="text-align:center;color:var(--color-text-muted);">
+        <i class="fas fa-lock"></i> ${esc(t("topicLocked","This topic is locked. No new replies."))}
+      </div>`;
+    }
+    if (!state.user) {
+      return `<div class="composer" style="text-align:center;">
+        <p style="color:var(--color-text-muted);">${esc(t("loginToReply","Please login to reply."))}</p>
+        <button class="btn btn-primary" onclick="toggleAuthModal()">${esc(t("loginBtn","Login"))}</button>
+      </div>`;
+    }
+    return `
+      <form class="composer" id="composer-form">
+        <div class="composer-tabs">
+          <button type="button" class="active" data-tab="write" data-i18n="edit">Write</button>
+          <button type="button" data-tab="preview" data-i18n="preview">Preview</button>
+        </div>
+        <div id="composer-write">
+          <textarea id="reply-content" placeholder="${esc(t("writeReply","Write a reply..."))}" required minlength="2" maxlength="8000"></textarea>
+        </div>
+        <div id="composer-preview" class="composer-preview post-text" hidden></div>
+        <div class="composer-toolbar">
+          <button type="button" class="btn btn-ghost btn-icon" id="attach-btn" title="${esc(t("uploadImage","Upload image"))}"><i class="fas fa-image"></i></button>
+          <input type="file" id="image-input" accept="image/*" hidden>
+          <button type="button" class="btn btn-ghost" id="md-bold" title="Bold (Ctrl+B)"><i class="fas fa-bold"></i></button>
+          <button type="button" class="btn btn-ghost" id="md-code" title="Code"><i class="fas fa-code"></i></button>
+          <button type="button" class="btn btn-ghost" id="md-quote" title="Quote"><i class="fas fa-quote-right"></i></button>
+          <span class="spacer"></span>
+          <span class="char-count"><span id="reply-count">0</span> / 8000</span>
+          <button type="submit" class="btn btn-primary" id="submit-reply">
+            <i class="fas fa-paper-plane"></i> <span>${esc(t("reply","Reply"))}</span>
+          </button>
+        </div>
+        <div class="field-error" id="reply-error"></div>
+      </form>
+    `;
+  }
+
+  // ========================================================== Composer behaviour
+  function setupComposer() {
+    const form = $("#composer-form");
+    if (!form) return;
+    const textarea = $("#reply-content");
+    const count = $("#reply-count");
+
+    textarea?.addEventListener("input", () => {
+      if (count) count.textContent = textarea.value.length;
     });
 
-    if (res.ok) {
-      // Если успешно - обновляем UI
-      // Используем функцию parseMarkdown для красивого отображения
-      const card = document.getElementById(`post-${id}`);
-      card.querySelector(".post-text-body").innerHTML =
-        parseMarkdown(newContent);
-      delete originalContentCache[id];
+    // Tabs
+    $$("#composer-form .composer-tabs button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        $$("#composer-form .composer-tabs button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        const writeHost = $("#composer-write");
+        const prevHost = $("#composer-preview");
+        if (tab === "preview") {
+          prevHost.innerHTML = renderMarkdown(textarea.value);
+          prevHost.hidden = false;
+          writeHost.hidden = true;
+        } else {
+          prevHost.hidden = true;
+          writeHost.hidden = false;
+        }
+      });
+    });
 
-      // Если это был перевод - сбрасываем кэш, так как текст изменился
-      // (Это сложно сделать точечно, но пользователь увидит новый оригинальный текст)
-    } else {
-      alert("Error saving changes");
+    // Markdown helpers
+    function wrap(prefix, suffix = prefix) {
+      const ta = textarea;
+      const s = ta.selectionStart, e = ta.selectionEnd;
+      const sel = ta.value.slice(s, e);
+      ta.value = ta.value.slice(0, s) + prefix + sel + suffix + ta.value.slice(e);
+      ta.focus();
+      ta.selectionStart = s + prefix.length;
+      ta.selectionEnd = e + prefix.length;
+      ta.dispatchEvent(new Event("input"));
     }
-  } catch (e) {
-    console.error(e);
-    alert("Connection error");
-  }
-}
 
-function formatDateShort(dateString) {
-  if (!dateString) return "";
-  const safeDate = dateString.endsWith("Z") ? dateString : dateString + "Z";
-  // Format as DD/MM/YYYY
-  const d = new Date(safeDate);
-  return d.toLocaleDateString();
-}
+    $("#md-bold")?.addEventListener("click", () => wrap("**"));
+    $("#md-code")?.addEventListener("click", () => wrap("`"));
+    $("#md-quote")?.addEventListener("click", () => {
+      const ta = textarea;
+      const s = ta.selectionStart;
+      const before = ta.value.slice(0, s).replace(/[^\n]*$/, "");
+      const after = ta.value.slice(s);
+      ta.value = before + "> " + after;
+      ta.dispatchEvent(new Event("input"));
+    });
+
+    textarea?.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") { e.preventDefault(); wrap("**"); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { form.requestSubmit(); }
+    });
+
+    // Image upload
+    $("#attach-btn")?.addEventListener("click", () => $("#image-input")?.click());
+    $("#image-input")?.addEventListener("change", (e) => uploadAndInsert(e.target.files?.[0]));
+    ["dragover","dragenter"].forEach((ev) =>
+      textarea?.addEventListener(ev, (e) => { e.preventDefault(); textarea.style.borderColor = "var(--color-primary)"; })
+    );
+    ["dragleave","drop"].forEach((ev) =>
+      textarea?.addEventListener(ev, (e) => { e.preventDefault(); textarea.style.borderColor = ""; })
+    );
+    textarea?.addEventListener("drop", (e) => {
+      const f = e.dataTransfer?.files?.[0];
+      if (f) uploadAndInsert(f);
+    });
+
+    form.addEventListener("submit", onReplySubmit);
+  }
+
+  async function uploadAndInsert(file) {
+    if (!file) return;
+    const textarea = $("#reply-content");
+    const error = $("#reply-error");
+    if (error) error.textContent = "";
+
+    const placeholder = `\n![${t("uploading","Uploading image...")}](uploading)\n`;
+    const start = textarea.selectionStart;
+    textarea.value = textarea.value.slice(0, start) + placeholder + textarea.value.slice(start);
+    textarea.dispatchEvent(new Event("input"));
+
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "upload failed");
+      textarea.value = textarea.value.replace(placeholder, `\n![image](${data.url})\n`);
+    } catch (err) {
+      textarea.value = textarea.value.replace(placeholder, "");
+      if (error) error.textContent = err.message || t("uploadError","Error uploading image");
+    }
+    textarea.dispatchEvent(new Event("input"));
+  }
+
+  async function onReplySubmit(e) {
+    e.preventDefault();
+    const user = state.user;
+    if (!user) { toggleAuthModal(); return; }
+    const content = $("#reply-content").value.trim();
+    if (content.length < 2) return;
+    const btn = $("#submit-reply");
+    const err = $("#reply-error");
+    if (err) err.textContent = "";
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i>`;
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("/api/forum/topic", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          topic_id: state.topicId,
+          user_id: user.id,
+          username: user.username,
+          content,
+          lang: (/[\u10A0-\u10FF]/.test(content) ? "ka" : /[\u0400-\u04FF]/.test(content) ? "ru" : "en"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || data.reason || "failed");
+      // Reload topic
+      await loadTopicData();
+      // Scroll to new post
+      const newPost = document.getElementById(`post-${data.postId}`);
+      if (newPost) newPost.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (error) {
+      if (err) err.textContent = error.message || t("errorSending","Error sending reply");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-paper-plane"></i> <span>${esc(t("reply","Reply"))}</span>`;
+    }
+  }
+
+  // ========================================================== Click delegation
+  async function onStreamClick(e) {
+    const target = e.target.closest("[data-action], [data-react-post], [data-react-open]");
+    if (!target) return;
+
+    if (target.dataset.reactOpen) {
+      openReactionPicker(target);
+      return;
+    }
+
+    if (target.dataset.reactPost) {
+      await toggleReaction(target.dataset.reactPost, target.dataset.emoji);
+      return;
+    }
+
+    const action = target.dataset.action;
+    const postId = target.dataset.post;
+
+    if (action === "solve") return markSolution(postId);
+    if (action === "delete") return deletePost(postId);
+    if (action === "edit")   return editPost(postId);
+    if (action === "report") return reportPost(postId);
+  }
+
+  function openReactionPicker(anchorEl) {
+    const existing = document.getElementById("reaction-picker");
+    if (existing) { existing.remove(); return; }
+
+    const picker = document.createElement("div");
+    picker.id = "reaction-picker";
+    picker.style.cssText = `
+      position: absolute; z-index: 50;
+      background: var(--color-surface-2); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); padding: 6px;
+      display: flex; gap: 4px; box-shadow: var(--shadow-md);`;
+    picker.innerHTML = REACTION_EMOJIS.map((em) =>
+      `<button class="react-btn" data-react-post="${esc(anchorEl.dataset.reactOpen)}" data-emoji="${esc(em)}" style="padding:4px 8px;font-size:18px;">${em}</button>`
+    ).join("");
+    document.body.appendChild(picker);
+    const rect = anchorEl.getBoundingClientRect();
+    picker.style.left = `${rect.left + window.scrollX}px`;
+    picker.style.top = `${rect.top + window.scrollY - picker.offsetHeight - 6}px`;
+    setTimeout(() => {
+      const onDoc = (evt) => {
+        if (!picker.contains(evt.target) && evt.target !== anchorEl) {
+          picker.remove();
+          document.removeEventListener("click", onDoc);
+        }
+      };
+      document.addEventListener("click", onDoc);
+    }, 0);
+  }
+
+  async function toggleReaction(postId, emoji) {
+    if (!state.user) return toggleAuthModal();
+    const token = localStorage.getItem("auth_token");
+    try {
+      const res = await fetch("/api/forum/reactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ post_id: postId, emoji }),
+      });
+      if (!res.ok) throw new Error("reaction failed");
+      await loadTopicData();
+    } catch (e) { console.error(e); }
+  }
+
+  async function markSolution(postId) {
+    if (!confirm(t("confirmSolution","Mark this post as the solution?"))) return;
+    const token = localStorage.getItem("auth_token");
+    try {
+      const res = await fetch("/api/forum/solve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ topic_id: state.topicId, post_id: postId, user_id: state.user.id }),
+      });
+      if (res.ok) await loadTopicData();
+    } catch (e) { console.error(e); }
+  }
+
+  async function deletePost(postId) {
+    if (!confirm(t("confirmDelete","Delete this post?"))) return;
+    const token = localStorage.getItem("auth_token");
+    const res = await fetch("/api/forum/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ post_id: postId, user_id: state.user.id }),
+    });
+    if (res.ok) await loadTopicData();
+  }
+
+  async function editPost(postId) {
+    const post = state.posts.find((p) => p.id === postId);
+    if (!post) return;
+    const newContent = prompt(t("edit","Edit"), post.content);
+    if (!newContent || newContent.trim() === post.content) return;
+    const token = localStorage.getItem("auth_token");
+    const res = await fetch("/api/forum/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ post_id: postId, content: newContent.trim(), user_id: state.user.id }),
+    });
+    if (res.ok) await loadTopicData();
+  }
+
+  async function reportPost(postId) {
+    const reason = prompt(t("report","Report") + ":");
+    if (!reason) return;
+    const token = localStorage.getItem("auth_token");
+    try {
+      await fetch("/api/forum/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ post_id: postId, reason, user_id: state.user.id }),
+      });
+      alert(t("reportThanks","Thanks — our moderators will review it."));
+    } catch (e) { console.error(e); }
+  }
+
+  // ========================================================== Data
+  async function loadTopicData() {
+    const userId = state.user?.id || "";
+    try {
+      const res = await fetch(`/api/forum/topic?id=${encodeURIComponent(state.topicId)}&user_id=${encodeURIComponent(userId)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      state.topic = data.topic;
+      state.posts = data.posts || [];
+      renderTopic();
+    } catch (err) {
+      console.error(err);
+      $("#topic-content").innerHTML = `<div class="error-state"><i class="fas fa-exclamation-triangle"></i> ${esc(t("errorLoading","Error loading topic"))}: ${esc(err.message)}</div>`;
+    }
+  }
+
+  // ========================================================== i18n
+  function applyI18n() {
+    const dict = window.APP_TRANSLATIONS?.[state.lang] || {};
+    $$("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      if (dict[key]) el.textContent = dict[key];
+    });
+    const disp = $("#forum-lang-display");
+    if (disp) disp.textContent = { en: "EN", ru: "RU", ka: "GE" }[state.lang] || "EN";
+  }
+
+  window.switchForumLanguage = function () {
+    const order = ["en", "ru", "ka"];
+    state.lang = order[(order.indexOf(state.lang) + 1) % order.length];
+    localStorage.setItem("forumLanguage", state.lang);
+    localStorage.setItem("language", state.lang);
+    applyI18n();
+    if (state.topic) renderTopic();
+  };
+
+  window.toggleAuthModal = function () {
+    document.getElementById("auth-modal")?.classList.toggle("active");
+  };
+
+  window.toggleMobileMenu = function () {
+    document.querySelector(".mobile-menu-overlay")?.classList.toggle("active");
+    document.querySelector(".mobile-offcanvas")?.classList.toggle("active");
+  };
+
+  // ========================================================== Boot
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!state.topicId) {
+      window.location.href = "/forum";
+      return;
+    }
+    applyI18n();
+    loadTopicData();
+  });
+})();

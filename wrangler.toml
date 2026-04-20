@@ -2,16 +2,53 @@ name = "bimmercodes"
 pages_build_output_dir = "./"
 compatibility_date = "2024-01-01"
 
-# Подключение Базы Данных D1
+# ------------------------------------------------------------------
+# D1 database
+# ------------------------------------------------------------------
 [[d1_databases]]
-binding = "DB" # Так мы будем обращаться к базе в коде: env.DB
+binding = "DB" # env.DB
 database_name = "bmw-db"
 database_id = "6e997484-ee10-48d1-a4d6-78d95216721f"
+migrations_dir = "migrations"
 
-# Подключение R2 (для фото)
+# ------------------------------------------------------------------
+# R2 bucket — user-uploaded media (forum images, avatars)
+# ------------------------------------------------------------------
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "bimmercodes-media"
 
-# Секреты (не пишем сюда, добавляем через консоль, но знать о них надо)
-# vars = { APP_URL = "https://bimmercodes.net" }
+# ------------------------------------------------------------------
+# KV namespace for rate-limit buckets (optional but strongly recommended)
+# Create via: wrangler kv:namespace create RATE_LIMIT_KV
+# Then fill in the id below.
+# ------------------------------------------------------------------
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT_KV"
+# id = "<your-kv-namespace-id>"
+
+# ------------------------------------------------------------------
+# Workers AI — used by functions/lib/moderation.js
+# Requires Workers AI enabled on the account.
+# ------------------------------------------------------------------
+[ai]
+binding = "AI" # env.AI
+
+# ------------------------------------------------------------------
+# Environment variables
+# Secrets must be set via `wrangler pages secret put <NAME>` — do NOT commit.
+#   - JWT_SECRET              : HS256 signing key for auth tokens
+#   - TURNSTILE_SECRET_KEY    : server-side Turnstile secret
+# Public variables (can be committed):
+# ------------------------------------------------------------------
+[vars]
+APP_URL             = "https://bimmercodes.net"
+ENVIRONMENT         = "production"
+# Public Turnstile sitekey — safe to expose. Paste it here and in HTML.
+TURNSTILE_SITE_KEY  = ""
+
+# ------------------------------------------------------------------
+# Preview / staging overrides
+# ------------------------------------------------------------------
+[env.preview.vars]
+ENVIRONMENT = "preview"

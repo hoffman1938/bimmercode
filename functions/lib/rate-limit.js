@@ -28,6 +28,37 @@ export const RATE_LIMITS = {
     maxAttempts: 20,
     windowMinutes: 1440, // 24 hours
     key: 'vote'
+  },
+  // -------- Forum-specific --------
+  FORUM_NEW_TOPIC: {
+    maxAttempts: 5,
+    windowMinutes: 60,
+    key: 'forum_topic_new'
+  },
+  FORUM_REPLY: {
+    maxAttempts: 20,
+    windowMinutes: 15,
+    key: 'forum_reply'
+  },
+  FORUM_REACTION: {
+    maxAttempts: 60,
+    windowMinutes: 15,
+    key: 'forum_react'
+  },
+  FORUM_REPORT: {
+    maxAttempts: 10,
+    windowMinutes: 60,
+    key: 'forum_report'
+  },
+  UPLOAD: {
+    maxAttempts: 30,
+    windowMinutes: 60,
+    key: 'upload'
+  },
+  SEARCH: {
+    maxAttempts: 120,
+    windowMinutes: 1,
+    key: 'search'
   }
 };
 
