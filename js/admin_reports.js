@@ -9,7 +9,7 @@
   "use strict";
 
   let activeTab = "reports";     // 'reports' | 'ai_flagged'
-  let activeStatus = "open";
+  let activeStatus = "pending";  // 'pending' | 'resolved' | 'dismissed'
 
   function token() { return localStorage.getItem("auth_token"); }
   function escapeHtml(s) {

@@ -183,8 +183,7 @@
                             <button class="action-btn" id="mod-tab-ai" onclick="ModDash.setTab('ai_flagged'); this.classList.add('active'); document.getElementById('mod-tab-reports').classList.remove('active');"><i class="fas fa-robot"></i> AI flagged</button>
                         </div>
                         <select id="report-status-filter" onchange="ModDash.setStatus(this.value)">
-                            <option value="open">Open</option>
-                            <option value="reviewing">Reviewing</option>
+                            <option value="pending">Pending</option>
                             <option value="resolved">Resolved</option>
                             <option value="dismissed">Dismissed</option>
                         </select>

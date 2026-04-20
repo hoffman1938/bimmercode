@@ -3,220 +3,333 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile - BimmerCodes</title>
-    <link rel="stylesheet" href="./css/style.css?v=2.92" />
-    <link rel="stylesheet" href="./css/forum.css?v=2.92" />
-    <link rel="stylesheet" href="./css/responsive.css?v=2.92" />
-    <link rel="stylesheet" href="./css/notifications.css?v=2.92" />
+    <title>User Profile — BimmerCodes</title>
+
+    <!-- Content-Writer + SEO: semantic meta + social + schema.org -->
+    <meta name="description" id="meta-description" content="BMW enthusiast profile on BimmerCodes — fault codes discussed, replies contributed, reputation earned." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" id="og-title" content="User Profile — BimmerCodes" />
+    <meta property="og:description" id="og-description" content="BMW enthusiast profile on BimmerCodes." />
+    <meta property="og:image" id="og-image" content="./assets/icons/ico.svg" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="canonical" id="canonical-link" href="" />
+
+    <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/style.css?v=3.0" />
+    <link rel="stylesheet" href="./css/forum.css?v=3.0" />
+    <link rel="stylesheet" href="./css/responsive.css?v=3.0" />
+    <link rel="stylesheet" href="./css/notifications.css?v=3.0" />
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="manifest" href="/site.webmanifest" />
 
     <!-- Google AdSense -->
     <meta name="google-adsense-account" content="ca-pub-6807738591111613">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
-     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613" crossorigin="anonymous"></script>
   </head>
-  <body>
+
+  <body class="profile-body">
     <div id="webgl-container"></div>
 
-    <header>
+    <!-- ============================================================ HEADER -->
+    <header class="site-header">
       <a href="/forum" class="logo-container">
-        <div class="logo">
-          <i class="fas fa-user-circle" style="color: #0066b3"></i>
-        </div>
-        <h1>User <span style="font-weight: 300">Profile</span></h1>
+        <div class="logo"><i class="fas fa-comments" aria-hidden="true"></i></div>
+        <h1>BimmerCodes <span style="font-weight: 300">Forum</span></h1>
       </a>
 
-      <div class="controls">
-        <a href="/" class="btn">
-          <i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span>
+      <nav class="controls" aria-label="Primary">
+        <a href="/" class="btn btn-ghost">
+          <i class="fas fa-home" aria-hidden="true"></i>
+          <span data-i18n="homeBtn">Home</span>
         </a>
-        <button class="btn" onclick="toggleFavoritesModal()">
-          <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
-        </button>
-        <a href="vin.html" class="btn">
-          <i class="fas fa-barcode"></i> <span data-i18n="vinBtn">VIN Check</span>
+        <a href="/forum" class="btn btn-ghost">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          <span data-i18n="backToForum">Back to Forum</span>
         </a>
-        <button
-          class="btn"
-          id="profile-language-toggle"
-          onclick="switchForumLanguage()"
-        >
-          <i class="fas fa-globe"></i> <span id="forum-lang-display">EN</span>
+        <button class="btn btn-ghost" id="profile-language-toggle" onclick="switchForumLanguage()">
+          <i class="fas fa-globe" aria-hidden="true"></i>
+          <span id="forum-lang-display">EN</span>
         </button>
-        <button class="btn" id="notif-btn" onclick="toggleNotifications()" style="position: relative; display: none;">
-          <i class="fas fa-bell"></i>
+        <button class="btn btn-ghost" id="notif-btn" onclick="toggleNotifications()" style="position: relative; display: none;">
+          <i class="fas fa-bell" aria-hidden="true"></i>
           <span id="notif-badge" class="notif-badge" style="display: none;">0</span>
         </button>
-        <a href="/forum" class="btn">
-          <i class="fas fa-arrow-left"></i> <span data-i18n="backToForum">Back to Forum</span>
-        </a>
-      </div>
+      </nav>
     </header>
 
-    <main class="container">
-      <!-- Profile Header -->
-      <!-- Profile Header -->
-      <div class="forum-panel profile-header-panel">
-        <div class="profile-cover-bg">
-            <!-- Optional: We could put a dynamic car image here later -->
+    <!-- ============================================================ MAIN -->
+    <main class="profile-shell">
+      <!-- SKELETON -->
+      <div id="profile-skeleton" class="profile-skeleton">
+        <div class="sk-cover"></div>
+        <div class="sk-body">
+          <div class="sk-avatar"></div>
+          <div class="sk-lines">
+            <div class="sk-line sk-line-lg"></div>
+            <div class="sk-line sk-line-md"></div>
+            <div class="sk-line sk-line-sm"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div id="profile-error" class="profile-error" hidden>
+        <div class="profile-error-card">
+          <i class="fas fa-user-slash" aria-hidden="true"></i>
+          <h2 data-i18n="profileNotFoundTitle">User not found</h2>
+          <p data-i18n="profileNotFoundText">This profile doesn't exist or has been removed.</p>
+          <a class="btn btn-primary" href="/forum" data-i18n="backToForum">Back to Forum</a>
+        </div>
+      </div>
+
+      <!-- HERO -->
+      <section id="profile-hero" class="profile-hero" hidden>
+        <div class="profile-cover" aria-hidden="true">
+          <div class="profile-cover-grid"></div>
+          <div class="profile-cover-glow"></div>
         </div>
 
-        <div class="profile-avatar-wrapper">
-             <div class="profile-avatar-large" id="profile-avatar">
-                <i class="fas fa-user"></i>
-             </div>
-        </div>
-        
-        <div style="text-align: center; padding: 0 20px;">
-            <h2 id="profile-username" class="profile-username-main">Loading...</h2>
-            
-            <div id="profile-badges" style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;"></div>
-            
-            <div id="profile-car" style="margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 50px; border: 1px solid var(--f-border);">
-               <i class="fas fa-car" style="color: var(--bmw-sky)"></i> 
-               <span style="color: white; font-weight: 500;">Unknown Model</span>
+        <div class="profile-hero-body">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar-ring" id="profile-avatar-ring" style="--progress: 0deg;">
+              <div class="profile-avatar-inner" id="profile-avatar">
+                <i class="fas fa-user" aria-hidden="true"></i>
+              </div>
+              <div class="profile-level-chip" id="profile-level-chip" title="Reputation level">
+                <i class="fas fa-bolt" aria-hidden="true"></i>
+                <span id="profile-level-name">Novice</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-identity">
+            <div class="profile-name-row">
+              <h2 id="profile-username" class="profile-username">Loading…</h2>
+              <span id="profile-role-badge" class="role-badge" hidden></span>
+              <span id="profile-verified" class="verified-tick" hidden title="Verified"><i class="fas fa-check-circle"></i></span>
             </div>
 
-            <div id="profile-bio" class="profile-bio-box">No bio available.</div>
-            
-            <!-- Edit Button (Hidden by default) -->
-            <button id="btn-edit-profile" class="btn btn-edit-profile-action" style="display: none; margin-bottom: 20px;" onclick="openEditProfileModal()">
-              <i class="fas fa-edit"></i> <span data-i18n="editProfile">Edit Profile</span>
-            </button>
-            
-            <!-- Report User Button (Hidden by default, shown via JS if not own profile) -->
-            <button id="btn-report-profile" class="btn" style="display: none; margin-bottom: 20px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5;" onclick="triggerUserReport()">
-              <i class="fas fa-flag"></i> <span data-i18n="reportUser">Report User</span>
-            </button>
-        </div>
-      </div>
+            <p id="profile-bio" class="profile-bio" data-i18n="noBioYet">This user hasn't written a bio yet.</p>
 
-      <!-- Stats Grid -->
-      <!-- Stats Grid -->
-      <div class="profile-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
-        <div class="stat-card-glass">
-           <div class="stat-value-large" id="stat-reputation">0</div>
-           <div class="stat-label" data-i18n="reputation">Reputation</div>
-        </div>
-        <div class="stat-card-glass">
-           <div class="stat-value-large" id="stat-topics">0</div>
-           <div class="stat-label" data-i18n="topicsCreated">Topics Created</div>
-        </div>
-        <div class="stat-card-glass">
-           <div class="stat-value-large" id="stat-joined">-</div>
-           <div class="stat-label" data-i18n="memberSince">Member Since</div>
-        </div>
-      </div>
+            <div class="profile-chips" id="profile-chips">
+              <!-- populated by JS: car, year, engine, city, lang, joined -->
+            </div>
 
-      <!-- User's Topics -->
-      <h3 style="margin-bottom: 20px; border-bottom: 1px solid var(--f-border); padding-bottom: 10px;" data-i18n="userActivity">User Activity</h3>
-      
-      <div id="profile-topics-container">
-        <!-- Topics will be loaded here -->
-        <div class="skeleton-row"></div>
-      </div>
+            <div class="profile-actions">
+              <button id="btn-share-profile" class="btn btn-ghost" type="button">
+                <i class="fas fa-share-nodes" aria-hidden="true"></i>
+                <span data-i18n="shareProfile">Share profile</span>
+              </button>
+              <button id="btn-edit-profile" class="btn btn-primary" type="button" hidden onclick="openEditProfileModal()">
+                <i class="fas fa-pen-to-square" aria-hidden="true"></i>
+                <span data-i18n="editProfile">Edit profile</span>
+              </button>
+              <button id="btn-report-profile" class="btn btn-danger-ghost" type="button" hidden onclick="triggerUserReport()">
+                <i class="fas fa-flag" aria-hidden="true"></i>
+                <span data-i18n="reportUser">Report user</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
+      <!-- STATS -->
+      <section id="profile-stats" class="profile-stats" hidden>
+        <article class="stat-tile" data-accent="primary">
+          <div class="stat-icon"><i class="fas fa-star" aria-hidden="true"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="stat-reputation">0</div>
+            <div class="stat-label" data-i18n="reputation">Reputation</div>
+          </div>
+        </article>
+        <article class="stat-tile" data-accent="accent">
+          <div class="stat-icon"><i class="fas fa-comments" aria-hidden="true"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="stat-topics">0</div>
+            <div class="stat-label" data-i18n="topicsCreated">Topics</div>
+          </div>
+        </article>
+        <article class="stat-tile" data-accent="warning">
+          <div class="stat-icon"><i class="fas fa-reply-all" aria-hidden="true"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="stat-posts">0</div>
+            <div class="stat-label" data-i18n="repliesPosted">Replies</div>
+          </div>
+        </article>
+        <article class="stat-tile" data-accent="success">
+          <div class="stat-icon"><i class="fas fa-circle-check" aria-hidden="true"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="stat-solved">0</div>
+            <div class="stat-label" data-i18n="solved">Solved</div>
+          </div>
+        </article>
+        <article class="stat-tile" data-accent="muted">
+          <div class="stat-icon"><i class="fas fa-calendar-days" aria-hidden="true"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="stat-joined">—</div>
+            <div class="stat-label" data-i18n="memberSince">Member since</div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ACHIEVEMENTS -->
+      <section id="profile-achievements" class="profile-achievements" hidden>
+        <header class="section-head">
+          <h3><i class="fas fa-medal" aria-hidden="true"></i> <span data-i18n="achievements">Achievements</span></h3>
+        </header>
+        <div class="achievements-grid" id="achievements-grid"></div>
+      </section>
+
+      <!-- TABS + ACTIVITY -->
+      <section id="profile-activity" class="profile-activity" hidden>
+        <div class="profile-tabs" role="tablist" aria-label="Profile activity">
+          <button class="profile-tab active" data-tab="topics" role="tab" aria-selected="true">
+            <i class="fas fa-comments" aria-hidden="true"></i>
+            <span data-i18n="tabTopics">Topics</span>
+            <span class="tab-count" id="tab-count-topics">0</span>
+          </button>
+          <button class="profile-tab" data-tab="recent" role="tab" aria-selected="false">
+            <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+            <span data-i18n="tabRecent">Recent</span>
+          </button>
+          <button class="profile-tab" data-tab="about" role="tab" aria-selected="false">
+            <i class="fas fa-circle-info" aria-hidden="true"></i>
+            <span data-i18n="tabAbout">About</span>
+          </button>
+        </div>
+
+        <div class="profile-tab-panels">
+          <div class="profile-panel active" data-panel="topics" role="tabpanel">
+            <div id="profile-topics-container" class="topic-list"></div>
+          </div>
+
+          <div class="profile-panel" data-panel="recent" role="tabpanel">
+            <div id="profile-recent-container" class="recent-list"></div>
+          </div>
+
+          <div class="profile-panel" data-panel="about" role="tabpanel">
+            <div id="profile-about-container" class="about-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AD SLOT (discreet) -->
+      <aside class="ad-slot" aria-label="Advertisement">
+        <span data-i18n="advertisement">Advertisement</span>
+      </aside>
     </main>
 
-    <!-- Edit Profile Modal -->
-    <div id="edit-profile-modal" class="auth-modal">
-        <div class="auth-content">
-            <button class="close-auth" onclick="closeEditProfileModal()">
-                <i class="fas fa-times"></i>
-            </button>
-            <div style="text-align: center; margin-bottom: 25px;">
-                <h2 style="color: white; margin: 0; font-size: 24px;">Edit Profile</h2>
-                <p style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">Update your public profile details</p>
-            </div>
-            <form id="edit-profile-form" onsubmit="handleProfileUpdate(event)">
-                <div class="form-group">
-                    <label>Bio</label>
-                    <textarea id="edit-bio" class="auth-input" rows="3" placeholder="Tell us about yourself..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Car Model</label>
-                    <input type="text" id="edit-car" class="auth-input" placeholder="e.g. BMW G20 330i">
-                </div>
-                <div class="form-group">
-                    <label>Avatar</label>
-                    <div class="avatar-upload-container">
-                        <!-- Preview -->
-                        <div class="avatar-preview-edit" id="avatar-preview-edit">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        
-                        <!-- Buttons -->
-                        <div class="avatar-actions">
-                            <button type="button" class="btn-upload-avatar" onclick="triggerAvatarUpload()">
-                                <i class="fas fa-upload"></i> Upload Image
-                            </button>
-                            <button type="button" class="btn-delete-avatar" onclick="deleteAvatar()" id="btn-delete-avatar" style="display: none;">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
-                        </div>
-                        
-                        <!-- Hidden file input -->
-                        <input type="file" id="avatar-file-input" accept="image/*" hidden onchange="handleAvatarUpload(event)">
-                        
-                        <!-- Hidden URL storage (kept for backward compatibility) -->
-                        <input type="hidden" id="edit-avatar" value="">
-                    </div>
-                </div>
-                <button type="submit" class="submit-btn">Save Changes</button>
-            </form>
+    <!-- =========================================== EDIT PROFILE MODAL -->
+    <div id="edit-profile-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
+      <div class="modal-card modal-card--glass topic-modal edit-profile-modal">
+        <button class="modal-close auth-close" onclick="closeEditProfileModal()" aria-label="Close">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-header topic-modal-header">
+          <div class="auth-brand">
+            <div class="auth-brand-logo"><i class="fas fa-user-pen" aria-hidden="true"></i></div>
+          </div>
+          <h2 id="edit-profile-title" data-i18n="editProfile">Edit profile</h2>
+          <p class="auth-subtitle" data-i18n="editProfileSubtitle">Keep your profile fresh — add your ride, bio and avatar.</p>
         </div>
+
+        <form id="edit-profile-form" class="auth-body topic-form" onsubmit="handleProfileUpdate(event)">
+          <div class="field">
+            <label for="edit-bio" data-i18n="bioLabel">Bio</label>
+            <textarea id="edit-bio" class="topic-textarea" rows="3" maxlength="300" placeholder="Tell the community about yourself — what you drive, what you love…"></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="edit-car" data-i18n="carModelLabel">Car model</label>
+              <div class="input-with-icon">
+                <i class="fas fa-car input-icon" aria-hidden="true"></i>
+                <input type="text" id="edit-car" placeholder="e.g. BMW G20 330i" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="edit-city" data-i18n="cityLabel">City</label>
+              <div class="input-with-icon">
+                <i class="fas fa-location-dot input-icon" aria-hidden="true"></i>
+                <input type="text" id="edit-city" placeholder="Berlin" />
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label data-i18n="avatarLabel">Avatar</label>
+            <div class="avatar-upload-card">
+              <div class="avatar-preview-edit" id="avatar-preview-edit">
+                <i class="fas fa-user" aria-hidden="true"></i>
+              </div>
+              <div class="avatar-actions">
+                <button type="button" class="btn btn-ghost btn-upload-avatar" onclick="triggerAvatarUpload()">
+                  <i class="fas fa-upload" aria-hidden="true"></i>
+                  <span data-i18n="uploadImage">Upload image</span>
+                </button>
+                <button type="button" class="btn btn-danger-ghost btn-delete-avatar" id="btn-delete-avatar" style="display:none;" onclick="deleteAvatar()">
+                  <i class="fas fa-trash" aria-hidden="true"></i>
+                  <span data-i18n="remove">Remove</span>
+                </button>
+              </div>
+              <input type="file" id="avatar-file-input" accept="image/*" hidden onchange="handleAvatarUpload(event)">
+              <input type="hidden" id="edit-avatar" value="">
+              <p class="avatar-hint" data-i18n="avatarHint">PNG, JPG or WebP — up to 5 MB. Converted to WebP automatically.</p>
+            </div>
+          </div>
+        </form>
+
+        <div class="modal-footer topic-modal-footer">
+          <button type="button" class="btn btn-ghost" onclick="closeEditProfileModal()" data-i18n="cancel">Cancel</button>
+          <button type="submit" form="edit-profile-form" class="btn btn-primary">
+            <i class="fas fa-check" aria-hidden="true"></i>
+            <span data-i18n="saveChanges">Save changes</span>
+          </button>
+        </div>
+      </div>
     </div>
-    
-    <!-- Favorites Modal -->
+
+    <!-- Favorites Modal (kept minimal, used by header) -->
     <div id="favorites-modal" class="favorites-modal">
       <div class="favorites-content">
         <div class="favorites-header">
-          <h3>
-            <i class="fas fa-star" style="color: #f1c40f"></i>
-            <span data-i18n="savedTitle">Saved Codes</span>
-          </h3>
-          <button class="close-button" onclick="toggleFavoritesModal()">
-            <i class="fas fa-times"></i>
-          </button>
+          <h3><i class="fas fa-star" style="color:#f1c40f"></i> <span data-i18n="savedTitle">Saved Codes</span></h3>
+          <button class="close-button" onclick="toggleFavoritesModal()"><i class="fas fa-times"></i></button>
         </div>
         <div class="favorites-body" id="favorites-list"></div>
       </div>
     </div>
 
-    <!-- CODE DETAIL MODAL (Hidden by default) -->
+    <!-- Code detail (for legacy compatibility) -->
     <div id="code-detail-modal" class="modal">
       <div class="modal-content" style="max-width: 600px; width: 90%;">
         <span class="close-btn" onclick="document.getElementById('code-detail-modal').classList.remove('active')">&times;</span>
-        <div id="code-detail" class="hidden">
-           <!-- Content injected by script.js -->
-        </div>
+        <div id="code-detail" class="hidden"></div>
       </div>
     </div>
 
-    <!-- Hidden Search Container (required for script.js compatibility) -->
     <div id="search-container" style="display:none;"></div>
-    
-    <!-- Bottom Ad Banner -->
-    <div class="ad-container ad-footer" style="margin-top: 30px;">
-        <span style="color: #444; font-size: 12px;">Advertisement</span>
+
+    <!-- Share toast -->
+    <div id="share-toast" class="share-toast" hidden>
+      <i class="fas fa-check-circle" aria-hidden="true"></i>
+      <span data-i18n="linkCopied">Profile link copied</span>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <!-- Content injected by js/footer.js -->
-    </footer>
+    <!-- schema.org Person -->
+    <script type="application/ld+json" id="schema-person">{}</script>
+
+    <footer><!-- footer injected by js/footer.js --></footer>
     <script src="./js/footer.js"></script>
 
-    <script src="./js/translations.js?v=2.91"></script>
-    <script src="./js/script.js?v=2.91"></script>
-    <script src="./js/forum.js?v=2.91"></script> <!-- Reusing for auth logic/utils -->
+    <script src="./js/translations.js?v=3.0"></script>
+    <script src="./js/script.js?v=3.0"></script>
+    <script src="./js/forum.js?v=3.0"></script>
     <script src="./js/report.js"></script>
-    <script src="./js/profile.js"></script>
-    <script src="./js/live.js?v=2.91"></script>
+    <script src="./js/profile.js?v=3.0"></script>
+    <script src="./js/live.js?v=3.0"></script>
   </body>
 </html>

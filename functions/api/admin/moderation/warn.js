@@ -1,6 +1,8 @@
 // functions/api/admin/moderation/warn.js
 // POST /api/admin/moderation/warn
-// Body: { user_id, reason, severity?, related_post_id?, related_topic_id?, expires_at? }
+// Body: { user_id, reason, severity?, expires_at? }
+// Writes into the existing `warnings` table (schema.sql) —
+// columns: id, user_id, moderator_id, reason, severity, expires_at, is_active.
 
 import { verifyToken } from "../../../lib/jwt.js";
 import { requirePermission } from "../../../lib/permissions.js";
@@ -13,7 +15,7 @@ function json(body, status = 200) {
   });
 }
 
-const SEVERITIES = ["low", "medium", "high", "critical"];
+const SEVERITIES = ["minor", "major", "severe"];
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -31,17 +33,19 @@ export async function onRequestPost(context) {
   try { body = await request.json(); }
   catch { return json({ error: "Invalid JSON" }, 400); }
 
-  const {
+  let {
     user_id,
     reason,
-    severity = "medium",
-    related_post_id = null,
-    related_topic_id = null,
+    severity = "minor",
     expires_at = null,
   } = body || {};
 
+  // Map from v2 scale ('low|medium|high|critical') to existing scale
+  const sevMap = { low: "minor", medium: "minor", high: "major", critical: "severe" };
+  if (sevMap[severity]) severity = sevMap[severity];
+
   if (!user_id || !reason) return json({ error: "user_id and reason required" }, 400);
-  if (!SEVERITIES.includes(severity)) return json({ error: "Invalid severity" }, 400);
+  if (!SEVERITIES.includes(severity)) return json({ error: `severity must be one of ${SEVERITIES.join(", ")}` }, 400);
 
   try {
     const u = await env.DB.prepare("SELECT id FROM users WHERE id = ?").bind(user_id).first();
@@ -49,12 +53,11 @@ export async function onRequestPost(context) {
 
     const id = crypto.randomUUID();
     await env.DB.prepare(
-      `INSERT INTO user_warnings
-         (id, user_id, issued_by, reason, severity, related_post_id, related_topic_id, expires_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(id, user_id, payload.id, String(reason).slice(0, 2000), severity, related_post_id, related_topic_id, expires_at).run();
+      `INSERT INTO warnings
+         (id, user_id, moderator_id, reason, severity, expires_at, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, 1)`
+    ).bind(id, user_id, payload.id, String(reason).slice(0, 2000), severity, expires_at).run();
 
-    // Optional notification to the user
     try {
       await env.DB.prepare(
         `INSERT INTO notifications (id, user_id, type, title, text, icon)
@@ -69,7 +72,7 @@ export async function onRequestPost(context) {
         targetEntityType: "user",
         targetEntityId: user_id,
         targetUserId: user_id,
-        details: { severity, reason: String(reason).slice(0, 500), related_post_id, related_topic_id },
+        details: { severity, reason: String(reason).slice(0, 500) },
         ipAddress: request.headers.get("CF-Connecting-IP") || null,
         userAgent: request.headers.get("User-Agent") || null,
       });

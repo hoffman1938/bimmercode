@@ -81,29 +81,41 @@ export async function onRequestPost(context) {
     // 3. Update User Data
     // We construct the query dynamically or just update specific fields
     
-    await env.DB.prepare(`
-      UPDATE users SET 
-        first_name = ?, last_name = ?, age = ?,
-        city = ?, country = ?,
-        car_model = ?, bmw_year = ?, bmw_body = ?, bmw_engine = ?,
-        bio = ?, avatar_url = ?, privacy_level = ?,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).bind(
-      first_name || null, 
-      last_name || null, 
-      age || null,
-      city || null, 
-      country || null,
-      car_model || null,
-      bmw_year || null,
-      bmw_body || null,
-      bmw_engine || null,
-      bio || null, 
-      avatar_url || user.avatar_url, // Keep existing if not provided
-      privacy_level || user.privacy_level || 'public',
-      id
-    ).run();
+    // Build dynamic UPDATE from provided fields only — avoids clobbering
+    // existing values with NULLs when client only updates a subset (e.g. just bio/car/city).
+    const updates = [];
+    const values  = [];
+    const maybe = (col, val) => {
+      if (val !== undefined) { updates.push(`${col} = ?`); values.push(val === "" ? null : val); }
+    };
+    maybe("first_name",    first_name);
+    maybe("last_name",     last_name);
+    maybe("age",           age);
+    maybe("city",          city);
+    maybe("country",       country);
+    maybe("car_model",     car_model);
+    maybe("bmw_year",      bmw_year);
+    maybe("bmw_body",      bmw_body);
+    maybe("bmw_engine",    bmw_engine);
+    maybe("bio",           bio);
+    // avatar_url: if explicitly provided (including empty string to clear) — honor it
+    if (avatar_url !== undefined) {
+      updates.push("avatar_url = ?");
+      values.push(avatar_url || null);
+    }
+    maybe("privacy_level", privacy_level);
+
+    if (updates.length === 0) {
+      return new Response(JSON.stringify({ success: true, noop: true }), {
+        status: 200, headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    values.push(id);
+    await env.DB
+      .prepare(`UPDATE users SET ${updates.join(", ")} WHERE id = ?`)
+      .bind(...values)
+      .run();
 
     // 4. Audit Log
     await logAudit(env, {

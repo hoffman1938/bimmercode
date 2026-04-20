@@ -123,7 +123,9 @@
   }
 
   function renderError(msg) {
-    $("#topics-list-container").innerHTML = `
+    const host = $("#topics-list-container");
+    if (!host) return;
+    host.innerHTML = `
       <div class="error-state">
         <i class="fas fa-exclamation-triangle"></i>
         ${escapeHtml(msg || t("loadError", "Failed to load topics."))}
@@ -153,7 +155,13 @@
     if (locked) badges.push(`<span class="badge badge-locked"><i class="fas fa-lock"></i> ${escapeHtml(t("locked", "Locked"))}</span>`);
 
     if (topic.related_code) {
-      badges.push(`<span class="badge badge-code" title="${escapeHtml(t("relatedCode", "Related code"))}"><i class="fas fa-code"></i> ${escapeHtml(topic.related_code)}</span>`);
+      badges.push(
+        `<button type="button" class="badge badge-code badge-code-link" ` +
+        `data-code="${escapeHtml(topic.related_code)}" ` +
+        `title="${escapeHtml(t("viewCodeDetails", "View code details"))}">` +
+        `<i class="fas fa-code" aria-hidden="true"></i> ${escapeHtml(topic.related_code)}` +
+        `</button>`
+      );
     }
     if (topic.lang) {
       badges.push(`<span class="badge badge-lang" title="${escapeHtml(topic.lang)}">${escapeHtml(topic.lang.toUpperCase())}</span>`);
@@ -162,6 +170,19 @@
       const color = tag.color ? `style="--color-primary-alpha-10: ${tag.color}22; color: ${tag.color}; border-color: ${tag.color}55;"` : "";
       badges.push(`<span class="badge badge-tag" ${color}>#${escapeHtml(tag.name)}</span>`);
     });
+
+    const cat = state.categories.find((c) => c.slug === topic.category);
+    const accentHex = cat?.color && /^#[0-9A-Fa-f]{6}$/.test(cat.color) ? cat.color : "#1C69D4";
+    const accentColor = accentHex;
+
+    // Hotness indicator — many replies in the last ~24h
+    const isHot =
+      (topic.reply_count || 0) >= 5 &&
+      topic.last_reply_at &&
+      (Date.now() - new Date(topic.last_reply_at + "Z").getTime()) < 2 * 24 * 3600 * 1000;
+    if (isHot) {
+      badges.push(`<span class="hot-indicator"><i class="fas fa-fire"></i> ${escapeHtml(t("hot", "Hot"))}</span>`);
+    }
 
     const authorAvatar = topic.author_avatar
       ? `<img src="${escapeHtml(topic.author_avatar)}" alt="" loading="lazy" onerror="this.remove()">`
@@ -172,8 +193,8 @@
       : `<span>${escapeHtml(timeAgo(topic.created_at))}</span>`;
 
     return `
-      <a class="${classes.join(" ")}" href="/topic?id=${encodeURIComponent(topic.id)}" data-topic-id="${escapeHtml(topic.id)}">
-        <div class="topic-icon ${iconTone}"><i class="fas ${iconClass}" aria-hidden="true"></i></div>
+      <a class="${classes.join(" ")}" href="/topic?id=${encodeURIComponent(topic.id)}" data-topic-id="${escapeHtml(topic.id)}" style="--topic-accent: ${accentColor};">
+        <div class="topic-icon ${iconTone}" style="${iconTone ? '' : `background: ${accentColor}22; color: ${accentColor};`}"><i class="fas ${iconClass}" aria-hidden="true"></i></div>
         <div class="topic-body">
           <h3 class="topic-title">
             <span class="title-text">${escapeHtml(topic.title)}</span>
@@ -205,7 +226,8 @@
   }
 
   function clearTopics() {
-    $("#topics-list-container").innerHTML = "";
+    const host = $("#topics-list-container");
+    if (host) host.innerHTML = "";
   }
 
   // ============================================================ Data fetching
@@ -288,6 +310,7 @@
       state.categories = data.categories || [];
       renderCategoriesNav();
       renderCategoryOptions();
+      renderHeroStats();
     } catch (e) { console.error("loadCategories error:", e); }
   }
 
@@ -307,16 +330,29 @@
       const count = cat.topics_count
         ? `<span class="nav-count">${cat.topics_count}</span>`
         : "";
+      const color = cat.color || "var(--color-primary)";
       html += `
-        <a href="#" class="${cls}" data-category="${escapeHtml(cat.slug)}"
+        <a href="#" class="${cls}" data-category="${escapeHtml(cat.slug)}" style="--cat-color:${escapeHtml(color)};"
            onclick="event.preventDefault(); __forum.setCategory('${escapeHtml(cat.slug)}');">
-          <i class="${escapeHtml(cat.icon)} nav-icon" style="color:${escapeHtml(cat.color || '')};" aria-hidden="true"></i>
+          <span class="nav-dot" aria-hidden="true"></span>
+          <i class="${escapeHtml(cat.icon)} nav-icon" style="color:${escapeHtml(color)};" aria-hidden="true"></i>
           <span>${escapeHtml(cat.title)}</span>
           ${count}
         </a>
       `;
     }
     nav.innerHTML = html;
+
+    // Mirror into mobile offcanvas
+    const mobile = $("#mobile-menu-content");
+    if (mobile) {
+      mobile.innerHTML = `
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">${escapeHtml(t("categoriesTitle", "Categories"))}</h3>
+          <nav class="nav-menu">${html}</nav>
+        </div>
+      `;
+    }
   }
 
   function renderCategoryOptions() {
@@ -347,6 +383,40 @@
     } catch (e) { console.error("loadPopularTags error:", e); }
   }
 
+  // ============================================================ Hero stats
+  function renderHeroStats() {
+    const host = $("#hero-stats");
+    if (!host) return;
+    const totalTopics = state.categories.reduce(
+      (sum, c) => sum + (c.topics_count || 0), 0
+    );
+    const chips = [
+      { value: totalTopics,               label: t("statTopics", "topics") },
+      { value: state.categories.length,   label: t("statCategories", "categories") },
+      { value: "3",                       label: t("statLangs", "langs") },
+    ];
+    host.innerHTML = chips
+      .map((c) => `
+        <div class="stat-chip">
+          <span class="stat-value">${c.value}</span>
+          <span class="stat-label">${escapeHtml(c.label)}</span>
+        </div>
+      `).join("");
+  }
+
+  // ============================================================ FAB scroll-to-top
+  function setupScrollToTop() {
+    const fab = $("#fab-scroll-top");
+    if (!fab) return;
+    const threshold = 420;
+    const onScroll = () => {
+      if (window.scrollY > threshold) fab.classList.add("visible");
+      else fab.classList.remove("visible");
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
   // ============================================================ Sidebar user card
   function renderUserCard() {
     const user = getUser();
@@ -375,6 +445,17 @@
         </div>
       </div>`;
   }
+
+  // Make renderUserCard callable from script.js on login/logout,
+  // and listen for auth:changed events that script.js dispatches.
+  window.updateSidebarUser = function updateSidebarUser() {
+    renderUserCard();
+    renderHeaderAuth();
+  };
+  window.addEventListener("auth:changed", () => {
+    renderUserCard();
+    renderHeaderAuth();
+  });
 
   function renderHeaderAuth() {
     const user = getUser();
@@ -503,20 +584,37 @@
 
     const codeInput = $("#topic-code");
     const codeFeedback = $("#topic-code-feedback");
-    codeInput?.addEventListener("input", () => {
+    const lookup = (val) => (window.bmwCodes || []).find((c) => c.code && c.code.toLowerCase() === val);
+    const renderCodeFeedback = () => {
+      if (!codeInput) return;
       const val = codeInput.value.trim().toLowerCase();
-      if (!val) { if (codeFeedback) codeFeedback.textContent = ""; codeInput.style.borderColor = ""; return; }
-      const found = window.bmwCodes && window.bmwCodes.find((c) => c.code.toLowerCase() === val);
+      if (!val) {
+        if (codeFeedback) codeFeedback.innerHTML = "";
+        codeInput.style.borderColor = "";
+        return;
+      }
+      const found = lookup(val);
       if (found) {
         codeInput.style.borderColor = "var(--color-success)";
         if (codeFeedback) {
-          codeFeedback.innerHTML = `<i class="fas fa-check-circle" style="color:var(--color-success)"></i> ${escapeHtml(found.code)} — ${escapeHtml((found.title?.[state.lang]) || found.title?.en || "")}`;
+          codeFeedback.innerHTML =
+            `<i class="fas fa-check-circle" style="color:var(--color-success)"></i> ` +
+            `${escapeHtml(found.code)} — ` +
+            `${escapeHtml((found.title?.[state.lang]) || found.title?.en || "")}`;
         }
       } else {
-        codeInput.style.borderColor = "var(--color-danger)";
-        if (codeFeedback) codeFeedback.textContent = t("invalidCodeError", "Code not found in database");
+        // NOT a blocker — allow user to publish any code even if not in our DB.
+        codeInput.style.borderColor = "var(--color-warning, #f59e0b)";
+        if (codeFeedback) {
+          codeFeedback.innerHTML =
+            `<i class="fas fa-circle-info" style="color:var(--color-warning, #f59e0b)"></i> ` +
+            escapeHtml(t("codeNotInDb", "Code is not in our public database — you can still publish it."));
+        }
       }
-    });
+    };
+    codeInput?.addEventListener("input", renderCodeFeedback);
+    // Re-run once codes.json finishes loading (it may arrive after form render).
+    window.addEventListener("bmwCodes:ready", renderCodeFeedback);
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -529,13 +627,7 @@
       const tagsRaw = $("#topic-tags").value.trim();
       const category = $("#topic-category").value;
 
-      if (relatedCode) {
-        const exists = window.bmwCodes?.some((c) => c.code.toLowerCase() === relatedCode.toLowerCase());
-        if (!exists) {
-          $("#topic-title-error").textContent = t("invalidCodeError", "Invalid error code — leave empty or use a valid one.");
-          return;
-        }
-      }
+      // Related code is OPTIONAL and NEVER a blocker. We just normalize case.
       $("#topic-title-error").textContent = "";
 
       const body = {
@@ -544,14 +636,20 @@
         category,
         title,
         content,
-        related_code: relatedCode || null,
+        related_code: relatedCode ? relatedCode.toUpperCase() : null,
         lang: detectContentLanguage(title + " " + content),
         tags: tagsRaw ? tagsRaw.split(",").map((x) => x.trim()).filter(Boolean) : [],
       };
 
-      // Turnstile
-      const turnstileToken = window.turnstile?.getResponse?.(document.querySelector("#turnstile-topic"));
-      if (turnstileToken) body.turnstile_token = turnstileToken;
+      // Turnstile — best-effort. `getResponse` throws if the widget was never
+      // rendered (e.g. no TURNSTILE_SITE_KEY in dev), so we swallow the error.
+      try {
+        const tsEl = document.querySelector("#turnstile-topic");
+        if (tsEl?.dataset.rendered === "1" && window.turnstile?.getResponse) {
+          const turnstileToken = window.turnstile.getResponse(tsEl);
+          if (turnstileToken) body.turnstile_token = turnstileToken;
+        }
+      } catch (_) { /* no widget registered — skip */ }
 
       publish.disabled = true;
       publish.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> ${escapeHtml(t("publishing", "Publishing…"))}`;
@@ -587,11 +685,85 @@
   window.switchAuthTab = function switchAuthTab(tab) {
     $("#tab-login")?.classList.toggle("active", tab === "login");
     $("#tab-register")?.classList.toggle("active", tab === "register");
+    $("#tab-login")?.setAttribute("aria-selected", tab === "login" ? "true" : "false");
+    $("#tab-register")?.setAttribute("aria-selected", tab === "register" ? "true" : "false");
+    const tabs = document.querySelector(".auth-tabs");
+    if (tabs) tabs.setAttribute("data-active", tab);
     const login = $("#login-form");
     const reg = $("#register-form");
     if (login) login.style.display = tab === "login" ? "" : "none";
     if (reg) reg.style.display = tab === "register" ? "" : "none";
+    // Update subtitle
+    const subtitle = $("#auth-subtitle");
+    const title = $("#auth-title");
+    if (tab === "register") {
+      if (title) title.textContent = t("createAccountTitle", "Join the community");
+      if (subtitle) subtitle.textContent = t("authSubtitleRegister", "Create your account — it takes 30 seconds.");
+    } else {
+      if (title) title.textContent = t("welcomeBack", "Welcome back");
+      if (subtitle) subtitle.textContent = t("authSubtitleLogin", "Sign in to post, react, and save answers.");
+    }
+    // Focus first input
+    setTimeout(() => {
+      (tab === "register" ? reg : login)?.querySelector("input")?.focus();
+    }, 220);
   };
+
+  // ============================================================ Password eye-toggle
+  document.addEventListener("click", (e) => {
+    const eye = e.target.closest(".input-eye");
+    if (!eye) return;
+    e.preventDefault();
+    const id = eye.dataset.target;
+    const input = document.getElementById(id);
+    if (!input) return;
+    const icon = eye.querySelector("i");
+    if (input.type === "password") {
+      input.type = "text";
+      icon?.classList.replace("fa-eye", "fa-eye-slash");
+      eye.setAttribute("aria-label", "Hide password");
+    } else {
+      input.type = "password";
+      icon?.classList.replace("fa-eye-slash", "fa-eye");
+      eye.setAttribute("aria-label", "Show password");
+    }
+  });
+
+  // ============================================================ Password strength meter
+  function passwordScore(pw) {
+    if (!pw) return 0;
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw) || pw.length >= 12) score++;
+    return Math.min(4, score);
+  }
+  document.addEventListener("input", (e) => {
+    if (e.target?.id !== "reg-password") return;
+    const meter = document.querySelector(".pw-strength");
+    if (meter) meter.setAttribute("data-strength", String(passwordScore(e.target.value)));
+  });
+
+  // ============================================================ Recovery step indicator
+  // When recovery-step-2 becomes active, update step indicator visuals
+  const recObserver = new MutationObserver(() => {
+    const step2 = document.getElementById("recovery-step-2");
+    const ind1 = document.getElementById("rec-step-ind-1");
+    const ind2 = document.getElementById("rec-step-ind-2");
+    if (!step2 || !ind1 || !ind2) return;
+    if (step2.classList.contains("active")) {
+      ind1.classList.remove("active");
+      ind2.classList.add("active");
+    } else {
+      ind1.classList.add("active");
+      ind2.classList.remove("active");
+    }
+  });
+  document.addEventListener("DOMContentLoaded", () => {
+    const step2 = document.getElementById("recovery-step-2");
+    if (step2) recObserver.observe(step2, { attributes: true, attributeFilter: ["class"] });
+  });
 
   // Compatibility with script.js — alias for old `filterTopics` signature
   window.filterTopics = (slug) => window.__forum.setCategory(slug);
@@ -610,13 +782,22 @@
 
   // ============================================================ Boot
   document.addEventListener("DOMContentLoaded", async () => {
-    document.body.classList.add("forum-page");
+    // forum.js is also loaded on non-forum pages (profile, topic, admin)
+    // for shared auth/header helpers. In that case, only wire header/sidebar
+    // and bail out before running forum-specific code that assumes DOM nodes
+    // that don't exist on those pages.
     applyI18n();
     renderHeaderAuth();
     renderUserCard();
+
+    const isForumPage = !!document.getElementById("topics-list-container");
+    if (!isForumPage) return;
+
+    document.body.classList.add("forum-page");
     bindFilters();
     setupTopicForm();
     setupInfiniteScroll();
+    setupScrollToTop();
 
     await loadCategories();
     loadPopularTags();

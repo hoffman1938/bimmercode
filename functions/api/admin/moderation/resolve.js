@@ -46,31 +46,33 @@ export async function onRequestPost(context) {
     const report = await env.DB.prepare("SELECT * FROM reports WHERE id = ?").bind(report_id).first();
     if (!report) return json({ error: "Report not found" }, 404);
 
-    // Resolve target
+    // Existing schema uses reported_entity_type / reported_entity_id
+    const entityType = report.reported_entity_type || report.entity_type;
+    const entityId   = report.reported_entity_id   || report.entity_id;
+
     let targetTopicId = null;
     let targetPostId = null;
-    let targetUserId = null;
-    if (report.entity_type === "post") {
-      targetPostId = report.entity_id;
-      const p = await env.DB.prepare("SELECT topic_id, user_id FROM posts WHERE id = ?").bind(report.entity_id).first();
-      if (p) { targetTopicId = p.topic_id; targetUserId = p.user_id; }
-    } else if (report.entity_type === "topic") {
-      targetTopicId = report.entity_id;
-      const t = await env.DB.prepare("SELECT user_id FROM topics WHERE id = ?").bind(report.entity_id).first();
-      if (t) targetUserId = t.user_id;
-    } else if (report.entity_type === "user") {
-      targetUserId = report.entity_id;
+    let targetUserId = report.reported_user_id || null;
+    if (entityType === "post") {
+      targetPostId = entityId;
+      const p = await env.DB.prepare("SELECT topic_id, user_id FROM posts WHERE id = ?").bind(entityId).first();
+      if (p) { targetTopicId = p.topic_id; targetUserId = targetUserId || p.user_id; }
+    } else if (entityType === "topic") {
+      targetTopicId = entityId;
+      const t = await env.DB.prepare("SELECT user_id FROM topics WHERE id = ?").bind(entityId).first();
+      if (t) targetUserId = targetUserId || t.user_id;
+    } else if (entityType === "user") {
+      targetUserId = entityId;
     }
 
     // Execute action
     switch (action) {
       case "approve":
-        // Dismiss report, keep content
         break;
       case "remove":
-        if (report.entity_type === "post") {
+        if (entityType === "post") {
           await env.DB.prepare(`DELETE FROM posts WHERE id = ?`).bind(targetPostId).run();
-        } else if (report.entity_type === "topic") {
+        } else if (entityType === "topic") {
           await env.DB.prepare(`DELETE FROM posts WHERE topic_id = ?`).bind(targetTopicId).run();
           await env.DB.prepare(`DELETE FROM topics WHERE id = ?`).bind(targetTopicId).run();
         }
@@ -90,28 +92,26 @@ export async function onRequestPost(context) {
       case "warn":
         if (targetUserId) {
           await env.DB.prepare(
-            `INSERT INTO user_warnings (id, user_id, issued_by, reason, severity, related_post_id, related_topic_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`
+            `INSERT INTO warnings (id, user_id, moderator_id, reason, severity, is_active)
+             VALUES (?, ?, ?, ?, ?, 1)`
           ).bind(
             crypto.randomUUID(),
             targetUserId,
             payload.id,
             note || report.reason,
-            "medium",
-            targetPostId,
-            targetTopicId,
+            "minor",
           ).run();
         }
         break;
     }
 
-    // Mark report as resolved
+    // Mark report using existing schema columns
     const resolution = action === "approve" ? "dismissed" : "resolved";
     await env.DB.prepare(`
       UPDATE reports
-         SET status = ?, resolution = ?, handled_by = ?, handled_at = CURRENT_TIMESTAMP
+         SET status = ?, resolution_notes = ?, moderator_id = ?, resolved_at = CURRENT_TIMESTAMP
        WHERE id = ?
-    `).bind(resolution, action, payload.id, report_id).run();
+    `).bind(resolution, note ? String(note).slice(0, 1000) : action, payload.id, report_id).run();
 
     // Audit log — map the action to a richer constant when possible.
     const auditAction =
@@ -127,8 +127,8 @@ export async function onRequestPost(context) {
       await logAudit(env, {
         userId: payload.id,
         action: auditAction,
-        targetEntityType: report.entity_type,
-        targetEntityId: report.entity_id,
+        targetEntityType: entityType,
+        targetEntityId: entityId,
         targetUserId,
         details: { report_id, action, note: note || null },
         ipAddress: request.headers.get("CF-Connecting-IP") || null,

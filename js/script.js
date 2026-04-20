@@ -218,6 +218,41 @@ function renderFavoritesList() {
   });
 }
 
+/* --- GLOBAL: open code detail modal from anywhere (forum/topic/profile) -- */
+/* Usage: openCodeModal("P0128") — looks up the code in bmwCodes and shows   */
+/* the same modal as on the main page (diagnosis, repair plan, parts).       */
+window.openCodeModal = function openCodeModal(codeStr) {
+  if (!codeStr) return;
+  const needle = String(codeStr).trim().toLowerCase();
+  const tryFind = () => (window.bmwCodes || bmwCodes || []).find(
+    (c) => c.code && c.code.toLowerCase() === needle
+  );
+  const code = tryFind();
+  if (code) return window.displayCodeDetail(code);
+  // codes.json may not be loaded yet — wait briefly, then fallback.
+  const once = () => {
+    const c = tryFind();
+    window.removeEventListener("bmwCodes:ready", once);
+    if (c) return window.displayCodeDetail(c);
+    // Graceful fallback: open the code page directly.
+    window.open(`/?code=${encodeURIComponent(codeStr)}`, "_blank");
+  };
+  window.addEventListener("bmwCodes:ready", once);
+  setTimeout(once, 1500);
+};
+window.displayCodeDetail = displayCodeDetail;
+
+/* Delegated click: `.badge-code-link[data-code]` opens the code modal from   */
+/* anywhere — forum cards, topic header, profile recent topics, etc.         */
+document.addEventListener("click", (ev) => {
+  const btn = ev.target.closest(".badge-code-link");
+  if (!btn) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  const code = btn.dataset.code;
+  if (code) window.openCodeModal(code);
+});
+
 /* --- GLOBAL CLOSE FUNCTION --- */
 window.hideDetail = function () {
   const detailEl = document.getElementById("code-detail");
@@ -319,11 +354,12 @@ function setupRegisterForm() {
             const data = await res.json();
             
             if(res.ok) {
-                // Store recovery token for next step
                 window.recoveryToken = data.recovery_token;
-                
-                document.getElementById("recovery-step-1").classList.remove("active");
-                document.getElementById("recovery-step-2").classList.add("active");
+
+                const s1 = document.getElementById("recovery-step-1");
+                const s2 = document.getElementById("recovery-step-2");
+                if (s1) { s1.classList.remove("active"); s1.style.display = "none"; }
+                if (s2) { s2.classList.add("active"); s2.style.display = ""; }
                 
                 const qMap = {
                     "first_pet": "What was your first pet's name?",
@@ -418,64 +454,74 @@ function setupRegisterForm() {
 
   regForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const username = document.getElementById("reg-username").value;
-    const firstName = document.getElementById("reg-first-name").value;
-    const lastName = document.getElementById("reg-last-name").value;
-    const age = parseInt(document.getElementById("reg-age").value);
-    const email = document.getElementById("reg-email").value;
-    const password = document.getElementById("reg-password").value;
-    const question = document.getElementById("reg-question").value;
-    const answer = document.getElementById("reg-answer").value;
+
+    const val = (id) => document.getElementById(id)?.value?.trim() ?? "";
+    const username = val("reg-username");
+    const firstName = val("reg-first-name") || null;
+    const lastName = val("reg-last-name") || null;
+    const ageRaw = val("reg-age");
+    const age = ageRaw ? parseInt(ageRaw, 10) : null;
+    const email = val("reg-email");
+    const password = document.getElementById("reg-password")?.value ?? "";
+    const question = val("reg-question");
+    const answer = val("reg-answer");
     const msg = document.getElementById("reg-msg");
-
-    if(!question || !answer) {
-        msg.textContent = "Please select a security question and answer.";
-        msg.style.color = "#e74c3c";
-        return;
-    }
-    
-    // Validate age
-    if (age < 13 || age > 120) {
-        msg.textContent = "Age must be between 13 and 120";
-        msg.style.color = "#e74c3c";
-        return;
-    }
-
-    msg.style.color = "#aaa";
-    msg.textContent = "Processing...";
-    const payload = {
-          username,
-          first_name: firstName,
-          last_name: lastName,
-          age,
-          email,
-          password,
-          language: (typeof currentLanguage !== 'undefined') ? currentLanguage : "en",
-          security_question: question,
-          security_answer: answer
+    const btn = regForm.querySelector('button[type="submit"]');
+    const originalBtnHtml = btn ? btn.innerHTML : "";
+    const setMsg = (text, ok = false) => {
+      if (!msg) return;
+      msg.textContent = text;
+      msg.style.color = ok ? "#2ecc71" : "#e74c3c";
     };
-    console.log("Sending Registration:", payload);
+
+    if (!username || !email || !password) {
+      setMsg("Please fill username, email and password.");
+      return;
+    }
+    if (!question || !answer) {
+      setMsg("Please select a security question and answer.");
+      return;
+    }
+    if (age !== null && (Number.isNaN(age) || age < 13 || age > 120)) {
+      setMsg("Age must be between 13 and 120");
+      return;
+    }
+
+    if (msg) { msg.style.color = "#aaa"; msg.textContent = "Creating account..."; }
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creating...';
+    }
+    const payload = {
+      username,
+      first_name: firstName,
+      last_name: lastName,
+      age,
+      email,
+      password,
+      language: (typeof currentLanguage !== "undefined") ? currentLanguage : "en",
+      security_question: question,
+      security_answer: answer,
+    };
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // currentLanguage берем из вашей переменной в script.js
         body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        msg.style.color = "#2ecc71";
-        msg.textContent = "Success! Please login.";
-        setTimeout(() => switchAuthTab("login"), 1500);
+        setMsg("Success! Please login.", true);
+        setTimeout(() => switchAuthTab("login"), 1400);
       } else {
-        msg.style.color = "#e74c3c";
-        msg.textContent = data.error || "Registration failed";
+        setMsg(data.error || `Registration failed (HTTP ${res.status})`);
       }
     } catch (err) {
-      msg.textContent = "Error: " + err.message;
+      setMsg("Error: " + (err?.message || "Connection error"));
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = originalBtnHtml; }
     }
   });
 }
@@ -488,12 +534,27 @@ function setupLoginForm() {
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
+    const email = document.getElementById("login-email")?.value?.trim() ?? "";
+    const password = document.getElementById("login-password")?.value ?? "";
     const msg = document.getElementById("login-msg");
+    const btn = loginForm.querySelector('button[type="submit"]');
+    const originalBtnHtml = btn ? btn.innerHTML : "";
+    const setMsg = (text, ok = false) => {
+      if (!msg) return;
+      msg.textContent = text;
+      msg.style.color = ok ? "#2ecc71" : "#e74c3c";
+    };
 
-    msg.textContent = "Signing in...";
-    msg.style.color = "#aaa";
+    if (!email || !password) {
+      setMsg("Please enter email and password");
+      return;
+    }
+
+    if (msg) { msg.style.color = "#aaa"; msg.textContent = "Signing in..."; }
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Signing in...';
+    }
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -502,7 +563,7 @@ function setupLoginForm() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         localStorage.setItem("auth_token", data.token);
@@ -510,7 +571,7 @@ function setupLoginForm() {
         await refreshUserData();
         checkAuthStatus();
 
-        // Если мы на странице форума — обновляем сайдбар
+        window.dispatchEvent(new CustomEvent("auth:changed", { detail: { user: data.user } }));
         if (typeof updateSidebarUser === "function") {
           updateSidebarUser();
         }
@@ -526,19 +587,21 @@ function setupLoginForm() {
         msg.textContent = "Welcome!";
 
         setTimeout(() => {
-          toggleAuthModal(); // Закрываем модалку
-          // Очищаем форму
-          document.getElementById("login-email").value = "";
-          document.getElementById("login-password").value = "";
-          msg.textContent = "";
+          toggleAuthModal();
+          const emailEl = document.getElementById("login-email");
+          const passwordEl = document.getElementById("login-password");
+          if (emailEl) emailEl.value = "";
+          if (passwordEl) passwordEl.value = "";
+          if (msg) msg.textContent = "";
         }, 1000);
       } else {
-        msg.style.color = "#e74c3c";
-        msg.textContent = data.error || "Invalid credentials";
+        setMsg(data.error || (res.status === 401 ? "Invalid email or password" : `Login failed (HTTP ${res.status})`));
       }
     } catch (err) {
       console.error(err);
-      msg.textContent = "Connection error";
+      setMsg("Connection error");
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = originalBtnHtml; }
     }
   });
 }
@@ -631,6 +694,9 @@ async function init() {
       const data = await response.json();
       bmwCodes = [...bmwCodes, ...data.codes];
     }
+    // Expose to other scripts (forum.js, topic.js) that need to look codes up.
+    window.bmwCodes = bmwCodes;
+    window.dispatchEvent(new CustomEvent("bmwCodes:ready", { detail: { count: bmwCodes.length } }));
     setupRegisterForm();
     setupLoginForm();
     checkAuthStatus();

@@ -103,6 +103,17 @@
 
     <!-- ==================================================== MAIN -->
     <main class="forum-container">
+      <!-- Hero banner -->
+      <section class="forum-hero" aria-label="Forum welcome">
+        <div>
+          <h2 data-i18n="heroTitle">BMW knowledge, shared by enthusiasts.</h2>
+          <p data-i18n="heroSubtitle">
+            Fault codes, coding, parts and repair — ask, answer and level up. EN · RU · KA.
+          </p>
+        </div>
+        <div class="hero-stats" id="hero-stats" aria-live="polite"></div>
+      </section>
+
       <div class="ad-slot ad-header" data-ad-slot="forum-top">Advertisement</div>
 
       <!-- Toolbar: search + new topic -->
@@ -187,44 +198,77 @@
 
     <!-- ==================================================== NEW TOPIC MODAL -->
     <div id="new-topic-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="new-topic-title">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h2 id="new-topic-title" data-i18n="createTopic">Create New Topic</h2>
-          <button class="modal-close" onclick="closeModal('new-topic-modal')" aria-label="Close">
-            <i class="fas fa-times" aria-hidden="true"></i>
-          </button>
+      <div class="modal-card modal-card--glass topic-modal">
+        <button class="modal-close auth-close" onclick="closeModal('new-topic-modal')" aria-label="Close">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-header topic-modal-header">
+          <div class="auth-brand">
+            <div class="auth-brand-logo"><i class="fas fa-pen-to-square" aria-hidden="true"></i></div>
+          </div>
+          <h2 id="new-topic-title" data-i18n="createTopic">Create a new topic</h2>
+          <p class="auth-subtitle" data-i18n="createTopicSubtitle">
+            Ask the community — add details, relevant code and tags to help others help you.
+          </p>
         </div>
-        <form id="create-topic-form" class="modal-body">
+
+        <form id="create-topic-form" class="modal-body auth-body topic-form">
           <div class="field">
             <label for="topic-category" data-i18n="categoryLabel">Category</label>
-            <select id="topic-category" required></select>
-          </div>
-          <div class="field">
-            <label for="topic-title" data-i18n="titleLabel">Title</label>
-            <input type="text" id="topic-title" required minlength="8" maxlength="160" placeholder="Rough idle on cold start" />
-            <div class="field-error" id="topic-title-error"></div>
-          </div>
-          <div class="field">
-            <label for="topic-code" data-i18n="relatedCodeLabel">Related error code (optional)</label>
-            <input type="text" id="topic-code" placeholder="e.g. 29CD, P0171" />
-            <div class="hint" id="topic-code-feedback"></div>
-          </div>
-          <div class="field">
-            <label for="topic-tags" data-i18n="tagsLabel">Tags (optional, comma-separated)</label>
-            <input type="text" id="topic-tags" placeholder="e.g. e46, misfire, cold-start" />
-          </div>
-          <div class="field">
-            <label for="topic-content" data-i18n="contentLabel">Description</label>
-            <textarea id="topic-content" required minlength="20" maxlength="8000" placeholder="Describe the symptoms, what you've checked, any codes or sounds…"></textarea>
-            <div class="hint">
-              <span id="topic-content-count">0</span> / 8000
+            <div class="input-with-icon">
+              <i class="fas fa-layer-group input-icon" aria-hidden="true"></i>
+              <select id="topic-category" required></select>
             </div>
           </div>
+
+          <div class="field">
+            <label for="topic-title" data-i18n="titleLabel">Title</label>
+            <div class="input-with-icon">
+              <i class="fas fa-heading input-icon" aria-hidden="true"></i>
+              <input type="text" id="topic-title" required minlength="8" maxlength="160"
+                     placeholder="Rough idle on cold start" />
+            </div>
+            <div class="field-error" id="topic-title-error"></div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="topic-code" data-i18n="relatedCodeLabel">Related error code (optional)</label>
+              <div class="input-with-icon">
+                <i class="fas fa-code input-icon" aria-hidden="true"></i>
+                <input type="text" id="topic-code" placeholder="e.g. 29CD, P0171" />
+              </div>
+              <div class="hint" id="topic-code-feedback"></div>
+            </div>
+            <div class="field">
+              <label for="topic-tags" data-i18n="tagsLabel">Tags (optional)</label>
+              <div class="input-with-icon">
+                <i class="fas fa-tags input-icon" aria-hidden="true"></i>
+                <input type="text" id="topic-tags" placeholder="e46, misfire, cold-start" />
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="topic-content" data-i18n="contentLabel">Description</label>
+            <textarea id="topic-content" required minlength="20" maxlength="8000"
+                      placeholder="Describe the symptoms, what you've checked, any codes or sounds…"
+                      class="topic-textarea"></textarea>
+            <div class="hint textarea-counter">
+              <i class="fas fa-align-left" aria-hidden="true"></i>
+              <span><span id="topic-content-count">0</span> / 8000</span>
+            </div>
+          </div>
+
           <div id="similar-topics-suggestions" aria-live="polite"></div>
           <div id="turnstile-topic" class="cf-turnstile" data-theme="dark"></div>
         </form>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-ghost" onclick="closeModal('new-topic-modal')" data-i18n="cancel">Cancel</button>
+
+        <div class="modal-footer topic-modal-footer">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('new-topic-modal')" data-i18n="cancel">
+            <span>Cancel</span>
+          </button>
           <button type="submit" form="create-topic-form" class="btn btn-primary" id="publish-btn">
             <i class="fas fa-paper-plane" aria-hidden="true"></i>
             <span data-i18n="publish">Publish</span>
@@ -235,106 +279,238 @@
 
     <!-- ==================================================== AUTH MODAL -->
     <div id="auth-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-      <div class="modal-card">
-        <div class="modal-header">
+      <div class="modal-card auth-card">
+        <button class="modal-close auth-close" onclick="toggleAuthModal()" aria-label="Close">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-header">
+          <div class="auth-brand">
+            <div class="auth-brand-logo"><i class="fas fa-comments" aria-hidden="true"></i></div>
+          </div>
           <h2 id="auth-title" data-i18n="welcomeBack">Welcome back</h2>
-          <button class="modal-close" onclick="toggleAuthModal()" aria-label="Close">
-            <i class="fas fa-times" aria-hidden="true"></i>
-          </button>
+          <p class="auth-subtitle" id="auth-subtitle" data-i18n="authSubtitleLogin">
+            Sign in to post, react, and save answers.
+          </p>
         </div>
-        <div class="modal-body">
-          <div class="chips" style="margin-bottom: var(--space-md);">
-            <button class="chip active" id="tab-login" onclick="switchAuthTab('login')" data-i18n="loginTab">Login</button>
-            <button class="chip" id="tab-register" onclick="switchAuthTab('register')" data-i18n="registerTab">Register</button>
+
+        <div class="modal-body auth-body">
+          <div class="auth-tabs" role="tablist" data-active="login">
+            <button class="auth-tab active" id="tab-login" type="button" role="tab"
+                    aria-selected="true" onclick="switchAuthTab('login')" data-i18n="loginTab">
+              Login
+            </button>
+            <button class="auth-tab" id="tab-register" type="button" role="tab"
+                    aria-selected="false" onclick="switchAuthTab('register')" data-i18n="registerTab">
+              Register
+            </button>
+            <span class="auth-tabs-thumb" aria-hidden="true"></span>
           </div>
 
-          <form id="login-form" class="auth-form active">
+          <form id="login-form" class="auth-form active" autocomplete="on">
             <div class="field">
               <label for="login-email" data-i18n="emailUsernameLabel">Email or username</label>
-              <input type="text" id="login-email" required autocomplete="username" />
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                <input type="text" id="login-email" required autocomplete="username"
+                       placeholder="you@example.com" />
+              </div>
             </div>
             <div class="field">
               <label for="login-password" data-i18n="passwordLabel">Password</label>
-              <input type="password" id="login-password" required autocomplete="current-password" />
+              <div class="input-with-icon input-with-action">
+                <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                <input type="password" id="login-password" required
+                       autocomplete="current-password" placeholder="••••••••" />
+                <button type="button" class="input-eye" data-target="login-password"
+                        aria-label="Show password" tabindex="-1">
+                  <i class="fas fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
-            <div style="display:flex; justify-content:flex-end; margin-bottom: var(--space-sm);">
-              <a href="#" onclick="showRecoveryModal(); return false;" data-i18n="forgotPasswordLink" style="color: var(--color-accent); font-size: var(--font-size-sm);">Forgot password?</a>
+            <div class="auth-extra">
+              <a href="#" class="auth-link" onclick="showRecoveryModal(); return false;"
+                 data-i18n="forgotPasswordLink">Forgot password?</a>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;" data-i18n="signInBtn">Sign In</button>
-            <p id="login-msg" class="field-error" style="text-align:center;"></p>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="signInBtn">
+              <i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i>
+              <span>Sign In</span>
+            </button>
+            <p id="login-msg" class="auth-msg"></p>
           </form>
 
-          <form id="register-form" class="auth-form" style="display:none;">
+          <form id="register-form" class="auth-form" autocomplete="on" style="display:none;">
             <div class="field">
               <label for="reg-username" data-i18n="usernameLabel">Username</label>
-              <input type="text" id="reg-username" required minlength="3" maxlength="24" />
+              <div class="input-with-icon">
+                <i class="fas fa-user input-icon" aria-hidden="true"></i>
+                <input type="text" id="reg-username" required minlength="3" maxlength="24"
+                       autocomplete="username" placeholder="e30_enjoyer" />
+              </div>
             </div>
             <div class="field">
               <label for="reg-email" data-i18n="emailLabel">Email</label>
-              <input type="email" id="reg-email" required />
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                <input type="email" id="reg-email" required autocomplete="email"
+                       placeholder="you@example.com" />
+              </div>
             </div>
             <div class="field">
               <label for="reg-password" data-i18n="passwordLabel">Password</label>
-              <input type="password" id="reg-password" required minlength="8" autocomplete="new-password" />
+              <div class="input-with-icon input-with-action">
+                <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                <input type="password" id="reg-password" required minlength="8"
+                       autocomplete="new-password" placeholder="Min 8 characters" />
+                <button type="button" class="input-eye" data-target="reg-password"
+                        aria-label="Show password" tabindex="-1">
+                  <i class="fas fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="pw-strength" data-strength="0" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
               <div class="hint" data-i18n="passwordHint">Min 8 characters, mix of letters and numbers.</div>
             </div>
             <div class="field">
               <label for="reg-question" data-i18n="securityQuestionLabel">Security question</label>
-              <select id="reg-question" required>
-                <option value="" disabled selected data-i18n="securityQuestionPlaceholder">Select…</option>
-                <option value="first_pet" data-i18n="q_first_pet">What was your first pet's name?</option>
-                <option value="mother_maiden" data-i18n="q_mother_maiden">What is your mother's maiden name?</option>
-                <option value="first_car" data-i18n="q_first_car">What was your first car model?</option>
-                <option value="city_born" data-i18n="q_city_born">In which city were you born?</option>
-              </select>
+              <div class="input-with-icon">
+                <i class="fas fa-shield-halved input-icon" aria-hidden="true"></i>
+                <select id="reg-question" required>
+                  <option value="" disabled selected data-i18n="securityQuestionPlaceholder">Select…</option>
+                  <option value="first_pet" data-i18n="q_first_pet">What was your first pet's name?</option>
+                  <option value="mother_maiden" data-i18n="q_mother_maiden">What is your mother's maiden name?</option>
+                  <option value="first_car" data-i18n="q_first_car">What was your first car model?</option>
+                  <option value="city_born" data-i18n="q_city_born">In which city were you born?</option>
+                </select>
+              </div>
             </div>
             <div class="field">
               <label for="reg-answer" data-i18n="securityAnswerLabel">Answer</label>
-              <input type="text" id="reg-answer" required />
+              <div class="input-with-icon">
+                <i class="fas fa-key input-icon" aria-hidden="true"></i>
+                <input type="text" id="reg-answer" required placeholder="Your answer" />
+              </div>
             </div>
             <div id="turnstile-register" class="cf-turnstile" data-theme="dark"></div>
-            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:var(--space-sm);" data-i18n="createAccountBtn">Create account</button>
-            <p id="reg-msg" class="field-error" style="text-align:center;"></p>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="createAccountBtn">
+              <i class="fas fa-user-plus" aria-hidden="true"></i>
+              <span>Create account</span>
+            </button>
+            <p id="reg-msg" class="auth-msg"></p>
           </form>
+        </div>
+
+        <div class="auth-footer">
+          <i class="fas fa-shield-halved" aria-hidden="true"></i>
+          <span data-i18n="authSecuredBy">Protected by Cloudflare Turnstile · TLS encrypted</span>
         </div>
       </div>
     </div>
 
     <!-- ==================================================== RECOVERY MODAL -->
-    <div id="recovery-modal" class="modal" role="dialog" aria-modal="true">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h2 data-i18n="resetPassword">Reset Password</h2>
-          <button class="modal-close" onclick="closeRecoveryModal()" aria-label="Close">
-            <i class="fas fa-times" aria-hidden="true"></i>
-          </button>
+    <div id="recovery-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="recovery-title">
+      <div class="modal-card auth-card">
+        <button class="modal-close auth-close" onclick="closeRecoveryModal()" aria-label="Close">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-header">
+          <div class="auth-brand">
+            <div class="auth-brand-logo"><i class="fas fa-unlock-keyhole" aria-hidden="true"></i></div>
+          </div>
+          <h2 id="recovery-title" data-i18n="resetPassword">Reset password</h2>
+          <p class="auth-subtitle" data-i18n="recoverySubtitle">
+            We'll ask you one security question, then let you set a new password.
+          </p>
         </div>
-        <div class="modal-body">
+
+        <div class="modal-body auth-body">
+          <!-- Step indicator -->
+          <div class="auth-steps" aria-hidden="true">
+            <span class="auth-step active" id="rec-step-ind-1">
+              <b>1</b> <span data-i18n="recoveryStepIdentity">Identify</span>
+            </span>
+            <span class="auth-steps-line"></span>
+            <span class="auth-step" id="rec-step-ind-2">
+              <b>2</b> <span data-i18n="recoveryStepVerify">Verify &amp; reset</span>
+            </span>
+          </div>
+
           <form id="recovery-step-1" class="auth-form active">
-            <p style="color: var(--color-text-muted); margin-bottom: var(--space-md);" data-i18n="recoveryStep1Hint">Enter your email to find your account.</p>
+            <p class="auth-hint" data-i18n="recoveryStep1Hint">
+              Enter your email to find your account.
+            </p>
             <div class="field">
               <label for="rec-email" data-i18n="emailLabel">Email</label>
-              <input type="email" id="rec-email" required />
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                <input type="email" id="rec-email" required placeholder="you@example.com" />
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;" data-i18n="continueBtn">Continue</button>
-            <p class="field-error" id="rec-msg-1" style="text-align:center;"></p>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="continueBtn">
+              <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              <span>Continue</span>
+            </button>
+            <p class="auth-msg" id="rec-msg-1"></p>
           </form>
+
           <form id="recovery-step-2" class="auth-form" style="display:none;">
-            <p id="rec-question-display" style="font-weight: var(--font-weight-semibold); text-align:center; margin-bottom: var(--space-md);"></p>
+            <div class="auth-question" id="rec-question-display"></div>
             <div class="field">
               <label for="rec-answer" data-i18n="yourAnswer">Your answer</label>
-              <input type="text" id="rec-answer" required />
+              <div class="input-with-icon">
+                <i class="fas fa-key input-icon" aria-hidden="true"></i>
+                <input type="text" id="rec-answer" required placeholder="Answer" />
+              </div>
             </div>
             <div class="field">
               <label for="rec-new-password" data-i18n="newPassword">New password</label>
-              <input type="password" id="rec-new-password" required minlength="8" />
+              <div class="input-with-icon input-with-action">
+                <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                <input type="password" id="rec-new-password" required minlength="8"
+                       autocomplete="new-password" placeholder="Min 8 characters" />
+                <button type="button" class="input-eye" data-target="rec-new-password"
+                        aria-label="Show password" tabindex="-1">
+                  <i class="fas fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;" data-i18n="resetPassword">Reset password</button>
-            <p class="field-error" id="rec-msg-2" style="text-align:center;"></p>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="resetPassword">
+              <i class="fas fa-check" aria-hidden="true"></i>
+              <span>Reset password</span>
+            </button>
+            <p class="auth-msg" id="rec-msg-2"></p>
           </form>
+        </div>
+
+        <div class="auth-footer">
+          <i class="fas fa-shield-halved" aria-hidden="true"></i>
+          <span data-i18n="authSecuredBy">Protected by Cloudflare Turnstile · TLS encrypted</span>
         </div>
       </div>
     </div>
+
+    <button
+      class="fab-top"
+      id="fab-scroll-top"
+      aria-label="Scroll to top"
+      onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+      type="button"
+    >
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <!-- ============================= CODE DETAIL MODAL (shared) ============================= -->
+    <div id="code-detail-modal" class="modal">
+      <div class="modal-content" style="max-width: 680px; width: 92%;">
+        <span class="close-btn" onclick="hideDetail && hideDetail()" aria-label="Close">&times;</span>
+        <div id="code-detail" class="hidden"></div>
+        <div id="parts-finder-container" class="hidden"></div>
+      </div>
+    </div>
+    <!-- Required by script.js even if we don't search from the forum. -->
+    <div id="search-container" style="display:none;"></div>
 
     <footer>
       <!-- injected by js/footer.js -->

@@ -119,7 +119,13 @@
     if (topic.is_pinned) badges.push(`<span class="badge badge-pinned"><i class="fas fa-thumbtack"></i> ${esc(t("pinned","Pinned"))}</span>`);
     if (topic.is_solved) badges.push(`<span class="badge badge-solved"><i class="fas fa-check"></i> ${esc(t("solved","Solved"))}</span>`);
     if (topic.is_locked) badges.push(`<span class="badge badge-locked"><i class="fas fa-lock"></i> ${esc(t("locked","Locked"))}</span>`);
-    if (topic.related_code) badges.push(`<span class="badge badge-code"><i class="fas fa-code"></i> ${esc(topic.related_code)}</span>`);
+    if (topic.related_code) badges.push(
+      `<button type="button" class="badge badge-code badge-code-link" ` +
+      `data-code="${esc(topic.related_code)}" ` +
+      `title="${esc(t("viewCodeDetails","View code details"))}">` +
+      `<i class="fas fa-code" aria-hidden="true"></i> ${esc(topic.related_code)}` +
+      `</button>`
+    );
 
     host.innerHTML = `
       <article class="topic-header-card">

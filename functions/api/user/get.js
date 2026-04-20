@@ -74,16 +74,40 @@ export async function onRequestGet(context) {
        // profileData.bio = "Private";
     }
 
-    // 4. Get Stats
-    /*
-    const stats = await env.DB.prepare(`
-      SELECT 
-        (SELECT COUNT(*) FROM topics WHERE user_id = ?) as topics_count,
-        (SELECT COUNT(*) FROM posts WHERE user_id = ?) as posts_count
-    `).bind(user.id, user.id).first();
-    */
+    // 4. Stats — topics, replies, reactions-received, activity span
+    try {
+      const stats = await env.DB.prepare(`
+        SELECT
+          (SELECT COUNT(*) FROM topics WHERE user_id = ?) AS topics_count,
+          (SELECT COUNT(*) FROM posts  WHERE user_id = ?) AS posts_count,
+          (SELECT COUNT(*) FROM topics WHERE user_id = ? AND is_solved = 1) AS solved_count
+      `).bind(user.id, user.id, user.id).first();
+      profileData.stats = stats || { topics_count: 0, posts_count: 0, solved_count: 0 };
+    } catch (_) {
+      profileData.stats = { topics_count: 0, posts_count: 0, solved_count: 0 };
+    }
 
-    // profileData.stats = stats;
+    try {
+      const recent = await env.DB.prepare(`
+        SELECT id, title, created_at, reply_count, is_solved, is_pinned, category
+        FROM topics
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 5
+      `).bind(user.id).all();
+      profileData.recent_topics = (recent?.results || []).map((r) => ({
+        id: r.id, title: r.title, created_at: r.created_at,
+        reply_count: r.reply_count || 0, is_solved: !!r.is_solved,
+        is_pinned: !!r.is_pinned, category: r.category,
+      }));
+    } catch (_) {
+      profileData.recent_topics = [];
+    }
+
+    profileData.bmw_year   = user.bmw_year || null;
+    profileData.bmw_body   = user.bmw_body || null;
+    profileData.bmw_engine = user.bmw_engine || null;
+    profileData.preferred_lang = user.preferred_lang || null;
 
     return new Response(JSON.stringify(profileData), {
       status: 200,
