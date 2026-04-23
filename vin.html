@@ -1,21 +1,39 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="index-bento-page scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-    <title>BMW VIN Decoder</title>
+    <title>BMW VIN Decoder | BimmerCodes</title>
+    <meta name="theme-color" content="#0F172A" />
+
+    <meta
+      name="description"
+      content="Decode a BMW or Mini 17-digit VIN — model year, engine, plant, and more."
+    />
 
     <!-- Google AdSense -->
-    <meta name="google-adsense-account" content="ca-pub-6807738591111613">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
-     crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-6807738591111613" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
+      crossorigin="anonymous"
+    ></script>
 
-    <link rel="stylesheet" href="./css/style.css?v=2.93" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap"
+    />
+
+    <link rel="stylesheet" href="./css/style.css?v=2.94" />
     <link rel="stylesheet" href="./css/responsive.css?v=2.91" />
     <link rel="stylesheet" href="./css/notifications.css?v=2.91" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=5" />
+    <link rel="stylesheet" href="./css/vin-page.css?v=3" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -27,224 +45,17 @@
       type="image/x-icon"
     />
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-    <style>
-      .vin-hero {
-        text-align: center;
-        margin: 80px 0 40px;
-      }
-      .notification-btn {
-  display: none!important;
-}
-      .vin-hero h1 {
-        font-size: 3rem;
-        background: linear-gradient(45deg, #fff, #6f9bd1);
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 10px;
-      }
-
-      .vin-search-box {
-        max-width: 600px;
-        margin: 0 auto;
-        position: relative;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--glass-border);
-        border-radius: 50px;
-        padding: 5px;
-        display: flex;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(10px);
-        z-index: 10;
-      }
-      .vin-search-box input {
-        flex: 1;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 18px;
-        padding: 15px 25px;
-        outline: none;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-      }
-      .vin-btn {
-        background: var(--accent-color);
-        border: none;
-        border-radius: 40px;
-        padding: 0 30px;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.3s;
-      }
-      .vin-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(0, 102, 179, 0.4);
-      }
-
-      /* --- ИСТОРИЯ ПОИСКА (НОВОЕ) --- */
-      .history-container {
-        max-width: 600px;
-        margin: 20px auto 0;
-        text-align: left;
-        display: none; /* Скрыт по умолчанию */
-        animation: fadeIn 0.5s ease;
-      }
-      .history-label {
-        font-size: 12px;
-        color: #94a3b8;
-        margin-bottom: 10px;
-        padding-left: 15px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      .history-list {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      .history-item {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 8px 15px;
-        font-size: 13px;
-        color: #ccc;
-        cursor: pointer;
-        transition: 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .history-item:hover {
-        background: rgba(0, 102, 179, 0.2);
-        border-color: #0066b3;
-        color: white;
-        transform: translateY(-2px);
-      }
-      .history-item i {
-        font-size: 10px;
-        opacity: 0.5;
-      }
-      .history-item span {
-        font-weight: 600;
-        color: white;
-      }
-
-      /* Результаты */
-      #vin-result {
-        margin-top: 50px;
-        display: none;
-        animation: fadeIn 0.5s ease;
-        padding-bottom: 50px;
-      }
-
-      .specs-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        max-width: 1000px;
-        margin: 0 auto 30px;
-      }
-
-      .spec-card {
-        background: rgba(21, 25, 34, 0.8);
-        border: 1px solid var(--glass-border);
-        border-radius: 12px;
-        padding: 15px;
-        backdrop-filter: blur(5px);
-        display: flex;
-        align-items: center;
-        gap: 15px;
-      }
-      .spec-icon {
-        width: 40px;
-        height: 40px;
-        background: rgba(0, 102, 179, 0.15);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        color: var(--accent-color);
-        flex-shrink: 0;
-      }
-      .spec-info h4 {
-        color: #94a3b8;
-        font-size: 11px;
-        text-transform: uppercase;
-        margin-bottom: 3px;
-      }
-      .spec-info div {
-        color: white;
-        font-size: 14px;
-        font-weight: bold;
-        line-height: 1.2;
-      }
-
-      .ext-btn {
-        background: linear-gradient(135deg, #0066b3 0%, #004e8a 100%);
-        border: 1px solid rgba(255,255,255,0.05);
-        padding: 16px 20px;
-        border-radius: 12px;
-        color: white;
-        text-decoration: none;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        transition: 0.3s;
-        font-size: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      }
-      .ext-btn:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0, 102, 179, 0.4);
-        border-color: rgba(255,255,255,0.2);
-      }
-      .ext-btn i {
-        font-size: 24px;
-        width: 30px;
-        text-align: center;
-      }
-      .ext-btn-content {
-        display: flex;
-        flex-direction: column;
-        text-align: left;
-      }
-      .ext-btn-content span {
-        font-size: 15px;
-        line-height: 1.2;
-      }
-      .ext-btn-content small {
-        font-weight: normal;
-        font-size: 12px;
-        opacity: 0.75;
-        margin-top: 4px;
-      }
-
-      .loader {
-        display: none;
-        text-align: center;
-        margin-top: 40px;
-        color: var(--accent-color);
-        font-size: 24px;
-      }
-    </style>
   </head>
-  <body class="bmw-pattern">
-    <div
-      id="webgl-container"
-      style="position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.5"
-    ></div>
+  <body class="bmw-pattern vin-page">
+    <div id="webgl-container" class="index-bento-bg"></div>
 
-    <header>
-      <div class="logo-container">
-        <a class="main_logo_refr" href="index.html">
-          <div class="logo">
+    <header class="index-bento flex flex-wrap items-center justify-between gap-4 sm:gap-5">
+      <div class="logo-container flex min-w-0 max-w-[min(100%,22rem)] flex-1 items-center">
+        <a
+          class="main_logo_refr group flex min-w-0 items-center gap-3.5 no-underline"
+          href="index.html"
+        >
+          <div class="logo h-10 w-10 shrink-0 sm:h-11 sm:w-11">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
               <circle
                 cx="50"
@@ -260,244 +71,289 @@
               <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
             </svg>
           </div>
-          <h1>BMW VIN Decoder</h1>
+          <h1
+            class="m-0 truncate text-base font-semibold leading-tight tracking-tight text-slate-100 sm:text-[1.1rem]"
+          >
+            BMW VIN Decoder
+          </h1>
         </a>
       </div>
-      <div class="controls">
-        <a href="index.html" class="btn"
-          ><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a
-        >
-        <a href="forum.html" class="hidden btn">
-          <i class="fas fa-comments"></i> 
+      <div class="controls flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+        <a href="index.html" class="index-header-btn btn">
+          <i class="fas fa-home" aria-hidden="true"></i>
+          <span data-i18n="homeBtn">Home</span>
+        </a>
+        <a href="forum.html" class="index-header-btn btn">
+          <i class="fas fa-comments" aria-hidden="true"></i>
           <span data-i18n="forumBtn">Forum</span>
         </a>
-        <button id="language-toggle" class="btn">
-          <i class="fas fa-globe"></i> <span>EN</span>
+        <button id="language-toggle" type="button" class="index-header-btn btn">
+          <i class="fas fa-globe" aria-hidden="true"></i>
+          <span>EN</span>
         </button>
       </div>
     </header>
 
-    <main class="container">
-      <!-- Top Ad Banner -->
-      <div class="ad-container ad-header">
-          <span style="color: #444; font-size: 12px;">Advertisement</span>
+    <main class="container index-bento">
+      <div class="vin-hero-card">
+        <div class="max-w-2xl">
+          <p class="vin-hero-kicker">BimmerCodes</p>
+          <h2 class="vin-hero-title" data-i18n="vinTitle">Decode your VIN</h2>
+          <p class="vin-hero-lead" data-i18n="vinSubtitle">
+            Enter 17-digit VIN to check technical specs.
+          </p>
+        </div>
+
+        <div class="vin-search-box">
+          <input
+            type="text"
+            id="vin-input"
+            name="vin"
+            placeholder="WBA · · · · · · · · · · · · · ·"
+            maxlength="17"
+            autocomplete="off"
+            spellcheck="false"
+            inputmode="text"
+            enterkeyhint="search"
+            aria-label="VIN"
+          />
+          <button
+            class="vin-btn"
+            type="button"
+            onclick="decodeVin()"
+            data-i18n="btnCheck"
+          >
+            CHECK
+          </button>
+        </div>
+
+        <div id="history-container" class="history-container">
+          <div class="history-label" data-i18n="lblHistory">Recent checks</div>
+          <div class="history-list" id="history-list"></div>
+        </div>
       </div>
 
-      <div class="vin-hero">
-        <h1 data-i18n="vinTitle">Decode Your VIN</h1>
-        <p style="color: #94a3b8" data-i18n="vinSubtitle">
-          Enter 17-digit VIN to check technical specs.
-        </p>
-      </div>
-
-      <div class="vin-search-box">
-        <input type="text" id="vin-input" placeholder="WBA..." maxlength="17" />
-        <button class="vin-btn" onclick="decodeVin()" data-i18n="btnCheck">
-          CHECK
-        </button>
-      </div>
-
-      <div id="history-container" class="history-container">
-        <div class="history-label" data-i18n="lblHistory">Recent Checks</div>
-        <div class="history-list" id="history-list"></div>
-      </div>
-
-      <div id="loader" class="loader">
-        <i class="fas fa-circle-notch fa-spin"></i>
-        <span data-i18n="loading">Checking database...</span>
+      <div id="loader" class="loader" aria-live="polite" aria-busy="true">
+        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+        <span data-i18n="loading">Checking database…</span>
       </div>
 
       <div id="vin-result">
-        <h2
-          style="text-align: center; margin-bottom: 30px; color: white"
-          id="car-title"
-        >
-          BMW Unknown
-        </h2>
-
-        <div class="specs-grid">
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-car"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblModel">Model</h4>
-              <div id="res-model">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-calendar-alt"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblYear">Year</h4>
-              <div id="res-year">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-layer-group"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblSeries">Series</h4>
-              <div id="res-series">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-shapes"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblBody">Body Type</h4>
-              <div id="res-body">-</div>
-            </div>
-          </div>
-
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-cogs"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblEngine">Engine</h4>
-              <div id="res-engine">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-horse-head"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblPower">Power</h4>
-              <div id="res-power">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-gas-pump"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblFuel">Fuel</h4>
-              <div id="res-fuel">-</div>
-            </div>
-          </div>
-
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-snowflake"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblDrive">Drive</h4>
-              <div id="res-drive">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-door-open"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblDoors">Doors</h4>
-              <div id="res-doors">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-globe-europe"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblCountry">Country</h4>
-              <div id="res-country">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-industry"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblPlant">Factory</h4>
-              <div id="res-plant">-</div>
-            </div>
-          </div>
-          <div class="spec-card">
-            <div class="spec-icon"><i class="fas fa-weight-hanging"></i></div>
-            <div class="spec-info">
-              <h4 data-i18n="lblWeight">Weight</h4>
-              <div id="res-weight">-</div>
-            </div>
-          </div>
+        <div class="vin-result-head">
+          <h2 id="car-title" class="vin-result-title">BMW</h2>
+          <p class="vin-vin-line">
+            <span class="vin-vin-prefix">VIN</span>
+            <span id="res-vin" class="vin-mono" aria-label="VIN">—</span>
+          </p>
         </div>
-        <div class="external-links" id="deep-decode-section" style="margin-top: 40px; text-align: left; display: none;">
-          <h3 style="color: #4da8ff; margin-bottom: 15px; font-size: 20px; border-bottom: 1px solid rgba(0, 102, 179, 0.3); padding-bottom: 15px;">
-            <i class="fas fa-tools" style="margin-right:8px;"></i> <span data-i18n="deepDecodeTitle">Deep Decode & History Utilities</span>
+
+        <section class="vin-bento-group" aria-label="Vehicle">
+          <h3 class="vin-bento-group-title" data-i18n="vinGroupVehicle">
+            Vehicle
           </h3>
-          <p style="color: #94a3b8; margin-bottom: 25px; font-size: 14px;" data-i18n="deepDecodeDesc">
-            Use these specialized external tools to get full factory options, verify auction history (Copart/IAA), find OEM parts, or check safety recalls for this specific VIN.
+          <div class="vin-spec-grid">
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-car"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblModel">Model</h4>
+                <div id="res-model" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblYear">Year</h4>
+                <div id="res-year" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblSeries">Series</h4>
+                <div id="res-series" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-shapes"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblBody">Body</h4>
+                <div id="res-body" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-door-open"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblDoors">Doors</h4>
+                <div id="res-doors" class="vin-stat-value">—</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="vin-bento-group" aria-label="Powertrain">
+          <h3 class="vin-bento-group-title" data-i18n="vinGroupPowertrain">
+            Powertrain
+          </h3>
+          <div class="vin-spec-grid">
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-cogs"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblEngine">Engine</h4>
+                <div id="res-engine" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-horse-head"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblPower">Power</h4>
+                <div id="res-power" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-gas-pump"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblFuel">Fuel</h4>
+                <div id="res-fuel" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-road"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblDrive">Drive</h4>
+                <div id="res-drive" class="vin-stat-value">—</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="vin-bento-group" aria-label="Factory">
+          <h3 class="vin-bento-group-title" data-i18n="vinGroupFactory">
+            Assembly &amp; weight
+          </h3>
+          <div class="vin-spec-grid">
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-flag"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblCountry">Country</h4>
+                <div id="res-country" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-industry"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblPlant">Factory</h4>
+                <div id="res-plant" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-weight-hanging"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblWeight">GVWR</h4>
+                <div id="res-weight" class="vin-stat-value">—</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div
+          id="deep-decode-section"
+          class="vin-deep-decode"
+          style="display: none"
+        >
+          <h3 class="vin-deep-h">
+            <i class="fas fa-wrench" aria-hidden="true"></i>
+            <span data-i18n="deepDecodeTitle">Deep decode &amp; history</span>
+          </h3>
+          <p data-i18n="deepDecodeDesc">
+            Use these specialized external tools to get full factory options,
+            verify auction history, and more.
           </p>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
-            
-            <!-- Auction History -->
-            <a href="javascript:void(0)" id="link-bidfax" class="ext-btn" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);" onclick="submitExternalSearch('bidfax')">
-              <i class="fas fa-gavel"></i>
+          <div class="vin-ext-grid">
+            <a
+              href="javascript:void(0)"
+              id="link-bidfax"
+              class="ext-btn"
+              onclick="submitExternalSearch('bidfax'); return false;"
+            >
+              <i class="fas fa-gavel" aria-hidden="true"></i>
               <div class="ext-btn-content">
-                <span data-i18n="bidfaxTitle">Auction History</span>
-                <small data-i18n="bidfaxDesc">BidFax (Copart & IAAI Data)</small>
-              </div>
-            </a>
-            
-            <a href="javascript:void(0)" id="link-statvin" class="ext-btn" style="background: linear-gradient(135deg, #d35400 0%, #a04000 100%);" onclick="submitExternalSearch('statvin')">
-              <i class="fas fa-car-crash"></i>
-              <div class="ext-btn-content">
-                <span data-i18n="statvinTitle">Salvage Search</span>
-                <small data-i18n="statvinDesc">Stat.vin (Analytics)</small>
+                <span data-i18n="bidfaxTitle">Auction history</span>
+                <small data-i18n="bidfaxDesc">BidFax (Copart &amp; IAAI)</small>
               </div>
             </a>
 
-            <!-- Factory Options -->
-            <a href="javascript:void(0)" id="link-mdecoder" class="ext-btn" style="background: linear-gradient(135deg, #00b09b 0%, #009381 100%);" onclick="submitExternalSearch('mdecoder')">
-              <i class="fas fa-list-ul"></i>
+            <a
+              href="javascript:void(0)"
+              id="link-statvin"
+              class="ext-btn"
+              onclick="submitExternalSearch('statvin'); return false;"
+            >
+              <i class="fas fa-car-crash" aria-hidden="true"></i>
               <div class="ext-btn-content">
-                <span data-i18n="factoryDocsTitle">Factory Options</span>
-                <small data-i18n="factoryDocsDesc">M-Decoder (S-Codes & Equip)</small>
+                <span data-i18n="statvinTitle">Salvage search</span>
+                <small data-i18n="statvinDesc">Stat.vin</small>
               </div>
             </a>
-            
-            <!-- Alternative Decoder -->
-            <a href="javascript:void(0)" id="link-bimmerwork" class="ext-btn" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255,255,255,0.1); color: #ccc;" onclick="submitExternalSearch('bimmerwork')">
-              <i class="fas fa-file-invoice"></i>
+
+            <a
+              href="javascript:void(0)"
+              id="link-mdecoder"
+              class="ext-btn"
+              onclick="submitExternalSearch('mdecoder'); return false;"
+            >
+              <i class="fas fa-list" aria-hidden="true"></i>
+              <div class="ext-btn-content">
+                <span data-i18n="factoryDocsTitle">Factory options</span>
+                <small data-i18n="factoryDocsDesc">M-Decoder (S-codes)</small>
+              </div>
+            </a>
+
+            <a
+              href="javascript:void(0)"
+              id="link-bimmerwork"
+              class="ext-btn"
+              onclick="submitExternalSearch('bimmerwork'); return false;"
+            >
+              <i class="fas fa-external-link-alt" aria-hidden="true"></i>
               <div class="ext-btn-content">
                 <span data-i18n="bimmerWorkTitle">bimmer.work</span>
-                <small data-i18n="bimmerWorkDesc">Alternative Option Decoder</small>
+                <small data-i18n="bimmerWorkDesc">Alternative decoder</small>
               </div>
             </a>
-            
           </div>
         </div>
       </div>
-      
-      <!-- Bottom Ad Banner -->
-      <div class="ad-container ad-footer">
-          <span style="color: #444; font-size: 12px;">Advertisement</span>
-      </div>
     </main>
-    <footer>
-      <!-- Content injected by js/footer.js -->
-    </footer>
+
+    <footer></footer>
     <script src="./js/footer.js"></script>
 
     <script src="./js/vin.js"></script>
-    <script>
-      // Легкий фон (тот же самый)
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000,
-      );
-      const renderer = new THREE.WebGLRenderer({ alpha: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document
-        .getElementById("webgl-container")
-        .appendChild(renderer.domElement);
-
-      const geometry = new THREE.BufferGeometry();
-      const count = 600;
-      const pos = new Float32Array(count * 3);
-      for (let i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * 60;
-      geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-      const material = new THREE.PointsMaterial({
-        size: 0.12,
-        color: 0x0066b3,
-      });
-      const mesh = new THREE.Points(geometry, material);
-      scene.add(mesh);
-      camera.position.z = 25;
-
-      function animate() {
-        requestAnimationFrame(animate);
-        mesh.rotation.y += 0.001;
-        renderer.render(scene, camera);
-      }
-      animate();
-    </script>
     <script src="./js/live.js?v=2.91"></script>
   </body>
 </html>

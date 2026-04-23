@@ -395,18 +395,22 @@ select:focus {
     transform: translateY(-2px);
 }
 
-.btn-danger {
+/* In-dashboard / modal primary buttons (header uses global ui-buttons .btn) */
+.admin-container .btn.btn-danger,
+.auth-modal .btn.btn-danger {
     color: var(--admin-danger);
     border-color: rgba(239, 68, 68, 0.3);
 }
 
-.btn-danger:hover {
+.admin-container .btn.btn-danger:hover,
+.auth-modal .btn.btn-danger:hover {
     background: rgba(239, 68, 68, 0.2);
     color: #fca5a5;
     border-color: var(--admin-danger);
 }
 
-.btn {
+.admin-container .btn,
+.auth-modal .btn {
     background: var(--admin-accent);
     color: white;
     border: none;
@@ -417,7 +421,8 @@ select:focus {
     transition: all 0.2s;
 }
 
-.btn:hover {
+.admin-container .btn:hover,
+.auth-modal .btn:hover {
     background: var(--admin-accent-hover);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     transform: translateY(-2px);

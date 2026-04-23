@@ -44,6 +44,10 @@
           <i class="fas fa-home" aria-hidden="true"></i>
           <span data-i18n="homeBtn">Home</span>
         </a>
+        <a href="/vin.html" class="btn btn-ghost">
+          <i class="fas fa-fingerprint" aria-hidden="true"></i>
+          <span data-i18n="vinBtn">VIN</span>
+        </a>
         <a href="/forum" class="btn btn-ghost">
           <i class="fas fa-arrow-left" aria-hidden="true"></i>
           <span data-i18n="backToForum">Back to Forum</span>
@@ -211,11 +215,6 @@
           </div>
         </div>
       </section>
-
-      <!-- AD SLOT (discreet) -->
-      <aside class="ad-slot" aria-label="Advertisement">
-        <span data-i18n="advertisement">Advertisement</span>
-      </aside>
     </main>
 
     <!-- =========================================== EDIT PROFILE MODAL -->
@@ -230,21 +229,114 @@
             <div class="auth-brand-logo"><i class="fas fa-user-pen" aria-hidden="true"></i></div>
           </div>
           <h2 id="edit-profile-title" data-i18n="editProfile">Edit profile</h2>
-          <p class="auth-subtitle" data-i18n="editProfileSubtitle">Keep your profile fresh — add your ride, bio and avatar.</p>
+          <p class="auth-subtitle" data-i18n="editProfileSubtitle">Update your account, security, and public profile in one place.</p>
         </div>
 
         <form id="edit-profile-form" class="auth-body topic-form" onsubmit="handleProfileUpdate(event)">
-          <div class="field">
-            <label for="edit-bio" data-i18n="bioLabel">Bio</label>
-            <textarea id="edit-bio" class="topic-textarea" rows="3" maxlength="300" placeholder="Tell the community about yourself — what you drive, what you love…"></textarea>
+          <div class="edit-profile-section">
+            <h3 class="edit-profile-section__title" data-i18n="accountSecurityTitle">Account</h3>
+            <p class="edit-profile-hint" data-i18n="accountSecurityHint">Username is fixed. Change email or password using the sections below.</p>
+            <div class="field">
+              <label for="edit-username" data-i18n="usernameLabel">Username</label>
+              <input type="text" id="edit-username" class="input-readonly" readonly autocomplete="username" />
+            </div>
+            <div class="field">
+              <label for="edit-email-current" data-i18n="emailLabel">Email</label>
+              <input type="email" id="edit-email-current" class="input-readonly" readonly autocomplete="email" />
+            </div>
           </div>
 
-          <div class="field-row">
+          <div class="edit-profile-section">
+            <h3 class="edit-profile-section__title" data-i18n="changeEmailTitle">Change email</h3>
             <div class="field">
-              <label for="edit-car" data-i18n="carModelLabel">Car model</label>
-              <div class="input-with-icon">
-                <i class="fas fa-car input-icon" aria-hidden="true"></i>
-                <input type="text" id="edit-car" placeholder="e.g. BMW G20 330i" />
+              <label for="edit-email-new" data-i18n="newEmailLabel">New email</label>
+              <input type="email" id="edit-email-new" class="form-input" autocomplete="off" placeholder="name@example.com" />
+            </div>
+            <div class="field">
+              <label for="edit-email-confirm-pw" data-i18n="currentPasswordForEmail">Current password</label>
+              <input type="password" id="edit-email-confirm-pw" class="form-input" autocomplete="current-password" />
+            </div>
+            <button type="button" class="btn btn-ghost" id="btn-change-email" onclick="handleChangeEmailClick(event)">
+              <i class="fas fa-envelope" aria-hidden="true"></i>
+              <span data-i18n="updateEmailBtn">Update email</span>
+            </button>
+          </div>
+
+          <div class="edit-profile-section">
+            <h3 class="edit-profile-section__title" data-i18n="changePasswordTitle">Change password</h3>
+            <div class="field">
+              <label for="edit-pw-current" data-i18n="currentPasswordLabel">Current password</label>
+              <input type="password" id="edit-pw-current" class="form-input" autocomplete="current-password" />
+            </div>
+            <div class="field">
+              <label for="edit-pw-new" data-i18n="newPasswordLabel">New password</label>
+              <input type="password" id="edit-pw-new" class="form-input" autocomplete="new-password" />
+            </div>
+            <div class="field">
+              <label for="edit-pw-confirm" data-i18n="confirmNewPasswordLabel">Confirm new password</label>
+              <input type="password" id="edit-pw-confirm" class="form-input" autocomplete="new-password" />
+            </div>
+            <button type="button" class="btn btn-ghost" id="btn-change-password" onclick="handleChangePasswordClick(event)">
+              <i class="fas fa-key" aria-hidden="true"></i>
+              <span data-i18n="updatePasswordBtn">Update password</span>
+            </button>
+          </div>
+
+          <div class="edit-profile-section">
+            <h3 class="edit-profile-section__title" data-i18n="personalDetailsTitle">Personal &amp; location</h3>
+            <div class="field-row">
+              <div class="field">
+                <label for="edit-first-name" data-i18n="firstNameLabel">First name</label>
+                <input type="text" id="edit-first-name" class="form-input" maxlength="80" />
+              </div>
+              <div class="field">
+                <label for="edit-last-name" data-i18n="lastNameLabel">Last name</label>
+                <input type="text" id="edit-last-name" class="form-input" maxlength="80" />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="edit-age" data-i18n="ageLabel">Age</label>
+                <input type="number" id="edit-age" class="form-input" min="13" max="120" placeholder="—" />
+              </div>
+              <div class="field">
+                <label for="edit-country" data-i18n="countryLabel">Country</label>
+                <input type="text" id="edit-country" class="form-input" maxlength="80" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="edit-preferred-lang" data-i18n="profileUiLangLabel">Interface language</label>
+              <select id="edit-preferred-lang" class="form-input">
+                <option value="en">English</option>
+                <option value="ru">Русский</option>
+                <option value="ka">ქართული</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="edit-profile-section">
+            <h3 class="edit-profile-section__title" data-i18n="bmwDetailsTitle">BMW &amp; ride</h3>
+            <div class="field-row">
+              <div class="field">
+                <label for="edit-car" data-i18n="carModelLabel">Car model</label>
+                <div class="input-with-icon">
+                  <i class="fas fa-car input-icon" aria-hidden="true"></i>
+                  <input type="text" id="edit-car" placeholder="e.g. BMW G20 330i" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="edit-bmw-year" data-i18n="aboutYear">Year</label>
+                <input type="number" id="edit-bmw-year" class="form-input" min="1970" max="2030" />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="edit-bmw-body" data-i18n="aboutBody">Body</label>
+                <input type="text" id="edit-bmw-body" class="form-input" maxlength="40" />
+              </div>
+              <div class="field">
+                <label for="edit-bmw-engine" data-i18n="aboutEngine">Engine</label>
+                <input type="text" id="edit-bmw-engine" class="form-input" maxlength="40" />
               </div>
             </div>
             <div class="field">
@@ -254,6 +346,13 @@
                 <input type="text" id="edit-city" placeholder="Berlin" />
               </div>
             </div>
+          </div>
+
+          <div class="edit-profile-section">
+            <h3 class="edit-profile-section__title" data-i18n="bioAndAvatarTitle">Bio &amp; avatar</h3>
+            <div class="field">
+            <label for="edit-bio" data-i18n="bioLabel">Bio</label>
+            <textarea id="edit-bio" class="topic-textarea" rows="3" maxlength="300" placeholder="Tell the community about yourself — what you drive, what you love…"></textarea>
           </div>
 
           <div class="field">
@@ -277,13 +376,14 @@
               <p class="avatar-hint" data-i18n="avatarHint">PNG, JPG or WebP — up to 5 MB. Converted to WebP automatically.</p>
             </div>
           </div>
+          </div>
         </form>
 
         <div class="modal-footer topic-modal-footer">
           <button type="button" class="btn btn-ghost" onclick="closeEditProfileModal()" data-i18n="cancel">Cancel</button>
-          <button type="submit" form="edit-profile-form" class="btn btn-primary">
+          <button type="submit" form="edit-profile-form" class="btn btn-primary" id="btn-save-profile">
             <i class="fas fa-check" aria-hidden="true"></i>
-            <span data-i18n="saveChanges">Save changes</span>
+            <span data-i18n="saveProfileDetails">Save profile</span>
           </button>
         </div>
       </div>

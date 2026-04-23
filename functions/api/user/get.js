@@ -1,6 +1,7 @@
 // functions/api/user/get.js - Get User Profile (Public/Private View)
 
 import { getUserLevel } from "../../lib/reputation.js";
+import { verifyToken } from "../../lib/jwt.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -17,8 +18,8 @@ export async function onRequestGet(context) {
     let query = `
       SELECT 
         id, username, email, avatar_url, bio,
-        created_at, last_login,
-        reputation, role_id,
+        created_at, last_login, age,
+        reputation,
         car_model, bmw_year, bmw_body, bmw_engine,
         city, country,
         privacy_level, preferred_lang, is_active,
@@ -51,6 +52,15 @@ export async function onRequestGet(context) {
         console.warn("Failed to get level", e);
     }
     
+    let requestorIsOwner = false;
+    const auth = request.headers.get("Authorization");
+    if (auth?.startsWith("Bearer ")) {
+      const payload = await verifyToken(auth.slice(7), env.JWT_SECRET || "secret-dev-key");
+      if (payload?.id && String(payload.id) === String(user.id)) {
+        requestorIsOwner = true;
+      }
+    }
+
     // 3. Privacy Check
     let profileData = {
       id: user.id,
@@ -64,8 +74,14 @@ export async function onRequestGet(context) {
       bio: user.bio,
       car_model: user.car_model,
       city: user.city,
-      country: user.country
+      country: user.country,
+      first_name: user.first_name || null,
+      last_name: user.last_name || null,
+      age: user.age != null ? user.age : null,
     };
+    if (requestorIsOwner) {
+      profileData.email = user.email;
+    }
 
     // If private and not owner, hide sensitive fields (simplified for now)
     // For now returning full data as frontend expects it and we trust client 

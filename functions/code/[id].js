@@ -40,6 +40,9 @@ function getSeverityLabel(s, lang) {
 function t(lang) {
   const T = {
     en: {
+      homeBtn: 'Home',
+      vinBtn: 'VIN',
+      forumBtn: 'Forum',
       back: '← Back to Search',
       severity: 'Severity',
       category: 'Category',
@@ -54,6 +57,9 @@ function t(lang) {
       contactUs: 'Contact Us',
     },
     ru: {
+      homeBtn: 'Главная',
+      vinBtn: 'VIN',
+      forumBtn: 'Форум',
       back: '← Назад к поиску',
       severity: 'Серьёзность',
       category: 'Категория',
@@ -68,6 +74,9 @@ function t(lang) {
       contactUs: 'Связаться',
     },
     ka: {
+      homeBtn: 'მთავარი',
+      vinBtn: 'VIN',
+      forumBtn: 'ფორუმი',
       back: '← ძიებაზე დაბრუნება',
       severity: 'სიმძიმე',
       category: 'კატეგორია',
@@ -159,7 +168,6 @@ function renderPage(code, lang) {
   <meta name="twitter:description" content="${esc(ogDesc)}">
   <link rel="shortcut icon" href="/assets/icons/ico.svg" type="image/x-icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script type="application/ld+json">${jsonLd}</script>
   <style>
     #webgl-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; opacity: 0.6; pointer-events: none; }
@@ -186,7 +194,14 @@ function renderPage(code, lang) {
     }
     .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1rem; color: var(--text); }
     .logo svg { width: 36px; height: 36px; }
-    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .header-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(0,102,179,.12); border: 1px solid var(--border);
+      color: var(--sky); border-radius: 8px; padding: 6px 12px;
+      font-size: .8rem; font-weight: 600; text-decoration: none; white-space: nowrap;
+    }
+    .header-link:hover { background: rgba(0,102,179,.22); text-decoration: none; }
     .lang-switcher { display: flex; gap: 6px; }
     .lang-link {
       padding: 4px 10px; border-radius: 6px; font-size: .8rem; font-weight: 600;
@@ -307,9 +322,12 @@ function renderPage(code, lang) {
       BimmerCodes
     </a>
     <div class="header-right">
+      <a href="/" class="header-link" title="Home"><i class="fas fa-home" aria-hidden="true"></i> ${esc(tr.homeBtn)}</a>
+      <a href="/vin.html" class="header-link"><i class="fas fa-fingerprint" aria-hidden="true"></i> ${esc(tr.vinBtn)}</a>
+      <a href="/forum" class="header-link"><i class="fas fa-comments" aria-hidden="true"></i> ${esc(tr.forumBtn)}</a>
       <div class="lang-switcher">${langLinks}</div>
       <a href="/?search=${encodeURIComponent(codeId)}" class="btn-back">
-        <i class="fas"></i> ${esc(tr.back)}
+        <i class="fas fa-search" aria-hidden="true"></i> ${esc(tr.back)}
       </a>
     </div>
   </header>
@@ -363,69 +381,8 @@ function renderPage(code, lang) {
   </footer>
 
   <script>
-    // Persist language choice to localStorage so the main site picks it up
     const urlLang = new URLSearchParams(location.search).get('lang');
     if (urlLang) localStorage.setItem('language', urlLang);
-
-    // 3D background animation
-    function init3DBackground() {
-      if (typeof THREE === "undefined") {
-        setTimeout(init3DBackground, 100);
-        return;
-      }
-      const container = document.getElementById("webgl-container");
-      if (!container) return;
-      container.innerHTML = "";
-
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x050507, 0.002);
-
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.z = 30;
-
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
-      container.appendChild(renderer.domElement);
-
-      const particlesGeometry = new THREE.BufferGeometry();
-      const particlesCount = 1200;
-      const posArray = new Float32Array(particlesCount * 3);
-
-      for (let i = 0; i < particlesCount * 3; i++) {
-        posArray[i] = (Math.random() - 0.5) * 80;
-      }
-
-      particlesGeometry.setAttribute("position", new THREE.BufferAttribute(posArray, 3));
-      const material = new THREE.PointsMaterial({
-        size: 0.15, color: 0x0066b3, transparent: true, opacity: 0.8,
-      });
-      const particlesMesh = new THREE.Points(particlesGeometry, material);
-      scene.add(particlesMesh);
-
-      let mouseX = 0, mouseY = 0;
-      document.addEventListener("mousemove", (event) => {
-        mouseX = event.clientX / window.innerWidth - 0.5;
-        mouseY = event.clientY / window.innerHeight - 0.5;
-      });
-
-      const clock = new THREE.Clock();
-      function animate() {
-        requestAnimationFrame(animate);
-        const elapsedTime = clock.getElapsedTime();
-        particlesMesh.rotation.y = elapsedTime * 0.05;
-        particlesMesh.rotation.x = mouseY * 0.5;
-        renderer.render(scene, camera);
-      }
-      animate();
-
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-    }
-    init3DBackground();
   </script>
 </body>
 </html>`;

@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#050507" />
 
     <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
     <link rel="stylesheet" href="./css/forum.css?v=3.2" />
     <link rel="stylesheet" href="./css/notifications.css?v=3.2" />
     <link rel="stylesheet" href="./css/parts-finder.css?v=3.0" />
@@ -80,7 +81,7 @@
           <span id="forum-lang-display">EN</span>
         </button>
         <!-- Bell + dropdown: injected by js/live.js when logged in (not for guests) -->
-        <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal(); return false;">
+        <a href="#" class="btn" id="auth-btn">
           <i class="fas fa-user" aria-hidden="true"></i>
           <span data-i18n="loginBtn">Login</span>
         </a>
@@ -111,8 +112,6 @@
         </div>
         <div class="hero-stats" id="hero-stats" aria-live="polite"></div>
       </section>
-
-      <div class="ad-slot ad-header" data-ad-slot="forum-top">Advertisement</div>
 
       <!-- Toolbar: search + new topic -->
       <div class="forum-toolbar">
@@ -177,7 +176,6 @@
             <div class="chips" id="popular-tags"></div>
           </div>
 
-          <div class="ad-slot ad-sidebar" data-ad-slot="forum-sidebar">Advertisement</div>
         </aside>
 
         <!-- ============================================= TOPICS -->

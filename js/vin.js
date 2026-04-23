@@ -24,6 +24,9 @@ const translations = {
     lblCountry: "Country",
     lblPlant: "Factory",
     lblWeight: "GVWR",
+    vinGroupVehicle: "Vehicle",
+    vinGroupPowertrain: "Powertrain",
+    vinGroupFactory: "Assembly & weight",
 
     extTitle: "Looking for full options list (S-Codes)?",
     extText:
@@ -62,6 +65,9 @@ const translations = {
     lblCountry: "Страна",
     lblPlant: "Завод",
     lblWeight: "Вес (макс)",
+    vinGroupVehicle: "Автомобиль",
+    vinGroupPowertrain: "Силовая установка",
+    vinGroupFactory: "Сборка и вес",
 
     extTitle: "Ищете полный список опций (S-коды)?",
     extText:
@@ -100,6 +106,9 @@ const translations = {
     lblCountry: "ქვეყანა",
     lblPlant: "ქარხანა",
     lblWeight: "წონა",
+    vinGroupVehicle: "ავტომობილი",
+    vinGroupPowertrain: "ძრავა და ტრანსმისია",
+    vinGroupFactory: "შეკრება და წონა",
 
     extTitle: "ეძებთ ოპციების სრულ სიას (S-Codes)?",
     extText:
@@ -204,7 +213,7 @@ async function decodeVin() {
   }
 
   resultDiv.style.display = "none";
-  loader.style.display = "block";
+  loader.style.display = "flex";
 
   try {
     const response = await fetch(
@@ -245,6 +254,8 @@ async function decodeVin() {
 
     // UI
     document.getElementById("car-title").innerText = `${year} BMW ${model}`;
+    const resVin = document.getElementById("res-vin");
+    if (resVin) resVin.textContent = vin;
     document.getElementById("res-model").innerText = model;
     document.getElementById("res-year").innerText = year;
     document.getElementById("res-series").innerText =

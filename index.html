@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="index-bento-page scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -108,7 +108,7 @@
     <meta property="vk:image" content="https://bimmercodes.net/og-image.jpg" />
 
     <!-- ==================== ADDITIONAL SEO ==================== -->
-    <meta name="theme-color" content="#0066b3" />
+    <meta name="theme-color" content="#0F172A" />
     <meta name="msapplication-TileColor" content="#0066b3" />
     <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -311,24 +311,46 @@
     <!-- Preconnect для производительности -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        corePlugins: { preflight: false },
+        theme: {
+          extend: {
+            colors: {
+              bimmer: { bg: "#0F172A", surface: "#1E293B", accent: "#2563EB" },
+            },
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+              mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
     <link rel="dns-prefetch" href="https://www.google-analytics.com" />
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
 
     <!-- Preload critical resources -->
-    <link rel="preload" href="./css/style.css?v=2.93" as="style" />
+    <link rel="preload" href="./css/style.css?v=2.94" as="style" />
     <link rel="preload" href="./css/responsive.css?v=2.93" as="style" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="./css/style.css?v=2.93" />
+    <link rel="stylesheet" href="./css/style.css?v=2.94" />
     <link rel="stylesheet" href="./css/responsive.css?v=2.93" />
     <link rel="stylesheet" href="./css/notifications.css?v=2.91" />
     <link rel="stylesheet" href="./css/parts-finder.css" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=5" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <!-- Favicon -->
     <link
@@ -356,53 +378,28 @@
     />
     <link rel="manifest" href="./site.webmanifest" />
 
-    <!-- SEO Content Styles -->
+    <!-- index: SEO block uses .index-seo in index-bento.css -->
     <style>
-      .seo-content {
-        margin-top: 50px;
-        margin-bottom: 30px;
-        padding: 30px;
-        background: var(--glass-bg);
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-xl);
-        color: #e2e8f0;
-        line-height: 1.6;
-      }
-      .seo-content h2 {
-        font-family: "Exo 2", sans-serif;
-        font-size: clamp(1.5rem, 4vw, 2rem);
-        color: var(--bmw-sky);
-        margin-bottom: 15px;
-        margin-top: 0;
-      }
-      .seo-content h3 {
-        font-family: "Exo 2", sans-serif;
-        font-size: 1.25rem;
-        color: #fff;
-        margin-top: 25px;
-        margin-bottom: 15px;
-        border-left: 3px solid var(--bmw-blue);
-        padding-left: 10px;
-      }
-      .seo-content p {
-        margin-bottom: 15px;
-      }
-      .seo-content p:last-child {
-        margin-bottom: 0;
-      }
       .notification-btn {
-        display: none!important;
+        display: none !important;
       }
     </style>
   </head>
-  <body class="bmw-pattern">
-    <div id="webgl-container"></div>
-    <header>
-      <div class="logo-container">
-        <a class="main_logo_refr" href="#">
-          <div class="logo">
+  <body
+    class="bmw-pattern min-h-screen bg-bimmer-bg font-sans text-slate-200 antialiased"
+  >
+    <div id="webgl-container" class="index-bento-bg"></div>
+    <header
+      class="index-bento flex flex-wrap items-center justify-between gap-4 sm:gap-5"
+    >
+      <div
+        class="logo-container flex min-w-0 max-w-[min(100%,22rem)] flex-1 items-center"
+      >
+        <a
+          class="main_logo_refr group flex min-w-0 items-center gap-3.5 no-underline"
+          href="#"
+        >
+          <div class="logo h-10 w-10 shrink-0 sm:h-11 sm:w-11">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
               <circle
                 cx="50"
@@ -419,28 +416,49 @@
               <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
             </svg>
           </div>
-          <h1>BMW Diagnostic Codes</h1>
+          <h1
+            class="m-0 truncate text-base font-semibold leading-tight tracking-tight text-slate-100 sm:text-[1.1rem]"
+          >
+            BMW Diagnostic Codes
+          </h1>
         </a>
       </div>
-      <div class="controls">
-        <a href="vin.html" class="btn">
-          <i class="fas fa-barcode">
-          </i>
-          <span data-i18n="vinBtn">VIN Check</span>
+      <div
+        class="controls flex flex-wrap items-center justify-end gap-2 sm:gap-3"
+      >
+        <a
+          href="vin.html"
+          class="index-header-btn btn"
+        >
+          <i class="fas fa-fingerprint" aria-hidden="true"></i>
+          <span data-i18n="vinBtn">VIN</span>
         </a>
-        <button id="language-toggle" class="btn">
-          <i class="fas fa-globe"></i> <span>EN</span>
+        <button
+          id="language-toggle"
+          type="button"
+          class="index-header-btn btn"
+        >
+          <i class="fas fa-globe" aria-hidden="true"></i>
+          <span>EN</span>
         </button>
-        <button class="btn" onclick="toggleFavoritesModal()">
-          <i class="fas fa-star"></i> <span data-i18n="savedBtn">Saved</span>
+        <button
+          type="button"
+          class="index-header-btn btn"
+          onclick="toggleFavoritesModal()"
+        >
+          <i class="fas fa-star" aria-hidden="true"></i>
+          <span data-i18n="savedBtn">Saved</span>
         </button>
-        <a href="forum.html" class="hidden btn">
-          <i class="fas fa-comments"></i> 
+        <a
+          href="forum.html"
+          class="index-header-btn btn"
+        >
+          <i class="fas fa-comments" aria-hidden="true"></i>
           <span data-i18n="forumBtn">Forum</span>
         </a>
         <a
           href="#"
-          class="hidden btn"
+          class="btn hidden min-h-12"
           id="auth-btn"
           onclick="toggleAuthModal()"
         >
@@ -449,49 +467,87 @@
         </a>
       </div>
     </header>
-    <main class="container">
-      <!-- Top Ad Banner -->
-      <div class="ad-container ad-header">
-          <!-- Google AdSense Placeholder -->
-          <span style="color: #444; font-size: 12px;">Advertisement</span>
+    <main class="container index-bento">
+      <div class="mt-6 w-full pb-2">
+          <div id="search-container" class="space-y-5">
+            <div
+              class="index-hero-card space-y-5 rounded-[1.75rem] border border-slate-700/40 bg-gradient-to-b from-slate-800/80 to-slate-900/40 p-5 shadow-[0_4px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:space-y-6 sm:p-7"
+            >
+              <div class="index-hero max-w-2xl">
+                <p
+                  class="index-hero-kicker"
+                  data-i18n="indexHeroKicker"
+                >
+                  BimmerCodes
+                </p>
+                <h2
+                  class="index-hero-title"
+                  data-i18n="indexHeroTitle"
+                >
+                  BMW & Mini fault codes
+                </h2>
+                <p
+                  class="index-hero-lead"
+                  data-i18n="indexHeroLead"
+                >
+                  DME, DDE, EGS, CAS, SRS — all BMW & Mini OBD and manufacturer
+                  codes in one place.
+                </p>
+              </div>
+              <div class="index-search-wrap">
+                <input
+                  type="search"
+                  name="q"
+                  id="search-input"
+                  class="index-search-input"
+                  data-i18n-placeholder="searchPlaceholder"
+                  enterkeyhint="search"
+                  autocomplete="off"
+                  placeholder="DTC, keyword, or P-code…"
+                />
+                <i
+                  class="fas fa-magnifying-glass index-search-icon"
+                  aria-hidden="true"
+                ></i>
+              </div>
+
+              <div id="empty-state" class="index-empty">
+                <div class="index-empty-icon" aria-hidden="true">
+                  <i class="fas fa-bolt"></i>
+                </div>
+                <p class="message" data-i18n="emptyStateMessage">
+                  Start with a code, keyword, or P-code
+                </p>
+                <p
+                  class="sub-message"
+                  data-i18n="emptyStateSubMessage"
+                >
+                  For example: 102613 · 10890C · P0128
+                </p>
+              </div>
+            </div>
+
+            <div id="results-container" class="hidden"></div>
+            <div
+              id="no-results"
+              class="index-no-results message-container hidden text-center"
+            >
+              <i class="fas fa-info-circle" aria-hidden="true"></i>
+              <p class="message" data-i18n="noResultsMessage">
+                No matching error codes found
+              </p>
+              <p class="sub-message">Try a different code or description</p>
+            </div>
+          </div>
       </div>
 
-      <div id="search-container">
-        <div class="search-box">
-          <input
-            type="text"
-            id="search-input"
-            placeholder="Enter DTC code or description..."
-          />
-          <i class="fas fa-search search-icon"></i>
-        </div>
-        <div id="results-container" class="hidden"></div>
-        <div id="empty-state" class="message-container">
-          <i class="fas fa-car"></i>
-          <p class="message">
-            Enter a BMW error code to get detailed information
-          </p>
-          <p class="sub-message">Example: 102613, 10890C, 121001</p>
-        </div>
-        <div id="no-results" class="message-container hidden">
-          <i class="fas fa-info-circle"></i>
-          <p class="message">No matching error codes found</p>
-          <p class="sub-message">Try a different code or description</p>
-        </div>
-      </div>
       <div id="code-detail" class="hidden"></div>
-      
+
       <!-- Parts Finder Container -->
       <div id="parts-finder-container" class="hidden"></div>
 
-      <!-- Bottom Ad Banner -->
-      <div class="ad-container ad-footer">
-          <!-- Google AdSense Placeholder -->
-          <span style="color: #444; font-size: 12px;">Advertisement</span>
-      </div>
-
       <!-- SEO/Page Content -->
-      <section class="seo-content">
+      <section class="seo-content index-seo">
         <h2>BMW Diagnostic Trouble Codes Database</h2>
         <p>
           BimmerCodes.net is a comprehensive BMW DTC database that helps you
@@ -549,6 +605,7 @@
           </button>
         </div>
         <div class="favorites-body" id="favorites-list"></div>
+      </div>
     </div>
     <script src="./js/translations.js?v=2.91"></script>
     <script src="./js/parts-finder.js"></script>
@@ -731,6 +788,9 @@
             <button type="submit" class="submit-btn">Reset Password</button>
             <p class="auth-msg" id="rec-msg-2"></p>
         </form>
+      </div>
+    </div>
+
     <div id="profile-modal" class="auth-modal">
       <div class="auth-content" style="max-width: 400px">
         <button class="close-auth" onclick="toggleProfileModal()">

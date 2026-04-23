@@ -1,0 +1,479 @@
+/* BimmerCodes index — Advanced Tech-Dark, Bento DTC cards (works with style.css) */
+
+html.index-bento-page {
+  background-color: #0f172a;
+}
+
+#webgl-container.index-bento-bg {
+  background: radial-gradient(
+    circle at 50% -15%,
+    rgba(37, 99, 235, 0.14) 0%,
+    #0f172a 65%
+  );
+}
+
+/* Sticky header glass */
+header.index-bento {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  min-height: 4rem;
+  height: auto;
+  padding: 0.75rem max(1rem, 3vw);
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.96) 0%,
+    rgba(15, 23, 42, 0.88) 100%
+  );
+  border-bottom: 1px solid rgba(30, 41, 59, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Main column — slightly wider than legacy 1100px for Bento */
+main.index-bento {
+  width: min(95%, 80rem);
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-bottom: 2.5rem;
+}
+
+/* Header actions: use .btn from ui-buttons.css; only touch targets differ here */
+header.index-bento a.index-header-btn.btn,
+header.index-bento button.index-header-btn.btn {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0 0.85rem;
+}
+header.index-bento a.index-header-btn i,
+header.index-bento button.index-header-btn i {
+  font-size: 0.88rem;
+  opacity: 0.95;
+}
+
+/* Massive search */
+.index-search-wrap {
+  position: relative;
+  width: 100%;
+}
+
+#search-input.index-search-input {
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0 1.15rem 0 2.9rem;
+  font-size: 1.05rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(30, 41, 59, 0.4) 100%);
+  border: 1px solid rgba(30, 41, 59, 0.95);
+  border-radius: 1.25rem;
+  color: #f1f5f9;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.08), 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#search-input.index-search-input::placeholder {
+  color: #94a3b8;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+
+#search-input.index-search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
+.index-search-icon {
+  position: absolute;
+  left: 1.05rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #60a5fa;
+  font-size: 1.15rem;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Hero block (copy hierarchy) */
+.index-hero {
+  text-align: left;
+}
+
+.index-hero-kicker {
+  margin: 0 0 0.35rem 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #3b82f6;
+}
+
+.index-hero-title {
+  margin: 0 0 0.5rem 0;
+  font-size: clamp(1.4rem, 2.4vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.index-hero-lead {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #94a3b8;
+  font-weight: 400;
+  max-width: 38rem;
+}
+
+/* Compact empty hint (inside hero card — no duplicate heavy card) */
+#search-container .index-empty {
+  margin-top: 0.25rem;
+  padding: 1rem 1rem 0.15rem;
+  border-top: 1px solid rgba(30, 41, 59, 0.75);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+#search-container .index-empty.hidden {
+  display: none;
+}
+
+.index-empty-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.2),
+    rgba(15, 23, 42, 0.6)
+  );
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: #60a5fa;
+  font-size: 1rem;
+  margin-bottom: 0.15rem;
+}
+
+#search-container .index-empty .message {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+#search-container .index-empty .sub-message {
+  margin: 0;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #94a3b8;
+  letter-spacing: 0.02em;
+}
+
+/* No results — slimmer than legacy message-container */
+#search-container .index-no-results.message-container {
+  padding: 1.5rem 1.25rem;
+  margin-top: 0;
+  max-width: none;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(30, 41, 59, 0.85);
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+#search-container .index-no-results.message-container i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  background: none;
+  -webkit-text-fill-color: #f87171;
+  color: #f87171;
+  filter: none;
+  animation: none;
+}
+
+/* SEO block on index (overrides .seo-content from inline) */
+section.seo-content.index-seo {
+  margin-top: 2.5rem;
+  margin-bottom: 2rem;
+  padding: 1.75rem 1.5rem;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid #1e293b;
+  border-radius: 1.5rem;
+  color: #cbd5e1;
+  line-height: 1.65;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+section.seo-content.index-seo h2 {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  color: #f8fafc;
+  margin: 0 0 0.75rem 0;
+}
+
+section.seo-content.index-seo h3 {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid #2563eb;
+  padding-left: 0.75rem;
+}
+
+/* ----- DTC result cards (Bento widget) ----- */
+#results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 2.5rem;
+}
+
+#results-container .code-item.bento-dtc-item {
+  display: block;
+  background: rgba(30, 41, 59, 0.65) !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 1rem;
+  padding: 1rem 1rem 1rem 1.125rem;
+  cursor: default;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+  animation: bentoResultIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+#results-container .code-item.bento-dtc-item:hover {
+  border-color: rgba(37, 99, 235, 0.45) !important;
+  background: rgba(30, 41, 59, 0.88) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+#results-container .code-item.bento-dtc-item::before {
+  display: none;
+}
+
+@keyframes bentoResultIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#results-container .code-item.bento-dtc-item:nth-child(1) { animation-delay: 0.02s; }
+#results-container .code-item.bento-dtc-item:nth-child(2) { animation-delay: 0.05s; }
+#results-container .code-item.bento-dtc-item:nth-child(3) { animation-delay: 0.08s; }
+#results-container .code-item.bento-dtc-item:nth-child(4) { animation-delay: 0.11s; }
+#results-container .code-item.bento-dtc-item:nth-child(5) { animation-delay: 0.14s; }
+#results-container .code-item.bento-dtc-item:nth-child(6) { animation-delay: 0.17s; }
+#results-container .code-item.bento-dtc-item:nth-child(7) { animation-delay: 0.2s; }
+#results-container .code-item.bento-dtc-item:nth-child(8) { animation-delay: 0.23s; }
+#results-container .code-item.bento-dtc-item:nth-child(9) { animation-delay: 0.26s; }
+#results-container .code-item.bento-dtc-item:nth-child(10) { animation-delay: 0.29s; }
+
+.bento-dtc-row {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.bento-dtc-main {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bento-dtc-code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  margin: 0 0 0.35rem 0;
+}
+
+.bento-dtc-external {
+  display: inline-flex;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  opacity: 0.45;
+  color: #94a3b8;
+  font-size: 0.7rem;
+}
+.bento-dtc-external:hover {
+  opacity: 0.9;
+  color: #3b82f6;
+}
+
+.bento-dtc-title {
+  font-size: 0.9375rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  line-height: 1.45;
+  margin: 0 0 0.5rem 0;
+}
+
+.bento-dtc-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.bento-dtc-cta {
+  min-height: 2.5rem;
+  min-width: 6.5rem;
+  padding: 0 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: "Inter", system-ui, sans-serif;
+  color: #fff;
+  background: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.55);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s,
+    box-shadow 0.15s, transform 0.12s;
+}
+.bento-dtc-cta:hover {
+  background: #1d4ed8;
+  border-color: rgba(29, 78, 216, 0.75);
+  box-shadow: 0 3px 10px -2px rgba(37, 99, 235, 0.4);
+}
+.bento-dtc-cta:active {
+  transform: scale(0.98);
+}
+.bento-dtc-cta:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.bento-dtc-meta {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+  flex-basis: 100%;
+}
+
+.bento-dtc-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+#results-container .bento-dtc-item .star-btn,
+#favorites-list .bento-dtc-item .star-btn {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s, transform 0.12s;
+}
+#results-container .bento-dtc-item .star-btn:hover,
+#favorites-list .bento-dtc-item .star-btn:hover {
+  color: #fde047;
+  border-color: rgba(250, 204, 21, 0.3);
+  background: rgba(250, 204, 21, 0.08);
+}
+#results-container .bento-dtc-item .star-btn.active,
+#favorites-list .bento-dtc-item .star-btn.active {
+  color: #facc15;
+  border-color: rgba(250, 204, 21, 0.4);
+  background: rgba(250, 204, 21, 0.1);
+}
+#results-container .bento-dtc-item .star-btn:focus-visible,
+#favorites-list .bento-dtc-item .star-btn:focus-visible {
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
+}
+
+/* Favorites list: same bento look */
+#favorites-list .code-item.bento-dtc-item {
+  display: block;
+  background: rgba(30, 41, 59, 0.65) !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  cursor: default;
+}
+
+#favorites-list .code-item.bento-dtc-item::before {
+  display: none;
+}
+
+#favorites-list .bento-dtc-chevron {
+  display: none;
+}
+
+.bento-dtc-chevron {
+  color: #475569;
+  font-size: 0.9rem;
+  margin-left: 0.25rem;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* #empty-state: compact .index-empty inside hero — see block above */
+#search-container #no-results:not(.index-empty) {
+  color: #e2e8f0;
+}
+
+/* Modals: strengthen glass (keep existing structure) */
+.favorites-modal .favorites-content,
+.auth-modal .auth-content {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 1px solid #1e293b !important;
+}
+
+/* Touch targets on header: .index-header-btn already ≥44px */
+
+@media (max-width: 640px) {
+  .bento-dtc-chevron {
+    display: none;
+  }
+  .bento-dtc-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

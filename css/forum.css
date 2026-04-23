@@ -109,79 +109,8 @@ header.forum-header #notif-btn-wrapper.btn-ghost:hover {
   border-color: transparent;
 }
 
-/* ---------------------------------------------------------------- Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
-  padding: 8px 14px;
-  min-height: 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
-  font-family: inherit;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  text-decoration: none;
-  cursor: pointer;
-  transition: var(--transition-fast);
-  white-space: nowrap;
-}
-.btn:hover {
-  background: var(--color-surface-3);
-  border-color: var(--color-border-strong);
-  transform: translateY(-1px);
-}
-.btn:active { transform: translateY(0); }
-.btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-700));
-  border-color: transparent;
-  color: var(--color-text-on-primary);
-  box-shadow: var(--shadow-glow-soft);
-}
-.btn-primary:hover {
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
-  box-shadow: var(--shadow-glow);
-}
-
-.btn-ghost {
-  background: transparent;
-  border-color: transparent;
-  color: var(--color-text-secondary);
-}
-.btn-ghost:hover {
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
-}
-
-.btn-icon {
-  padding: 0;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 auto;
-}
-
-.btn-danger {
-  background: var(--color-danger-bg);
-  border-color: rgba(226, 75, 74, 0.35);
-  color: var(--color-danger);
-}
-.btn-danger:hover {
-  background: rgba(226, 75, 74, 0.22);
-}
-
-.btn[disabled], .btn[aria-disabled="true"] {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-}
+/* ---------------------------------------------------------------- Buttons
+   Base .btn / .btn-primary / .btn-ghost — see css/ui-buttons.css (load before this file) */
 
 /* ---------------------------------------------------------------- Container */
 main.forum-container {
@@ -430,6 +359,44 @@ body.forum-page .footer-links a:hover {
   margin-top: var(--space-sm);
 }
 
+/* Sidebar: Profile — clear outline; press state matches main buttons */
+.user-card .actions .user-card-profile-link {
+  width: 100%;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.user-card .actions .user-card-profile-link:hover {
+  background: rgba(37, 99, 235, 0.14) !important;
+  border-color: rgba(59, 130, 246, 0.45) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+}
+.user-card .actions .user-card-profile-link:active {
+  transform: scale(0.98);
+  background: rgba(37, 99, 235, 0.12) !important;
+}
+
+/* Header: logged-in chip — readable border (script.js + forum.js set .auth-btn--logged) */
+header.forum-header a#auth-btn.auth-btn--logged {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 6px 14px 6px 8px;
+  gap: 0.35rem;
+}
+header.forum-header a#auth-btn.auth-btn--logged:hover {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.12);
+}
+header.forum-header a#auth-btn.auth-btn--logged:active {
+  transform: scale(0.98);
+}
+
 .guest-card {
   text-align: center;
   padding: var(--space-md) var(--space-sm);
@@ -438,6 +405,43 @@ body.forum-page .footer-links a:hover {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   margin: 0 0 var(--space-sm);
+}
+
+/* Edit profile modal (full account) */
+.edit-profile-modal .edit-profile-section {
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--color-divider);
+}
+.edit-profile-modal .edit-profile-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.edit-profile-modal .edit-profile-section__title {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-sm);
+  font-weight: var(--font-weight-semibold);
+}
+.edit-profile-modal .edit-profile-hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-md);
+  line-height: 1.45;
+}
+.edit-profile-modal .input-readonly {
+  cursor: default;
+  opacity: 0.92;
+  background: var(--color-surface-3) !important;
+  border-color: var(--color-border) !important;
+}
+.edit-profile-modal #edit-profile-form {
+  max-height: min(70vh, 720px);
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 /* --------------------------------------------------- Reputation badges */
@@ -1956,15 +1960,6 @@ select.sort-select:focus {
 }
 .auth-link:hover { color: var(--color-accent); text-decoration: underline; }
 
-/* --------- Primary block button ------------------------------------- */
-.btn-block {
-  width: 100%;
-  padding: 12px 16px !important;
-  min-height: 46px !important;
-  font-size: var(--font-size-md) !important;
-  font-weight: var(--font-weight-semibold);
-}
-
 /* --------- Status message ------------------------------------------- */
 .auth-msg {
   margin: 14px 0 0;
@@ -2399,12 +2394,6 @@ select.sort-select:focus {
 .profile-chips .p-chip:hover { border-color: var(--color-border-strong); color: var(--color-text-primary); }
 
 .profile-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-.btn-danger-ghost {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-}
-.btn-danger-ghost:hover { background: rgba(239, 68, 68, 0.16); color: #fee2e2; }
 
 /* ---------- STATS -------------------------------------------------------- */
 .profile-stats {

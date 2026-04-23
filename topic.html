@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#050507" />
 
     <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
     <link rel="stylesheet" href="./css/forum.css?v=3.4" />
     <link rel="stylesheet" href="./css/notifications.css?v=3.2" />
     <link rel="stylesheet" href="./css/parts-finder.css?v=3.0" />
@@ -59,19 +60,25 @@
         <h1>BimmerCodes <span class="accent">Forum</span></h1>
       </a>
       <div class="controls">
-        <a href="/forum" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> <span data-i18n="backToTopics">Back</span></a>
+        <a href="/" class="btn btn-ghost" title="Home">
+          <i class="fas fa-home" aria-hidden="true"></i>
+          <span data-i18n="homeBtn">Home</span>
+        </a>
+        <a href="/vin.html" class="btn btn-ghost" title="VIN Check">
+          <i class="fas fa-barcode" aria-hidden="true"></i>
+          <span data-i18n="vinBtn">VIN</span>
+        </a>
+        <a href="/forum" class="btn btn-ghost"><i class="fas fa-arrow-left" aria-hidden="true"></i> <span data-i18n="backToTopics">Back</span></a>
         <button class="btn btn-ghost" id="forum-language-toggle" onclick="switchForumLanguage()" title="Language">
-          <i class="fas fa-globe"></i> <span id="forum-lang-display">EN</span>
+          <i class="fas fa-globe" aria-hidden="true"></i> <span id="forum-lang-display">EN</span>
         </button>
-        <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal(); return false;">
-          <i class="fas fa-user"></i> <span data-i18n="loginBtn">Login</span>
+        <a href="#" class="btn" id="auth-btn">
+          <i class="fas fa-user" aria-hidden="true"></i> <span data-i18n="loginBtn">Login</span>
         </a>
       </div>
     </header>
 
     <main class="forum-container">
-      <div class="ad-slot ad-header" data-ad-slot="topic-top">Advertisement</div>
-
       <section class="topic-view">
         <div class="topic-content" id="topic-content">
           <!-- Skeleton while loading -->
@@ -93,7 +100,6 @@
             <h3 class="sidebar-title" data-i18n="topicInfo">Topic info</h3>
             <div id="topic-info-body"></div>
           </div>
-          <div class="ad-slot ad-sidebar" data-ad-slot="topic-sidebar">Advertisement</div>
         </aside>
       </section>
     </main>

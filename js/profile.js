@@ -113,7 +113,10 @@
   // -------- Load ---------------------------------------------------------
   async function loadProfile(profileId) {
     try {
-      const res = await fetch(`/api/user/get?id=${encodeURIComponent(profileId)}`);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`/api/user/get?id=${encodeURIComponent(profileId)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (!res.ok) throw new Error("not_found");
       const user = await res.json();
       currentProfileUser = user;
@@ -414,10 +417,25 @@
     if (me && String(me.id) === String(user.id)) {
       if (editBtn) editBtn.hidden = false;
       // prefill edit modal
-      $("#edit-bio").value     = user.bio || "";
-      $("#edit-car").value     = user.car_model || "";
+      const u = $("#edit-username"); if (u) u.value = user.username || "";
+      const em = $("#edit-email-current"); if (em) em.value = user.email || me.email || "";
+      $("#edit-bio").value = user.bio || "";
+      $("#edit-car").value = user.car_model || "";
       const cityEl = $("#edit-city"); if (cityEl) cityEl.value = user.city || "";
       $("#edit-avatar").value  = user.avatar_url || "";
+      const fn = $("#edit-first-name"); if (fn) fn.value = user.first_name || "";
+      const ln = $("#edit-last-name"); if (ln) ln.value = user.last_name || "";
+      const ag = $("#edit-age"); if (ag) ag.value = user.age != null && user.age !== "" ? String(user.age) : "";
+      const ctry = $("#edit-country"); if (ctry) ctry.value = user.country || "";
+      const y = $("#edit-bmw-year"); if (y) y.value = user.bmw_year != null && user.bmw_year !== "" ? String(user.bmw_year) : "";
+      const b = $("#edit-bmw-body"); if (b) b.value = user.bmw_body || "";
+      const eng = $("#edit-bmw-engine"); if (eng) eng.value = user.bmw_engine || "";
+      const pl = $("#edit-preferred-lang"); if (pl) {
+        pl.value = user.preferred_lang || me.lang || "en";
+      }
+      [$("#edit-email-new"), $("#edit-email-confirm-pw"), $("#edit-pw-current"), $("#edit-pw-new"), $("#edit-pw-confirm")].forEach((el) => {
+        if (el) el.value = "";
+      });
     } else if (me) {
       if (reportBtn) reportBtn.hidden = false;
     }
@@ -457,6 +475,7 @@
   window.openEditProfileModal = function () {
     const modal = $("#edit-profile-modal");
     modal?.classList.add("active");
+    if (typeof updateLanguage === "function") updateLanguage();
 
     const preview = $("#avatar-preview-edit");
     const delBtn  = $("#btn-delete-avatar");
@@ -475,6 +494,16 @@
     $("#edit-profile-modal")?.classList.remove("active");
   };
 
+  function parseOptInt(v, min, max) {
+    const s = (v != null && String(v).trim() !== "") ? String(v).trim() : "";
+    if (!s) return null;
+    const n = parseInt(s, 10);
+    if (Number.isNaN(n)) return null;
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  }
+
   window.handleProfileUpdate = async function (e) {
     e.preventDefault();
     let me = null;
@@ -486,10 +515,18 @@
       bio: ($("#edit-bio")?.value || "").trim().slice(0, 300),
       car_model: ($("#edit-car")?.value || "").trim().slice(0, 60),
       city: ($("#edit-city")?.value || "").trim().slice(0, 60),
+      country: ($("#edit-country")?.value || "").trim().slice(0, 80) || null,
+      first_name: ($("#edit-first-name")?.value || "").trim().slice(0, 80) || null,
+      last_name: ($("#edit-last-name")?.value || "").trim().slice(0, 80) || null,
+      age: parseOptInt($("#edit-age")?.value, 13, 120),
+      bmw_year: parseOptInt($("#edit-bmw-year")?.value, 1970, 2030),
+      bmw_body: ($("#edit-bmw-body")?.value || "").trim().slice(0, 40) || null,
+      bmw_engine: ($("#edit-bmw-engine")?.value || "").trim().slice(0, 40) || null,
+      preferred_lang: ($("#edit-preferred-lang")?.value || "en").slice(0, 8) || "en",
       avatar_url: ($("#edit-avatar")?.value || "").trim(),
     };
 
-    const btn = e.target.querySelector('button[type="submit"]');
+    const btn = document.getElementById("btn-save-profile");
     const old = btn ? btn.innerHTML : "";
     if (btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${escapeHtml(tr("saving","Saving…"))}`; btn.disabled = true; }
 
@@ -500,14 +537,116 @@
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("update_failed");
-      const fresh = await fetch(`/api/user/get?id=${encodeURIComponent(me.id)}`).then((r) => r.json());
-      localStorage.setItem("user_data", JSON.stringify(fresh));
-      window.dispatchEvent(new CustomEvent("auth:changed", { detail: { user: fresh } }));
+      const token = localStorage.getItem("auth_token");
+      const fresh = await fetch(`/api/user/get?id=${encodeURIComponent(me.id)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }).then((r) => r.json());
+      const merged = {
+        ...me,
+        ...fresh,
+        email: fresh.email || me.email,
+        level: me.level,
+        permissions: me.permissions,
+        role: me.role ?? fresh.role,
+        role_display: me.role_display,
+      };
+      localStorage.setItem("user_data", JSON.stringify(merged));
+      window.dispatchEvent(new CustomEvent("auth:changed", { detail: { user: merged } }));
+      if ($("#edit-email-current")) $("#edit-email-current").value = merged.email || "";
       closeEditProfileModal();
       await loadProfile(me.id);
     } catch (err) {
       console.error("[Profile] update failed", err);
       alert(tr("updateFailed", "Update failed"));
+    } finally {
+      if (btn) { btn.innerHTML = old; btn.disabled = false; }
+    }
+  };
+
+  window.handleChangePasswordClick = async function (ev) {
+    ev?.preventDefault?.();
+    let me = null;
+    try { me = JSON.parse(localStorage.getItem("user_data") || "null"); } catch (_) {}
+    if (!me) return;
+    const cur = $("#edit-pw-current")?.value || "";
+    const nw = $("#edit-pw-new")?.value || "";
+    const cf = $("#edit-pw-confirm")?.value || "";
+    if (!cur || !nw) {
+      alert(tr("fillPasswordFields", "Please fill current and new password."));
+      return;
+    }
+    if (nw !== cf) {
+      alert(tr("passwordsMustMatch", "New passwords do not match."));
+      return;
+    }
+    if (nw.length < 8) {
+      alert(tr("passwordTooShort", "New password should be at least 8 characters."));
+      return;
+    }
+    const btn = $("#btn-change-password");
+    const old = btn ? btn.innerHTML : "";
+    if (btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>…`; btn.disabled = true; }
+    try {
+      const res = await fetch("/api/user/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: me.id, current_password: cur, new_password: nw }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "password_failed");
+      if ($("#edit-pw-current")) $("#edit-pw-current").value = "";
+      if ($("#edit-pw-new")) $("#edit-pw-new").value = "";
+      if ($("#edit-pw-confirm")) $("#edit-pw-confirm").value = "";
+      alert(tr("passwordUpdated", "Password updated successfully."));
+    } catch (e) {
+      console.error(e);
+      alert(e.message && e.message !== "password_failed" ? e.message : tr("passwordUpdateFailed", "Could not change password. Check your current password."));
+    } finally {
+      if (btn) { btn.innerHTML = old; btn.disabled = false; }
+    }
+  };
+
+  window.handleChangeEmailClick = async function (ev) {
+    ev?.preventDefault?.();
+    let me = null;
+    try { me = JSON.parse(localStorage.getItem("user_data") || "null"); } catch (_) {}
+    if (!me) return;
+    const newEmail = ($("#edit-email-new")?.value || "").trim();
+    const curPw = ($("#edit-email-confirm-pw")?.value || "");
+    if (!newEmail) {
+      alert(tr("enterNewEmail", "Please enter a new email address."));
+      return;
+    }
+    if (!curPw) {
+      alert(tr("enterPasswordForEmail", "Please enter your current password to change email."));
+      return;
+    }
+    const btn = $("#btn-change-email");
+    const old = btn ? btn.innerHTML : "";
+    if (btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>…`; btn.disabled = true; }
+    try {
+      const res = await fetch("/api/user/change-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: me.id, current_password: curPw, new_email: newEmail }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "email_failed");
+      if ($("#edit-email-new")) $("#edit-email-new").value = "";
+      if ($("#edit-email-confirm-pw")) $("#edit-email-confirm-pw").value = "";
+      const em = (data && data.email) || newEmail;
+      const merged = { ...me, email: em };
+      localStorage.setItem("user_data", JSON.stringify(merged));
+      if ($("#edit-email-current")) $("#edit-email-current").value = em;
+      window.dispatchEvent(new CustomEvent("auth:changed", { detail: { user: merged } }));
+      alert(tr("emailUpdated", "Email updated. Please verify your new address if required."));
+    } catch (e) {
+      console.error(e);
+      alert(
+        e.message && !["email_failed"].includes(e.message)
+          ? e.message
+          : tr("emailUpdateFailed", "Could not change email. It may be in use or the password is wrong.")
+      );
     } finally {
       if (btn) { btn.innerHTML = old; btn.disabled = false; }
     }

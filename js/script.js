@@ -197,28 +197,41 @@ function renderFavoritesList() {
   // Находим полные объекты кодов по ID
   const savedCodes = bmwCodes.filter((c) => favorites.includes(c.code));
 
+  const tFav = APP_TRANSLATIONS[currentLanguage] || APP_TRANSLATIONS["en"];
+  const favCta = tFav.solutionCta || "View solution";
+
   savedCodes.forEach((code) => {
     const div = document.createElement("div");
-    div.className = "code-item"; // Используем те же стили, что и в поиске
-    div.style.marginBottom = "10px";
+    div.className = "code-item bento-dtc-item";
 
+    const severityColor = "#3b82f6";
     div.innerHTML = `
-          <div style="flex: 1;" onclick="toggleFavoritesModal(); displayCodeDetail(selectedCodeRef)">
-            <div class="code-header">
-              <span class="code-identifier" style="color:#0066b3">${code.code}</span>
-              <span class="code-title" style="font-size:14px">${code.title[currentLanguage]}</span>
-            </div>
+      <div class="bento-dtc-row">
+        <div class="bento-dtc-main code-item-main" role="button" tabindex="0">
+          <p class="bento-dtc-code" style="color:${severityColor}">${code.code}</p>
+          <p class="bento-dtc-title">${code.title[currentLanguage]}</p>
+          <div class="bento-dtc-bar">
+            <button type="button" class="bento-dtc-cta">${favCta}</button>
           </div>
-          <button class="star-btn active" onclick="toggleFavorite(null, '${code.code}')">
+        </div>
+        <div class="bento-dtc-actions">
+          <button type="button" class="star-btn active" title="Remove" onclick="toggleFavorite(null, '${code.code}')">
             <i class="fas fa-trash"></i>
           </button>
-        `;
+        </div>
+      </div>`;
 
-    // Хак для клика
-    div.querySelector('div[style*="flex: 1"]').onclick = () => {
+    const mainEl = div.querySelector(".bento-dtc-main");
+    const ctaEl = div.querySelector(".bento-dtc-cta");
+    const openFav = () => {
       toggleFavoritesModal();
       displayCodeDetail(code);
     };
+    mainEl.addEventListener("click", openFav);
+    ctaEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openFav();
+    });
 
     list.appendChild(div);
   });
@@ -644,33 +657,40 @@ function checkAuthStatus() {
     if (user.avatar_url) {
       const icon = authBtn.querySelector("i");
       if (icon) {
-        icon.outerHTML = `<img src="${user.avatar_url}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; margin-right:8px; border:1px solid rgba(255,255,255,0.2);">`;
+        icon.outerHTML = `<img src="${user.avatar_url}" alt="" style="width:24px; height:24px; border-radius:50%; object-fit:cover; margin-right:8px; border:1px solid rgba(255,255,255,0.2);">`;
       }
     }
 
+    const path = window.location.pathname || "";
+    const onForumOrTopic =
+      /\/forum(\.html)?$/i.test(path) ||
+      path === "/topic" ||
+      path.startsWith("/topic/") ||
+      /\/topic\.html$/i.test(path);
+
+    if (onForumOrTopic) {
+      // Header chip: real link to profile (init() async runs after forum.js, so this must not open modal)
+      authBtn.classList.add("auth-btn--logged");
+      authBtn.setAttribute("href", "/profile");
+      authBtn.removeAttribute("onclick");
+      authBtn.onclick = null;
+    } else {
+      authBtn.classList.remove("auth-btn--logged");
+      authBtn.setAttribute("href", "#");
+      authBtn.removeAttribute("onclick");
+      authBtn.onclick = (e) => {
+        e.preventDefault();
+        toggleProfileModal();
+      };
+    }
+  } else {
+    authBtn.classList.remove("auth-btn--logged");
+    authBtn.setAttribute("href", "#");
+    authBtn.removeAttribute("onclick");
     authBtn.onclick = (e) => {
       e.preventDefault();
-      // Если мы на форуме и есть profile.html, то может быть другое поведение?
-      // Но пока оставим стандартное модальное окно, так как оно есть на всех страницах
-      toggleProfileModal();
+      toggleAuthModal();
     };
-    
-    // Если мы на форуме, возможно forum.js захочет переопределить поведение.
-    // Но script.js выполняется позже (из-за async init), поэтому он выигрывает.
-    // Чтобы поддержать редирект на profile.html (если он есть), нужно проверять URL.
-    if (window.location.pathname.includes('/forum') || window.location.pathname.includes('/topic')) {
-        authBtn.onclick = (e) => {
-             // Optional: if profile.html exists, uncomment next line
-             // window.location.href = "profile.html";
-             e.preventDefault();
-             toggleProfileModal();
-        };
-    }
-
-  } else {
-    // Если вышли
-    // Text already set correctly with data-i18n above
-    authBtn.onclick = toggleAuthModal;
   }
 }
 
@@ -707,8 +727,7 @@ async function init() {
     checkAuthStatus();
     setupEventListeners();
     updateLanguage();
-    init3DBackground();
-
+    // Decorative background: CSS on #webgl-container only (no WebGL = much lower RAM/GPU use).
 
     // 2. ЛОГИКА РЕДАКТОРА ФОТО (ИСПРАВЛЕННАЯ)
     const urlParams = new URLSearchParams(window.location.search);
@@ -1103,133 +1122,72 @@ function handleSearch() {
 
 function renderResults(codes) {
   resultsContainer.innerHTML = "";
-  // Получаем список сохраненных ID
   const favorites = JSON.parse(localStorage.getItem("bmwFavorites")) || [];
+  const t = APP_TRANSLATIONS[currentLanguage] || APP_TRANSLATIONS["en"];
+  const ctaLabel = t.solutionCta || "View solution";
 
   codes.forEach((code) => {
     const el = document.createElement("div");
-    el.className = "code-item";
+    el.className = "code-item bento-dtc-item";
 
-    // Проверяем, сохранен ли код
     const isFav = favorites.includes(code.code);
     const starClass = isFav ? "active" : "";
 
-    let severityColor = "#f1c40f";
-    if (code.severity === "High" || code.severity === "Critical")
-      severityColor = "#e74c3c";
-    if (code.severity === "Low") severityColor = "#2ecc71";
+    const sevRaw = (code.severity != null ? String(code.severity) : "medium").toLowerCase();
+    let severityColor = "#fbbf24";
+    if (sevRaw === "high" || sevRaw === "critical") severityColor = "#f87171";
+    if (sevRaw === "low") severityColor = "#4ade80";
+    if (sevRaw === "medium") severityColor = "#a78bfa";
 
     el.innerHTML = `
-      <div style="display:flex; align-items:center; width:100%;">
-          <div style="flex: 1;" onclick="displayCodeDetail(selectedCodeRef)">
-            <div class="code-header">
-              <span class="code-identifier" style="color:${severityColor}">${code.code}</span>
-              <a href="/code/${encodeURIComponent(code.code)}?lang=${currentLanguage}" 
-                 title="Open code page" 
-                 onclick="event.stopPropagation()"
-                 style="margin-left:6px; opacity:0.5; font-size:0.7em; color:inherit; text-decoration:none; vertical-align:middle;"
-                 target="_blank" rel="noopener">
-                <i class="fas fa-external-link-alt"></i>
-              </a>
-              <span class="code-title">${code.title[currentLanguage]}</span>
-            </div>
-            <div class="code-meta">
-              <i class="fas fa-microchip"></i> ${code.category} &nbsp;•&nbsp; 
-              <span style="color:${severityColor}">${code.severity}</span>
-            </div>
+      <div class="bento-dtc-row">
+        <div class="bento-dtc-main code-item-main" role="button" tabindex="0">
+          <p class="bento-dtc-code" style="color:${severityColor}">${code.code}
+            <a href="/code/${encodeURIComponent(code.code)}?lang=${currentLanguage}" 
+               class="bento-dtc-external" title="Open code page" 
+               onclick="event.stopPropagation()"
+               target="_blank" rel="noopener">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </p>
+          <p class="bento-dtc-title">${code.title[currentLanguage]}</p>
+          <div class="bento-dtc-bar">
+            <button type="button" class="bento-dtc-cta" data-action="open-detail">${ctaLabel}</button>
+            <span class="bento-dtc-chevron"><i class="fas fa-chevron-right" aria-hidden="true"></i></span>
           </div>
-          
-          <button class="star-btn ${starClass}" onclick="toggleFavorite(event, '${code.code}')">
+          <div class="bento-dtc-meta">
+            <i class="fas fa-microchip" aria-hidden="true"></i>
+            <span>${code.category}</span>
+            <span>·</span>
+            <span style="color:${severityColor}">${code.severity || "—"}</span>
+          </div>
+        </div>
+        <div class="bento-dtc-actions">
+          <button type="button" class="star-btn ${starClass}" title="Save" onclick="toggleFavorite(event, '${code.code}')">
             <i class="fas fa-star"></i>
           </button>
-          
-          <i class="fas fa-chevron-right" style="margin-left:10px; opacity:0.5;"></i>
+        </div>
       </div>
     `;
 
-    // Хак, чтобы передать объект code в onclick
-    el.querySelector('div[style*="flex: 1"]').onclick = () =>
-      displayCodeDetail(code);
+    const mainEl = el.querySelector(".code-item-main");
+    const openDetail = () => displayCodeDetail(code);
+    mainEl.addEventListener("click", openDetail);
+    const cta = el.querySelector("[data-action=open-detail]");
+    if (cta) {
+      cta.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openDetail();
+      });
+    }
 
     resultsContainer.appendChild(el);
   });
 }
 
 // ==========================================
-// 5. 3D BACKGROUND & ANIMATIONS
+// 5. BACKGROUND (CSS-only; WebGL/Three.js removed for memory/CPU)
 // ==========================================
-
-function init3DBackground() {
-  if (typeof THREE === "undefined") {
-    // Retry initialization if library is not ready
-    setTimeout(init3DBackground, 100);
-    return;
-  }
-  const container = document.getElementById("webgl-container");
-  if (!container) return;
-  container.innerHTML = "";
-
-  const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x050507, 0.002);
-
-  const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000,
-  );
-  camera.position.z = 30;
-
-  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  container.appendChild(renderer.domElement);
-
-  const particlesGeometry = new THREE.BufferGeometry();
-  const particlesCount = 1200;
-  const posArray = new Float32Array(particlesCount * 3);
-
-  for (let i = 0; i < particlesCount * 3; i++) {
-    posArray[i] = (Math.random() - 0.5) * 80;
-  }
-
-  particlesGeometry.setAttribute(
-    "position",
-    new THREE.BufferAttribute(posArray, 3),
-  );
-  const material = new THREE.PointsMaterial({
-    size: 0.15,
-    color: 0x0066b3,
-    transparent: true,
-    opacity: 0.8,
-  });
-  const particlesMesh = new THREE.Points(particlesGeometry, material);
-  scene.add(particlesMesh);
-
-  let mouseX = 0;
-  let mouseY = 0;
-  document.addEventListener("mousemove", (event) => {
-    mouseX = event.clientX / window.innerWidth - 0.5;
-    mouseY = event.clientY / window.innerHeight - 0.5;
-  });
-
-  const clock = new THREE.Clock();
-  function animate() {
-    requestAnimationFrame(animate);
-    const elapsedTime = clock.getElapsedTime();
-    particlesMesh.rotation.y = elapsedTime * 0.05;
-    particlesMesh.rotation.x = mouseY * 0.5;
-    particlesMesh.rotation.y += mouseX * 0.05;
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-}
 
 // === В КОНЕЦ ФАЙЛА script.js ===
 

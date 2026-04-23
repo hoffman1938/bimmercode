@@ -462,7 +462,7 @@
         <div class="username">${escapeHtml(user.username)}</div>
         ${repBadgeHtml(user.reputation, user.role_id || user.role)}
         <div class="actions">
-          <a href="/profile" class="btn btn-ghost"><i class="fas fa-user-circle"></i> ${escapeHtml(t("profile", "Profile"))}</a>
+          <a href="/profile" class="btn btn-ghost user-card-profile-link"><i class="fas fa-user-circle" aria-hidden="true"></i> ${escapeHtml(t("profile", "Profile"))}</a>
           <button class="btn btn-danger" onclick="logout && logout()"><i class="fas fa-sign-out-alt"></i> ${escapeHtml(t("logout", "Logout"))}</button>
         </div>
       </div>`;
@@ -484,13 +484,18 @@
     const btn = $("#auth-btn");
     if (!btn) return;
     if (user) {
+      btn.classList.add("auth-btn--logged");
       btn.innerHTML = user.avatar_url
-        ? `<img src="${escapeHtml(user.avatar_url)}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;"> <span>${escapeHtml(user.username)}</span>`
-        : `<i class="fas fa-user"></i> <span>${escapeHtml(user.username)}</span>`;
-      btn.onclick = () => (window.location.href = "/profile");
+        ? `<img src="${escapeHtml(user.avatar_url)}" alt="" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:8px;border:1px solid rgba(255,255,255,0.2);"> <span>${escapeHtml(user.username)}</span>`
+        : `<i class="fas fa-user" aria-hidden="true"></i> <span>${escapeHtml(user.username)}</span>`;
       btn.setAttribute("href", "/profile");
+      btn.removeAttribute("onclick");
+      btn.onclick = null;
     } else {
-      btn.innerHTML = `<i class="fas fa-user"></i> <span>${escapeHtml(t("loginBtn", "Login"))}</span>`;
+      btn.classList.remove("auth-btn--logged");
+      btn.innerHTML = `<i class="fas fa-user" aria-hidden="true"></i> <span>${escapeHtml(t("loginBtn", "Login"))}</span>`;
+      btn.setAttribute("href", "#");
+      btn.removeAttribute("onclick");
       btn.onclick = (e) => { e.preventDefault(); toggleAuthModal(); };
     }
   }

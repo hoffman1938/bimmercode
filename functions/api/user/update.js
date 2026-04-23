@@ -28,6 +28,7 @@ export async function onRequestPost(context) {
       bio, 
       avatar_url, 
       privacy_level,
+      preferred_lang,
       // Read-only/Restricted fields that shouldn't be updated here:
       // username, email, role, reputation, etc.
     } = body;
@@ -104,6 +105,7 @@ export async function onRequestPost(context) {
       values.push(avatar_url || null);
     }
     maybe("privacy_level", privacy_level);
+    maybe("preferred_lang", preferred_lang);
 
     if (updates.length === 0) {
       return new Response(JSON.stringify({ success: true, noop: true }), {

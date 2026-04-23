@@ -1,4 +1,4 @@
-const CACHE_NAME = "bimmercodes-v30-fix-css-loops";
+const CACHE_NAME = "bimmercodes-v31-ui-buttons";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
@@ -6,6 +6,7 @@ const ASSETS_TO_CACHE = [
   "/vin.html",
   "/topic",
   "/css/style.css",
+  "/css/ui-buttons.css",
   "/css/responsive.css",
   "/css/forum.css",
   "/js/script.js",

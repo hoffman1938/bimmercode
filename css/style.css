@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap");
 @import url("./notifications.css");
+@import url("./ui-buttons.css");
 
 :root {
   /* Colors */
@@ -22,6 +23,12 @@
   --radius-md: 12px;
   --transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow-glow: 0 0 20px rgba(0, 102, 179, 0.25);
+  /* Modern UI (2025) — shared buttons */
+  --ui-radius: 0.625rem;
+  --ui-radius-pill: 9999px;
+  --ui-blue: #2563eb;
+  --ui-blue-hover: #1d4ed8;
+  --ui-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Safe Area Variables for Mobile */
   --sat: env(safe-area-inset-top);
@@ -148,33 +155,7 @@ h1 {
   align-items: center;
 }
 
-.btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
-  color: var(--text-main);
-  padding: 8px 16px;
-  border-radius: 30px;
-  cursor: pointer;
-  font-family: "Exo 2", sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: var(--transition);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.btn:hover {
-  background: var(--bmw-blue);
-  border-color: var(--bmw-blue);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow);
-}
-.btn:active {
-  transform: scale(0.96);
-}
+/* .btn* — see ui-buttons.css */
 
 /* --- MAIN CONTAINER --- */
 main.container {
@@ -440,22 +421,32 @@ main.container {
 }
 
 .back-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--glass-border);
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border-radius: var(--ui-radius);
+  color: #e2e8f0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition);
+  transition: background 0.15s var(--ui-ease), border-color 0.15s var(--ui-ease), color 0.15s;
   flex-shrink: 0;
 }
 .back-btn:hover {
-  background: var(--bmw-blue);
-  transform: rotate(-90deg);
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #fff;
+}
+.back-btn:focus-visible {
+  outline: 2px solid var(--ui-blue);
+  outline-offset: 2px;
+}
+.back-btn:active {
+  transform: scale(0.97);
 }
 
 /* Detail Content Components */
@@ -536,31 +527,41 @@ main.container {
 .btn-part {
   flex: 1;
   min-width: 140px;
-  padding: 12px;
-  background: rgba(0, 102, 179, 0.15);
-  border: 1px solid var(--bmw-blue);
-  color: #fff;
-  border-radius: var(--radius-md);
+  padding: 0.65rem 0.9rem;
+  min-height: 2.5rem;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #e0e7ff;
+  border-radius: var(--ui-radius);
   text-align: center;
   text-decoration: none;
   font-weight: 600;
+  font-family: "Inter", "Exo 2", system-ui, sans-serif;
+  font-size: 0.875rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: var(--transition);
+  gap: 0.5rem;
+  transition: background 0.15s var(--ui-ease), border-color 0.15s, color 0.15s;
 }
 .btn-part:hover {
-  background: var(--bmw-blue);
-  transform: translateY(-2px);
+  background: rgba(37, 99, 235, 0.22);
+  border-color: rgba(96, 165, 250, 0.45);
+  color: #fff;
 }
 .btn-part.secondary {
   background: rgba(255, 255, 255, 0.05);
-  border-color: var(--glass-border);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
 }
 .btn-part.secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.btn-part:focus-visible {
+  outline: 2px solid var(--ui-blue);
+  outline-offset: 2px;
 }
 
 .tag-grid {
@@ -908,41 +909,54 @@ footer {
 
 .submit-btn {
   width: 100%;
-  padding: 14px;
-  background: var(--bmw-blue);
-  color: white;
-  border: none;
-  border-radius: 30px;
+  padding: 0.75rem 1rem;
+  min-height: 2.75rem;
+  background: var(--ui-blue);
+  color: #fff;
+  border: 1px solid rgba(37, 99, 235, 0.5);
+  border-radius: var(--ui-radius);
   font-weight: 600;
-  font-size: 16px;
+  font-size: 0.9375rem;
+  font-family: "Inter", "Exo 2", system-ui, sans-serif;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.15s var(--ui-ease), border-color 0.15s var(--ui-ease),
+    box-shadow 0.15s var(--ui-ease), transform 0.12s;
   margin-top: 10px;
-  box-shadow: 0 10px 20px rgba(0, 102, 179, 0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .submit-btn:hover {
-  background: var(--bmw-dark-blue);
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(0, 102, 179, 0.4);
+  background: var(--ui-blue-hover);
+  border-color: rgba(29, 78, 216, 0.7);
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.35);
+}
+.submit-btn:active {
+  transform: scale(0.99);
+}
+.submit-btn:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
 }
 
 .btn-logout {
   width: 100%;
-  padding: 12px;
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c;
-  border: 1px solid rgba(231, 76, 60, 0.3);
-  border-radius: 30px;
+  padding: 0.65rem 1rem;
+  min-height: 2.5rem;
+  background: rgba(127, 29, 29, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: var(--ui-radius);
   font-weight: 500;
-  font-size: 14px;
+  font-size: 0.875rem;
+  font-family: "Inter", "Exo 2", system-ui, sans-serif;
   cursor: pointer;
   margin-top: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: 0.2s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .btn-logout:hover {
@@ -960,18 +974,32 @@ footer {
   padding-bottom: 10px;
 }
 .tab-btn {
-  background: none;
-  border: none;
-  color: #aaa;
-  font-size: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  color: #94a3b8;
+  font-size: 0.9rem;
   cursor: pointer;
-  font-family: "Exo 2", sans-serif;
-  padding: 5px 10px;
-  transition: 0.3s;
+  font-family: "Inter", "Exo 2", system-ui, sans-serif;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--ui-radius);
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.tab-btn:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
 }
 .tab-btn.active {
-  color: white;
-  border-bottom: 2px solid var(--bmw-blue);
+  color: #f8fafc;
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+.tab-btn.active:hover {
+  color: #fff;
+}
+.tab-btn:focus-visible {
+  outline: 2px solid var(--ui-blue);
+  outline-offset: 2px;
 }
 
 /* Forms */
@@ -1013,21 +1041,6 @@ footer {
 .input-group input:focus {
   border-color: var(--bmw-blue);
   background: rgba(255, 255, 255, 0.1);
-}
-
-.submit-btn {
-  background: var(--bmw-blue);
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-top: 10px;
-  transition: 0.3s;
-}
-.submit-btn:hover {
-  background: var(--bmw-sky);
 }
 
 .auth-msg {

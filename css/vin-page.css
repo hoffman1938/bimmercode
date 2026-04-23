@@ -1,0 +1,525 @@
+/* VIN decoder — same design language as index (index-bento) */
+
+html.index-bento-page,
+body.vin-page {
+  background-color: #0f172a;
+}
+
+body.vin-page {
+  color: #e2e8f0;
+  min-height: 100vh;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.vin-vin-prefix {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+#history-container.history-container {
+  display: none;
+}
+
+#webgl-container.index-bento-bg {
+  background: radial-gradient(
+    circle at 50% -15%,
+    rgba(37, 99, 235, 0.14) 0%,
+    #0f172a 65%
+  );
+}
+
+main.index-bento {
+  width: min(95%, 80rem);
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-bottom: 2.5rem;
+}
+
+/* Hero card: search */
+.vin-hero-card {
+  margin-top: 0.5rem;
+  position: relative;
+  border-radius: 1.75rem;
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  background: linear-gradient(
+    180deg,
+    rgba(30, 41, 59, 0.65) 0%,
+    rgba(15, 23, 42, 0.75) 100%
+  );
+  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 1.5rem 1.5rem 1.75rem;
+}
+
+@media (min-width: 640px) {
+  .vin-hero-card {
+    padding: 1.75rem 2rem 2rem;
+  }
+}
+
+.vin-hero-kicker {
+  margin: 0 0 0.35rem 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #3b82f6;
+}
+
+.vin-hero-title {
+  margin: 0 0 0.4rem 0;
+  font-size: clamp(1.35rem, 2.5vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.vin-hero-lead {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #94a3b8;
+  max-width: 40rem;
+}
+
+/* Search row */
+.vin-search-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.65rem;
+  max-width: 100%;
+  margin: 0;
+  position: relative;
+  padding: 0.4rem;
+  border-radius: 1.15rem;
+  border: 1px solid #1e293b;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(30, 41, 59, 0.35) 100%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.vin-search-box input#vin-input,
+.vin-search-box #vin-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0 1rem 0 0.9rem;
+  background: rgba(15, 23, 42, 0.4);
+  border: none;
+  border-radius: 0.9rem;
+  color: #f1f5f9;
+  font-size: 1.05rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  outline: none;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.vin-search-box input#vin-input:focus,
+.vin-search-box #vin-input:focus {
+  background: rgba(15, 23, 42, 0.65);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
+.vin-btn {
+  min-height: 3.25rem;
+  min-width: 7.5rem;
+  padding: 0 1.25rem;
+  background: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.5);
+  border-radius: 0.625rem;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s,
+    box-shadow 0.15s, transform 0.12s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.vin-btn:hover {
+  background: #1d4ed8;
+  border-color: rgba(29, 78, 216, 0.7);
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.45);
+}
+.vin-btn:active {
+  transform: scale(0.99);
+}
+.vin-page .vin-btn:focus-visible,
+.vin-btn:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+/* History */
+#history-container.history-container {
+  max-width: 100%;
+  margin: 1.15rem 0 0 0;
+  text-align: left;
+  padding: 0 0.1rem;
+}
+
+.history-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  margin: 0 0 0.5rem 0.15rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.history-item,
+.vin-page .history-item {
+  min-height: 2.5rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.history-item:hover,
+.vin-page .history-item:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(37, 99, 235, 0.1);
+  color: #f1f5f9;
+}
+
+/* Loader */
+#loader.loader {
+  display: none;
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  color: #60a5fa;
+  font-size: 0.95rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+#loader i {
+  font-size: 1.75rem;
+}
+
+/* === Result: (hidden until decode) === */
+#vin-result {
+  display: none;
+  margin-top: 2.25rem;
+  padding-bottom: 2rem;
+  animation: vinFade 0.45s ease-out;
+}
+
+@keyframes vinFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vin-result-head {
+  text-align: center;
+  margin-bottom: 1.75rem;
+  padding: 1.5rem 1.25rem;
+  border-radius: 1.25rem;
+  border: 1px solid #1e293b;
+  background: linear-gradient(
+    160deg,
+    rgba(30, 41, 59, 0.45) 0%,
+    rgba(15, 23, 42, 0.55) 100%
+  );
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+#car-title {
+  margin: 0 0 0.6rem 0;
+  font-size: clamp(1.25rem, 3.5vw, 1.75rem);
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.2;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+#car-title,
+.vin-result-head #car-title {
+  text-align: center;
+  background: none;
+  -webkit-text-fill-color: #f8fafc;
+}
+
+.vin-vin-line {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.vin-mono#res-vin,
+#res-vin {
+  display: inline-block;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid #1e293b;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.6rem;
+}
+
+/* Section groups (bento) */
+.vin-bento-group {
+  margin-bottom: 1.5rem;
+}
+
+.vin-bento-group-title {
+  margin: 0 0 0.75rem 0.15rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #64748b;
+}
+
+.vin-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+@media (min-width: 700px) {
+  .vin-spec-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* Stat cards (widget) */
+.vin-stat-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1rem 0.9rem;
+  min-height: 4.5rem;
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.4) 100%);
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vin-stat-card:hover {
+  border-color: rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.vin-stat-icon {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 0.7rem;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(15, 23, 42, 0.7) 100%);
+  color: #60a5fa;
+  font-size: 1.05rem;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.vin-stat-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.vin-stat-body h4,
+.vin-stat-label {
+  margin: 0 0 0.2rem 0;
+  color: #94a3b8;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.vin-stat-body > div,
+.vin-stat-value {
+  color: #f1f5f9;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: break-word;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+#vin-result [id^="res-"]:not(#res-vin) {
+  font-family: "Inter", system-ui, sans-serif;
+}
+#res-vin {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Deep decode & external */
+#deep-decode-section,
+.vin-deep-decode {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+#deep-decode-section h3,
+.vin-deep-h {
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "Inter", system-ui, sans-serif;
+  padding: 0 0.15rem 0.75rem 0.15rem;
+  border-bottom: 1px solid #1e293b;
+}
+#deep-decode-section h3 i,
+.vin-deep-h i {
+  color: #3b82f6;
+  font-size: 1.1rem;
+}
+
+#deep-decode-section p,
+.vin-deep-decode p {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1rem 0.15rem;
+  max-width: 52rem;
+}
+
+.vin-ext-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .vin-ext-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .vin-ext-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.vin-page .ext-btn,
+#deep-decode-section a.ext-btn {
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  border-radius: 0.625rem;
+  padding: 0.85rem 0.9rem 0.85rem 0.8rem;
+  min-height: 3.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  font-family: "Inter", system-ui, sans-serif;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+}
+.vin-page .ext-btn i {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+#deep-decode-section a#link-bidfax i,
+.vin-page a#link-bidfax i {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+}
+#deep-decode-section a#link-statvin i,
+.vin-page a#link-statvin i {
+  background: rgba(251, 146, 60, 0.12);
+  color: #fb923c;
+}
+#deep-decode-section a#link-mdecoder i,
+.vin-page a#link-mdecoder i {
+  background: rgba(45, 212, 191, 0.12);
+  color: #2dd4bf;
+}
+#deep-decode-section a#link-bimmerwork i,
+.vin-page a#link-bimmerwork i {
+  background: rgba(100, 116, 139, 0.2);
+  color: #cbd5e1;
+}
+.vin-page .ext-btn:hover,
+#deep-decode-section a.ext-btn:hover {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(59, 130, 246, 0.25);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.2);
+}
+.vin-page .ext-btn:focus-visible,
+#deep-decode-section a.ext-btn:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+.vin-page .ext-btn:active,
+#deep-decode-section a.ext-btn:active {
+  transform: scale(0.99);
+}
+.ext-btn-content small {
+  font-weight: 500;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-top: 0.2rem;
+}
+.ext-btn-content span {
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+.notification-btn {
+  display: none !important;
+}
