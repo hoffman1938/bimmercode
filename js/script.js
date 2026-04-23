@@ -22,6 +22,12 @@ const languageToggle = document.getElementById("language-toggle");
 // App State
 // Читаем язык из памяти или ставим 'en' по умолчанию
 let currentLanguage = localStorage.getItem("forumLanguage") || "en";
+
+// Keep in sync with forum/topic `switchForumLanguage` (no full reload).
+window.addEventListener("languageChanged", () => {
+  currentLanguage = localStorage.getItem("forumLanguage") || "en";
+  document.documentElement.setAttribute("lang", currentLanguage);
+});
 let isDarkMode = true;
 let bmwCodes = [];
 let selectedCode = null;

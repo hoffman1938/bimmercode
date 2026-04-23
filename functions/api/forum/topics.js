@@ -3,7 +3,8 @@
 //   - FTS5-powered search (fallback to LIKE on migration mismatch)
 //   - Cursor-based pagination (stable ordering)
 //   - Sort: newest | popular | most_viewed | recently_active
-//   - Filters: category, tab (all|unanswered|solved|pinned), lang, tag, user_id
+//   - Filters: category, tab (all|unanswered|solved|pinned), tag, user_id
+//   - Optional: lang= en|ru|ka filters topics whose *content* language matches (not UI language).
 //   - Denormalized: reply_count, last_reply_at, author avatar/reputation
 //
 // Security on POST (new topic):
@@ -79,10 +80,10 @@ async function handleGet(context) {
   } else if (tab === "pinned") {
     conditions.push("t.is_pinned = 1");
   }
-  // Tag filter via subquery on topic_tags
+  // Tag filter via topic_tags (case-insensitive; tag slugs may differ in case from URL)
   if (tag) {
     conditions.push(
-      "t.id IN (SELECT tt.topic_id FROM topic_tags tt JOIN tags tg ON tg.id = tt.tag_id WHERE tg.name = ?)"
+      "t.id IN (SELECT tt.topic_id FROM topic_tags tt JOIN tags tg ON tg.id = tt.tag_id WHERE LOWER(tg.name) = LOWER(?))"
     );
     params.push(tag);
   }

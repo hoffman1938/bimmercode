@@ -406,7 +406,7 @@
   }
 
   function renderPostCard(p, { isOriginal = false } = {}) {
-    const solved = p.is_solution || p.id === state.topic?.solution_post_id;
+    const solved = !!(p.is_solution);
     const avatar = p.author_avatar
       ? `<img class="avatar" src="${esc(p.author_avatar)}" alt="" loading="lazy" onerror="this.src='./assets/icons/ico.svg'">`
       : `<div class="avatar" style="display:flex;align-items:center;justify-content:center;font-weight:700;font-size:28px;">${esc((p.username||'?')[0]?.toUpperCase())}</div>`;
@@ -452,7 +452,8 @@
             ${reactionsHtml}
             </div>
             <div class="post-actions-tools">
-            ${!isOP && canMarkSolution() && !state.topic?.is_solved ? `<button type="button" class="post-action-link" data-action="solve" data-post="${esc(p.id)}"><i class="fas fa-check"></i> ${esc(t("markSolution","Mark as solution"))}</button>` : ""}
+            ${!isOP && canMarkSolution() && !solved ? `<button type="button" class="post-action-link" data-action="solve" data-post="${esc(p.id)}"><i class="fas fa-check"></i> ${esc(t("markSolution","Mark as solution"))}</button>` : ""}
+            ${!isOP && canMarkSolution() && solved ? `<button type="button" class="post-action-link post-action-link--warn" data-action="unsolve" data-post="${esc(p.id)}"><i class="fas fa-times"></i> ${esc(t("unmarkSolution","Remove solution"))}</button>` : ""}
             ${canEdit(p) ? `<button type="button" class="post-action-link" data-action="edit" data-post="${esc(p.id)}"><i class="fas fa-edit"></i> ${esc(t("edit","Edit"))}</button>` : ""}
             ${canDelete(p) ? `<button type="button" class="post-action-link post-action-link--danger" data-action="delete" data-post="${esc(p.id)}"><i class="fas fa-trash"></i> ${esc(t("delete","Delete"))}</button>` : ""}
             ${state.user && !isOP ? `<button type="button" class="post-action-link" data-action="report" data-post="${esc(p.id)}"><i class="fas fa-flag"></i> ${esc(t("report","Report"))}</button>` : ""}
@@ -818,7 +819,8 @@
     const action = target.dataset.action;
     const postId = target.dataset.post;
 
-    if (action === "solve") return markSolution(postId);
+    if (action === "solve") return toggleSolution(postId, false);
+    if (action === "unsolve") return toggleSolution(postId, true);
     if (action === "delete") return deletePost(postId);
     if (action === "edit")   return beginPostEdit(postId);
     if (action === "report") return reportPost(postId);
@@ -907,9 +909,13 @@
     }
   }
 
-  async function markSolution(postId) {
-    if (!confirm(t("confirmSolution","Mark this post as the solution?"))) return;
+  async function toggleSolution(postId, isUnmark) {
+    const q = isUnmark
+      ? t("confirmUnmarkSolution", "Remove the solution mark from this post?")
+      : t("confirmSolution", "Mark this post as a solution?");
+    if (!confirm(q)) return;
     const token = localStorage.getItem("auth_token");
+    const errBox = $("#reply-error");
     try {
       const res = await fetch("/api/forum/solve", {
         method: "POST",
@@ -917,10 +923,24 @@
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ topic_id: state.topicId, post_id: postId, user_id: state.user.id }),
+        body: JSON.stringify({
+          topic_id: state.topicId,
+          post_id: postId,
+          user_id: state.user.id,
+          set_solution: isUnmark ? false : true,
+        }),
       });
-      if (res.ok) await loadTopicData();
-    } catch (e) { console.error(e); }
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        if (errBox) errBox.textContent = "";
+        await loadTopicData();
+        return;
+      }
+      if (errBox) errBox.textContent = data.error || `HTTP ${res.status}`;
+    } catch (e) {
+      console.error(e);
+      if (errBox) errBox.textContent = e.message || t("errorSending", "Error");
+    }
   }
 
   async function deletePost(postId) {
@@ -959,10 +979,18 @@
   }
 
   // ========================================================== Data
-  async function loadTopicData() {
+  /**
+   * @param {object} [opts]
+   * @param {boolean} [opts.bumpView] - only `true` on first page open; reactions/edits call without it so `views` is not incremented
+   */
+  async function loadTopicData({ bumpView = false } = {}) {
     const userId = state.user?.id || "";
     try {
-      const res = await fetch(`/api/forum/topic?id=${encodeURIComponent(state.topicId)}&user_id=${encodeURIComponent(userId)}`);
+      const q = new URLSearchParams();
+      q.set("id", state.topicId);
+      q.set("user_id", userId);
+      if (bumpView) q.set("count_view", "1");
+      const res = await fetch(`/api/forum/topic?${q.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -977,10 +1005,20 @@
 
   // ========================================================== i18n
   function applyI18n() {
+    document.documentElement.setAttribute("lang", state.lang);
     const dict = window.APP_TRANSLATIONS?.[state.lang] || {};
+    const fall = window.APP_TRANSLATIONS?.en || {};
     $$("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
-      if (dict[key]) el.textContent = dict[key];
+      if (!key) return;
+      const val = dict[key] ?? fall[key];
+      if (val !== undefined) el.textContent = val;
+    });
+    $$("[data-i18n-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (!key) return;
+      const val = dict[key] ?? fall[key];
+      if (val !== undefined) el.placeholder = val;
     });
     const disp = $("#forum-lang-display");
     if (disp) disp.textContent = { en: "EN", ru: "RU", ka: "GE" }[state.lang] || "EN";
@@ -991,9 +1029,18 @@
     state.lang = order[(order.indexOf(state.lang) + 1) % order.length];
     localStorage.setItem("forumLanguage", state.lang);
     localStorage.setItem("language", state.lang);
-    applyI18n();
     if (typeof window.__forumSyncLang === "function") window.__forumSyncLang();
+    else applyI18n();
     if (state.topic) renderTopic();
+    // Second pass: composer tabs use data-i18n in freshly inserted HTML; shell uses static data-i18n
+    applyI18n();
+    try {
+      document.dispatchEvent(
+        new CustomEvent("languageChanged", { detail: { lang: state.lang } }),
+      );
+    } catch (_) {
+      /* ignore */
+    }
   };
 
   window.toggleAuthModal = function () {
@@ -1012,6 +1059,6 @@
       return;
     }
     applyI18n();
-    loadTopicData();
+    loadTopicData({ bumpView: true });
   });
 })();

@@ -114,12 +114,15 @@ async function handleGet(context) {
       .all();
     topic.tags = tags || [];
 
-    // Async: increment views (don't block response)
-    context.waitUntil(
-      db.prepare("UPDATE topics SET views = COALESCE(views,0) + 1 WHERE id = ?")
-        .bind(topicId)
-        .run()
-    );
+    // Count one view per explicit client navigation — not on every refetch (reactions, edits, etc.)
+    const shouldBumpViews = url.searchParams.get("count_view") === "1";
+    if (shouldBumpViews) {
+      context.waitUntil(
+        db.prepare("UPDATE topics SET views = COALESCE(views,0) + 1 WHERE id = ?")
+          .bind(topicId)
+          .run()
+      );
+    }
 
     return json({ topic, posts: cleanPosts });
   } catch (e) {

@@ -12,6 +12,8 @@
     tab: "all",
     sort: "newest",
     search: "",
+    /** Slug of tag to filter (API `tag=`), from popular chips — not the same as text `search` */
+    tag: null,
     cursor: null,
     hasMore: true,
     loading: false,
@@ -230,6 +232,24 @@
     if (host) host.innerHTML = "";
   }
 
+  /** Rebuild topic cards from `state` so labels (Solved, replies, views, …) use current `t()` / language. */
+  function rerenderVisibleTopics() {
+    const host = $("#topics-list-container");
+    if (!host) return;
+    if (state.loading) return;
+    if (host.querySelector(".skeleton-card")) return;
+    if (state.topics && state.topics.length > 0) {
+      const frag = document.createElement("div");
+      frag.innerHTML = state.topics.map(renderTopicCard).join("");
+      host.innerHTML = "";
+      for (const el of Array.from(frag.children)) host.appendChild(el);
+      return;
+    }
+    if (host.querySelector(".empty-state")) {
+      renderEmpty();
+    }
+  }
+
   // ============================================================ Data fetching
   async function fetchTopics({ reset = false } = {}) {
     if (state.loading) return;
@@ -243,14 +263,16 @@
       renderSkeleton();
     }
 
+    // Do not send `lang`: that filters topics by *content* language (t.lang), not UI language.
+    // forumLanguage (state.lang) is only for translatable chrome; all topics should list regardless.
     const params = new URLSearchParams({
       category: state.category,
       tab: state.tab,
       sort: state.sort,
       limit: String(PAGE_SIZE),
-      lang: state.lang,
     });
     if (state.search) params.set("search", state.search);
+    if (state.tag) params.set("tag", state.tag);
     if (state.cursor) params.set("cursor", state.cursor);
 
     try {
@@ -495,7 +517,9 @@
     const search = $("#forum-search");
     if (search) {
       const onSearch = debounce(() => {
-        state.search = (search.value || "").trim();
+        const v = (search.value || "").trim();
+        state.search = v;
+        state.tag = null; // free-text search overrides tag filter from chips
         fetchTopics({ reset: true });
       }, 350);
       search.addEventListener("input", onSearch);
@@ -512,14 +536,20 @@
 
   // ============================================================ Language toggle
   function applyI18n() {
+    document.documentElement.setAttribute("lang", state.lang);
     const dict = window.APP_TRANSLATIONS?.[state.lang] || {};
+    const fall = window.APP_TRANSLATIONS?.en || {};
     $$("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
-      if (dict[key]) el.textContent = dict[key];
+      if (!key) return;
+      const val = dict[key] ?? fall[key];
+      if (val !== undefined) el.textContent = val;
     });
     $$("[data-i18n-placeholder]").forEach((el) => {
       const key = el.getAttribute("data-i18n-placeholder");
-      if (dict[key]) el.placeholder = dict[key];
+      if (!key) return;
+      const val = dict[key] ?? fall[key];
+      if (val !== undefined) el.placeholder = val;
     });
     const disp = $("#forum-lang-display");
     if (disp) disp.textContent = { en: "EN", ru: "RU", ka: "GE" }[state.lang] || "EN";
@@ -532,8 +562,16 @@
     localStorage.setItem("language", state.lang);
     applyI18n();
     renderUserCard();
-    loadCategories(); // Reload category i18n titles
+    void loadCategories(); // category titles + hero stats
     renderHeaderAuth();
+    rerenderVisibleTopics();
+    try {
+      document.dispatchEvent(
+        new CustomEvent("languageChanged", { detail: { lang: state.lang } }),
+      );
+    } catch (_) {
+      /* ignore */
+    }
   };
 
   // ============================================================ Public: filter/category/tag setters
@@ -544,9 +582,13 @@
       fetchTopics({ reset: true });
     },
     setTag(tag) {
-      state.search = `#${tag}`;
+      const slug = String(tag || "")
+        .trim()
+        .replace(/^#/, "");
+      state.tag = slug || null;
+      state.search = "";
       const input = $("#forum-search");
-      if (input) input.value = state.search;
+      if (input) input.value = slug ? `#${slug}` : "";
       fetchTopics({ reset: true });
     },
   };
@@ -562,6 +604,8 @@
     applyI18n();
     renderHeaderAuth();
     renderUserCard();
+    if ($("#hero-stats")) void loadCategories();
+    rerenderVisibleTopics();
   };
 
   // ============================================================ New topic modal

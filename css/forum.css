@@ -15,6 +15,8 @@
   .desktop-only { display: none !important; }
 }
 
+
+
 /* ------------------------------------------------------------- Base layout */
 body.forum-page {
   background: var(--color-bg-deep);
@@ -526,7 +528,7 @@ body.forum-page .footer-links a:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -1137,6 +1139,7 @@ select.sort-select:focus {
 }
 /* Several images in one <p> (incl. <br> from Markdown) — flex row + horizontal scroll */
 .post-text-images-rail {
+  cursor: pointer;
   position: relative;
   max-width: 100%;
   margin: var(--space-sm) 0;
@@ -1234,6 +1237,7 @@ select.sort-select:focus {
 }
 /* Multiple <p> each with one image — grid, wraps to new rows */
 .post-image-gallery {
+  cursor: pointer;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 6px;
@@ -1362,6 +1366,8 @@ select.sort-select:focus {
   background: rgba(255, 255, 255, 0.06);
 }
 .post-action-link--danger:hover { color: var(--color-danger); }
+.post-action-link--warn { color: var(--color-text-muted); }
+.post-action-link--warn:hover { color: var(--color-warning); background: var(--color-warning-bg); }
 /* Picker: floating palette, no white squares */
 #reaction-picker.reaction-picker-popover {
   position: fixed;
@@ -2428,7 +2434,7 @@ select.sort-select:focus {
 .topic-row .topic-main-content h3 {
   margin: 0 0 4px; font-size: 15px; font-weight: 600;
   color: var(--color-text-primary);
-  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+  display: -webkit-box; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
 }
 .topic-row .topic-meta-line {
   font-size: 12px; color: var(--color-text-muted);
