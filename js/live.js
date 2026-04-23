@@ -5,6 +5,30 @@ const NOTIFICATION_POLL_INTERVAL = 15000; // 15 seconds
 
 let pollTimer = null;
 let currentNotifications = [];
+/** Server-reported unread count; used when re-rendering after filter change */
+let lastServerUnreadCount = 0;
+/** 'all' | 'unread' */
+let notifListFilter = "all";
+
+function isNotificationUnread(n) {
+    if (!n) return false;
+    const v = n.is_read;
+    return v !== 1 && v !== true && v !== "1";
+}
+
+function notifIconClasses(raw) {
+    if (!raw || !String(raw).trim()) return "fas fa-bell";
+    const s = String(raw).trim();
+    if (/^(fas|far|fab)\s+fa-/.test(s)) return s;
+    if (s.startsWith("fa-")) return "fas " + s;
+    return "fas " + s;
+}
+
+/** Safe class attribute for Font Awesome icon <i> */
+function safeNotifIconClassAttr(s) {
+    const c = notifIconClasses(s);
+    return c.replace(/[<>"'&]/g, "").trim() || "fas fa-bell";
+}
 
 function getNotifyUser() {
     try {
@@ -36,6 +60,7 @@ function startPolling() {
 function teardownNotificationUI() {
     stopPolling();
     currentNotifications = [];
+    lastServerUnreadCount = 0;
     document.getElementById("notif-bell")?.remove();
     document.getElementById("notif-btn")?.remove();
     document.getElementById("notif-dot")?.remove();
@@ -51,6 +76,18 @@ function removeLegacyNotifNodes() {
 }
 
 /**
+ * Bell + filter row + list must mount even if /api/notifications fails (404/401/offline);
+ * otherwise logged-in users never get a header bell.
+ */
+function paintNotificationShell() {
+    if (!getNotifyUser()) return;
+    injectBellIconIfNeeded();
+    ensureNotifFilterBar();
+    syncNotifFilterTabs();
+    updateNotificationUI(lastServerUnreadCount);
+}
+
+/**
  * Call when user is logged in: mount bell, load list, start polling.
  */
 function setupNotificationsForUser() {
@@ -60,6 +97,7 @@ function setupNotificationsForUser() {
         return;
     }
     removeLegacyNotifNodes();
+    paintNotificationShell();
     loadNotifications();
     startPolling();
 }
@@ -73,6 +111,7 @@ function initNotifications() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    bindNotifPanelDelegation();
     initNotifications();
 });
 
@@ -92,23 +131,47 @@ document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && getNotifyUser()) loadNotifications();
 });
 
+function escNotif(s) {
+    if (s == null) return "";
+    return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
 async function loadNotifications() {
     const user = getNotifyUser();
     if (!user) return;
 
     try {
-        const res = await fetch(`/api/notifications?user_id=${user.id}&_=${Date.now()}`, {
-            headers: { ...authHeaders() },
-        });
-        if (!res.ok) return;
+        const res = await fetch(
+            `/api/notifications?user_id=${encodeURIComponent(user.id)}&limit=100&_=${Date.now()}`,
+            { headers: { ...authHeaders() } }
+        );
+        if (!res.ok) {
+            paintNotificationShell();
+            return;
+        }
 
         const data = await res.json();
         currentNotifications = data.notifications || [];
         const unreadCount = data.unread_count || 0;
+        lastServerUnreadCount = unreadCount;
 
         updateNotificationUI(unreadCount);
     } catch (e) {
-        console.error("Failed to load notifications", e);
+        // ERR_CONNECTION_REFUSED / offline → TypeError: Failed to fetch (not an application bug)
+        const msg = (e && e.message) || String(e);
+        const network =
+            (e && e.name === "TypeError" && /fetch|Failed to fetch|NetworkError|LOAD_FAILED/i.test(msg)) ||
+            /ERR_CONNECTION|ECONNREFUSED|network.*offline/i.test(msg);
+        if (network) {
+            console.warn("Notifications: server unreachable (start dev, or check URL/port).", msg);
+        } else {
+            console.error("Failed to load notifications", e);
+        }
+        paintNotificationShell();
     }
 }
 
@@ -120,16 +183,19 @@ function updateNotificationUI(unreadCount) {
     }
 
     const t = getTranslations();
+    const uc = unreadCount != null && unreadCount !== "" ? Number(unreadCount) : lastServerUnreadCount;
 
     // 1. Ensure Bell Icon Exists
     injectBellIconIfNeeded();
+    ensureNotifFilterBar();
+    syncNotifFilterTabs();
 
     // 2. Update Badge
     const badge = document.getElementById("notif-badge");
     if (badge) {
-        if (unreadCount > 0) {
+        if (uc > 0) {
             badge.style.display = "block";
-            badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+            badge.textContent = uc > 99 ? "99+" : String(uc);
         } else {
             badge.style.display = "none";
         }
@@ -138,45 +204,91 @@ function updateNotificationUI(unreadCount) {
     // 3. Update Dropdown List
     const list = document.getElementById("notif-list");
     if (list) {
-        if (currentNotifications.length === 0) {
+        const rows = currentNotifications.filter((n) => {
+            if (notifListFilter === "unread") return isNotificationUnread(n);
+            return true;
+        });
+        if (rows.length === 0) {
+            const emptyMsg =
+                currentNotifications.length === 0 ? t.noNotifications : t.noUnread;
+            const hint =
+                currentNotifications.length === 0 && t.noNotificationsHint
+                    ? `<p class="notif-empty-hint">${escNotif(t.noNotificationsHint)}</p>`
+                    : "";
             list.innerHTML = `
-                <div style="padding:40px 20px; text-align:center; color:#666;">
-                    <i class="far fa-bell" style="font-size:24px; margin-bottom:10px; opacity:0.5;"></i>
-                    <p style="font-size:14px;">${t.noNotifications}</p>
+                <div class="notif-empty">
+                    <i class="far fa-bell" aria-hidden="true"></i>
+                    <p>${emptyMsg}</p>
+                    ${hint}
                 </div>`;
         } else {
-            list.innerHTML = currentNotifications.map(n => renderNotificationItem(n)).join('');
+            list.innerHTML = rows.map((n) => renderNotificationItem(n)).join("");
         }
     }
 }
 
+function parseMeta(n) {
+    if (!n || !n.metadata) return {};
+    if (typeof n.metadata === "object") return n.metadata;
+    try {
+        return JSON.parse(n.metadata);
+    } catch {
+        return {};
+    }
+}
+
 function renderNotificationItem(n) {
-    const isUnread = !n.is_read;
-    const bgStyle = isUnread ? 'background: rgba(0, 102, 179, 0.1); border-left: 3px solid #0066b3;' : 'border-left: 3px solid transparent;';
+    const isUnread = isNotificationUnread(n);
+    const bgStyle = isUnread
+        ? "background: rgba(0, 102, 179, 0.1); border-left: 3px solid #0066b3;"
+        : "border-left: 3px solid transparent;";
     const time = timeAgo(n.created_at);
-    
-    // Icon mapping
-    const iconClass = n.icon || 'fa-bell';
-    const iconColor = n.type === 'like' ? '#e74c3c' : (n.type === 'solve' ? '#2ecc71' : '#3498db');
-    
-    // Fix: Escape quotes properly for HTML attribute and JS string
-    const safeText = n.text ? n.text.replace(/`/g, '\\`').replace(/"/g, '&quot;') : '';
+    const textBody = n.text || n.title || "";
+    const titleLine = n.title && n.title !== textBody ? escNotif(n.title) : "";
+    const iconIClasses = safeNotifIconClassAttr(n.icon);
+    const iconColor =
+        n.type === "like"
+            ? "#e74c3c"
+            : n.type === "solve" || n.type === "solved"
+              ? "#2ecc71"
+              : n.type === "reaction"
+                ? "#f1c40f"
+                : "#3498db";
+    const meta = parseMeta(n);
+    const topicId = meta.topic_id || meta.topicId;
+    const senderId = meta.sender_id || meta.senderId;
+    const t = getTranslations();
+    const muteLine =
+        topicId && senderId
+            ? `<div class="notif-mute-row" data-topic="${escNotif(topicId)}" data-sender="${escNotif(
+                  senderId
+              )}">
+         <button type="button" class="notif-mute-btn" data-mute="topic">${escNotif(t.muteTopic)}</button>
+         <button type="button" class="notif-mute-btn" data-mute="user">${escNotif(t.muteUser)}</button>
+       </div>`
+            : topicId
+              ? `<div class="notif-mute-row" data-topic="${escNotif(topicId)}" data-sender="">
+         <button type="button" class="notif-mute-btn" data-mute="topic">${escNotif(t.muteTopic)}</button>
+       </div>`
+              : "";
 
     return `
-        <div class="notif-item" id="notif-${n.id}" style="${bgStyle}; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; gap: 12px; align-items: start; transition: background 0.2s;">
-            <div style="font-size:16px; color:${iconColor}; margin-top: 2px;">
-                <i class="fas ${iconClass}"></i>
+        <div class="notif-item" id="notif-${n.id}" data-notif-id="${escNotif(n.id)}" style="${bgStyle}">
+            <div class="notif-item__icon" style="color:${iconColor};">
+                <i class="${iconIClasses}" aria-hidden="true"></i>
             </div>
-            <div style="flex: 1;" onclick="handleNotifClick('${n.id}', '${n.link || ""}', \`${safeText}\`)">
-                <div class="notif-text-body" style="font-weight: ${isUnread ? '600' : '400'};">
-                    ${n.text}
+            <div class="notif-item__body">
+                <div class="notif-item__content" data-nid="${escNotif(n.id)}">
+                    ${titleLine ? `<div class="notif-item__title">${titleLine}</div>` : ""}
+                    <div class="notif-text-body" style="font-weight: ${isUnread ? "600" : "400"};">${escNotif(
+                        textBody
+                    )}</div>
+                    <div class="notif-item__time">${time}</div>
                 </div>
-                <div style="font-size:11px; color:#666; margin-top:4px; display:flex; justify-content:space-between; align-items:center;">
-                    <span>${time}</span>
-                </div>
+                ${muteLine}
             </div>
-             <button onclick="deleteNotification(event, '${n.id}')" style="background:transparent; border:none; color:#444; cursor:pointer; padding:5px;" title="Remove">
-                <i class="fas fa-times"></i>
+            <button type="button" class="notif-item__dismiss" data-del="${escNotif(n.id)}" title="Remove" aria-label="Remove">
+                <i class="fas fa-times" aria-hidden="true"></i>
             </button>
         </div>
     `;
@@ -240,36 +352,42 @@ function closeNotifModal() {
 }
 window.closeNotifModal = closeNotifModal;
 
-async function handleNotifClick(id, link, fullText) {
-    // Optimistic Update: Mark as read immediately in UI
+async function handleNotifClick(id) {
+    const n = currentNotifications.find((x) => String(x.id) === String(id));
+    if (!n) return;
+    const fullText = n.text || n.title || "";
+    const link = n.link && String(n.link).trim() ? n.link : "";
+    const wasUnread = isNotificationUnread(n);
+
+    n.is_read = 1;
+    if (wasUnread) lastServerUnreadCount = Math.max(0, lastServerUnreadCount - 1);
+
+    // Optimistic Update: mark read in UI
     const el = document.getElementById(`notif-${id}`);
     if (el) {
-        el.style.background = 'transparent';
-        el.style.borderLeftColor = 'transparent';
-        const textEl = el.querySelector('.notif-text-body') || el.querySelector('div[style*="font-weight: 600"]');
-        if (textEl) {
-            textEl.style.fontWeight = '400';
-        }
+        el.style.background = "transparent";
+        el.style.borderLeftColor = "transparent";
+        const textEl = el.querySelector(".notif-text-body");
+        if (textEl) textEl.style.fontWeight = "400";
     }
-    
-    // Reduce badge count locally
+
     const badge = document.getElementById("notif-badge");
-    if(badge && badge.textContent !== '0') {
-         let count = parseInt(badge.textContent) || 0;
-         if(count > 0) count--;
-         badge.textContent = count;
-         if(count === 0) badge.style.display = 'none';
+    if (wasUnread && badge && badge.textContent !== "0") {
+        let count = parseInt(badge.textContent, 10) || 0;
+        if (count > 0) count--;
+        badge.textContent = count;
+        if (count <= 0) badge.style.display = "none";
     }
 
     try {
-        fetch(`/api/notifications/${id}/read`, { method: "POST", headers: { ...authHeaders() } }).catch(
-            (e) => console.error(e)
-        );
+        await fetch(`/api/notifications/${encodeURIComponent(id)}/read`, {
+            method: "POST",
+            headers: { ...authHeaders() },
+        }).catch((e) => console.error(e));
     } catch (e) {
         console.error(e);
     }
 
-    // Logic: Always open modal to let user read full text
     openNotificationModal(fullText, link);
 }
 
@@ -294,38 +412,163 @@ async function markAllRead() {
             body: JSON.stringify({ user_id: user.id }),
         });
     }
-    
-    // Refresh to be sure
+    lastServerUnreadCount = 0;
     setTimeout(loadNotifications, 1000);
 }
 
-async function deleteNotification(e, id) {
-    e.stopPropagation(); // Don't trigger click action
-    
-    // Optimistic UI
-    const el = document.getElementById(`notif-${id}`);
-    if(el) {
-        el.style.opacity = '0';
-        setTimeout(() => el.remove(), 300);
+async function deleteNotificationById(id) {
+    const n = currentNotifications.find((x) => String(x.id) === String(id));
+    if (n && isNotificationUnread(n)) {
+        lastServerUnreadCount = Math.max(0, lastServerUnreadCount - 1);
     }
+    currentNotifications = currentNotifications.filter((x) => String(x.id) !== String(id));
+    updateNotificationUI(lastServerUnreadCount);
 
-    // API Call
     try {
-        await fetch(`/api/notifications/${id}`, { method: "DELETE", headers: { ...authHeaders() } });
+        await fetch(`/api/notifications/${encodeURIComponent(id)}`, { method: "DELETE", headers: { ...authHeaders() } });
     } catch (err) {
         console.error("Delete failed", err);
     }
 }
 
+/** Legacy: (event, id) from inline HTML */
+async function deleteNotification(e, id) {
+    e.stopPropagation();
+    await deleteNotificationById(id);
+}
+
+async function muteNotifSource(scope, targetId) {
+    const t = getTranslations();
+    if (!getNotifyUser() || !targetId) return;
+    try {
+        const r = await fetch("/api/notifications/mute", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...authHeaders() },
+            body: JSON.stringify({ scope, target_id: String(targetId) }),
+        });
+        if (r.ok) {
+            if (typeof window.showQuickToast === "function") {
+                window.showQuickToast(t.muteOk);
+            } else if (typeof window.showSuccess === "function") {
+                window.showSuccess(t.muteOk);
+            }
+            await loadNotifications();
+        } else {
+            const err = await r.json().catch(() => ({}));
+            console.warn("mute failed", err);
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
 // === HELPERS ===
+
+function ensureNotifFilterBar() {
+    const dd = document.getElementById("notifications-dropdown");
+    if (!dd) return;
+    if (document.getElementById("notif-filter-bar")) return;
+    const t = getTranslations();
+    const bar = document.createElement("div");
+    bar.id = "notif-filter-bar";
+    bar.className = "notif-filter-bar";
+    bar.setAttribute("role", "tablist");
+    bar.innerHTML = `<button type="button" class="notif-filter" data-notif-filter="all" role="tab">${escNotif(
+        t.tabAll
+    )}</button><button type="button" class="notif-filter" data-notif-filter="unread" role="tab">${escNotif(
+        t.tabUnread
+    )}</button>`;
+    const list = document.getElementById("notif-list");
+    if (list) {
+        dd.insertBefore(bar, list);
+    } else {
+        dd.appendChild(bar);
+    }
+}
+
+function syncNotifFilterTabs() {
+    const bar = document.getElementById("notif-filter-bar");
+    if (!bar) return;
+    bar.querySelectorAll("[data-notif-filter]").forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-notif-filter") === notifListFilter);
+    });
+    bar.setAttribute("aria-label", notifListFilter === "unread" ? "unread" : "all");
+}
+
+function notifPanelClickCapture(e) {
+    const filterBtn = e.target.closest("#notif-filter-bar [data-notif-filter]");
+    if (filterBtn) {
+        e.preventDefault();
+        notifListFilter = filterBtn.getAttribute("data-notif-filter") || "all";
+        syncNotifFilterTabs();
+        updateNotificationUI(lastServerUnreadCount);
+        return;
+    }
+
+    if (!e.target.closest("#notif-list")) return;
+
+    const muteBtn = e.target.closest(".notif-mute-btn[data-mute]");
+    if (muteBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const row = muteBtn.closest(".notif-mute-row");
+        const kind = muteBtn.getAttribute("data-mute");
+        const topicId = (row && row.getAttribute("data-topic")) || "";
+        const senderId = (row && row.getAttribute("data-sender")) || "";
+        const targetId = kind === "topic" ? topicId : senderId;
+        if (targetId) {
+            void muteNotifSource(kind, targetId);
+        }
+        return;
+    }
+
+    if (e.target.closest(".notif-item__dismiss")) {
+        e.preventDefault();
+        e.stopPropagation();
+        const del = e.target.closest(".notif-item__dismiss");
+        const rawId = del && (del.getAttribute("data-del") || del.getAttribute("data-nid"));
+        if (rawId) {
+            void deleteNotificationById(rawId);
+        }
+        return;
+    }
+
+    const item = e.target.closest(".notif-item");
+    if (!item) return;
+    if (e.target.closest(".notif-mute-row")) return;
+    const content = item.querySelector(".notif-item__content[data-nid], .notif-item__content");
+    let rawId = content && content.getAttribute("data-nid");
+    if (!rawId) {
+        rawId = item.getAttribute("data-notif-id");
+    }
+    if (rawId) {
+        void handleNotifClick(rawId);
+    }
+}
+
+function bindNotifPanelDelegation() {
+    if (window.__notifPanelCapBound) return;
+    window.__notifPanelCapBound = true;
+    document.addEventListener("click", notifPanelClickCapture, true);
+}
 
 function injectBellIconIfNeeded() {
     if (!getNotifyUser()) return;
 
     const existingBtn = document.querySelector(".notification-btn") || document.getElementById("notif-btn-wrapper");
-    if (existingBtn) return; // Already there
+    if (existingBtn) {
+        // Static HTML: ensure filter bar exists
+        if (document.getElementById("notifications-dropdown") && !document.getElementById("notif-filter-bar")) {
+            ensureNotifFilterBar();
+        }
+        return; // Already there
+    }
 
-    const headerRight = document.querySelector("header .header-right") || document.querySelector("header .controls");
+    const headerRight =
+        document.querySelector("header .header-right") ||
+        document.querySelector("header .controls") ||
+        document.querySelector(".forum-header .controls") ||
+        document.querySelector("header [data-header-right]");
     if (!headerRight) return;
 
     removeLegacyNotifNodes();
@@ -333,18 +576,19 @@ function injectBellIconIfNeeded() {
     const t = getTranslations();
     const wrapper = document.createElement("div");
     wrapper.id = "notif-btn-wrapper";
-    wrapper.className = "btn notification-btn"; // Use existing class for style
-    wrapper.style.position = "relative";
+    wrapper.className = "btn btn-ghost btn-icon notification-btn";
+    wrapper.setAttribute("aria-label", t.notifications);
+    wrapper.setAttribute("title", t.notifications);
     wrapper.onclick = toggleNotifications;
     
     wrapper.innerHTML = `
-        <i class="fas fa-bell"></i>
+        <i class="fas fa-bell" aria-hidden="true"></i>
         <span id="notif-badge" class="notif-badge" style="display:none;">0</span>
         
         <div id="notifications-dropdown" class="notifications-dropdown" onclick="event.stopPropagation()">
-            <div class="notif-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="notif-header">
                 <span>${t.notifications}</span>
-                <button onclick="markAllRead()" style="background:transparent; border:none; color:var(--bmw-blue); font-size:12px; cursor:pointer;">${t.markAllRead}</button>
+                <button type="button" class="notif-action-btn" onclick="markAllRead()">${t.markAllRead}</button>
             </div>
             <div class="notif-list" id="notif-list"></div>
         </div>
@@ -386,14 +630,49 @@ function timeAgo(dateString) {
 }
 
 function getTranslations() {
-    // Simple fallback logic
-    const lang = (typeof currentForumLang !== 'undefined') ? currentForumLang : (localStorage.getItem("forumLanguage") || "en");
+    const lang = typeof currentForumLang !== "undefined" ? currentForumLang : localStorage.getItem("forumLanguage") || "en";
     const dict = {
-        en: { notifications: "Notifications", noNotifications: "No new notifications", markAllRead: "Mark all as read" },
-        ru: { notifications: "Уведомления", noNotifications: "Нет новых уведомлений", markAllRead: "Прочитать все" },
-        ka: { notifications: "შეტყობინებები", noNotifications: "ახალი შეტყობინებები არ არის", markAllRead: "ყველას წაკითხვა" }
+        en: {
+            notifications: "Notifications",
+            noNotifications: "No new notifications",
+            noNotificationsHint:
+                "Replies and emoji reactions from other members appear here. You are not notified about your own posts or reactions.",
+            noUnread: "No unread notifications",
+            markAllRead: "Mark all as read",
+            tabAll: "All",
+            tabUnread: "Unread",
+            muteTopic: "Mute this topic",
+            muteUser: "Mute this user",
+            muteOk: "Notifications from this source are muted",
+        },
+        ru: {
+            notifications: "Уведомления",
+            noNotifications: "Нет уведомлений",
+            noNotificationsHint:
+                "Ответы и реакции других участников появляются здесь. Собственные сообщения и реакции не создают уведомлений.",
+            noUnread: "Нет непрочитанных",
+            markAllRead: "Прочитать все",
+            tabAll: "Все",
+            tabUnread: "Непрочитанные",
+            muteTopic: "Отключить тему",
+            muteUser: "Отключить пользователя",
+            muteOk: "Уведомления от этого источника отключены",
+        },
+        ka: {
+            notifications: "შეტყობინებები",
+            noNotifications: "შეტყობინებები არაა",
+            noNotificationsHint:
+                "სხვა მომხმარებლების პასუხები და ემოჯი აქ გამოჩნდება. საკუთარ პოსტებსა და რეაქციებზე შეტყობინება არ იქმნება.",
+            noUnread: "წაუკითხავი არაა",
+            markAllRead: "ყველას წაკითხვა",
+            tabAll: "ყველა",
+            tabUnread: "წაუკითხავი",
+            muteTopic: "თემის გათიშვა",
+            muteUser: "მომხმარებლის გათიშვა",
+            muteOk: "შეტყობინებები გამორთულია ამ წყაროდან",
+        },
     };
-    return dict[lang] || dict['en'];
+    return dict[lang] || dict.en;
 }
 
 // Close dropdown on outside click
@@ -407,6 +686,12 @@ document.addEventListener("click", (e) => {
         }
     }
 });
+
+// Inline onclick / debugging
+window.handleNotifClick = handleNotifClick;
+window.markAllRead = markAllRead;
+window.deleteNotification = deleteNotification;
+window.muteNotifSource = muteNotifSource;
 
 // Forum.js delegates here so both pages behave the same; only logged-in users have a target.
 window.__notifications = {

@@ -6,6 +6,7 @@
 
 import { verifyToken } from "../../lib/jwt.js";
 import { checkRateLimit, RATE_LIMITS, getIpAddress } from "../../lib/rate-limit.js";
+import { insertNotificationIfAllowed } from "../../lib/forum-notifications.js";
 
 const ALLOWED_EMOJI = ["👍", "❤️", "🔥", "🚗", "🔧", "😂", "😮", "🎉"];
 
@@ -21,6 +22,56 @@ async function requireAuth(request, env) {
   if (!auth.startsWith("Bearer ")) return null;
   const token = auth.slice(7);
   return await verifyToken(token, env.JWT_SECRET || "secret-dev-key");
+}
+
+/**
+ * Opening post uses post_id = topic_id (shadow row in `posts`, see migrations/008).
+ * If that row is missing, FK to posts + "Post not found" break reactions on the first post.
+ * Heal by mirroring the topic into posts (INSERT OR IGNORE), same as 008.
+ * @param {D1Database} db
+ * @param {string} postId
+ * @returns {Promise<{ user_id: string, topic_id: string } | null>}
+ */
+async function loadPostForReactionOrCreateShadow(db, postId) {
+  if (!postId) return null;
+  let post = await db
+    .prepare("SELECT user_id, topic_id FROM posts WHERE id = ?")
+    .bind(postId)
+    .first();
+  if (post) return post;
+
+  const topic = await db
+    .prepare(
+      `SELECT id, user_id, username, content,
+              COALESCE(NULLIF(lang, ''), 'en') AS lang,
+              created_at, updated_at
+         FROM topics WHERE id = ?`
+    )
+    .bind(postId)
+    .first();
+  if (!topic) return null;
+
+  await db
+    .prepare(
+      `INSERT OR IGNORE INTO posts (id, topic_id, user_id, username, content, lang, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now')), COALESCE(?, datetime('now')))`
+    )
+    .bind(
+      topic.id,
+      topic.id,
+      topic.user_id,
+      topic.username,
+      topic.content,
+      topic.lang,
+      topic.created_at,
+      topic.updated_at
+    )
+    .run();
+
+  return await db
+    .prepare("SELECT user_id, topic_id FROM posts WHERE id = ?")
+    .bind(postId)
+    .first();
 }
 
 export async function onRequest(context) {
@@ -81,7 +132,7 @@ export async function onRequest(context) {
     if (!rl2.allowed) return json({ error: "Too many reactions from this IP." }, 429);
 
     try {
-      const post = await db.prepare("SELECT user_id FROM posts WHERE id = ?").bind(post_id).first();
+      const post = await loadPostForReactionOrCreateShadow(db, post_id);
       if (!post) return json({ error: "Post not found" }, 404);
 
       if (request.method === "DELETE") {
@@ -108,19 +159,29 @@ export async function onRequest(context) {
         .bind(crypto.randomUUID(), post_id, userId, emoji)
         .run();
 
-      // Notification (first reaction per emoji by this user → notify post author)
-      if (post.user_id && post.user_id !== userId) {
-        try {
-          await db
-            .prepare(
-              `INSERT INTO notifications (id, user_id, sender_id, type, topic_id, is_read)
-               VALUES (?, ?, ?, 'reaction', (SELECT topic_id FROM posts WHERE id = ?), 0)`
-            )
-            .bind(crypto.randomUUID(), post.user_id, userId, post_id)
-            .run();
-        } catch {
-          /* notifications table may differ on some installs */
-        }
+      if (post.user_id) {
+        const sender = await db
+          .prepare("SELECT username FROM users WHERE id = ?")
+          .bind(userId)
+          .first();
+        const un = sender?.username || "Someone";
+        const link = `/topic?id=${post.topic_id}#post-${post_id}`;
+        await insertNotificationIfAllowed(db, {
+          toUserId: post.user_id,
+          fromUserId: userId,
+          topicId: post.topic_id,
+          type: "reaction",
+          title: "Emoji reaction",
+          text: `${un} reacted with ${emoji} to your post`,
+          link,
+          icon: "fa-smile",
+          metadata: {
+            sender_id: userId,
+            post_id,
+            topic_id: post.topic_id,
+            emoji,
+          },
+        });
       }
 
       return json({ success: true, action: "added" });

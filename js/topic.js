@@ -95,6 +95,241 @@
                     .replace(/'/g, "&#039;");
   }
 
+  /**
+   * Replaces native confirm / prompt / alert with themed modals.
+   * @typedef {{ type: "confirm", message: string, title?: string, confirmText?: string, cancelText?: string, danger?: boolean }} ForumDialogConfirm
+   * @typedef {{ type: "prompt", message: string, title?: string, label?: string, placeholder?: string, confirmText?: string, cancelText?: string, requireNonEmpty?: boolean }} ForumDialogPrompt
+   * @typedef {{ type: "alert", message: string, title?: string, okText?: string, variant?: "error"|"info" }} ForumDialogAlert
+   */
+  const forumAppDialog = (function () {
+    let root = null;
+    /** @type {{ resolve: (v: any) => void, mode: string, requireNonEmpty: boolean } | null} */
+    let st = null;
+    /** @type {((e: KeyboardEvent) => void) | null} */
+    let onKey = null;
+
+    function ensure() {
+      if (root) return root;
+      root = document.createElement("div");
+      root.id = "forum-app-dialog";
+      root.className = "forum-app-dialog";
+      root.setAttribute("hidden", "");
+      root.innerHTML = `
+        <div class="forum-app-dialog__backdrop" data-fd-act="dismiss" aria-hidden="true"></div>
+        <div class="forum-app-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="forum-app-dialog-h">
+          <button type="button" class="forum-app-dialog__close" data-fd-act="dismiss" aria-label="${esc(t("dialogClose", "Close"))}"><i class="fas fa-times" aria-hidden="true"></i></button>
+          <h2 id="forum-app-dialog-h" class="forum-app-dialog__title"></h2>
+          <p class="forum-app-dialog__message"></p>
+          <p class="forum-app-dialog__err" role="alert" hidden></p>
+          <div class="forum-app-dialog__field" hidden>
+            <label for="forum-app-dialog-ta" class="forum-app-dialog__label"></label>
+            <textarea id="forum-app-dialog-ta" class="forum-app-dialog__textarea" rows="4" autocomplete="off"></textarea>
+          </div>
+          <div class="forum-app-dialog__actions">
+            <button type="button" class="btn btn-ghost" data-fd-act="secondary"></button>
+            <button type="button" class="btn btn-primary" data-fd-act="primary"></button>
+          </div>
+        </div>`;
+      document.body.appendChild(root);
+      root.addEventListener("click", (e) => {
+        const a = (/** @type {HTMLElement} */ (e.target)).closest("[data-fd-act]");
+        if (!a) return;
+        const act = a.getAttribute("data-fd-act");
+        if (act === "dismiss") return finishDismiss();
+        if (act === "primary") return clickPrimary();
+        if (act === "secondary") return finishDismiss();
+      });
+      return root;
+    }
+
+    function hideErr() {
+      const e = document.querySelector(".forum-app-dialog__err");
+      if (e) {
+        e.setAttribute("hidden", "");
+        e.textContent = "";
+      }
+    }
+
+    function showErr(msg) {
+      const e = document.querySelector(".forum-app-dialog__err");
+      if (!e) return;
+      e.textContent = msg;
+      e.removeAttribute("hidden");
+    }
+
+    function finishDismiss() {
+      if (!st) return;
+      const mode = st.mode;
+      const r = st.resolve;
+      st = null;
+      if (onKey) {
+        document.removeEventListener("keydown", onKey, true);
+        onKey = null;
+      }
+      if (root) {
+        root.setAttribute("hidden", "");
+        root.classList.remove("is-open");
+        root.classList.remove("forum-app-dialog--danger");
+        root.classList.remove("forum-app-dialog--error");
+      }
+      document.body.classList.remove("forum-app-dialog--open");
+      if (mode === "confirm") r(false);
+      else if (mode === "prompt") r(null);
+      else if (mode === "alert") r(undefined);
+    }
+
+    function closeSuccess(val) {
+      if (!st) return;
+      const r = st.resolve;
+      st = null;
+      if (onKey) {
+        document.removeEventListener("keydown", onKey, true);
+        onKey = null;
+      }
+      if (root) {
+        root.setAttribute("hidden", "");
+        root.classList.remove("is-open");
+        root.classList.remove("forum-app-dialog--danger");
+        root.classList.remove("forum-app-dialog--error");
+      }
+      document.body.classList.remove("forum-app-dialog--open");
+      r(val);
+    }
+
+    function clickPrimary() {
+      if (!st) return;
+      if (st.mode === "alert") {
+        return closeSuccess(undefined);
+      }
+      if (st.mode === "confirm") {
+        return closeSuccess(true);
+      }
+      if (st.mode === "prompt") {
+        const ta = /** @type {HTMLTextAreaElement} */ (document.getElementById("forum-app-dialog-ta"));
+        const v = (ta?.value || "").trim();
+        if (st.requireNonEmpty && !v) {
+          showErr(t("dialogFieldRequired", "Please enter a description."));
+          return;
+        }
+        hideErr();
+        return closeSuccess(v);
+      }
+    }
+
+    function bindKey() {
+      onKey = (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          finishDismiss();
+        }
+        if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && st?.mode === "prompt") {
+          e.preventDefault();
+          clickPrimary();
+        }
+      };
+      document.addEventListener("keydown", onKey, true);
+    }
+
+    /**
+     * @param {ForumDialogConfirm | ForumDialogPrompt | ForumDialogAlert} opts
+     */
+    function open(opts) {
+      return new Promise((resolve) => {
+        const dlg = ensure();
+        const type = opts.type;
+        st = {
+          resolve,
+          mode: type,
+          requireNonEmpty: type === "prompt" ? opts.requireNonEmpty !== false : true,
+        };
+        hideErr();
+
+        dlg.classList.remove("forum-app-dialog--error");
+        if (type === "confirm" && opts.danger) {
+          dlg.classList.add("forum-app-dialog--danger");
+        } else {
+          dlg.classList.remove("forum-app-dialog--danger");
+        }
+        if (type === "alert" && opts.variant === "error") {
+          dlg.classList.add("forum-app-dialog--error");
+        } else {
+          dlg.classList.remove("forum-app-dialog--error");
+        }
+
+        const titleEl = dlg.querySelector(".forum-app-dialog__title");
+        const msgEl = dlg.querySelector(".forum-app-dialog__message");
+        const field = dlg.querySelector(".forum-app-dialog__field");
+        const labelEl = dlg.querySelector(".forum-app-dialog__label");
+        const secBtn = dlg.querySelector("[data-fd-act=secondary]");
+        const okBtn = dlg.querySelector("[data-fd-act=primary]");
+
+        if (titleEl) {
+          titleEl.textContent = (opts.title || (type === "alert" ? t("dialogNotice", "Notice") : t("dialogConfirmTitle", "Confirm"))).trim();
+        }
+        if (msgEl) {
+          msgEl.textContent = opts.message || "";
+        }
+
+        if (type === "prompt") {
+          if (field) field.removeAttribute("hidden");
+          if (labelEl) {
+            labelEl.textContent = opts.label || t("dialogYourMessage", "Details");
+            labelEl.setAttribute("for", "forum-app-dialog-ta");
+          }
+          const ta = document.getElementById("forum-app-dialog-ta");
+          if (ta) {
+            ta.value = "";
+            ta.placeholder = opts.placeholder || "";
+            requestAnimationFrame(() => {
+              ta.focus();
+            });
+          }
+        } else {
+          if (field) field.setAttribute("hidden", "");
+        }
+
+        if (type === "alert") {
+          if (secBtn) {
+            secBtn.setAttribute("hidden", "");
+          }
+          if (okBtn) {
+            okBtn.removeAttribute("hidden");
+            okBtn.textContent = opts.okText || t("dialogOk", "OK");
+            okBtn.className = "btn btn-primary" + (opts.variant === "error" ? " forum-app-dialog__btn-ok" : "");
+          }
+        } else {
+          if (secBtn) {
+            secBtn.removeAttribute("hidden");
+            secBtn.textContent = type === "confirm" ? opts.cancelText || t("dialogCancel", "Cancel") : opts.cancelText || t("dialogCancel", "Cancel");
+            secBtn.className = "btn btn-ghost";
+          }
+          if (okBtn) {
+            okBtn.removeAttribute("hidden");
+            if (type === "confirm") {
+              okBtn.textContent = opts.confirmText || t("dialogOk", "OK");
+              okBtn.className = opts.danger ? "btn btn-danger" : "btn btn-primary";
+            } else {
+              okBtn.textContent = opts.confirmText || t("dialogSend", "Submit");
+              okBtn.className = "btn btn-primary";
+            }
+          }
+        }
+
+        dlg.removeAttribute("hidden");
+        dlg.classList.add("is-open");
+        document.body.classList.add("forum-app-dialog--open");
+        bindKey();
+        if (type === "alert") {
+          if (okBtn) okBtn.focus();
+        } else if (type === "confirm") {
+          if (secBtn) secBtn.focus();
+        }
+      });
+    }
+
+    return { open };
+  })();
+
   function timeAgo(dateString) {
     if (!dateString) return "";
     const clean = dateString.endsWith("Z") ? dateString : dateString + "Z";
@@ -405,6 +640,60 @@
     });
   }
 
+  /** Accessible one-line summary (aria-label) */
+  function formatReactionTooltip(emoji, reaction) {
+    const n = reaction?.count ?? 0;
+    const users = Array.isArray(reaction?.users) ? reaction.users.filter(Boolean) : [];
+    if (!users.length) {
+      return `${emoji}  ${n}`;
+    }
+    const max = 12;
+    const head = users.slice(0, max);
+    const more = users.length - max;
+    const names = more > 0
+      ? head.join(", ") + ` — +${more} ${t("reactionNamesMore", "more")}`
+      : head.join(", ");
+    return `${emoji}  ${names}`;
+  }
+
+  /** Markup: chip + styled popover with user list (no native title — CSS hover) */
+  function renderReactionPill(p, r, activeClass) {
+    const tip = formatReactionTooltip(r.emoji, r);
+    const users = Array.isArray(r.users) ? r.users.filter(Boolean) : [];
+    const listHtml =
+      users.length > 0
+        ? `<ul class="reaction-names-popover__ul">${users
+            .slice(0, 24)
+            .map((u) => `<li class="reaction-names-popover__li">${esc(u)}</li>`)
+            .join("")}${
+            users.length > 24
+              ? `<li class="reaction-names-popover__more" role="presentation">+${users.length - 24} ${esc(
+                  t("reactionNamesMore", "more")
+                )}</li>`
+              : ""
+          }</ul>`
+        : "";
+
+    const popover =
+      users.length > 0
+        ? `<span class="reaction-names-popover" role="tooltip">
+        <span class="reaction-names-popover__header">
+          <span class="reaction-names-popover__emoji" aria-hidden="true">${r.emoji}</span>
+          <span class="reaction-names-popover__meta">${esc(t("reactionWho", "Reacted"))} · <strong>${r.count}</strong></span>
+        </span>
+        ${listHtml}
+      </span>`
+        : "";
+
+    return `<span class="reaction-pill-wrap${users.length ? " has-popover" : ""}">
+      <button type="button" class="reaction-pill${activeClass}" data-react-post="${esc(p.id)}" data-emoji="${esc(
+      r.emoji
+    )}" aria-label="${esc(tip)}">
+        <span class="reaction-emoji" aria-hidden="true">${r.emoji}</span><span class="reaction-count">${r.count}</span>
+      </button>${popover}
+    </span>`;
+  }
+
   function renderPostCard(p, { isOriginal = false } = {}) {
     const solved = !!(p.is_solution);
     const avatar = p.author_avatar
@@ -419,7 +708,7 @@
     const reactionsHtml = reactions.length
       ? reactions.map((r) => {
           const active = mine.has(r.emoji) ? " is-active" : "";
-          return `<button type="button" class="reaction-pill${active}" data-react-post="${esc(p.id)}" data-emoji="${esc(r.emoji)}" title="${esc(r.emoji)} ${r.count}"><span class="reaction-emoji" aria-hidden="true">${r.emoji}</span><span class="reaction-count">${r.count}</span></button>`;
+          return renderReactionPill(p, r, active);
         }).join("")
       : "";
 
@@ -757,6 +1046,7 @@
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || data.reason || "failed");
       await loadTopicData();
+      if (window.__notifications?.refresh) window.__notifications.refresh();
       const newPost = document.getElementById(`post-${data.postId}`);
       if (newPost) newPost.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (error) {
@@ -903,6 +1193,7 @@
       }
       if (errBox) errBox.textContent = "";
       await loadTopicData();
+      if (window.__notifications?.refresh) window.__notifications.refresh();
     } catch (e) {
       console.error(e);
       if (errBox) errBox.textContent = e.message || t("errorSending", "Error");
@@ -913,7 +1204,14 @@
     const q = isUnmark
       ? t("confirmUnmarkSolution", "Remove the solution mark from this post?")
       : t("confirmSolution", "Mark this post as a solution?");
-    if (!confirm(q)) return;
+    const ok = await forumAppDialog.open({
+      type: "confirm",
+      title: isUnmark ? t("unmarkSolution", "Remove solution mark") : t("markSolution", "Mark as solution"),
+      message: q,
+      confirmText: t("dialogConfirm", "OK"),
+      cancelText: t("dialogCancel", "Cancel"),
+    });
+    if (!ok) return;
     const token = localStorage.getItem("auth_token");
     const errBox = $("#reply-error");
     try {
@@ -944,7 +1242,15 @@
   }
 
   async function deletePost(postId) {
-    if (!confirm(t("confirmDelete","Delete this post?"))) return;
+    const ok = await forumAppDialog.open({
+      type: "confirm",
+      title: t("delete", "Delete"),
+      message: t("confirmDelete", "Delete this post?"),
+      confirmText: t("delete", "Delete"),
+      cancelText: t("dialogCancel", "Cancel"),
+      danger: true,
+    });
+    if (!ok) return;
     const token = localStorage.getItem("auth_token");
     const res = await fetch("/api/forum/delete", {
       method: "POST",
@@ -952,6 +1258,11 @@
       body: JSON.stringify({ type: "post", id: postId, user_id: state.user.id }),
     });
     if (res.ok) {
+      // Deleting the opening post (id === topic id) removes the whole thread on the server
+      if (String(postId) === String(state.topicId)) {
+        window.location.href = "/forum";
+        return;
+      }
       await loadTopicData();
       return;
     }
@@ -961,21 +1272,62 @@
       if (d.error) msg = d.error;
     } catch (_) { /* ignore */ }
     console.error("delete post:", msg);
-    alert(msg);
+    await forumAppDialog.open({
+      type: "alert",
+      variant: "error",
+      title: t("errorSending", "Error"),
+      message: msg,
+      okText: t("dialogOk", "OK"),
+    });
   }
 
   async function reportPost(postId) {
-    const reason = prompt(t("report","Report") + ":");
-    if (!reason) return;
+    const reason = await forumAppDialog.open({
+      type: "prompt",
+      title: t("report", "Report"),
+      message: t("reportPromptBody", "Describe what is wrong with this post. Our moderators will review your report."),
+      label: t("reportReasonLabel", "Reason"),
+      placeholder: t("reportPlaceholder", "E.g. spam, offensive content, offtopic..."),
+      confirmText: t("report", "Report"),
+      cancelText: t("dialogCancel", "Cancel"),
+    });
+    if (reason == null) return;
+    const reasonTrim = String(reason).trim();
+    if (!reasonTrim) return;
     const token = localStorage.getItem("auth_token");
     try {
-      await fetch("/api/forum/report", {
+      const res = await fetch("/api/forum/report", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ post_id: postId, reason, user_id: state.user.id }),
+        body: JSON.stringify({ post_id: postId, reason: reasonTrim, user_id: state.user.id }),
       });
-      alert(t("reportThanks","Thanks — our moderators will review it."));
-    } catch (e) { console.error(e); }
+      if (res.ok) {
+        await forumAppDialog.open({
+          type: "alert",
+          title: t("report", "Report"),
+          message: t("reportThanks", "Thanks — our moderators will review it."),
+          okText: t("dialogOk", "OK"),
+        });
+        return;
+      }
+      const d = await res.json().catch(() => ({}));
+      await forumAppDialog.open({
+        type: "alert",
+        variant: "error",
+        title: t("errorSending", "Error"),
+        message: d.error || `HTTP ${res.status}`,
+        okText: t("dialogOk", "OK"),
+      });
+    } catch (e) {
+      console.error(e);
+      await forumAppDialog.open({
+        type: "alert",
+        variant: "error",
+        title: t("errorSending", "Error"),
+        message: e.message || "Network error",
+        okText: t("dialogOk", "OK"),
+      });
+    }
   }
 
   // ========================================================== Data

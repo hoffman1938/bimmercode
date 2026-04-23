@@ -1,4 +1,5 @@
 // functions/api/forum/like.js
+import { insertNotificationIfAllowed } from "../../lib/forum-notifications.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -66,30 +67,22 @@ export async function onRequestPost(context) {
             .bind(post.user_id)
             .run();
 
-        // Notification V2
-        const metadata = JSON.stringify({
+        await insertNotificationIfAllowed(db, {
+          toUserId: post.user_id,
+          fromUserId: user_id,
+          topicId: post.topic_id,
+          type: "like",
+          title: "New like",
+          text: senderName + " liked your post",
+          link: `/topic?id=${post.topic_id}#post-${post_id}`,
+          icon: "fa-heart",
+          metadata: {
             sender_id: user_id,
             sender_name: senderName,
             topic_id: post.topic_id,
-            post_id: post_id
+            post_id,
+          },
         });
-
-        await db
-          .prepare(
-            `
-          INSERT INTO notifications (id, user_id, type, title, text, link, icon, metadata)
-          VALUES (?, ?, 'like', ?, ?, ?, 'fa-heart', ?)
-        `,
-          )
-          .bind(
-            crypto.randomUUID(),
-            post.user_id,
-            "New like",
-            senderName + " liked your post",
-            `/topic?id=${post.topic_id}#post-${post_id}`,
-            metadata
-          )
-          .run();
       }
     }
 

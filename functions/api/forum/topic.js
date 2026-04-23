@@ -9,6 +9,7 @@
 import { verifyToken } from "../../lib/jwt.js";
 import { checkRateLimit, RATE_LIMITS, getIpAddress } from "../../lib/rate-limit.js";
 import { verifyTurnstile } from "../../lib/turnstile.js";
+import { insertNotificationIfAllowed } from "../../lib/forum-notifications.js";
 
 function json(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -76,9 +77,31 @@ async function handleGet(context) {
         .bind(...postIds)
         .all();
 
+      const { results: nameRows } = await db
+        .prepare(
+          `SELECT r.post_id, r.emoji, COALESCE(u.username, '?') AS username
+             FROM reactions r
+             LEFT JOIN users u ON u.id = r.user_id
+            WHERE r.post_id IN (${placeholders})
+            ORDER BY r.post_id, r.emoji, LOWER(COALESCE(u.username, ''))`
+        )
+        .bind(...postIds)
+        .all();
+
+      const usersByKey = {};
+      for (const row of nameRows || []) {
+        const key = row.post_id + "\x1e" + row.emoji;
+        (usersByKey[key] ||= []).push(row.username);
+      }
+
       const byPost = {};
       for (const r of aggRows || []) {
-        (byPost[r.post_id] ||= []).push({ emoji: r.emoji, count: r.count });
+        const key = r.post_id + "\x1e" + r.emoji;
+        (byPost[r.post_id] ||= []).push({
+          emoji: r.emoji,
+          count: Number(r.count) || 0,
+          users: usersByKey[key] || [],
+        });
       }
 
       let mineByPost = {};
@@ -224,30 +247,35 @@ async function handlePost(context) {
       )
       .run();
 
-    // Notify OP of new reply
-    if (topic.user_id && String(topic.user_id) !== String(userId)) {
-      try {
-        const metadata = JSON.stringify({
+    // Notify topic owner + everyone who has posted in this thread (not the new author)
+    const participants = new Set();
+    if (topic.user_id) participants.add(String(topic.user_id));
+    const { results: pRows } = await db
+      .prepare(`SELECT DISTINCT user_id FROM posts WHERE topic_id = ?`)
+      .bind(data.topic_id)
+      .all();
+    for (const r of pRows || []) {
+      if (r?.user_id) participants.add(String(r.user_id));
+    }
+    participants.delete(String(userId));
+
+    for (const uid of participants) {
+      await insertNotificationIfAllowed(db, {
+        toUserId: uid,
+        fromUserId: userId,
+        topicId: data.topic_id,
+        type: "reply",
+        title: "New activity in a topic you follow",
+        text: (username || "Someone") + " posted a new reply",
+        link: `/topic?id=${data.topic_id}#post-${postId}`,
+        icon: "fa-reply",
+        metadata: {
           sender_id: userId,
           sender_name: username,
           topic_id: data.topic_id,
           post_id: postId,
-        });
-        await db
-          .prepare(
-            `INSERT INTO notifications (id, user_id, type, title, text, link, icon, metadata)
-             VALUES (?, ?, 'reply', ?, ?, ?, 'fa-reply', ?)`
-          )
-          .bind(
-            crypto.randomUUID(),
-            topic.user_id,
-            "New reply in " + topic.title,
-            (username || "Someone") + " replied to your topic",
-            `/topic?id=${data.topic_id}#post-${postId}`,
-            metadata
-          )
-          .run();
-      } catch { /* schema variance fallback */ }
+        },
+      });
     }
 
     return json({ success: true, postId }, 201);

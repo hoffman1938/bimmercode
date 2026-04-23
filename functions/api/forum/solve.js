@@ -2,6 +2,8 @@
 // Toggle is_solution on a post. Topic author only. Multiple posts can be solutions.
 // +10 / −10 reputation when marking / unmarking (not when OP marks their own post).
 
+import { insertNotificationIfAllowed } from "../../lib/forum-notifications.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -70,29 +72,22 @@ export async function onRequestPost(context) {
           .bind(user_id)
           .first();
 
-        const metadata = JSON.stringify({
-          sender_id: user_id,
-          sender_name: sender?.username,
-          topic_id: topic_id,
-          post_id: post_id,
+        await insertNotificationIfAllowed(db, {
+          toUserId: post.user_id,
+          fromUserId: user_id,
+          topicId: topic_id,
+          type: "solve",
+          title: "Solution marked",
+          text: (sender?.username || "Someone") + " marked your post as a solution",
+          link: `/topic?id=${topic_id}#post-${post_id}`,
+          icon: "fa-check-circle",
+          metadata: {
+            sender_id: user_id,
+            sender_name: sender?.username,
+            topic_id,
+            post_id,
+          },
         });
-
-        await db
-          .prepare(
-            `
-        INSERT INTO notifications (id, user_id, type, title, text, link, icon, metadata)
-        VALUES (?, ?, 'solve', ?, ?, ?, 'fa-check-circle', ?)
-      `,
-          )
-          .bind(
-            crypto.randomUUID(),
-            post.user_id,
-            "Solution marked",
-            (sender?.username || "Someone") + " marked your post as solution",
-            `/topic?id=${topic_id}#post-${post_id}`,
-            metadata,
-          )
-          .run();
       }
 
       return json({ success: true, is_solution: true });
