@@ -51,7 +51,7 @@ async function handleGet(context) {
             u.reputation   AS author_reputation
            FROM posts p
       LEFT JOIN users u ON u.id = p.user_id
-          WHERE p.topic_id = ?
+          WHERE p.topic_id = ? AND p.id != p.topic_id
           ORDER BY p.created_at ASC`
       )
       .bind(topicId)
@@ -62,8 +62,8 @@ async function handleGet(context) {
       created_at: p.created_at?.endsWith("Z") ? p.created_at : (p.created_at || "") + "Z",
     }));
 
-    // Reactions: aggregate + current-user reactions
-    const postIds = cleanPosts.map((p) => p.id);
+    // Reactions: include opening-body mirror post (posts.id = topics.id) + replies
+    const postIds = [topicId, ...cleanPosts.map((p) => p.id)];
     if (postIds.length) {
       const placeholders = postIds.map(() => "?").join(",");
       const { results: aggRows } = await db
@@ -99,6 +99,8 @@ async function handleGet(context) {
         p.reactions = byPost[p.id] || [];
         p.my_reactions = mineByPost[p.id] || [];
       }
+      topic.reactions = byPost[topicId] || [];
+      topic.my_reactions = mineByPost[topicId] || [];
     }
 
     // Tags for the topic

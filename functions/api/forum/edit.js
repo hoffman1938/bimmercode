@@ -23,6 +23,14 @@ export async function onRequestPost(context) {
       )
         .bind(content, id, user_id)
         .run();
+      // Keep opening-body mirror post in sync (id = topic id) when it exists
+      if (result.meta.changes > 0) {
+        await env.DB.prepare(
+          "UPDATE posts SET content = ? WHERE id = ? AND user_id = ?",
+        )
+          .bind(content, id, user_id)
+          .run();
+      }
     } else {
       // Обновляем Пост (ответ)
       result = await env.DB.prepare(

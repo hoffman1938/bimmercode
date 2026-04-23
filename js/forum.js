@@ -553,6 +553,17 @@
 
   window.filterTopicsByCategory = (slug) => window.__forum.setCategory(slug);
 
+  /** Call after changing `forumLanguage` outside forum.js (e.g. topic page). */
+  window.__forumSyncLang = function __forumSyncLang() {
+    state.lang =
+      localStorage.getItem("forumLanguage") ||
+      localStorage.getItem("language") ||
+      state.lang;
+    applyI18n();
+    renderHeaderAuth();
+    renderUserCard();
+  };
+
   // ============================================================ New topic modal
   window.openNewTopicModal = function openNewTopicModal() {
     if (!localStorage.getItem("auth_token")) {
@@ -774,10 +785,9 @@
     document.querySelector(".mobile-offcanvas")?.classList.toggle("active");
   };
 
-  // Notifications bell (delegated to live.js if available)
+  // Notifications: live.js only injects the bell for logged-in users; guests have no control.
   window.toggleNotifications = function toggleNotifications() {
     if (window.__notifications?.toggle) return window.__notifications.toggle();
-    alert(t("notifsComingSoon", "Notifications coming soon"));
   };
 
   // ============================================================ Boot

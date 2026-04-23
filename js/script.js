@@ -286,8 +286,7 @@ window.hideDetail = function () {
 
 // 1. Управление Модальным окном
 function toggleAuthModal() {
-  const modal = document.getElementById("auth-modal");
-  modal.classList.toggle("active");
+  document.getElementById("auth-modal")?.classList.toggle("active");
 }
 
 function switchAuthTab(tab) {
@@ -1463,6 +1462,7 @@ function closeCustomModal() {
         }, 300);
     }
 }
+window.closeCustomModal = closeCustomModal;
 
 // Override native alert
 window.alert = function(msg) {

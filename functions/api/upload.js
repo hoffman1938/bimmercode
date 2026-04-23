@@ -1,5 +1,8 @@
 // functions/api/upload.js - Hardened image upload endpoint.
 //
+// Clients should send WebP (see js/image-to-webp.js) so R2 stays small; server still accepts
+// jpeg/png/gif/webp after magic-byte checks.
+//
 // Security:
 //   - Auth required (Bearer token)
 //   - Rate-limited per user + per IP

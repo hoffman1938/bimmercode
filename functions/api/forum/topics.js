@@ -307,6 +307,7 @@ async function handlePost(context) {
 
     const topicId = crypto.randomUUID();
 
+    const lang = data.lang || "en";
     await db
       .prepare(
         `INSERT INTO topics
@@ -321,8 +322,18 @@ async function handlePost(context) {
         title,
         content,
         data.related_code || null,
-        data.lang || "en"
+        lang
       )
+      .run();
+
+    // Mirror body in `posts` (id = topic id) so reactions API has a real post_id for the opening.
+    // Triggers skip counting this row as a "reply" (id = topic_id).
+    await db
+      .prepare(
+        `INSERT INTO posts (id, topic_id, user_id, username, content, lang)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      )
+      .bind(topicId, topicId, userId, username, content, lang)
       .run();
 
     // Attach tags (comma-separated)

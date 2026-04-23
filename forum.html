@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
     <link rel="stylesheet" href="./css/forum.css?v=3.0" />
     <link rel="stylesheet" href="./css/notifications.css?v=3.0" />
+    <link rel="stylesheet" href="./css/parts-finder.css?v=3.0" />
 
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -78,10 +79,7 @@
           <i class="fas fa-globe" aria-hidden="true"></i>
           <span id="forum-lang-display">EN</span>
         </button>
-        <button class="btn btn-icon btn-ghost" id="notif-bell" onclick="toggleNotifications()" aria-label="Notifications" style="position:relative;">
-          <i class="fas fa-bell" aria-hidden="true"></i>
-          <span class="notif-dot" id="notif-dot" hidden></span>
-        </button>
+        <!-- Bell + dropdown: injected by js/live.js when logged in (not for guests) -->
         <a href="#" class="btn" id="auth-btn" onclick="toggleAuthModal(); return false;">
           <i class="fas fa-user" aria-hidden="true"></i>
           <span data-i18n="loginBtn">Login</span>
@@ -503,7 +501,7 @@
 
     <!-- ============================= CODE DETAIL MODAL (shared) ============================= -->
     <div id="code-detail-modal" class="modal">
-      <div class="modal-content" style="max-width: 680px; width: 92%;">
+      <div class="modal-content">
         <span class="close-btn" onclick="hideDetail && hideDetail()" aria-label="Close">&times;</span>
         <div id="code-detail" class="hidden"></div>
         <div id="parts-finder-container" class="hidden"></div>
@@ -518,8 +516,10 @@
 
     <script src="./js/footer.js" defer></script>
     <script src="./js/translations.js?v=3.0" defer></script>
+    <script src="./js/parts-finder.js?v=3.0" defer></script>
     <script src="./js/script.js?v=3.0" defer></script>
     <script src="./js/forum.js?v=3.0" defer></script>
     <script src="./js/live.js?v=3.0" defer></script>
+    <script src="./js/modal-escape.js?v=3.0" defer></script>
   </body>
 </html>

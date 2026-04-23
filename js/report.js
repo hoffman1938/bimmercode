@@ -80,6 +80,7 @@ function openReportModal(entityType, entityId, reportedUserId = null) {
 function closeReportModal() {
     document.getElementById('report-modal').classList.remove('active');
 }
+window.closeReportModal = closeReportModal;
 
 async function submitReport(e) {
     e.preventDefault();

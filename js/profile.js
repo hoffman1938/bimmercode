@@ -529,7 +529,12 @@
 
     try {
       if (uploadBtn) uploadBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${escapeHtml(tr("uploading","Uploading…"))}`;
-      const webp = await convertToWebP(file);
+      const conv = typeof globalThis.convertImageToWebP === "function"
+        ? globalThis.convertImageToWebP
+        : null;
+      const webp = conv
+        ? await conv(file, { maxLongEdge: 800, quality: 0.85 })
+        : await legacyConvertToWebP(file);
       const fd = new FormData();
       fd.append("file", webp);
       const token = localStorage.getItem("auth_token");
@@ -566,7 +571,8 @@
     const delBtn = $("#btn-delete-avatar"); if (delBtn) delBtn.style.display = "none";
   };
 
-  function convertToWebP(file) {
+  /** Fallback if image-to-webp.js failed to load */
+  function legacyConvertToWebP(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (ev) => {

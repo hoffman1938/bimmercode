@@ -1,38 +1,105 @@
 // js/live.js - Notification System 2.0
+// Bell + dropdown are only created for authenticated users (no guest UI).
 
 const NOTIFICATION_POLL_INTERVAL = 15000; // 15 seconds
+
+let pollTimer = null;
+let currentNotifications = [];
+
+function getNotifyUser() {
+    try {
+        const u = JSON.parse(localStorage.getItem("user_data") || "null");
+        return u && u.id ? u : null;
+    } catch {
+        return null;
+    }
+}
+
+function authHeaders() {
+    const t = localStorage.getItem("auth_token");
+    return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
+function stopPolling() {
+    if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+}
+
+function startPolling() {
+    if (pollTimer) return;
+    pollTimer = setInterval(loadNotifications, NOTIFICATION_POLL_INTERVAL);
+}
+
+/** Remove old static bell nodes (cached HTML) and the dropdown UI. */
+function teardownNotificationUI() {
+    stopPolling();
+    currentNotifications = [];
+    document.getElementById("notif-bell")?.remove();
+    document.getElementById("notif-btn")?.remove();
+    document.getElementById("notif-dot")?.remove();
+    const wrapper = document.getElementById("notif-btn-wrapper");
+    if (wrapper) wrapper.remove();
+    const dd = document.getElementById("notifications-dropdown");
+    if (dd) dd.classList.remove("active");
+}
+
+function removeLegacyNotifNodes() {
+    document.getElementById("notif-bell")?.remove();
+    document.getElementById("notif-btn")?.remove();
+}
+
+/**
+ * Call when user is logged in: mount bell, load list, start polling.
+ */
+function setupNotificationsForUser() {
+    const user = getNotifyUser();
+    if (!user) {
+        teardownNotificationUI();
+        return;
+    }
+    removeLegacyNotifNodes();
+    loadNotifications();
+    startPolling();
+}
+
+function initNotifications() {
+    if (getNotifyUser()) {
+        setupNotificationsForUser();
+    } else {
+        teardownNotificationUI();
+    }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     initNotifications();
 });
 
-// Handle Back/Forward Cache & Visibility
-window.addEventListener("pageshow", () => loadNotifications());
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === 'visible') loadNotifications();
+window.addEventListener("auth:changed", () => {
+    if (getNotifyUser()) {
+        setupNotificationsForUser();
+    } else {
+        teardownNotificationUI();
+    }
 });
 
-function initNotifications() {
-     // Check auth
-     const user = JSON.parse(localStorage.getItem("user_data"));
-     if (!user || !user.id) return;
+window.addEventListener("pageshow", () => {
+    if (getNotifyUser()) loadNotifications();
+});
 
-     // Initial load
-     loadNotifications();
-     
-     // Start polling
-     setInterval(loadNotifications, NOTIFICATION_POLL_INTERVAL);
-}
-
-// State
-let currentNotifications = [];
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && getNotifyUser()) loadNotifications();
+});
 
 async function loadNotifications() {
-    const user = JSON.parse(localStorage.getItem("user_data"));
-    if (!user || !user.id) return;
+    const user = getNotifyUser();
+    if (!user) return;
 
     try {
-        const res = await fetch(`/api/notifications?user_id=${user.id}&_=${Date.now()}`);
+        const res = await fetch(`/api/notifications?user_id=${user.id}&_=${Date.now()}`, {
+            headers: { ...authHeaders() },
+        });
         if (!res.ok) return;
 
         const data = await res.json();
@@ -46,6 +113,12 @@ async function loadNotifications() {
 }
 
 function updateNotificationUI(unreadCount) {
+    const user = getNotifyUser();
+    if (!user) {
+        teardownNotificationUI();
+        return;
+    }
+
     const t = getTranslations();
 
     // 1. Ensure Bell Icon Exists
@@ -165,6 +238,7 @@ function closeNotifModal() {
     const modal = document.getElementById('notif-modal');
     if(modal) modal.classList.remove('active');
 }
+window.closeNotifModal = closeNotifModal;
 
 async function handleNotifClick(id, link, fullText) {
     // Optimistic Update: Mark as read immediately in UI
@@ -187,10 +261,13 @@ async function handleNotifClick(id, link, fullText) {
          if(count === 0) badge.style.display = 'none';
     }
 
-    // API Call (Fire and forget)
     try {
-         fetch(`/api/notifications/${id}/read`, { method: 'POST' }).catch(e => console.error(e));
-    } catch (e) { console.error(e); }
+        fetch(`/api/notifications/${id}/read`, { method: "POST", headers: { ...authHeaders() } }).catch(
+            (e) => console.error(e)
+        );
+    } catch (e) {
+        console.error(e);
+    }
 
     // Logic: Always open modal to let user read full text
     openNotificationModal(fullText, link);
@@ -208,9 +285,13 @@ async function markAllRead() {
     // API Call
     const user = JSON.parse(localStorage.getItem("user_data"));
     if (user) {
-        await fetch('/api/notifications/read-all', { 
-            method: 'POST',
-            body: JSON.stringify({ user_id: user.id }) 
+        await fetch("/api/notifications/read-all", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...authHeaders(),
+            },
+            body: JSON.stringify({ user_id: user.id }),
         });
     }
     
@@ -230,7 +311,7 @@ async function deleteNotification(e, id) {
 
     // API Call
     try {
-        await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+        await fetch(`/api/notifications/${id}`, { method: "DELETE", headers: { ...authHeaders() } });
     } catch (err) {
         console.error("Delete failed", err);
     }
@@ -239,11 +320,15 @@ async function deleteNotification(e, id) {
 // === HELPERS ===
 
 function injectBellIconIfNeeded() {
+    if (!getNotifyUser()) return;
+
     const existingBtn = document.querySelector(".notification-btn") || document.getElementById("notif-btn-wrapper");
     if (existingBtn) return; // Already there
 
     const headerRight = document.querySelector("header .header-right") || document.querySelector("header .controls");
     if (!headerRight) return;
+
+    removeLegacyNotifNodes();
 
     const t = getTranslations();
     const wrapper = document.createElement("div");
@@ -265,13 +350,22 @@ function injectBellIconIfNeeded() {
         </div>
     `;
 
-    // Insert before the last element (Auth btn)
-    headerRight.insertBefore(wrapper, headerRight.lastElementChild);
+    // Insert before the last control (e.g. Login / account) so order matches design
+    if (headerRight.lastElementChild) {
+        headerRight.insertBefore(wrapper, headerRight.lastElementChild);
+    } else {
+        headerRight.appendChild(wrapper);
+    }
 }
 
 function toggleNotifications() {
+    if (!getNotifyUser()) return;
     const dd = document.getElementById("notifications-dropdown");
     if (dd) dd.classList.toggle("active");
+    else {
+        // User just logged in but UI not mounted yet
+        loadNotifications();
+    }
 }
 
 function timeAgo(dateString) {
@@ -303,13 +397,21 @@ function getTranslations() {
 }
 
 // Close dropdown on outside click
-document.addEventListener('click', (e) => {
+document.addEventListener("click", (e) => {
     const wrapper = document.getElementById("notif-btn-wrapper") || document.querySelector(".btn.notification-btn");
     const dd = document.getElementById("notifications-dropdown");
-    
-    if (wrapper && dd && dd.classList.contains('active')) {
-         if (!wrapper.contains(e.target)) {
-             dd.classList.remove("active");
-         }
+
+    if (wrapper && dd && dd.classList.contains("active")) {
+        if (!wrapper.contains(e.target)) {
+            dd.classList.remove("active");
+        }
     }
 });
+
+// Forum.js delegates here so both pages behave the same; only logged-in users have a target.
+window.__notifications = {
+    toggle: toggleNotifications,
+    refresh: loadNotifications,
+    setup: setupNotificationsForUser,
+    teardown: teardownNotificationUI,
+};
