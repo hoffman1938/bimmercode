@@ -1,41 +1,13 @@
 // functions/api/admin/users.js - List Users API (Protected)
-import { verifyToken } from "../../lib/jwt.js";
-import { requirePermission } from "../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
-  
-  // 1. Authenticate
-  const authHeader = request.headers.get("Authorization");
-  console.log("Admin API: Auth Header:", authHeader); // DEBUG
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("Admin API: No valid auth header"); // DEBUG
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-  }
-  
-  const token = authHeader.split(" ")[1];
-  const secret = env.JWT_SECRET || "secret-dev-key";
-  console.log("Admin API: Verifying token with secret length:", secret.length); // DEBUG
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
 
-  const decoded = await verifyToken(token, secret);
-  console.log("Admin API: Decoded:", decoded); // DEBUG
-  
-  if (!decoded) {
-      console.log("Admin API: Token verification failed"); // DEBUG
-      return new Response(JSON.stringify({ error: "Invalid or expired token" }), { status: 401 });
-  }
-  
-  const userId = decoded.id;
-  
-  // 2. Authorization (RBAC)
-  // Check 'view_user_details' permission
-  const checkPermission = requirePermission('view_user_details');
-  const errorResponse = await checkPermission(context, userId);
-  
-  if (errorResponse) return errorResponse;
-  
-  // 3. Logic: List Users
+  // Logic: List Users
   try {
       const url = new URL(request.url);
       const limit = parseInt(url.searchParams.get("limit")) || 20;

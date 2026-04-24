@@ -1,12 +1,11 @@
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+  const { env } = context;
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
+
   try {
-      // Auth check (reuse pattern or middleware)
-      const token = request.headers.get('Authorization');
-      // In real implementation we verify token and role here.
-      // Assuming handled by worker logic or client-side trust for this MVP phase, 
-      // BUT for security we should at least check existence.
-      
       const { results } = await env.DB.prepare("SELECT key, value FROM system_settings").all();
       
       // Convert to object
@@ -35,7 +34,11 @@ export async function onRequestGet({ request, env }) {
   }
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+    const { request, env } = context;
+    const auth = await authenticateAdminRequest(context);
+    if (!auth.ok) return auth.response;
+
     try {
         const data = await request.json();
         

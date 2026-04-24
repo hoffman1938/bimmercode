@@ -1,7 +1,11 @@
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+  const { request, env } = context;
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
+
   try {
-      // Basic Auth Check (Ideally reuse middleware, duplicate for speed here)
       const url = new URL(request.url);
       
       // 1. Page Views (Last 24h)

@@ -39,6 +39,9 @@ binding = "AI" # env.AI
 # Secrets must be set via `wrangler pages secret put <NAME>` — do NOT commit.
 #   - JWT_SECRET              : HS256 signing key for auth tokens
 #   - TURNSTILE_SECRET_KEY    : server-side Turnstile secret
+#   - PROMOTE_SECRET          : optional one-time GET /api/admin/promote?email=&secret= bootstrap
+#   - ADMIN_PANEL_EMAILS         : optional comma-separated emails that get admin_role (emergency / until DB updated)
+#   - SUPER_ADMIN_PROMOTE_EMAILS : optional; admin user may assign super_admin_role only to these emails (bootstrap)
 # Public variables (can be committed):
 # ------------------------------------------------------------------
 [vars]

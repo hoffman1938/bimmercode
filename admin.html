@@ -50,6 +50,7 @@
                 <li><a href="#" class="active" onclick="switchTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="#" onclick="switchTab('users')"><i class="fas fa-users"></i> Users</a></li>
                 <li><a href="#" onclick="switchTab('forum')"><i class="fas fa-layer-group"></i> Forum Structure</a></li>
+                <li><a href="#" onclick="switchTab('posts')"><i class="fas fa-comments"></i> Forum posts</a></li>
                 <li><a href="#" onclick="switchTab('reports')"><i class="fas fa-flag"></i> Reports</a></li>
                 <li><a href="#" onclick="switchTab('messages')"><i class="fas fa-envelope"></i> Messages</a></li>
                 <li><a href="#" onclick="switchTab('logs')"><i class="fas fa-history"></i> Audit Logs</a></li>
@@ -175,21 +176,61 @@
                 </div>
             </div>
 
+            <!-- All forum posts (search) -->
+            <div id="tab-posts" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Forum posts</h2>
+                    <div class="dashboard-header__actions forum-posts-toolbar" role="toolbar" aria-label="Search forum posts">
+                        <label for="forum-posts-search" class="visually-hidden">Search in posts and topic titles</label>
+                        <input type="search" id="forum-posts-search" class="admin-input-search" placeholder="Word or phrase in any post or topic…" autocomplete="off">
+                        <label class="forum-posts-check">
+                            <input type="checkbox" id="forum-posts-deleted-only"> Deleted only
+                        </label>
+                        <button type="button" class="action-btn" onclick="loadForumPosts(1)" title="Run search"><i class="fas fa-search"></i></button>
+                        <button type="button" class="action-btn" onclick="loadForumPosts(forumPostsPage || 1)" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+                <p class="forum-posts-hint">Search looks through every reply and the first post in each thread (title + body). Leave empty to browse all posts, newest first.</p>
+                <div class="dashboard-card">
+                    <div id="forum-posts-summary" class="forum-posts-summary" aria-live="polite"></div>
+                    <div class="table-wrap">
+                    <table class="data-table forum-posts-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Topic</th>
+                                <th>Author</th>
+                                <th>Excerpt</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="forum-posts-tbody">
+                        </tbody>
+                    </table>
+                    </div>
+                    <div id="forum-posts-loading" class="forum-posts-loading" style="display: none; text-align: center; padding: 20px;">
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading…
+                    </div>
+                    <div id="forum-posts-pagination" class="forum-posts-pagination"></div>
+                </div>
+            </div>
+
             <!-- Reports / Moderation Section -->
             <div id="tab-reports" class="dashboard-section hidden">
                 <div class="dashboard-header">
                     <h2>Moderation Queue</h2>
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <div class="tab-switcher" style="display:inline-flex;gap:4px;background:rgba(255,255,255,0.05);padding:4px;border-radius:8px;">
-                            <button class="action-btn" id="mod-tab-reports" onclick="ModDash.setTab('reports'); this.classList.add('active'); document.getElementById('mod-tab-ai').classList.remove('active');"><i class="fas fa-flag"></i> User reports</button>
-                            <button class="action-btn" id="mod-tab-ai" onclick="ModDash.setTab('ai_flagged'); this.classList.add('active'); document.getElementById('mod-tab-reports').classList.remove('active');"><i class="fas fa-robot"></i> AI flagged</button>
+                    <div class="dashboard-header__actions moderation-toolbar" role="toolbar" aria-label="Moderation filters">
+                        <div class="tab-switcher" role="tablist" aria-label="Queue type">
+                            <button type="button" class="mod-tab mod-tab--active" id="mod-tab-reports" role="tab" aria-selected="true" onclick="ModDash.setTab('reports')"><i class="fas fa-flag" aria-hidden="true"></i> User reports</button>
+                            <button type="button" class="mod-tab" id="mod-tab-ai" role="tab" aria-selected="false" onclick="ModDash.setTab('ai_flagged')"><i class="fas fa-robot" aria-hidden="true"></i> AI flagged</button>
                         </div>
-                        <select id="report-status-filter" onchange="ModDash.setStatus(this.value)">
+                        <label for="report-status-filter" class="visually-hidden">Status</label>
+                        <select id="report-status-filter" class="admin-select" onchange="ModDash.setStatus(this.value)">
                             <option value="pending">Pending</option>
                             <option value="resolved">Resolved</option>
                             <option value="dismissed">Dismissed</option>
                         </select>
-                        <button class="action-btn" onclick="ModDash.load()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                        <button type="button" class="action-btn" onclick="ModDash.load()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     </div>
                 </div>
                 

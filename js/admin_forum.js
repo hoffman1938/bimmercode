@@ -201,3 +201,119 @@ window.editCategory = openCategoryModal;
 window.deleteCategory = deleteCategory;
 window.createTag = createTag;
 window.deleteTag = deleteTag;
+
+// --- ALL FORUM POSTS (admin list + search) ---
+
+const FORUM_POSTS_PAGE_SIZE = 40;
+/** @type {number} */ window.forumPostsPage = 1;
+
+function escapeAdminHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c])
+    );
+}
+
+function adminTopicPostUrl(post) {
+    const tid = post.topic_id;
+    const isOp = String(post.id) === String(tid);
+    const base = `/topic?id=${encodeURIComponent(tid)}`;
+    return isOp ? `${base}#op` : `${base}#post-${encodeURIComponent(post.id)}`;
+}
+
+async function loadForumPosts(page) {
+    const tbody = document.getElementById("forum-posts-tbody");
+    const loading = document.getElementById("forum-posts-loading");
+    const summary = document.getElementById("forum-posts-summary");
+    const pag = document.getElementById("forum-posts-pagination");
+    if (!tbody) return;
+
+    const p = Math.max(1, parseInt(page, 10) || 1);
+    window.forumPostsPage = p;
+    const q = (document.getElementById("forum-posts-search")?.value || "").trim();
+    const onlyDel = document.getElementById("forum-posts-deleted-only")?.checked;
+
+    const offset = (p - 1) * FORUM_POSTS_PAGE_SIZE;
+    const params = new URLSearchParams({
+        limit: String(FORUM_POSTS_PAGE_SIZE),
+        offset: String(offset),
+    });
+    if (q) params.set("q", q);
+    if (onlyDel) params.set("only_deleted", "1");
+
+    if (loading) loading.style.display = "block";
+    tbody.innerHTML = "";
+    if (summary) summary.textContent = "";
+    if (pag) pag.innerHTML = "";
+
+    try {
+        const token = localStorage.getItem("auth_token");
+        const res = await fetch(`${API_URL}/admin/forum-posts?${params.toString()}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+            tbody.innerHTML = `<tr><td colspan="5" style="color:#e74c3c;padding:16px;">${escapeAdminHtml(data.error || "Request failed")}</td></tr>`;
+            return;
+        }
+
+        const total = data.total || 0;
+        const list = data.posts || [];
+        if (summary) {
+            const from = total === 0 ? 0 : offset + 1;
+            const to = offset + list.length;
+            summary.textContent =
+                `Showing ${from}–${to} of ${total}` +
+                (q ? ` · search: “${q}”` : "");
+        }
+
+        if (!list.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;opacity:0.75;">No posts found.</td></tr>';
+        } else {
+            tbody.innerHTML = list
+                .map((row) => {
+                    const del = row.is_deleted ? ' <span class="forum-posts-badge forum-posts-badge--del">deleted</span>' : "";
+                    const sol = row.is_solution ? ' <span class="forum-posts-badge">solution</span>' : "";
+                    const href = adminTopicPostUrl(row);
+                    return `
+                <tr>
+                    <td class="forum-posts-cell--date">${escapeAdminHtml(new Date(row.created_at).toLocaleString())}</td>
+                    <td class="forum-posts-cell--topic">
+                        <div class="forum-posts-topic-title">${escapeAdminHtml(row.topic_title || "—")}</div>
+                        <div class="forum-posts-meta">${escapeAdminHtml(row.category || "")} · id ${escapeAdminHtml(String(row.topic_id))}</div>
+                    </td>
+                    <td>${escapeAdminHtml(row.username || "")}</td>
+                    <td class="forum-posts-excerpt">${escapeAdminHtml((row.content_preview || row.content || "").slice(0, 500))}${del}${sol}</td>
+                    <td><a class="action-btn" href="${href}" target="_blank" rel="noopener noreferrer" title="Open in forum"><i class="fas fa-external-link-alt"></i></a></td>
+                </tr>`;
+                })
+                .join("");
+        }
+
+        const totalPages = Math.max(1, Math.ceil(total / FORUM_POSTS_PAGE_SIZE));
+        if (pag && total > 0) {
+            const prev = p > 1
+                ? `<button type="button" class="btn" onclick="loadForumPosts(${p - 1})">Prev</button>`
+                : `<button type="button" class="btn" disabled>Prev</button>`;
+            const next = p < totalPages
+                ? `<button type="button" class="btn" onclick="loadForumPosts(${p + 1})">Next</button>`
+                : `<button type="button" class="btn" disabled>Next</button>`;
+            pag.innerHTML = `<div class="forum-posts-pag-inner">${prev}<span>Page ${p} / ${totalPages}</span>${next}</div>`;
+        }
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="5" style="color:#e74c3c;padding:16px;">${escapeAdminHtml(e.message || "Error")}</td></tr>`;
+    } finally {
+        if (loading) loading.style.display = "none";
+    }
+}
+
+window.loadForumPosts = loadForumPosts;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const inp = document.getElementById("forum-posts-search");
+    if (inp && typeof debounce === "function") {
+        inp.addEventListener("input", debounce(() => loadForumPosts(1), 500));
+    }
+    const del = document.getElementById("forum-posts-deleted-only");
+    if (del) del.addEventListener("change", () => loadForumPosts(1));
+});

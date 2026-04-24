@@ -5,8 +5,7 @@
 //   reported_entity_type, reported_entity_id, reported_user_id,
 //   reason, description, status ('pending'|'resolved'|'dismissed'), moderator_id
 
-import { verifyToken } from "../../../lib/jwt.js";
-import { requirePermission } from "../../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../../lib/admin-gate.js";
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -17,14 +16,8 @@ function json(body, status = 200) {
 
 export async function onRequestGet(context) {
   const { request, env } = context;
-  const auth = request.headers.get("Authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-  const secret = env.JWT_SECRET || "secret-dev-key";
-  const payload = token ? await verifyToken(token, secret) : null;
-  if (!payload?.id) return json({ error: "Unauthorized" }, 401);
-
-  const err = await requirePermission("moderate_content")(context, payload.id);
-  if (err) return err;
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
   const tab = url.searchParams.get("tab") || "reports";

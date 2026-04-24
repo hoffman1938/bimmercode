@@ -1,14 +1,12 @@
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
   const db = env.DB;
 
-  // AUTH CHECK (Middleware logic simplified)
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader) return new Response("Unauthorized", { status: 401 });
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
 
-  // In a real app, verify JWT here. For now assuming trusted if token present (as per existing pattern in this codebase)
-  
   if (request.method === "GET") {
     try {
       // Get messages, newest first

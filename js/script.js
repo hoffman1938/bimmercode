@@ -709,8 +709,40 @@ window.logout = function () {
 // 4. MAIN LOGIC (INIT & SEARCH)
 // ==========================================
 
+function showAdminDeniedBannerIfNeeded() {
+  if (new URLSearchParams(window.location.search).get("admin") !== "denied")
+    return;
+  const h = window.location.hostname;
+  const isLocal = h === "localhost" || h === "127.0.0.1";
+  const el = document.createElement("div");
+  el.setAttribute("role", "status");
+  el.style.cssText =
+    "position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:12px 16px;background:#0f172a;color:#e2e8f0;font-size:13px;border-top:2px solid #f59e0b;font-family:system-ui,sans-serif;line-height:1.5;box-shadow:0 -4px 20px rgba(0,0,0,.3);";
+  const parts = isLocal
+    ? [
+        "<strong>Admin (локально):</strong> API вернул 403 — в локальной D1 нет роли admin для этого пользователя. ",
+        "Скопируйте <code style=\"background:#334155;padding:2px 6px;border-radius:4px;\">.dev.vars.example</code> → <code style=\"background:#334155;padding:2px 6px;border-radius:4px;\">.dev.vars</code> и задайте ",
+        "<code style=\"background:#334155;padding:2px 6px;border-radius:4px;\">ADMIN_PANEL_EMAILS=giowulaia76@gmail.com</code>, перезапустите <code style=\"background:#334155;padding:2px 6px;border-radius:4px;\">npm run dev</code> и ",
+        "войдите снова. Либо выполните <code style=\"background:#334155;padding:2px 6px;border-radius:4px;\">npm run db:migrate:local</code> и SQL из <code style=\"background:#334155;padding:2px 6px;border-radius:4px;\">scripts/sql/local_grant_admin.sql</code>. ",
+        '<button type="button" class="admin-denied-dismiss" style="margin-left:10px;padding:6px 12px;cursor:pointer;border-radius:6px;border:1px solid #94a3b8;background:#1e293b;color:#e2e8f0;">Закрыть</button>',
+      ]
+    : [
+        "<strong>Admin:</strong> access denied. Your account must have the admin or super_admin role in the production database. ",
+        '<button type="button" class="admin-denied-dismiss" style="margin-left:10px;padding:6px 12px;cursor:pointer;border-radius:6px;border:1px solid #94a3b8;background:#1e293b;color:#e2e8f0;">OK</button>',
+      ];
+  el.innerHTML = parts.join("");
+  el.querySelector(".admin-denied-dismiss").addEventListener("click", () => {
+    el.remove();
+    const u = new URL(window.location.href);
+    u.searchParams.delete("admin");
+    window.history.replaceState({}, document.title, u.pathname + u.search);
+  });
+  document.body.appendChild(el);
+}
+
 async function init() {
   try {
+    showAdminDeniedBannerIfNeeded();
     await refreshUserData();
     // 1. Инициализация (как было)
     if (typeof getMockData === "function") bmwCodes = getMockData();

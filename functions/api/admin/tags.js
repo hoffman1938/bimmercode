@@ -1,28 +1,11 @@
 // functions/api/admin/tags.js - Manage Forum Tags
-import { verifyToken } from "../../lib/jwt.js";
-import { requirePermission } from "../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 
 export async function onRequest(context) {
     const { request, env } = context;
 
-    // 1. Authenticate
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = await verifyToken(token, env.JWT_SECRET || "secret-dev-key");
-    if (!decoded) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 });
-
-    const userId = decoded.id;
-
-    // 2. Permission Check
-    // Reuse 'manage_categories' or create 'manage_tags'. For simplicity, let's use 'manage_categories' for now or 'system_settings'. 
-    // Let's stick to 'manage_categories' as "Content Management"
-    const checkPermission = requirePermission('manage_categories');
-    const authError = await checkPermission(context, userId);
-    if (authError) return authError;
+    const auth = await authenticateAdminRequest(context);
+    if (!auth.ok) return auth.response;
 
     if (request.method === 'GET') return handleGet(context);
     if (request.method === 'POST') return handlePost(context);

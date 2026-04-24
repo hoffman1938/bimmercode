@@ -1,34 +1,16 @@
 // functions/api/admin/ban.js - Ban User API (Protected)
-import { verifyToken } from "../../lib/jwt.js";
-import { requirePermission } from "../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 import { logAudit, AUDIT_ACTIONS } from "../../lib/audit.js";
 import { getIpAddress } from "../../lib/rate-limit.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  
-  // 1. Authenticate
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-  }
-  
-  const token = authHeader.split(" ")[1];
-  const secret = env.JWT_SECRET || "secret-dev-key";
-  const decoded = await verifyToken(token, secret);
-  
-  if (!decoded) {
-      return new Response(JSON.stringify({ error: "Invalid or expired token" }), { status: 401 });
-  }
-  
-  const adminId = decoded.id;
-  
-  // 2. Authorization (RBAC)
-  const checkPermission = requirePermission('ban_user'); // Requires 'ban_user' permission
-  const errorResponse = await checkPermission(context, adminId);
-  if (errorResponse) return errorResponse;
-  
-  // 3. Logic: Ban User
+
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
+  const adminId = auth.userId;
+
+  // Logic: Ban User
   try {
       const { user_id, reason, duration_hours } = await request.json();
       

@@ -29,10 +29,10 @@ CREATE TABLE IF NOT EXISTS error_code_parts (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_parts_error_code ON error_code_parts(error_code);
-CREATE INDEX idx_parts_category ON error_code_parts(part_category);
-CREATE INDEX idx_parts_oem ON error_code_parts(oem_number);
-CREATE INDEX idx_parts_priority ON error_code_parts(priority);
+CREATE INDEX IF NOT EXISTS idx_parts_error_code ON error_code_parts(error_code);
+CREATE INDEX IF NOT EXISTS idx_parts_category ON error_code_parts(part_category);
+CREATE INDEX IF NOT EXISTS idx_parts_oem ON error_code_parts(oem_number);
+CREATE INDEX IF NOT EXISTS idx_parts_priority ON error_code_parts(priority);
 
 -- =====================================================
 -- TABLE 2: PART AFFILIATE LINKS
@@ -60,10 +60,10 @@ CREATE TABLE IF NOT EXISTS part_affiliate_links (
     FOREIGN KEY (part_id) REFERENCES error_code_parts(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_links_part_id ON part_affiliate_links(part_id);
-CREATE INDEX idx_links_marketplace ON part_affiliate_links(marketplace);
-CREATE INDEX idx_links_region ON part_affiliate_links(region);
-CREATE INDEX idx_links_in_stock ON part_affiliate_links(in_stock);
+CREATE INDEX IF NOT EXISTS idx_links_part_id ON part_affiliate_links(part_id);
+CREATE INDEX IF NOT EXISTS idx_links_marketplace ON part_affiliate_links(marketplace);
+CREATE INDEX IF NOT EXISTS idx_links_region ON part_affiliate_links(region);
+CREATE INDEX IF NOT EXISTS idx_links_in_stock ON part_affiliate_links(in_stock);
 
 -- =====================================================
 -- TABLE 3: PART COMPATIBILITY
@@ -86,9 +86,9 @@ CREATE TABLE IF NOT EXISTS part_compatibility (
     FOREIGN KEY (part_id) REFERENCES error_code_parts(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_compat_part_id ON part_compatibility(part_id);
-CREATE INDEX idx_compat_series ON part_compatibility(bmw_series);
-CREATE INDEX idx_compat_engine ON part_compatibility(engine_code);
+CREATE INDEX IF NOT EXISTS idx_compat_part_id ON part_compatibility(part_id);
+CREATE INDEX IF NOT EXISTS idx_compat_series ON part_compatibility(bmw_series);
+CREATE INDEX IF NOT EXISTS idx_compat_engine ON part_compatibility(engine_code);
 
 -- =====================================================
 -- TABLE 4: PART REVIEWS
@@ -110,9 +110,9 @@ CREATE TABLE IF NOT EXISTS part_reviews (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_reviews_part_id ON part_reviews(part_id);
-CREATE INDEX idx_reviews_user_id ON part_reviews(user_id);
-CREATE INDEX idx_reviews_rating ON part_reviews(rating);
+CREATE INDEX IF NOT EXISTS idx_reviews_part_id ON part_reviews(part_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON part_reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_rating ON part_reviews(rating);
 
 -- =====================================================
 -- TABLE 5: PART PRICE HISTORY
@@ -128,8 +128,8 @@ CREATE TABLE IF NOT EXISTS part_price_history (
     FOREIGN KEY (link_id) REFERENCES part_affiliate_links(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_price_history_link_id ON part_price_history(link_id);
-CREATE INDEX idx_price_history_date ON part_price_history(recorded_at);
+CREATE INDEX IF NOT EXISTS idx_price_history_link_id ON part_price_history(link_id);
+CREATE INDEX IF NOT EXISTS idx_price_history_date ON part_price_history(recorded_at);
 
 -- =====================================================
 -- TABLE 6: PART KITS
@@ -164,8 +164,8 @@ CREATE TABLE IF NOT EXISTS part_kit_items (
     FOREIGN KEY (part_id) REFERENCES error_code_parts(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_kit_items_kit_id ON part_kit_items(kit_id);
-CREATE INDEX idx_kit_items_part_id ON part_kit_items(part_id);
+CREATE INDEX IF NOT EXISTS idx_kit_items_kit_id ON part_kit_items(kit_id);
+CREATE INDEX IF NOT EXISTS idx_kit_items_part_id ON part_kit_items(part_id);
 
 -- =====================================================
 -- TABLE 8: USER SAVED PARTS
@@ -184,5 +184,5 @@ CREATE TABLE IF NOT EXISTS user_saved_parts (
     UNIQUE(user_id, part_id)
 );
 
-CREATE INDEX idx_saved_parts_user_id ON user_saved_parts(user_id);
-CREATE INDEX idx_saved_parts_part_id ON user_saved_parts(part_id);
+CREATE INDEX IF NOT EXISTS idx_saved_parts_user_id ON user_saved_parts(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_parts_part_id ON user_saved_parts(part_id);

@@ -1,28 +1,27 @@
 // functions/api/admin/roles/assign.js - Assign User Roles
-import { verifyToken } from "../../../lib/jwt.js";
-import { requirePermission, getUserRole } from "../../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../../lib/admin-gate.js";
+import { getUserRole } from "../../../lib/permissions.js";
+
+/** Comma/semicolon emails — allow admin (non-super) to grant super_admin_role only to these accounts (bootstrap). */
+function emailInList(env, email, varName) {
+  const raw = env[varName];
+  if (!email || !raw) return false;
+  const e = String(email).trim().toLowerCase();
+  return String(raw)
+    .split(/[,;]/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(e);
+}
 
 export async function onRequestPost(context) {
     const { request, env } = context;
 
-    // 1. Authenticate
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
+    const auth = await authenticateAdminRequest(context);
+    if (!auth.ok) return auth.response;
+    const adminId = auth.userId;
 
-    const token = authHeader.split(" ")[1];
-    const decoded = await verifyToken(token, env.JWT_SECRET || "secret-dev-key");
-    if (!decoded) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 });
-
-    const adminId = decoded.id;
-
-    // 2. Permission Check
-    const checkPermission = requirePermission('assign_roles');
-    const authError = await checkPermission(context, adminId);
-    if (authError) return authError;
-
-    // 3. Logic
+    // Logic
     try {
         const { user_id, role_id, reason } = await request.json();
 
@@ -30,8 +29,6 @@ export async function onRequestPost(context) {
             return new Response(JSON.stringify({ error: "User ID and Role ID are required" }), { status: 400 });
         }
 
-        // Prevent self-demotion/promotion if needed, or check hierarchy
-        // Ideally, check if admin level > target role level
         const adminRole = await getUserRole(env, adminId);
         const targetRoleParams = await env.DB.prepare("SELECT level, name FROM roles WHERE id = ?").bind(role_id).first();
         
@@ -39,9 +36,15 @@ export async function onRequestPost(context) {
              return new Response(JSON.stringify({ error: "Invalid role ID" }), { status: 400 });
         }
 
-        // Simple hierarchy check: Admin level must be >= Target Role level
-        // Actually, strictly speaking, you shouldn't be able to assign a role higher than yours.
-        if (adminRole.level < targetRoleParams.level && adminRole.name !== 'super_admin') {
+        const isSuper = adminRole.id === "super_admin_role";
+        const targetUser = await env.DB.prepare("SELECT email FROM users WHERE id = ?").bind(user_id).first();
+        const superPromoAllowed =
+          role_id === "super_admin_role" &&
+          targetUser?.email &&
+          emailInList(env, targetUser.email, "SUPER_ADMIN_PROMOTE_EMAILS");
+
+        // Super admin can assign any; admin cannot assign a strictly higher level unless bootstrap list allows
+        if (!isSuper && adminRole.level < targetRoleParams.level && !superPromoAllowed) {
              return new Response(JSON.stringify({ error: "Cannot assign a role higher than your own" }), { status: 403 });
         }
 

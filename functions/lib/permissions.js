@@ -116,6 +116,28 @@ export async function hasRoleLevel(env, userId, minLevel) {
 }
 
 /**
+ * If `roles` rows are missing (migrations not applied) but `users.role_id` is set,
+ * we still return a valid role so admin gate and login JWT stay consistent.
+ */
+const SYNTHETIC_ROLES_BY_ID = {
+  user_role: { id: "user_role", name: "user", display_name: "User", level: 1 },
+  moderator_role: { id: "moderator_role", name: "moderator", display_name: "Moderator", level: 2 },
+  admin_role: { id: "admin_role", name: "admin", display_name: "Administrator", level: 3 },
+  super_admin_role: { id: "super_admin_role", name: "super_admin", display_name: "Super Administrator", level: 4 },
+};
+
+/** Optional env `ADMIN_PANEL_EMAILS` — comma/semicolon list, grants `admin_role` (e.g. before DB role is fixed). */
+function emailInAdminAllowlist(env, email) {
+  if (!email || !env.ADMIN_PANEL_EMAILS) return false;
+  const e = String(email).trim().toLowerCase();
+  return String(env.ADMIN_PANEL_EMAILS)
+    .split(/[,;]/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(e);
+}
+
+/**
  * Get user's role information
  * @param {Object} env - Cloudflare environment
  * @param {string} userId - User ID
@@ -123,15 +145,30 @@ export async function hasRoleLevel(env, userId, minLevel) {
  */
 export async function getUserRole(env, userId) {
   try {
+    const user = await env.DB.prepare("SELECT role_id, email FROM users WHERE id = ?")
+      .bind(userId)
+      .first();
+    if (!user) return null;
+
+    // Allowlist first: still `user_role` in DB until migration / manual UPDATE
+    if (user.email && emailInAdminAllowlist(env, user.email)) {
+      return { ...SYNTHETIC_ROLES_BY_ID.admin_role };
+    }
+
     const result = await env.DB.prepare(`
       SELECT r.* FROM users u
       JOIN roles r ON u.role_id = r.id
       WHERE u.id = ?
     `).bind(userId).first();
-    
-    return result || null;
+
+    if (result) return result;
+
+    if (user.role_id && SYNTHETIC_ROLES_BY_ID[user.role_id]) {
+      return { ...SYNTHETIC_ROLES_BY_ID[user.role_id] };
+    }
+    return null;
   } catch (error) {
-    console.error('Get user role error:', error);
+    console.error("Get user role error:", error);
     return null;
   }
 }

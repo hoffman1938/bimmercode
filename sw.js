@@ -1,4 +1,4 @@
-const CACHE_NAME = "bimmercodes-v31-ui-buttons";
+const CACHE_NAME = "bimmercodes-v32-sw-fetch-fallback";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
@@ -77,22 +77,20 @@ self.addEventListener("fetch", (event) => {
         return cachedResponse;
       }
 
-      return fetch(event.request).then((networkResponse) => {
-        // Cache new assets only if valid HTTP response
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
-        }
-
-        // DOUBLE CHECK protocol before putting to cache
-        if (url.protocol.startsWith("http")) {
+      return fetch(event.request)
+        .then((networkResponse) => {
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== "basic") {
+            return networkResponse;
+          }
+          if (url.protocol.startsWith("http")) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, responseClone);
+              cache.put(event.request, responseClone);
             });
-        }
-        
-        return networkResponse;
-      });
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request).then((c) => c || caches.match("/index.html")));
     })
   );
 });

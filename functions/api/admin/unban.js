@@ -1,20 +1,13 @@
 // functions/api/admin/unban.js - Unban User API
-import { verifyToken } from "../../lib/jwt.js";
-import { hasPermission } from "../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 import { logAudit } from "../../lib/audit.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
-  const token = authHeader.split(" ")[1];
-  const decoded = await verifyToken(token, env.JWT_SECRET || "secret-dev-key");
-  if (!decoded) return new Response("Invalid token", { status: 401 });
-
-  const adminId = decoded.id;
-  const allowed = await hasPermission(env, adminId, "ban_user"); // Reusing ban permission for unban
-  if (!allowed) return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
+  const adminId = auth.userId;
 
   try {
     const { user_id, reason } = await request.json();

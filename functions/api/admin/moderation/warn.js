@@ -4,8 +4,7 @@
 // Writes into the existing `warnings` table (schema.sql) —
 // columns: id, user_id, moderator_id, reason, severity, expires_at, is_active.
 
-import { verifyToken } from "../../../lib/jwt.js";
-import { requirePermission } from "../../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../../lib/admin-gate.js";
 import { logAudit, AUDIT_ACTIONS } from "../../../lib/audit.js";
 
 function json(body, status = 200) {
@@ -20,14 +19,9 @@ const SEVERITIES = ["minor", "major", "severe"];
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  const auth = request.headers.get("Authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-  const secret = env.JWT_SECRET || "secret-dev-key";
-  const payload = token ? await verifyToken(token, secret) : null;
-  if (!payload?.id) return json({ error: "Unauthorized" }, 401);
-
-  const err = await requirePermission("moderate_content")(context, payload.id);
-  if (err) return err;
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
+  const moderatorId = auth.userId;
 
   let body;
   try { body = await request.json(); }
@@ -56,7 +50,7 @@ export async function onRequestPost(context) {
       `INSERT INTO warnings
          (id, user_id, moderator_id, reason, severity, expires_at, is_active)
        VALUES (?, ?, ?, ?, ?, ?, 1)`
-    ).bind(id, user_id, payload.id, String(reason).slice(0, 2000), severity, expires_at).run();
+    ).bind(id, user_id, moderatorId, String(reason).slice(0, 2000), severity, expires_at).run();
 
     try {
       await env.DB.prepare(
@@ -67,7 +61,7 @@ export async function onRequestPost(context) {
 
     try {
       await logAudit(env, {
-        userId: payload.id,
+        userId: moderatorId,
         action: AUDIT_ACTIONS.WARNING_ISSUED,
         targetEntityType: "user",
         targetEntityId: user_id,

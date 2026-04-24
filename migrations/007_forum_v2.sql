@@ -7,19 +7,10 @@
 --    (base table was created in schema_v3.sql)
 -- =============================================================================
 
--- Add columns one-by-one (SQLite ALTER TABLE ADD COLUMN is idempotent-friendly
--- via PRAGMA check — but D1 does not support IF NOT EXISTS on ADD COLUMN.
--- We guard with a trick: wrap in CREATE TABLE IF NOT EXISTS first, then try alters.
--- Use the "sqlite_master pragma table_info" trick in application code if needed.
--- For D1, split migrations manually if columns already exist.
-
-ALTER TABLE categories ADD COLUMN title_en     TEXT;
-ALTER TABLE categories ADD COLUMN title_ru     TEXT;
-ALTER TABLE categories ADD COLUMN title_ka     TEXT;
-ALTER TABLE categories ADD COLUMN description_en TEXT;
-ALTER TABLE categories ADD COLUMN description_ru TEXT;
-ALTER TABLE categories ADD COLUMN description_ka TEXT;
-ALTER TABLE categories ADD COLUMN color TEXT DEFAULT '#1C69D4';
+-- i18n columns on `categories` (title_en, title_ru, …, color):
+-- Many local/remote DBs already have these (full schema or prior 007 run).
+-- Re-running ALTER … ADD COLUMN causes "duplicate column". Skipped here.
+-- If your `categories` table truly lacks them, add the same columns by hand in the D1 console.
 
 -- Backfill i18n fields from existing `title`/`description`
 UPDATE categories
@@ -102,12 +93,7 @@ FROM post_likes;
 -- =============================================================================
 -- 3) Topic metadata — last_reply_at, last_reply_user_id (for sort=recently_active)
 -- =============================================================================
-
-ALTER TABLE topics ADD COLUMN last_reply_at      TIMESTAMP;
-ALTER TABLE topics ADD COLUMN last_reply_user_id TEXT;
-ALTER TABLE topics ADD COLUMN last_reply_username TEXT;
-ALTER TABLE topics ADD COLUMN reply_count        INTEGER DEFAULT 0;
-ALTER TABLE topics ADD COLUMN hotness            REAL DEFAULT 0;
+-- Columns may already exist (prior 007 / schema). Skip ALTER to avoid duplicate column.
 
 -- Backfill from posts
 UPDATE topics

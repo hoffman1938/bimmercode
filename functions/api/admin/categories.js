@@ -1,6 +1,5 @@
 // functions/api/admin/categories.js - Manage Forum Categories
-import { verifyToken } from "../../lib/jwt.js";
-import { requirePermission } from "../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 
 // Helper to slugify title
 function slugify(text) {
@@ -14,28 +13,11 @@ function slugify(text) {
 
 export async function onRequest(context) {
     const { request, env } = context;
-    
-    // 1. Authenticate
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
-    
-    const token = authHeader.split(" ")[1];
-    const decoded = await verifyToken(token, env.JWT_SECRET || "secret-dev-key");
-    if (!decoded) {
-        return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 });
-    }
-    
-    const userId = decoded.id;
 
-    // 2. Check Permission (System Settings or Manage Categories)
-    // We'll use 'manage_categories' permission (from seed data)
-    const checkPermission = requirePermission('manage_categories');
-    const authError = await checkPermission(context, userId);
-    if (authError) return authError;
+    const auth = await authenticateAdminRequest(context);
+    if (!auth.ok) return auth.response;
 
-    // 3. Handle Methods
+    // Handle Methods
     if (request.method === 'GET') {
         return handleGet(context);
     } else if (request.method === 'POST') {

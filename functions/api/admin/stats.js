@@ -1,27 +1,11 @@
 // functions/api/admin/stats.js - Admin Dashboard Statistics
-import { verifyToken } from "../../lib/jwt.js";
-import { requirePermission } from "../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../lib/admin-gate.js";
 
 export async function onRequestGet(context) {
-    const { request, env } = context;
+    const { env } = context;
 
-    // 1. Authenticate
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = await verifyToken(token, env.JWT_SECRET || "secret-dev-key");
-    if (!decoded) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 });
-
-    const userId = decoded.id;
-
-    // 2. Permission Check (Any admin/mod with dashboard access)
-    // using 'view_audit_logs' as a proxy for generic admin read access, or 'view_user_details'
-    const checkPermission = requirePermission('view_user_details');
-    const authError = await checkPermission(context, userId);
-    if (authError) return authError;
+    const auth = await authenticateAdminRequest(context);
+    if (!auth.ok) return auth.response;
 
     try {
         // Parallel queries for performance

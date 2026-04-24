@@ -1,5 +1,10 @@
+import { authenticateAdminRequest } from "../../../lib/admin-gate.js";
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+  const { request, env } = context;
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
+
   try {
       const url = new URL(request.url);
       const parts = url.pathname.split('/');

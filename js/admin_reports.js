@@ -1,6 +1,6 @@
 // js/admin_reports.js  (Moderation Dashboard v2)
 // Works against the new endpoints:
-//   GET  /api/admin/moderation/queue?tab=reports|ai_flagged&status=open
+//   GET  /api/admin/moderation/queue?tab=reports|ai_flagged&status=pending
 //   POST /api/admin/moderation/resolve        { report_id, action, note }
 //   POST /api/admin/moderation/topic-action   { topic_id, action }
 //   POST /api/admin/moderation/warn           { user_id, reason, severity }
@@ -145,10 +145,25 @@
       </tr>`;
   }
 
+  function syncModTabs() {
+    const a = document.getElementById("mod-tab-reports");
+    const b = document.getElementById("mod-tab-ai");
+    if (!a || !b) return;
+    const isReports = activeTab === "reports";
+    a.classList.toggle("mod-tab--active", isReports);
+    b.classList.toggle("mod-tab--active", !isReports);
+    a.setAttribute("aria-selected", isReports);
+    b.setAttribute("aria-selected", !isReports);
+  }
+
   // ------------------------------------------------------------------ Global API
   window.ModDash = {
     load: fetchQueue,
-    setTab: (t) => { activeTab = t; fetchQueue(); },
+    setTab: (t) => {
+      activeTab = t;
+      syncModTabs();
+      fetchQueue();
+    },
     setStatus: (s) => { activeStatus = s; fetchQueue(); },
     resolve,
     topicAction,
@@ -156,10 +171,22 @@
   };
 
   // Backward-compatible wrappers for existing admin.html buttons
-  window.loadReports = function (status = "open") {
-    activeStatus = status === "pending" ? "open" : status;
+  // Queue API: status=pending|resolved|dismissed (legacy "open" → pending)
+  window.loadReports = function (status) {
+    if (status == null || status === "" || status === "open") {
+      activeStatus = "pending";
+    } else if (["pending", "resolved", "dismissed"].includes(String(status))) {
+      activeStatus = String(status);
+    } else {
+      activeStatus = "pending";
+    }
     activeTab = "reports";
+    syncModTabs();
+    const sel = document.getElementById("report-status-filter");
+    if (sel) sel.value = activeStatus;
     fetchQueue();
   };
   window.resolveReport = (id, action) => resolve(id, action);
+
+  syncModTabs();
 })();

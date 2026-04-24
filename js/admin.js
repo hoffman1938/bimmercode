@@ -13,25 +13,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('user-search').addEventListener('input', debounce(loadUsers, 500));
 });
 
-// Auth Check
+// Auth: valid JWT is not enough — server checks admin_role / super_admin_role.
+// Local dev: `pages dev` uses a separate local D1; run `npm run db:migrate:local` and
+// set ADMIN_PANEL_EMAILS or admin role in DB. Use admin.html or /admin (see _redirects).
 async function checkAdminAuth() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-        window.location.href = 'index.html';
+        window.location.href = 'index.html?need_login=1';
         return;
     }
 
     try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        // Basic check, real check is API call
-        // Also check if admin role
-        // For now, let's just proceed and let APIs fail if 401
+        JSON.parse(atob(token.split('.')[1]));
     } catch (e) {
         localStorage.removeItem('auth_token');
-        window.location.href = 'index.html';
+        localStorage.removeItem('user_data');
+        window.location.href = 'index.html?bad_token=1';
+        return;
     }
 
-    // Load initial tab
+    let res;
+    try {
+        res = await fetch(`${API_URL}/admin/stats`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+    } catch (e) {
+        console.error('[admin] /api/admin/stats network error', e);
+        return;
+    }
+
+    if (res.status === 401) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+        window.location.href = 'index.html?session=1';
+        return;
+    }
+    if (res.status === 403) {
+        console.warn('[admin] 403: not admin in this DB, or wrong JWT_SECRET');
+        window.location.href = 'index.html?admin=denied';
+        return;
+    }
+    if (!res.ok) {
+        console.error('[admin] /api/admin/stats HTTP', res.status);
+        return;
+    }
+
     switchTab('dashboard');
 }
 
@@ -91,6 +117,9 @@ function switchTab(tabId, context = {}) {
     if (tabId === 'forum') {
          if(typeof loadCategories === 'function') loadCategories();
          if(typeof loadTags === 'function') loadTags();
+    }
+    if (tabId === 'posts') {
+        if (typeof loadForumPosts === 'function') loadForumPosts(1);
     }
     if (tabId === 'logs') {
         if(typeof loadLogs === 'function') loadLogs();

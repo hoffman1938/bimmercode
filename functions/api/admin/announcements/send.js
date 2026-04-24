@@ -1,5 +1,10 @@
+import { authenticateAdminRequest } from "../../../lib/admin-gate.js";
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
+
   try {
       const data = await request.json();
       const { message, title } = data;

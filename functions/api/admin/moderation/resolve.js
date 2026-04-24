@@ -8,10 +8,9 @@
 //          | 'unpin'   (unpin the topic)
 //          | 'warn'    (issue warning to author — see /warn endpoint for rich version)
 //
-// Requires: permission 'moderate_content'.
+// Requires: admin or super_admin (see authenticateAdminRequest).
 
-import { verifyToken } from "../../../lib/jwt.js";
-import { requirePermission } from "../../../lib/permissions.js";
+import { authenticateAdminRequest } from "../../../lib/admin-gate.js";
 import { logAudit, AUDIT_ACTIONS } from "../../../lib/audit.js";
 
 function json(body, status = 200) {
@@ -25,14 +24,9 @@ const ACTIONS = ["approve", "remove", "lock", "unlock", "pin", "unpin", "warn"];
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const auth = request.headers.get("Authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-  const secret = env.JWT_SECRET || "secret-dev-key";
-  const payload = token ? await verifyToken(token, secret) : null;
-  if (!payload?.id) return json({ error: "Unauthorized" }, 401);
-
-  const err = await requirePermission("moderate_content")(context, payload.id);
-  if (err) return err;
+  const auth = await authenticateAdminRequest(context);
+  if (!auth.ok) return auth.response;
+  const moderatorId = auth.userId;
 
   let body;
   try { body = await request.json(); }
@@ -97,7 +91,7 @@ export async function onRequestPost(context) {
           ).bind(
             crypto.randomUUID(),
             targetUserId,
-            payload.id,
+            moderatorId,
             note || report.reason,
             "minor",
           ).run();
@@ -111,7 +105,7 @@ export async function onRequestPost(context) {
       UPDATE reports
          SET status = ?, resolution_notes = ?, moderator_id = ?, resolved_at = CURRENT_TIMESTAMP
        WHERE id = ?
-    `).bind(resolution, note ? String(note).slice(0, 1000) : action, payload.id, report_id).run();
+    `).bind(resolution, note ? String(note).slice(0, 1000) : action, moderatorId, report_id).run();
 
     // Audit log — map the action to a richer constant when possible.
     const auditAction =
@@ -125,7 +119,7 @@ export async function onRequestPost(context) {
 
     try {
       await logAudit(env, {
-        userId: payload.id,
+        userId: moderatorId,
         action: auditAction,
         targetEntityType: entityType,
         targetEntityId: entityId,
