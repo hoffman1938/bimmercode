@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="index-bento-page">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,20 +8,19 @@
   <link rel="canonical" href="https://bimmercodes.net/all">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="./css/ui-buttons.css" />
+  <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+  <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
+  <link rel="stylesheet" href="./css/forum.css?v=3.14" />
+  <link rel="stylesheet" href="./css/index-bento.css?v=6" />
   
   <!-- Google AdSense -->
   <meta name="google-adsense-account" content="ca-pub-6807738591111613">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
    crossorigin="anonymous"></script>
   <style>
-    body { font-family: system-ui, sans-serif; background: #060e1a; color: #e8edf5; margin: 0; padding: 0; }
-    header { background: rgba(6,14,26,.9); border-bottom: 1px solid rgba(0,102,179,.25); padding: 16px 24px; position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    header .header-brand { color: #fff; text-decoration: none; font-weight: bold; font-size: 1.2rem; }
-    .header-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 14px; }
-    .header-nav { font-family: "Inter", system-ui, sans-serif; }
-    .header-nav a.btn { font-size: 0.8125rem; }
-    h1 { margin: 30px 20px 10px; font-size: 1.8rem; color: #4da8ff; }
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #e8edf5; margin: 0; padding: 0; }
+    body.bmw-pattern { background: #0f172a; }
+    h1.page-title { margin: 30px 20px 10px; font-size: 1.8rem; color: #4da8ff; }
     p.desc { margin: 0 20px 30px; color: rgba(232,237,245,.6); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 0 20px 40px; }
     .card { background: #0d1b2e; border: 1px solid rgba(0,102,179,.25); border-radius: 8px; padding: 16px; transition: .2s; text-decoration: none; display: flex; flex-direction: column; }
@@ -30,17 +29,34 @@
     .code-title { color: #e8edf5; font-size: 0.9rem; line-height: 1.4; }
   </style>
 </head>
-<body>
-  <header>
-    <a href="/" class="header-brand">BimmerCodes</a>
-    <nav class="header-nav" aria-label="Site">
-      <a href="/" class="btn"><i class="fas fa-home" aria-hidden="true"></i> Home</a>
-      <a href="/vin.html" class="btn"><i class="fas fa-fingerprint" aria-hidden="true"></i> VIN</a>
-      <a href="/forum" class="btn"><i class="fas fa-comments" aria-hidden="true"></i> Forum</a>
-      <a href="/contact" class="btn"><i class="fas fa-envelope" aria-hidden="true"></i> Contact</a>
+<body class="bmw-pattern">
+  <div id="webgl-container" class="index-bento-bg" aria-hidden="true"></div>
+  <header class="forum-header index-bento">
+    <div class="logo-container index-header-brand">
+      <a class="main_logo_refr" href="/" aria-label="BimmerCodes home">
+        <div class="logo" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
+            <circle cx="50" cy="50" r="35" fill="white" />
+            <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+            <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+            <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+            <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+          </svg>
+        </div>
+        <h1 class="index-header-title">
+          BMW Diagnostic Codes <span class="index-header-title-muted">· DTC index</span>
+        </h1>
+      </a>
+    </div>
+    <nav class="controls" aria-label="Site">
+      <a href="/" class="index-header-btn btn"><i class="fas fa-home" aria-hidden="true"></i> Home</a>
+      <a href="/vin.html" class="index-header-btn btn"><i class="fas fa-fingerprint" aria-hidden="true"></i> VIN</a>
+      <a href="/forum" class="index-header-btn btn"><i class="fas fa-comments" aria-hidden="true"></i> Forum</a>
+      <a href="/contact" class="index-header-btn btn"><i class="fas fa-envelope" aria-hidden="true"></i> Contact</a>
     </nav>
   </header>
-  <h1>BMW DTC Master Index</h1>
+  <h1 class="page-title">BMW DTC Master Index</h1>
   <p class="desc">A complete directory of all 240 BMW diagnostic codes documented in our database. Select a code below to read its meaning, symptoms, and repair solutions.</p>
   
   <div class="grid">

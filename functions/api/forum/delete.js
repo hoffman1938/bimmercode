@@ -4,6 +4,8 @@
  * - "post": remove a reply, OR if id is the opening post / shadow row missing,
  *   treat as whole-topic delete (same as opening the thread from the UI on id = topicId).
  */
+import { deleteSinglePost, deleteTopicTree } from "../../lib/forum-delete.js";
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.DB;
@@ -62,14 +64,7 @@ export async function onRequestPost(context) {
         return new Response(JSON.stringify({ error: "Access denied" }), { status: 403 });
       }
 
-      await db.prepare("DELETE FROM reactions WHERE post_id = ?").bind(id).run();
-      try {
-        await db.prepare("DELETE FROM post_likes WHERE post_id = ?").bind(id).run();
-      } catch {
-        /* optional */
-      }
-
-      const result = await db.prepare("DELETE FROM posts WHERE id = ?").bind(id).run();
+      const result = await deleteSinglePost(db, id);
       if (result.meta.changes > 0) {
         return new Response(JSON.stringify({ success: true }), { status: 200 });
       }
@@ -98,21 +93,7 @@ async function deleteTopicById(db, topicId, userId, isAdmin) {
     return new Response(JSON.stringify({ error: "Topic not found" }), { status: 404 });
   }
 
-  await db
-    .prepare("DELETE FROM reactions WHERE post_id IN (SELECT id FROM posts WHERE topic_id = ?)")
-    .bind(topicId)
-    .run();
-  try {
-    await db
-      .prepare("DELETE FROM post_likes WHERE post_id IN (SELECT id FROM posts WHERE topic_id = ?)")
-      .bind(topicId)
-      .run();
-  } catch {
-    /* optional */
-  }
-
-  await db.prepare("DELETE FROM posts WHERE topic_id = ?").bind(topicId).run();
-  const result = await db.prepare("DELETE FROM topics WHERE id = ?").bind(topicId).run();
+  const result = await deleteTopicTree(db, topicId);
 
   if (result.meta.changes > 0) {
     return new Response(JSON.stringify({ success: true }), { status: 200 });

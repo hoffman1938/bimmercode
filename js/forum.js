@@ -80,6 +80,8 @@
 
   // ============================================================ Reputation badge
   function reputationLevel(rep = 0, role = "user_role") {
+    if (role === "super_admin_role")
+      return { key: "super", icon: "fa-user-shield", label: t("roleSuperAdmin", "Super admin") };
     if (role === "admin_role") return { key: "admin", icon: "fa-crown", label: t("roleAdmin", "Admin") };
     if (role === "moderator_role") return { key: "mod", icon: "fa-shield-alt", label: t("roleMod", "Moderator") };
     if (rep >= 3000) return { key: "master",  icon: "fa-star",        label: t("lvlMaster",  "Master") };
@@ -276,7 +278,10 @@
     if (state.cursor) params.set("cursor", state.cursor);
 
     try {
-      const res = await fetch(`/api/forum/topics?${params.toString()}`);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`/api/forum/topics?${params.toString()}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -380,9 +385,12 @@
   function renderCategoryOptions() {
     const select = $("#topic-category");
     if (!select) return;
-    select.innerHTML = state.categories
-      .map((c) => `<option value="${escapeHtml(c.slug)}">${escapeHtml(c.title)}</option>`)
-      .join("");
+    const optLabel = t("categoryDefault", "— Optional —");
+    select.innerHTML =
+      `<option value="">${escapeHtml(optLabel)}</option>` +
+      state.categories
+        .map((c) => `<option value="${escapeHtml(c.slug)}">${escapeHtml(c.title)}</option>`)
+        .join("");
   }
 
   // ============================================================ Tags sidebar (popular)
@@ -685,7 +693,7 @@
       const content = $("#topic-content").value.trim();
       const relatedCode = $("#topic-code").value.trim();
       const tagsRaw = $("#topic-tags").value.trim();
-      const category = $("#topic-category").value;
+      const category = ($("#topic-category")?.value || "").trim();
 
       // Related code is OPTIONAL and NEVER a blocker. We just normalize case.
       $("#topic-title-error").textContent = "";
@@ -693,7 +701,7 @@
       const body = {
         user_id: user.id,
         username: user.username,
-        category,
+        category: category || undefined,
         title,
         content,
         related_code: relatedCode ? relatedCode.toUpperCase() : null,

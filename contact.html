@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="index-bento-page">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - BimmerCodes</title>
     <meta name="description" content="Contact BimmerCodes - Report bugs, inquire about advertising, or send suggestions.">
     <link rel="stylesheet" href="./css/style.css?v=2.94">
+    <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
+    <link rel="stylesheet" href="./css/forum.css?v=3.14" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=6" />
     <link rel="stylesheet" href="./css/responsive.css?v=2.93">
     <link rel="stylesheet" href="./css/notifications.css?v=2.93">
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
@@ -183,22 +187,40 @@
         .info-text strong { display: block; color: white; font-size: 13px; margin-bottom: 3px; }
         .info-text span { color: #888; font-size: 12px; }
 
-        /* ─── Header override ─── */
-        header { background: rgba(10,12,16,0.95); backdrop-filter: blur(15px); }
     </style>
 </head>
 <body class="bmw-pattern">
-    <header>
-        <a href="/" class="logo-container">
-            <div class="logo"><i class="fas fa-envelope" style="color:#0066b3"></i></div>
-            <h1>BimmerCodes <span style="color:var(--bmw-sky)">Contact</span></h1>
-        </a>
+    <div id="webgl-container" class="index-bento-bg" aria-hidden="true"></div>
+    <header class="forum-header index-bento">
+        <div class="logo-container index-header-brand">
+            <a class="main_logo_refr" href="/" aria-label="BimmerCodes home">
+                <div class="logo" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
+                        <circle cx="50" cy="50" r="35" fill="white" />
+                        <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+                        <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+                        <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+                        <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+                    </svg>
+                </div>
+                <h1 class="index-header-title">
+                    BMW Diagnostic Codes <span class="index-header-title-muted">· Contact</span>
+                </h1>
+            </a>
+        </div>
         <div class="controls">
-            <a href="/" class="btn"><i class="fas fa-home"></i> <span data-i18n="homeBtn">Home</span></a>
-            <a href="/vin.html" class="btn"><i class="fas fa-fingerprint"></i> <span data-i18n="vinBtn">VIN</span></a>
-            <a href="/forum" class="btn"><i class="fas fa-comments"></i> <span data-i18n="forumBtn">Forum</span></a>
-            <button class="btn" onclick="switchPageLang()">
-                <i class="fas fa-globe"></i> <span id="page-lang-display">EN</span>
+            <a href="/" class="index-header-btn btn" title="Home">
+                <i class="fas fa-home" aria-hidden="true"></i> <span data-i18n="homeBtn">Home</span>
+            </a>
+            <a href="/vin.html" class="index-header-btn btn" title="VIN Check">
+                <i class="fas fa-fingerprint" aria-hidden="true"></i> <span data-i18n="vinBtn">VIN</span>
+            </a>
+            <a href="/forum" class="index-header-btn btn">
+                <i class="fas fa-comments" aria-hidden="true"></i> <span data-i18n="forumBtn">Forum</span>
+            </a>
+            <button type="button" class="index-header-btn btn" onclick="switchPageLang()" title="Language">
+                <i class="fas fa-globe" aria-hidden="true"></i> <span id="page-lang-display">EN</span>
             </button>
         </div>
     </header>

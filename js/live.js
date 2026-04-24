@@ -160,6 +160,7 @@ async function loadNotifications() {
         lastServerUnreadCount = unreadCount;
 
         updateNotificationUI(unreadCount);
+        await loadMutesPanel();
     } catch (e) {
         // ERR_CONNECTION_REFUSED / offline → TypeError: Failed to fetch (not an application bug)
         const msg = (e && e.message) || String(e);
@@ -172,6 +173,134 @@ async function loadNotifications() {
             console.error("Failed to load notifications", e);
         }
         paintNotificationShell();
+    }
+}
+
+/** Muted users/topics management (GET /api/notifications/mute + DELETE unmute) */
+async function loadMutesPanel() {
+    const user = getNotifyUser();
+    if (!user) return;
+    const t = getTranslations();
+    const dd = document.getElementById("notifications-dropdown");
+    const list = document.getElementById("notif-list");
+    if (!dd || !list) return;
+    let section = document.getElementById("notif-mutes-section");
+    if (!section) {
+        section = document.createElement("div");
+        section.id = "notif-mutes-section";
+        section.className = "notif-mutes-section";
+        dd.insertBefore(section, list);
+    }
+    try {
+        const res = await fetch("/api/notifications/mute", { headers: { ...authHeaders() } });
+        if (!res.ok) {
+            section.innerHTML = "";
+            section.hidden = true;
+            return;
+        }
+        const data = await res.json();
+        const mutes = data.mutes || [];
+        if (mutes.length === 0) {
+            section.innerHTML = "";
+            section.hidden = true;
+            return;
+        }
+        const userIds = mutes.filter((m) => m && m.scope === "user").map((m) => m.target_id);
+        const uniqueUser = [...new Set(userIds.map(String))];
+        const nameMap = new Map();
+        await Promise.all(
+            uniqueUser.map(async (id) => {
+                try {
+                    const r = await fetch(`/api/user/get?id=${encodeURIComponent(id)}`);
+                    if (r.ok) {
+                        const u = await r.json();
+                        if (u && u.username) nameMap.set(id, u.username);
+                    }
+                } catch {
+                    /* ignore */
+                }
+            })
+        );
+        const topicIds = mutes.filter((m) => m && m.scope === "topic").map((m) => m.target_id);
+        const titleMap = new Map();
+        await Promise.all(
+            [...new Set(topicIds.map(String))].map(async (id) => {
+                try {
+                    const r = await fetch(`/api/forum/topic?id=${encodeURIComponent(id)}&user_id=`);
+                    if (r.ok) {
+                        const d = await r.json();
+                        if (d.topic && d.topic.title) titleMap.set(id, d.topic.title);
+                    }
+                } catch {
+                    /* ignore */
+                }
+            })
+        );
+        const rows = mutes.map((m) => {
+            if (!m) return "";
+            const scope = m.scope;
+            const tid = escNotif(m.target_id);
+            if (scope === "user") {
+                const un = nameMap.get(String(m.target_id)) || t.mutedUserFallback;
+                return `<li class="notif-mute-source-row">
+      <i class="fas fa-user" aria-hidden="true"></i>
+      <span class="notif-mute-source-label" title="${tid}">${escNotif(un)}</span>
+      <button type="button" class="notif-mute-unmute-btn" data-notif-unmute data-notif-unmute-scope="user" data-notif-unmute-target="${tid}">${escNotif(
+          t.unmute
+      )}</button>
+    </li>`;
+            }
+            if (scope === "topic") {
+                const title = titleMap.get(String(m.target_id)) || t.mutedTopicFallback;
+                return `<li class="notif-mute-source-row">
+      <i class="fas fa-comments" aria-hidden="true"></i>
+      <span class="notif-mute-source-label" title="${tid}">${escNotif(title)}</span>
+      <button type="button" class="notif-mute-unmute-btn" data-notif-unmute data-notif-unmute-scope="topic" data-notif-unmute-target="${tid}">${escNotif(
+          t.unmute
+      )}</button>
+    </li>`;
+            }
+            return "";
+        });
+        section.hidden = false;
+        section.innerHTML = `<div class="notif-mutes-header">${escNotif(t.mutedSourcesLabel)}</div><ul class="notif-mutes-list">${rows.join("")}</ul>`;
+    } catch (e) {
+        console.error("loadMutesPanel", e);
+        section.innerHTML = "";
+        section.hidden = true;
+    }
+}
+
+async function unmuteNotifSource(scope, targetId) {
+    const t = getTranslations();
+    if (!getNotifyUser() || !targetId) return;
+    const s = String(scope || "");
+    if (s !== "topic" && s !== "user") return;
+    try {
+        const r = await fetch("/api/notifications/mute", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", ...authHeaders() },
+            body: JSON.stringify({ scope: s, target_id: String(targetId) }),
+        });
+        if (r.ok) {
+            if (typeof window.showQuickToast === "function") {
+                window.showQuickToast(t.unmuteOk);
+            } else if (typeof window.showSuccess === "function") {
+                window.showSuccess(t.unmuteOk);
+            }
+            try {
+                document.dispatchEvent(new CustomEvent("notification-mutes-changed", { detail: { scope: s, target_id: String(targetId) } }));
+            } catch {
+                /* ignore */
+            }
+            await loadMutesPanel();
+            await loadNotifications();
+        } else {
+            const err = await r.json().catch(() => ({}));
+            console.warn("unmute failed", err);
+        }
+    } catch (e) {
+        console.error(e);
     }
 }
 
@@ -211,15 +340,10 @@ function updateNotificationUI(unreadCount) {
         if (rows.length === 0) {
             const emptyMsg =
                 currentNotifications.length === 0 ? t.noNotifications : t.noUnread;
-            const hint =
-                currentNotifications.length === 0 && t.noNotificationsHint
-                    ? `<p class="notif-empty-hint">${escNotif(t.noNotificationsHint)}</p>`
-                    : "";
             list.innerHTML = `
                 <div class="notif-empty">
                     <i class="far fa-bell" aria-hidden="true"></i>
                     <p>${emptyMsg}</p>
-                    ${hint}
                 </div>`;
         } else {
             list.innerHTML = rows.map((n) => renderNotificationItem(n)).join("");
@@ -505,6 +629,16 @@ function notifPanelClickCapture(e) {
         return;
     }
 
+    const unmuteBtn = e.target.closest("[data-notif-unmute]");
+    if (unmuteBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const scope = unmuteBtn.getAttribute("data-notif-unmute-scope");
+        const tid = unmuteBtn.getAttribute("data-notif-unmute-target");
+        if (scope && tid) void unmuteNotifSource(scope, tid);
+        return;
+    }
+
     if (!e.target.closest("#notif-list")) return;
 
     const muteBtn = e.target.closest(".notif-mute-btn[data-mute]");
@@ -576,7 +710,7 @@ function injectBellIconIfNeeded() {
     const t = getTranslations();
     const wrapper = document.createElement("div");
     wrapper.id = "notif-btn-wrapper";
-    wrapper.className = "btn btn-ghost btn-icon notification-btn";
+    wrapper.className = "btn index-header-btn btn-icon notification-btn";
     wrapper.setAttribute("aria-label", t.notifications);
     wrapper.setAttribute("title", t.notifications);
     wrapper.onclick = toggleNotifications;
@@ -635,8 +769,6 @@ function getTranslations() {
         en: {
             notifications: "Notifications",
             noNotifications: "No new notifications",
-            noNotificationsHint:
-                "Replies and emoji reactions from other members appear here. You are not notified about your own posts or reactions.",
             noUnread: "No unread notifications",
             markAllRead: "Mark all as read",
             tabAll: "All",
@@ -644,12 +776,15 @@ function getTranslations() {
             muteTopic: "Mute this topic",
             muteUser: "Mute this user",
             muteOk: "Notifications from this source are muted",
+            mutedSourcesLabel: "Muted",
+            unmute: "Unmute",
+            unmuteOk: "Notifications restored",
+            mutedUserFallback: "User",
+            mutedTopicFallback: "Topic",
         },
         ru: {
             notifications: "Уведомления",
             noNotifications: "Нет уведомлений",
-            noNotificationsHint:
-                "Ответы и реакции других участников появляются здесь. Собственные сообщения и реакции не создают уведомлений.",
             noUnread: "Нет непрочитанных",
             markAllRead: "Прочитать все",
             tabAll: "Все",
@@ -657,12 +792,15 @@ function getTranslations() {
             muteTopic: "Отключить тему",
             muteUser: "Отключить пользователя",
             muteOk: "Уведомления от этого источника отключены",
+            mutedSourcesLabel: "Отключено",
+            unmute: "Включить",
+            unmuteOk: "Уведомления снова включены",
+            mutedUserFallback: "Пользователь",
+            mutedTopicFallback: "Тема",
         },
         ka: {
             notifications: "შეტყობინებები",
             noNotifications: "შეტყობინებები არაა",
-            noNotificationsHint:
-                "სხვა მომხმარებლების პასუხები და ემოჯი აქ გამოჩნდება. საკუთარ პოსტებსა და რეაქციებზე შეტყობინება არ იქმნება.",
             noUnread: "წაუკითხავი არაა",
             markAllRead: "ყველას წაკითხვა",
             tabAll: "ყველა",
@@ -670,6 +808,11 @@ function getTranslations() {
             muteTopic: "თემის გათიშვა",
             muteUser: "მომხმარებლის გათიშვა",
             muteOk: "შეტყობინებები გამორთულია ამ წყაროდან",
+            mutedSourcesLabel: "გამორთული",
+            unmute: "ჩართვა",
+            unmuteOk: "შეტყობინებები ისევ ჩართულია",
+            mutedUserFallback: "მომხმარებელი",
+            mutedTopicFallback: "თემა",
         },
     };
     return dict[lang] || dict.en;
@@ -699,4 +842,6 @@ window.__notifications = {
     refresh: loadNotifications,
     setup: setupNotificationsForUser,
     teardown: teardownNotificationUI,
+    unmute: unmuteNotifSource,
+    refreshMutes: loadMutesPanel,
 };

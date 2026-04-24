@@ -10,6 +10,7 @@ import { verifyToken } from "../../lib/jwt.js";
 import { checkRateLimit, RATE_LIMITS, getIpAddress } from "../../lib/rate-limit.js";
 import { verifyTurnstile } from "../../lib/turnstile.js";
 import { insertNotificationIfAllowed } from "../../lib/forum-notifications.js";
+import { getViewerIdFromRequest, getBlockedUserIdsForBlocker } from "../../lib/user-blocks.js";
 
 function json(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -43,25 +44,59 @@ async function handleGet(context) {
 
     if (!topic) return json({ error: "Not found" }, 404);
 
+    const viewerId = await getViewerIdFromRequest(request, env);
+    const blockedIds = viewerId ? await getBlockedUserIdsForBlocker(db, viewerId) : [];
+    const blockedSet = new Set(blockedIds.map(String));
+    if (topic.user_id && blockedSet.has(String(topic.user_id))) {
+      return json(
+        { error: "You have blocked this user. The topic is hidden for you.", code: "author_blocked" },
+        403
+      );
+    }
+
     const { results: posts } = await db
       .prepare(
         `SELECT
             p.*,
             u.avatar_url   AS author_avatar,
             u.role_id      AS author_role,
-            u.reputation   AS author_reputation
+            u.reputation   AS author_reputation,
+            rp.username    AS reply_to_username,
+            SUBSTR(COALESCE(rp.content, ''), 1, 360) AS reply_to_excerpt
            FROM posts p
       LEFT JOIN users u ON u.id = p.user_id
+      LEFT JOIN posts rp ON rp.id = p.reply_to_post_id
           WHERE p.topic_id = ? AND p.id != p.topic_id
           ORDER BY p.created_at ASC`
       )
       .bind(topicId)
       .all();
 
-    const cleanPosts = (posts || []).map((p) => ({
-      ...p,
-      created_at: p.created_at?.endsWith("Z") ? p.created_at : (p.created_at || "") + "Z",
-    }));
+    const cleanPosts = (posts || []).map((p) => {
+      if (p.user_id && blockedSet.has(String(p.user_id))) {
+        return {
+          id: p.id,
+          topic_id: p.topic_id,
+          user_id: p.user_id,
+          created_at: p.created_at?.endsWith("Z") ? p.created_at : (p.created_at || "") + "Z",
+          is_hidden: true,
+          username: "—",
+          content: "",
+          author_avatar: null,
+          author_reputation: 0,
+          author_role: null,
+          is_solution: 0,
+          reply_to_post_id: null,
+          reply_to_username: null,
+          reply_to_excerpt: null,
+        };
+      }
+      return {
+        ...p,
+        created_at: p.created_at?.endsWith("Z") ? p.created_at : (p.created_at || "") + "Z",
+        is_hidden: false,
+      };
+    });
 
     // Reactions: include opening-body mirror post (posts.id = topics.id) + replies
     const postIds = [topicId, ...cleanPosts.map((p) => p.id)];
@@ -119,8 +154,13 @@ async function handleGet(context) {
       }
 
       for (const p of cleanPosts) {
-        p.reactions = byPost[p.id] || [];
-        p.my_reactions = mineByPost[p.id] || [];
+        if (p.is_hidden) {
+          p.reactions = [];
+          p.my_reactions = [];
+        } else {
+          p.reactions = byPost[p.id] || [];
+          p.my_reactions = mineByPost[p.id] || [];
+        }
       }
       topic.reactions = byPost[topicId] || [];
       topic.my_reactions = mineByPost[topicId] || [];
@@ -156,6 +196,15 @@ async function handleGet(context) {
 async function handlePost(context) {
   const { request, env } = context;
   const db = env.DB;
+  /** Background work after reply insert: does not add to TTFB. */
+  const scheduleAfterReply = (p) => {
+    const job = Promise.resolve(p).catch((e) => {
+      console.error("forum reply follow-up:", e?.message || e);
+    });
+    if (typeof context?.waitUntil === "function") {
+      context.waitUntil(job);
+    }
+  };
 
   try {
     // --- 1. Auth -----------------------------------------------------
@@ -174,13 +223,15 @@ async function handlePost(context) {
     const userId = payload.id;
     const username = payload.username || data.username || "user";
 
-    // --- 2. Rate limit ----------------------------------------------
+    // --- 2. Rate limit (parallel — two round-trips in one) -----------------
     const ip = getIpAddress(request);
-    const rl1 = await checkRateLimit(env, userId, RATE_LIMITS.FORUM_REPLY);
+    const [rl1, rl2] = await Promise.all([
+      checkRateLimit(env, userId, RATE_LIMITS.FORUM_REPLY),
+      checkRateLimit(env, `ip:${ip}`, RATE_LIMITS.FORUM_REPLY),
+    ]);
     if (!rl1.allowed) {
       return json({ error: "Too many replies. Slow down." }, 429);
     }
-    const rl2 = await checkRateLimit(env, `ip:${ip}`, RATE_LIMITS.FORUM_REPLY);
     if (!rl2.allowed) {
       return json({ error: "Too many replies from this IP." }, 429);
     }
@@ -211,7 +262,7 @@ async function handlePost(context) {
     if (topic.is_locked) return json({ error: "Topic is locked" }, 423);
     if (topic.is_archived) return json({ error: "Topic is archived" }, 423);
 
-    // Moderation hook
+    // Moderation: stopword filter only (no Workers LLM) — full AI for forum replies was adding seconds to TTFB.
     let moderation = { decision: "approve" };
     try {
       const mod = await import("../../lib/moderation.js").catch(() => null);
@@ -219,6 +270,7 @@ async function handlePost(context) {
         moderation = await mod.moderateText(env, content, {
           entityType: "post",
           userId,
+          skipAi: true,
         });
       }
     } catch { /* fail open */ }
@@ -230,12 +282,25 @@ async function handlePost(context) {
       }, 422);
     }
 
+    let replyToPostId = null;
+    if (data.reply_to_post_id != null && String(data.reply_to_post_id).trim()) {
+      const rid = String(data.reply_to_post_id).trim();
+      const parent = await db
+        .prepare("SELECT id, topic_id FROM posts WHERE id = ?")
+        .bind(rid)
+        .first();
+      if (!parent || String(parent.topic_id) !== String(data.topic_id)) {
+        return json({ error: "Invalid reply_to_post_id (not in this topic)" }, 400);
+      }
+      replyToPostId = rid;
+    }
+
     const postId = crypto.randomUUID();
 
     await db
       .prepare(
-        `INSERT INTO posts (id, topic_id, user_id, username, content, lang)
-         VALUES (?, ?, ?, ?, ?, ?)`
+        `INSERT INTO posts (id, topic_id, user_id, username, content, lang, reply_to_post_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         postId,
@@ -243,11 +308,12 @@ async function handlePost(context) {
         userId,
         username,
         content,
-        data.lang || "en"
+        data.lang || "en",
+        replyToPostId
       )
       .run();
 
-    // Notify topic owner + everyone who has posted in this thread (not the new author)
+    // Notify in background: does not block the JSON response (was serial await per participant + mute check).
     const participants = new Set();
     if (topic.user_id) participants.add(String(topic.user_id));
     const { results: pRows } = await db
@@ -259,24 +325,31 @@ async function handlePost(context) {
     }
     participants.delete(String(userId));
 
-    for (const uid of participants) {
-      await insertNotificationIfAllowed(db, {
-        toUserId: uid,
-        fromUserId: userId,
-        topicId: data.topic_id,
-        type: "reply",
-        title: "New activity in a topic you follow",
-        text: (username || "Someone") + " posted a new reply",
-        link: `/topic?id=${data.topic_id}#post-${postId}`,
-        icon: "fa-reply",
-        metadata: {
-          sender_id: userId,
-          sender_name: username,
-          topic_id: data.topic_id,
-          post_id: postId,
-        },
-      });
-    }
+    const topicId = data.topic_id;
+    const fromUid = String(userId);
+    const fromName = username || "Someone";
+    scheduleAfterReply(
+      Promise.all(
+        [...participants].map((toUid) =>
+          insertNotificationIfAllowed(db, {
+            toUserId: toUid,
+            fromUserId: userId,
+            topicId,
+            type: "reply",
+            title: "New activity in a topic you follow",
+            text: fromName + " posted a new reply",
+            link: `/topic?id=${topicId}#post-${postId}`,
+            icon: "fa-reply",
+            metadata: {
+              sender_id: fromUid,
+              sender_name: fromName,
+              topic_id: topicId,
+              post_id: postId,
+            },
+          })
+        )
+      )
+    );
 
     return json({ success: true, postId }, 201);
   } catch (e) {

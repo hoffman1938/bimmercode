@@ -2,6 +2,7 @@
 
 import { getUserLevel } from "../../lib/reputation.js";
 import { verifyToken } from "../../lib/jwt.js";
+import { isUserBlockedBy } from "../../lib/user-blocks.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -53,11 +54,30 @@ export async function onRequestGet(context) {
     }
     
     let requestorIsOwner = false;
+    let requestorId = null;
     const auth = request.headers.get("Authorization");
     if (auth?.startsWith("Bearer ")) {
       const payload = await verifyToken(auth.slice(7), env.JWT_SECRET || "secret-dev-key");
-      if (payload?.id && String(payload.id) === String(user.id)) {
-        requestorIsOwner = true;
+      if (payload?.id) {
+        requestorId = String(payload.id);
+        if (requestorId === String(user.id)) requestorIsOwner = true;
+      }
+    }
+
+    let viewerHasBlocked = false;
+    let viewerMutesNotifsFromUser = false;
+    if (requestorId && requestorId !== String(user.id)) {
+      try {
+        viewerHasBlocked = await isUserBlockedBy(env.DB, requestorId, user.id);
+        const m = await env.DB
+          .prepare(
+            "SELECT 1 AS x FROM notification_mutes WHERE user_id = ? AND scope = 'user' AND target_id = ? LIMIT 1"
+          )
+          .bind(requestorId, String(user.id))
+          .first();
+        viewerMutesNotifsFromUser = !!m;
+      } catch {
+        /* ignore */
       }
     }
 
@@ -83,6 +103,11 @@ export async function onRequestGet(context) {
       profileData.email = user.email;
     }
 
+    if (requestorId && requestorId !== String(user.id)) {
+      profileData.viewer_has_blocked = viewerHasBlocked;
+      profileData.viewer_mutes_notifs_from_user = viewerMutesNotifsFromUser;
+    }
+
     // If private and not owner, hide sensitive fields (simplified for now)
     // For now returning full data as frontend expects it and we trust client 
     // (Actual logic needs privacy check properly implemented)
@@ -90,33 +115,39 @@ export async function onRequestGet(context) {
        // profileData.bio = "Private";
     }
 
-    // 4. Stats — topics, replies, reactions-received, activity span
-    try {
-      const stats = await env.DB.prepare(`
-        SELECT
-          (SELECT COUNT(*) FROM topics WHERE user_id = ?) AS topics_count,
-          (SELECT COUNT(*) FROM posts  WHERE user_id = ?) AS posts_count,
-          (SELECT COUNT(*) FROM topics WHERE user_id = ? AND is_solved = 1) AS solved_count
-      `).bind(user.id, user.id, user.id).first();
-      profileData.stats = stats || { topics_count: 0, posts_count: 0, solved_count: 0 };
-    } catch (_) {
-      profileData.stats = { topics_count: 0, posts_count: 0, solved_count: 0 };
-    }
+    // 4. Stats — hidden from viewer if they blocked this profile user
+    const hideFromViewer = viewerHasBlocked;
+    if (!hideFromViewer) {
+      try {
+        const stats = await env.DB.prepare(`
+          SELECT
+            (SELECT COUNT(*) FROM topics WHERE user_id = ?) AS topics_count,
+            (SELECT COUNT(*) FROM posts  WHERE user_id = ?) AS posts_count,
+            (SELECT COUNT(*) FROM topics WHERE user_id = ? AND is_solved = 1) AS solved_count
+        `).bind(user.id, user.id, user.id).first();
+        profileData.stats = stats || { topics_count: 0, posts_count: 0, solved_count: 0 };
+      } catch (_) {
+        profileData.stats = { topics_count: 0, posts_count: 0, solved_count: 0 };
+      }
 
-    try {
-      const recent = await env.DB.prepare(`
-        SELECT id, title, created_at, reply_count, is_solved, is_pinned, category
-        FROM topics
-        WHERE user_id = ?
-        ORDER BY created_at DESC
-        LIMIT 5
-      `).bind(user.id).all();
-      profileData.recent_topics = (recent?.results || []).map((r) => ({
-        id: r.id, title: r.title, created_at: r.created_at,
-        reply_count: r.reply_count || 0, is_solved: !!r.is_solved,
-        is_pinned: !!r.is_pinned, category: r.category,
-      }));
-    } catch (_) {
+      try {
+        const recent = await env.DB.prepare(`
+          SELECT id, title, created_at, reply_count, is_solved, is_pinned, category
+          FROM topics
+          WHERE user_id = ?
+          ORDER BY created_at DESC
+          LIMIT 5
+        `).bind(user.id).all();
+        profileData.recent_topics = (recent?.results || []).map((r) => ({
+          id: r.id, title: r.title, created_at: r.created_at,
+          reply_count: r.reply_count || 0, is_solved: !!r.is_solved,
+          is_pinned: !!r.is_pinned, category: r.category,
+        }));
+      } catch (_) {
+        profileData.recent_topics = [];
+      }
+    } else {
+      profileData.stats = { topics_count: 0, posts_count: 0, solved_count: 0 };
       profileData.recent_topics = [];
     }
 

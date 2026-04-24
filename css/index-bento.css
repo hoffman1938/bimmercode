@@ -12,11 +12,16 @@ html.index-bento-page {
   );
 }
 
-/* Sticky header glass */
+/* Sticky header glass (home + forum + topic — add .index-bento on <header>) */
 header.index-bento {
   position: sticky;
   top: 0;
   z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
   min-height: 4rem;
   height: auto;
   padding: 0.75rem max(1rem, 3vw);
@@ -30,6 +35,81 @@ header.index-bento {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+header.index-bento .controls {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem 0.75rem;
+}
+
+/* BMW mark + title (same look on index.html and forum/topic when using .index-header-brand) */
+header.index-bento .index-header-brand {
+  display: flex;
+  min-width: 0;
+  max-width: min(100%, 22rem);
+  flex: 1;
+  align-items: center;
+}
+
+header.index-bento a.main_logo_refr {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.875rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+header.index-bento a.main_logo_refr .logo {
+  height: 2.5rem;
+  width: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+header.index-bento a.main_logo_refr .logo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (min-width: 640px) {
+  header.index-bento a.main_logo_refr .logo {
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+}
+
+header.index-bento .index-header-title {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+}
+
+@media (min-width: 640px) {
+  header.index-bento .index-header-title {
+    font-size: 1.1rem;
+  }
+}
+
+header.index-bento .index-header-title-muted {
+  color: #94a3b8;
+  font-weight: 500;
 }
 
 /* Main column — slightly wider than legacy 1100px for Bento */

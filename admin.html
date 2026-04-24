@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="index-bento-page">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - BMW Diagnostic Codes</title>
     <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
+    <link rel="stylesheet" href="./css/forum.css?v=3.14" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=6" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./css/admin.css">
@@ -16,14 +20,15 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
      crossorigin="anonymous"></script>
     </head>
-<body class="bmw-pattern">
-    <header>
-        <div class="logo-container">
-            <button id="sidebar-toggle" class="action-btn" style="margin-right: 15px; display: none;" onclick="toggleAdminSidebar()">
+<body class="bmw-pattern index-bento-page">
+    <div id="webgl-container" class="index-bento-bg" aria-hidden="true"></div>
+    <header class="forum-header index-bento">
+        <div class="logo-container index-header-brand" style="display:flex;align-items:center;gap:0.75rem;">
+            <button id="sidebar-toggle" class="action-btn" style="margin:0; display: none;" onclick="toggleAdminSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <a class="main_logo_refr" href="index.html">
-                <div class="logo">
+            <a class="main_logo_refr" href="index.html" aria-label="BimmerCodes admin">
+                <div class="logo" aria-hidden="true">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black"/>
                         <circle cx="50" cy="50" r="35" fill="white"/>
@@ -33,14 +38,16 @@
                         <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0"/>
                     </svg>
                 </div>
-                <h1>Admin Panel</h1>
+                <h1 class="index-header-title">
+                    BMW Diagnostic Codes <span class="index-header-title-muted">· Admin</span>
+                </h1>
             </a>
         </div>
         <div class="controls">
-            <a href="index.html" class="btn"><i class="fas fa-home"></i> Back to Site</a>
-            <a href="forum.html" class="btn"><i class="fas fa-comments"></i> Forum</a>
-            <a href="vin.html" class="btn"><i class="fas fa-fingerprint"></i> VIN</a>
-            <button class="btn" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <a href="index.html" class="index-header-btn btn"><i class="fas fa-home" aria-hidden="true"></i> Back to Site</a>
+            <a href="forum.html" class="index-header-btn btn"><i class="fas fa-comments" aria-hidden="true"></i> Forum</a>
+            <a href="vin.html" class="index-header-btn btn"><i class="fas fa-fingerprint" aria-hidden="true"></i> VIN</a>
+            <button type="button" class="index-header-btn btn" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout</button>
         </div>
     </header>
 

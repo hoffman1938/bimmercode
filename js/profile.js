@@ -82,8 +82,290 @@
     return { cur, nxt, pct };
   };
 
+  /** Same idea as `reputationLevel` in forum.js: site roles override rep-based "Novice". */
+  const siteRoleChip = (roleId) => {
+    const r = String(roleId || "user_role").toLowerCase();
+    if (r === "super_admin_role") {
+      return {
+        isStaff: true,
+        chipClass: "chip-super",
+        cur: { name: tr("roleSuperAdmin", "Super admin"), icon: "fa-user-shield" },
+        nxt: null,
+        pct: 1,
+      };
+    }
+    if (r === "admin_role") {
+      return {
+        isStaff: true,
+        chipClass: "chip-admin",
+        cur: { name: tr("roleAdmin", "Admin"), icon: "fa-crown" },
+        nxt: null,
+        pct: 1,
+      };
+    }
+    if (r === "moderator_role") {
+      return {
+        isStaff: true,
+        chipClass: "chip-mod",
+        cur: { name: tr("roleMod", "Moderator"), icon: "fa-shield-alt" },
+        nxt: null,
+        pct: 1,
+      };
+    }
+    if (r === "senior_moderator_role") {
+      return {
+        isStaff: true,
+        chipClass: "chip-mod",
+        cur: { name: tr("role_senior_mod", "Senior mod"), icon: "fa-user-shield" },
+        nxt: null,
+        pct: 1,
+      };
+    }
+    return null;
+  };
+
+  const profileTier = (user) => {
+    const st = siteRoleChip(user.role_id || user.role);
+    if (st) return st;
+    const li = levelInfo(user.reputation);
+    return { ...li, isStaff: false, chipClass: "" };
+  };
+
+  const roleBadgeInfo = (user) => {
+    const r = String(user.role_id || user.role || "").toLowerCase();
+    if (!r || r === "user_role") return null;
+    if (r === "super_admin_role") return { label: tr("roleSuperAdmin", "Super admin"), cls: "super" };
+    if (r === "admin_role") return { label: tr("roleAdmin", "Admin"), cls: "admin" };
+    if (r === "moderator_role") return { label: tr("roleMod", "Moderator"), cls: "mod" };
+    if (r === "senior_moderator_role") return { label: tr("role_senior_mod", "Senior mod"), cls: "mod" };
+    if (r === "verified") return { label: tr("verified", "Verified"), cls: "verified" };
+    return {
+      label: r.replace(/_role$/, "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      cls: "",
+    };
+  };
+
   // -------- Entry --------------------------------------------------------
   let currentProfileUser = null;
+
+  function renderProfileBlockBanner(profileUser) {
+    const host = $("#profile-block-banner");
+    if (!host) return;
+    if (!profileUser?.viewer_has_blocked) {
+      host.hidden = true;
+      host.innerHTML = "";
+      return;
+    }
+    host.hidden = false;
+    host.className = "topic-notif-muted-banner profile-user-block-banner";
+    host.innerHTML = `<i class="fas fa-ban" aria-hidden="true"></i>
+      <div class="topic-notif-muted-banner__text">
+        <span>${escapeHtml(tr("profileBlockBannerText", "You have blocked this user. Their topics and comments are hidden for you in the forum."))}</span>
+      </div>`;
+  }
+
+  async function renderProfileUserMuteBanner(profileUser) {
+    const host = $("#profile-user-mute-banner");
+    if (!host) return;
+    if (profileUser?.viewer_has_blocked) {
+      host.hidden = true;
+      host.innerHTML = "";
+      return;
+    }
+    let me = null;
+    try {
+      me = JSON.parse(localStorage.getItem("user_data") || "null");
+    } catch (_) {}
+    const token = localStorage.getItem("auth_token");
+    if (!me?.id || !token || !profileUser?.id || String(me.id) === String(profileUser.id)) {
+      host.hidden = true;
+      host.innerHTML = "";
+      return;
+    }
+    try {
+      const res = await fetch("/api/notifications/mute", { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) {
+        host.hidden = true;
+        host.innerHTML = "";
+        return;
+      }
+      const data = await res.json();
+      const mutes = data.mutes || [];
+      const muted = mutes.some(
+        (m) => m && m.scope === "user" && String(m.target_id) === String(profileUser.id)
+      );
+      if (!muted) {
+        host.hidden = true;
+        host.innerHTML = "";
+        return;
+      }
+      host.hidden = false;
+      host.className = "topic-notif-muted-banner profile-user-mute-banner";
+      host.innerHTML = `<i class="fas fa-bell-slash" aria-hidden="true"></i>
+        <div class="topic-notif-muted-banner__text">
+          <span>${escapeHtml(tr("profileUserNotifMutedBanner", "You have muted notifications from this user. Their activity will not alert you until you unmute."))}</span>
+        </div>
+        <button type="button" class="btn btn-sm topic-notif-muted-banner__btn" id="profile-unmute-user-notif-btn">${escapeHtml(tr("unmuteUserNotifs", "Unmute user"))}</button>`;
+      const btn = $("#profile-unmute-user-notif-btn");
+      if (btn) {
+        btn.onclick = async () => {
+          if (typeof window.__notifications?.unmute === "function") {
+            await window.__notifications.unmute("user", profileUser.id);
+          } else {
+            try {
+              const r = await fetch("/api/notifications/mute", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ scope: "user", target_id: profileUser.id }),
+              });
+              if (r.ok) {
+                try {
+                  document.dispatchEvent(new CustomEvent("notification-mutes-changed"));
+                } catch (_) { /* */ }
+                if (window.__notifications?.refreshMutes) await window.__notifications.refreshMutes();
+                await renderProfileUserMuteBanner(profileUser);
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        };
+      }
+    } catch (e) {
+      console.error(e);
+      host.hidden = true;
+    }
+  }
+
+  document.addEventListener("notification-mutes-changed", () => {
+    if (currentProfileUser) void renderProfileUserMuteBanner(currentProfileUser);
+  });
+
+  document.addEventListener("user-blocks-changed", () => {
+    const id = new URLSearchParams(window.location.search).get("id");
+    if (id) void loadProfile(id);
+  });
+
+  function updateProfileSocialActions(user) {
+    let me = null;
+    try {
+      me = JSON.parse(localStorage.getItem("user_data") || "null");
+    } catch (_) {}
+    const isOther = me?.id && user?.id && String(me.id) !== String(user.id);
+    const blockBtn = $("#btn-block-user");
+    const unblockBtn = $("#btn-unblock-user");
+    const muteBtn = $("#btn-profile-mute-notifs");
+    const unmuteNBtn = $("#btn-profile-unmute-notifs");
+    if (!isOther) {
+      [blockBtn, unblockBtn, muteBtn, unmuteNBtn].forEach((b) => {
+        if (b) b.hidden = true;
+      });
+      return;
+    }
+    const blocked = !!user.viewer_has_blocked;
+    const mutedN = !!user.viewer_mutes_notifs_from_user;
+    if (blockBtn) blockBtn.hidden = blocked;
+    if (unblockBtn) unblockBtn.hidden = !blocked;
+    if (muteBtn) muteBtn.hidden = blocked || mutedN;
+    if (unmuteNBtn) unmuteNBtn.hidden = blocked || !mutedN;
+  }
+
+  function wireProfileActionButtons() {
+    if (window.__profileActionButtonsWired) return;
+    window.__profileActionButtonsWired = true;
+    $("#btn-block-user")?.addEventListener("click", () => void blockProfileUser());
+    $("#btn-unblock-user")?.addEventListener("click", () => void unblockProfileUser());
+    $("#btn-profile-mute-notifs")?.addEventListener("click", () => void toggleProfileMuteNotifs(true));
+    $("#btn-profile-unmute-notifs")?.addEventListener("click", () => void toggleProfileMuteNotifs(false));
+  }
+
+  async function blockProfileUser() {
+    const u = currentProfileUser;
+    if (!u?.id) return;
+    if (
+      !window.confirm(
+        tr(
+          "blockUserConfirm",
+          "Block this user? You will not see their topics, posts, and profile content in the forum. Other people are not affected."
+        )
+      )
+    ) {
+      return;
+    }
+    const token = localStorage.getItem("auth_token");
+    if (!token) return;
+    try {
+      const r = await fetch("/api/user/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ blocked_id: u.id }),
+      });
+      if (r.ok) {
+        if (window.__notifications?.refresh) window.__notifications.refresh();
+        try {
+          document.dispatchEvent(new CustomEvent("user-blocks-changed"));
+        } catch (_) { /* */ }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function unblockProfileUser() {
+    const u = currentProfileUser;
+    if (!u?.id) return;
+    const token = localStorage.getItem("auth_token");
+    if (!token) return;
+    try {
+      const r = await fetch(`/api/user/block?blocked_id=${encodeURIComponent(u.id)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (r.ok) {
+        if (window.__notifications?.refresh) window.__notifications.refresh();
+        try {
+          document.dispatchEvent(new CustomEvent("user-blocks-changed"));
+        } catch (_) { /* */ }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function toggleProfileMuteNotifs(mute) {
+    const u = currentProfileUser;
+    if (!u?.id) return;
+    const token = localStorage.getItem("auth_token");
+    if (!token) return;
+    try {
+      if (mute) {
+        const r = await fetch("/api/notifications/mute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ scope: "user", target_id: u.id }),
+        });
+        if (!r.ok) return;
+      } else {
+        if (typeof window.__notifications?.unmute === "function") {
+          await window.__notifications.unmute("user", u.id);
+        } else {
+          const r2 = await fetch("/api/notifications/mute", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ scope: "user", target_id: u.id }),
+          });
+          if (!r2.ok) return;
+        }
+      }
+      try {
+        document.dispatchEvent(new CustomEvent("notification-mutes-changed"));
+      } catch (_) { /* */ }
+      if (window.__notifications?.refreshMutes) await window.__notifications.refreshMutes();
+      await loadProfile(new URLSearchParams(window.location.search).get("id") || u.id);
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   document.addEventListener("DOMContentLoaded", async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -136,6 +418,10 @@
       bindShare(user);
       bindTabs();
       checkOwnership(user);
+      renderProfileBlockBanner(user);
+      await renderProfileUserMuteBanner(user);
+      updateProfileSocialActions(user);
+      wireProfileActionButtons();
 
       loadUserTopics(user.id);
     } catch (err) {
@@ -169,29 +455,33 @@
       ava.innerHTML = `<span style="font-size:48px;font-weight:700;color:#fff;">${escapeHtml(name.charAt(0).toUpperCase())}</span>`;
     }
 
-    // Level + progress ring
-    const { cur, nxt, pct } = levelInfo(user.reputation);
+    // Level + progress ring (site roles override reputation tier)
+    const tier = profileTier(user);
+    const { cur, nxt, pct } = tier;
     const ring = $("#profile-avatar-ring");
     if (ring) ring.style.setProperty("--progress", `${Math.round(pct * 360)}deg`);
     const chip = $("#profile-level-chip");
     if (chip) {
+      chip.className = `profile-level-chip${tier.chipClass ? " " + tier.chipClass : ""}`.trim();
       chip.innerHTML = `<i class="fas ${cur.icon}" aria-hidden="true"></i><span>${escapeHtml(cur.name)}</span>`;
-      chip.title = nxt
-        ? `${cur.name} — ${user.reputation || 0}/${nxt.min} to ${nxt.name}`
-        : `${cur.name} (max)`;
+      chip.title = tier.isStaff
+        ? `${cur.name} — ${tr("accountRoleSite", "Site role")}`
+        : (nxt
+          ? `${cur.name} — ${user.reputation || 0}/${nxt.min} to ${nxt.name}`
+          : `${cur.name} (max)`);
     }
 
-    // Role badge
-    const role = (user.role || "").toLowerCase();
+    // Role badge (maps role_id, not legacy "admin" strings)
     const roleBadge = $("#profile-role-badge");
-    if (role && role !== "user" && roleBadge) {
-      const cls =
-        role === "admin" ? "admin" :
-        role === "moderator" ? "mod" :
-        role === "verified" ? "verified" : "";
-      roleBadge.className = `role-badge ${cls}`;
-      roleBadge.textContent = role.toUpperCase();
-      roleBadge.hidden = false;
+    const rbi = roleBadgeInfo(user);
+    if (roleBadge) {
+      if (rbi && rbi.label) {
+        roleBadge.className = `role-badge${rbi.cls ? " " + rbi.cls : ""}`.trim();
+        roleBadge.textContent = rbi.label;
+        roleBadge.hidden = false;
+      } else {
+        roleBadge.hidden = true;
+      }
     }
 
     // Chips (ride, location, joined, lang)
@@ -259,7 +549,7 @@
       { label: tr("aboutCity",     "City"),         icon: "fa-location-dot",  value: [user.city, user.country].filter(Boolean).join(", ") },
       { label: tr("aboutLanguage", "Language"),     icon: "fa-globe",         value: user.preferred_lang ? String(user.preferred_lang).toUpperCase() : null },
       { label: tr("aboutJoined",   "Joined"),       icon: "fa-calendar-check", value: joined ? fmtDateShort(joined) : null },
-      { label: tr("aboutLevel",    "Level"),        icon: "fa-bolt",          value: levelInfo(user.reputation).cur.name },
+      { label: tr("aboutLevel",    "Level"),        icon: "fa-bolt",          value: profileTier(user).cur.name },
     ];
 
     $("#profile-about-container").innerHTML = cards.map((c) => `
@@ -274,6 +564,10 @@
   // -------- RECENT (from user.recent_topics) ------------------------------
   function renderRecent(user) {
     const host = $("#profile-recent-container");
+    if (user.viewer_has_blocked) {
+      host.innerHTML = emptyHtml("fa-user-slash", tr("profileBlockedNoRecent", "You have blocked this user — their recent activity is hidden for you."));
+      return;
+    }
     const recent = user.recent_topics || [];
     if (!recent.length) {
       host.innerHTML = emptyHtml("fa-clock-rotate-left", tr("noRecentActivity", "No recent activity yet."));
@@ -298,8 +592,15 @@
       <div class="skeleton-row"><div class="skeleton-content"><div class="skeleton-line long"></div></div></div>
       <div class="skeleton-row"><div class="skeleton-content"><div class="skeleton-line long"></div></div></div>`;
 
+    if (currentProfileUser?.viewer_has_blocked) {
+      container.innerHTML = emptyHtml("fa-user-slash", tr("profileBlockedNoTopics", "You have blocked this user — their topics are hidden for you."));
+      return;
+    }
+    const token = localStorage.getItem("auth_token");
     try {
-      const res = await fetch(`/api/forum/topics?user_id=${encodeURIComponent(userId)}&page=${page}&limit=${ITEMS_PER_PAGE}`);
+      const res = await fetch(`/api/forum/topics?user_id=${encodeURIComponent(userId)}&page=${page}&limit=${ITEMS_PER_PAGE}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json().catch(() => ({}));
       const topics = data.topics || [];
       const total = data.total || topics.length || 0;
@@ -437,7 +738,7 @@
         if (el) el.value = "";
       });
     } else if (me) {
-      if (reportBtn) reportBtn.hidden = false;
+      if (reportBtn) reportBtn.hidden = !!user.viewer_has_blocked;
     }
   }
 

@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS posts (
     moderator_edit_reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reply_to_post_id TEXT,
     FOREIGN KEY (topic_id) REFERENCES topics(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -143,6 +144,18 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- 9b. USER BLOCKS (per viewer; only blocker hides content)
+CREATE TABLE IF NOT EXISTS user_blocks (
+    id TEXT PRIMARY KEY,
+    blocker_id TEXT NOT NULL,
+    blocked_id TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (blocker_id, blocked_id),
+    CHECK (blocker_id != blocked_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_blocks_blocker ON user_blocks (blocker_id);
+CREATE INDEX IF NOT EXISTS idx_user_blocks_blocked ON user_blocks (blocked_id);
 
 -- 10. POST LIKES (Deprecated in favor of generic reputation actions, but keeping for simple likes)
 CREATE TABLE IF NOT EXISTS post_likes (

@@ -1,3 +1,4 @@
+// GET    (auth) — list mutes for current user
 // POST   { scope: "topic"|"user", target_id } — mute
 // DELETE { scope, target_id } — unmute
 import { verifyToken } from "../../lib/jwt.js";
@@ -19,11 +20,30 @@ async function getUser(request, env) {
 export async function onRequest(context) {
   const { request, env } = context;
   const method = request.method;
+  const user = await getUser(request, env);
+
+  if (method === "GET") {
+    if (!user?.id) return json({ error: "Unauthorized" }, 401);
+    try {
+      const { results } = await env.DB
+        .prepare(
+          `SELECT id, scope, target_id, created_at
+             FROM notification_mutes
+            WHERE user_id = ?
+         ORDER BY datetime(created_at) DESC`
+        )
+        .bind(user.id)
+        .all();
+      return json({ mutes: results || [] });
+    } catch (e) {
+      return json({ error: e.message || String(e) }, 500);
+    }
+  }
+
   if (method !== "POST" && method !== "DELETE") {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const user = await getUser(request, env);
   if (!user?.id) return json({ error: "Unauthorized" }, 401);
 
   let body = {};

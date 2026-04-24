@@ -173,6 +173,11 @@ export async function moderateText(env, text, ctx = {}) {
     return { ...baseline, language, source: "stopwords" };
   }
 
+  // Fast path (e.g. forum replies): no Workers AI, no extra DB round-trips for audit log — keeps HTTP latency low.
+  if (ctx.skipAi) {
+    return { ...baseline, language, source: "stopwords" };
+  }
+
   // 2) Workers AI review (for ambiguous / long / multi-lingual posts)
   const aiResult = await workersAiModerate(env, input, language);
   if (aiResult) {

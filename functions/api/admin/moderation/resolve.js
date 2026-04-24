@@ -12,6 +12,7 @@
 
 import { authenticateAdminRequest } from "../../../lib/admin-gate.js";
 import { logAudit, AUDIT_ACTIONS } from "../../../lib/audit.js";
+import { deleteSinglePost, deleteTopicTree } from "../../../lib/forum-delete.js";
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -64,11 +65,10 @@ export async function onRequestPost(context) {
       case "approve":
         break;
       case "remove":
-        if (entityType === "post") {
-          await env.DB.prepare(`DELETE FROM posts WHERE id = ?`).bind(targetPostId).run();
-        } else if (entityType === "topic") {
-          await env.DB.prepare(`DELETE FROM posts WHERE topic_id = ?`).bind(targetTopicId).run();
-          await env.DB.prepare(`DELETE FROM topics WHERE id = ?`).bind(targetTopicId).run();
+        if (entityType === "post" && targetPostId) {
+          await deleteSinglePost(env.DB, targetPostId);
+        } else if (entityType === "topic" && targetTopicId) {
+          await deleteTopicTree(env.DB, targetTopicId);
         }
         break;
       case "lock":

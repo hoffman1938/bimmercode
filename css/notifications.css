@@ -6,7 +6,9 @@
   top: calc(100% + 8px);
   right: 0;
   left: auto;
-  width: min(320px, calc(100vw - 24px));
+  /* min(20rem, …) keeps panel narrow; safe-area insets for notched devices */
+  width: min(20rem, calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right)));
+  box-sizing: border-box;
   background: rgba(18, 20, 24, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -16,7 +18,7 @@
   z-index: 2000;
   display: none;
   overflow: hidden;
-  max-width: 90vw;
+  overflow-x: hidden;
   animation: notifSlideDown 0.3s ease forwards;
 }
 
@@ -53,6 +55,7 @@
 }
 
 .notif-header {
+  min-width: 0;
   padding: 15px 20px;
   border-bottom: 1px solid var(--glass-border, var(--color-border, rgba(255, 255, 255, 0.1)));
   font-family: var(--font-display, "Exo 2", system-ui, sans-serif);
@@ -62,9 +65,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  row-gap: 6px;
+  column-gap: 10px;
 }
 
+.notif-header > span {
+  min-width: 0;
+  flex: 1 1 auto;
+}
 .notif-actions {
   display: flex;
   gap: 10px;
@@ -84,6 +93,12 @@
 }
 
 .notif-header .notif-action-btn {
+  flex: 0 1 auto;
+  min-width: 0;
+  text-align: right;
+  white-space: normal;
+  max-width: 100%;
+  word-break: break-word;
   color: var(--color-primary, var(--bmw-blue, #3498db));
   font-family: inherit;
 }
@@ -95,6 +110,7 @@
 .notif-list {
   max-height: 400px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .notif-item {
@@ -298,6 +314,8 @@
 .notif-filter-bar {
   display: flex;
   gap: 0;
+  min-width: 0;
+  margin-top: 6px;
   padding: 0 12px 10px;
   border-bottom: 1px solid var(--glass-border);
   background: rgba(0, 0, 0, 0.15);
@@ -305,6 +323,7 @@
 
 .notif-filter-bar .notif-filter {
   flex: 1;
+  min-width: 0;
   padding: 8px 10px;
   font-size: 12px;
   font-weight: 500;
@@ -437,13 +456,61 @@
   margin: 0;
 }
 
-.notif-empty-hint {
-  font-size: 12px;
-  line-height: 1.45;
+/* Muted users / topics (unmute) — below filter tabs, above list */
+.notif-mutes-section {
+  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgba(0, 0, 0, 0.2);
+}
+.notif-mutes-header {
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-muted, #888);
-  margin-top: 10px;
-  max-width: 22rem;
-  margin-left: auto;
-  margin-right: auto;
-  opacity: 0.9;
+}
+.notif-mutes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px 8px;
+}
+.notif-mute-source-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #ccc);
+  border-radius: 6px;
+}
+.notif-mute-source-row .fas {
+  width: 16px;
+  text-align: center;
+  color: var(--text-muted, #888);
+  flex-shrink: 0;
+}
+.notif-mute-source-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.notif-mute-unmute-btn {
+  flex-shrink: 0;
+  background: rgba(0, 102, 179, 0.2);
+  border: 1px solid rgba(52, 152, 219, 0.4);
+  color: #7ec8ff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.notif-mute-unmute-btn:hover {
+  background: rgba(0, 102, 179, 0.35);
+  color: #fff;
 }

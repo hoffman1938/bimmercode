@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="index-bento-page">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,10 +16,12 @@
     <link rel="canonical" id="canonical-link" href="" />
 
     <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
     <link rel="stylesheet" href="./css/style.css?v=3.0" />
-    <link rel="stylesheet" href="./css/forum.css?v=3.0" />
+    <link rel="stylesheet" href="./css/forum.css?v=3.14" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=6" />
     <link rel="stylesheet" href="./css/responsive.css?v=3.0" />
-    <link rel="stylesheet" href="./css/notifications.css?v=3.0" />
+    <link rel="stylesheet" href="./css/notifications.css?v=3.1" />
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -29,34 +31,49 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613" crossorigin="anonymous"></script>
   </head>
 
-  <body class="profile-body">
-    <div id="webgl-container"></div>
+  <body class="profile-body index-bento-page">
+    <div id="webgl-container" class="index-bento-bg" aria-hidden="true"></div>
 
     <!-- ============================================================ HEADER -->
-    <header class="site-header">
-      <a href="/forum" class="logo-container">
-        <div class="logo"><i class="fas fa-comments" aria-hidden="true"></i></div>
-        <h1>BimmerCodes <span style="font-weight: 300">Forum</span></h1>
-      </a>
-
+    <header class="forum-header index-bento">
+      <div class="logo-container index-header-brand">
+        <a class="main_logo_refr" href="/" aria-label="BimmerCodes home">
+          <div class="logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
+              <circle cx="50" cy="50" r="35" fill="white" />
+              <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+              <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+              <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+              <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+            </svg>
+          </div>
+          <h1 class="index-header-title">
+            BMW Diagnostic Codes <span class="index-header-title-muted">· Profile</span>
+          </h1>
+        </a>
+      </div>
       <nav class="controls" aria-label="Primary">
-        <a href="/" class="btn btn-ghost">
+        <a href="/" class="index-header-btn btn" title="Home">
           <i class="fas fa-home" aria-hidden="true"></i>
           <span data-i18n="homeBtn">Home</span>
         </a>
-        <a href="/vin.html" class="btn btn-ghost">
+        <a href="/vin.html" class="index-header-btn btn" title="VIN Check">
           <i class="fas fa-fingerprint" aria-hidden="true"></i>
           <span data-i18n="vinBtn">VIN</span>
         </a>
-        <a href="/forum" class="btn btn-ghost">
+        <a href="/forum" class="index-header-btn btn">
           <i class="fas fa-arrow-left" aria-hidden="true"></i>
           <span data-i18n="backToForum">Back to Forum</span>
         </a>
-        <button class="btn btn-ghost" id="profile-language-toggle" onclick="switchForumLanguage()">
+        <button type="button" class="index-header-btn btn" id="forum-language-toggle" onclick="switchForumLanguage()" title="Language">
           <i class="fas fa-globe" aria-hidden="true"></i>
           <span id="forum-lang-display">EN</span>
         </button>
-        <!-- Bell + dropdown: injected by js/live.js when logged in -->
+        <a href="#" class="index-header-btn btn" id="auth-btn">
+          <i class="fas fa-user" aria-hidden="true"></i>
+          <span data-i18n="loginBtn">Login</span>
+        </a>
       </nav>
     </header>
 
@@ -93,6 +110,8 @@
         </div>
 
         <div class="profile-hero-body">
+          <div id="profile-block-banner" class="topic-notif-muted-banner profile-user-block-banner" hidden></div>
+          <div id="profile-user-mute-banner" class="profile-user-mute-banner" hidden></div>
           <div class="profile-avatar-wrap">
             <div class="profile-avatar-ring" id="profile-avatar-ring" style="--progress: 0deg;">
               <div class="profile-avatar-inner" id="profile-avatar">
@@ -130,6 +149,22 @@
               <button id="btn-report-profile" class="btn btn-danger-ghost" type="button" hidden onclick="triggerUserReport()">
                 <i class="fas fa-flag" aria-hidden="true"></i>
                 <span data-i18n="reportUser">Report user</span>
+              </button>
+              <button id="btn-block-user" class="btn btn-danger-ghost" type="button" hidden>
+                <i class="fas fa-user-slash" aria-hidden="true"></i>
+                <span data-i18n="blockUser">Block user</span>
+              </button>
+              <button id="btn-unblock-user" class="btn btn-ghost" type="button" hidden>
+                <i class="fas fa-user-check" aria-hidden="true"></i>
+                <span data-i18n="unblockUser">Unblock user</span>
+              </button>
+              <button id="btn-profile-mute-notifs" class="btn btn-ghost" type="button" hidden>
+                <i class="fas fa-bell-slash" aria-hidden="true"></i>
+                <span data-i18n="muteUserNotifsBtn">Mute notifications</span>
+              </button>
+              <button id="btn-profile-unmute-notifs" class="btn btn-ghost" type="button" hidden>
+                <i class="fas fa-bell" aria-hidden="true"></i>
+                <span data-i18n="unmuteUserNotifsShort">Unmute notifications</span>
               </button>
             </div>
           </div>
@@ -422,13 +457,13 @@
     <footer><!-- footer injected by js/footer.js --></footer>
     <script src="./js/footer.js"></script>
 
-    <script src="./js/translations.js?v=3.0"></script>
+    <script src="./js/translations.js?v=3.9"></script>
     <script src="./js/script.js?v=3.0"></script>
-    <script src="./js/forum.js?v=3.0"></script>
+    <script src="./js/forum.js?v=3.3"></script>
     <script src="./js/report.js"></script>
     <script src="./js/image-to-webp.js?v=3.0"></script>
-    <script src="./js/profile.js?v=3.0"></script>
-    <script src="./js/live.js?v=3.0"></script>
+    <script src="./js/profile.js?v=3.3"></script>
+    <script src="./js/live.js?v=3.5"></script>
     <script src="./js/modal-escape.js?v=3.0"></script>
   </body>
 </html>

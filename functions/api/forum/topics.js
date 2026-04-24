@@ -15,6 +15,7 @@
 import { verifyToken } from "../../lib/jwt.js";
 import { checkRateLimit, RATE_LIMITS, getIpAddress } from "../../lib/rate-limit.js";
 import { verifyTurnstile } from "../../lib/turnstile.js";
+import { getViewerIdFromRequest, getBlockedUserIdsForBlocker } from "../../lib/user-blocks.js";
 
 const PAGE_SIZE_DEFAULT = 20;
 const PAGE_SIZE_MAX = 50;
@@ -90,6 +91,15 @@ async function handleGet(context) {
 
   // Exclude archived by default
   conditions.push("(t.is_archived IS NULL OR t.is_archived = 0)");
+
+  // Hide topics by authors the viewer has blocked (JWT only)
+  const viewerId = await getViewerIdFromRequest(request, env);
+  const blockedIds = viewerId ? await getBlockedUserIdsForBlocker(db, viewerId) : [];
+  if (blockedIds.length) {
+    const ph = blockedIds.map(() => "?").join(",");
+    conditions.push(`t.user_id NOT IN (${ph})`);
+    params.push(...blockedIds);
+  }
 
   // Search: try FTS5 first, fallback to LIKE
   let searchJoin = "";
@@ -238,9 +248,6 @@ async function handlePost(context) {
     }
 
     const data = await request.json();
-    if (!data.title || !data.content) {
-      return jsonResponse({ error: "Missing fields" }, 400);
-    }
 
     // Force author from token — don't trust client-supplied user_id
     const userId = payload.id;
@@ -272,15 +279,12 @@ async function handlePost(context) {
       }
     }
 
-    const title = String(data.title).trim();
-    const content = String(data.content).trim();
-
-    if (title.length < 8 || title.length > 160) {
-      return jsonResponse({ error: "Title must be 8–160 characters" }, 400);
-    }
-    if (content.length < 20 || content.length > 8000) {
-      return jsonResponse({ error: "Content must be 20–8000 characters" }, 400);
-    }
+    let title = String(data.title ?? "").trim();
+    let content = String(data.content ?? "").trim();
+    // All fields optional: store defaults so NOT NULL + list UI always have a line to show
+    if (!title) title = "(no title)";
+    if (title.length > 160) title = title.slice(0, 160);
+    if (content.length > 8000) content = content.slice(0, 8000);
 
     // Moderation hook (AI + stopword filter). Non-blocking stub by default.
     let moderation = { decision: "approve", severity: "low", flags: [] };
@@ -309,6 +313,8 @@ async function handlePost(context) {
     const topicId = crypto.randomUUID();
 
     const lang = data.lang || "en";
+    const category = String(data.category || "").trim() || "off-topic";
+
     await db
       .prepare(
         `INSERT INTO topics
@@ -319,7 +325,7 @@ async function handlePost(context) {
         topicId,
         userId,
         username,
-        data.category || "off-topic",
+        category,
         title,
         content,
         data.related_code || null,

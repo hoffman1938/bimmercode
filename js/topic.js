@@ -14,8 +14,12 @@
     topic: null,
     posts: [],
     user: null,
+    /** true if the logged-in user muted this thread under notification settings (no reply/reaction notifs) */
+    topicNotifMuted: false,
     /** { kind: "topic"|"post", id: string } when editing a post in the reply composer */
     editMode: null,
+    /** When set, next reply is linked to this post: { id: string, username: string } */
+    replyTarget: null,
     /** Uploaded image URLs for current reply; markdown is built on submit (images first, then text) */
     composerImageUrls: [],
   };
@@ -93,6 +97,26 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
                     .replace(/'/g, "&#039;");
+  }
+
+  /** One-line plain text for reply previews (parent post may be stored as markdown). */
+  function markdownToPlainExcerpt(md) {
+    return String(md || "")
+      .replace(/```[\s\S]*?```/g, " ")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/!\[[^\]]*]\([^)]*\)/g, "")
+      .replace(/\[([^\]]*)]\([^)]*\)/g, (_m, t) => t)
+      .replace(/^#{1,6}\s+/gm, "")
+      .replace(/^\s*>\s?/gm, "")
+      .replace(/(\*\*|__|~~)/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function trimReplyExcerpt(s, max = 200) {
+    const t = String(s || "").trim();
+    if (t.length <= max) return t;
+    return t.slice(0, max).replace(/\s+\S*$/, "") + "…";
   }
 
   /**
@@ -342,6 +366,8 @@
   }
 
   function reputationLevel(rep = 0, role = "user_role") {
+    if (role === "super_admin_role")
+      return { key: "super", icon: "fa-user-shield", label: t("roleSuperAdmin", "Super admin") };
     if (role === "admin_role")      return { key: "admin",   icon: "fa-crown",       label: t("roleAdmin", "Admin") };
     if (role === "moderator_role")  return { key: "mod",     icon: "fa-shield-alt",  label: t("roleMod", "Moderator") };
     if (rep >= 3000)                return { key: "master",  icon: "fa-star",        label: t("lvlMaster", "Master") };
@@ -399,6 +425,45 @@
     } catch (e) { console.warn("jsonld error:", e); }
   }
 
+  async function refreshNotificationMutes() {
+    state.topicNotifMuted = false;
+    if (!state.user?.id) return;
+    const token = localStorage.getItem("auth_token");
+    if (!token) return;
+    try {
+      const res = await fetch("/api/notifications/mute", { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      const mutes = data.mutes || [];
+      state.topicNotifMuted = mutes.some(
+        (m) => m && m.scope === "topic" && String(m.target_id) === String(state.topicId)
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function unmuteTopicNotifications() {
+    const token = localStorage.getItem("auth_token");
+    if (!state.user || !token || !state.topicId) return;
+    try {
+      const res = await fetch("/api/notifications/mute", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ scope: "topic", target_id: state.topicId }),
+      });
+      if (!res.ok) return;
+      state.topicNotifMuted = false;
+      try {
+        document.dispatchEvent(new CustomEvent("notification-mutes-changed", { detail: { scope: "topic", target_id: state.topicId } }));
+      } catch (_) { /* ignore */ }
+      renderTopic();
+      if (window.__notifications?.refresh) window.__notifications.refresh();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   // ========================================================== Rendering
   function renderTopic() {
     const host = $("#topic-content");
@@ -424,7 +489,20 @@
       `</button>`
     );
 
+    const mutedBanner = state.topicNotifMuted
+      ? `<div class="topic-notif-muted-banner" role="status">
+          <i class="fas fa-bell-slash" aria-hidden="true"></i>
+          <div class="topic-notif-muted-banner__text">
+            <span>${esc(t("topicNotifMutedBanner", "You muted notifications for this thread. Replies and reactions will not create alerts until you turn them back on."))}</span>
+          </div>
+          <button type="button" class="btn btn-sm topic-notif-muted-banner__btn" data-action="unmute-topic-notif">
+            ${esc(t("unmuteTopicNotifs", "Turn on notifications"))}
+          </button>
+        </div>`
+      : "";
+
     host.innerHTML = `
+      ${mutedBanner}
       <article class="topic-header-card">
         <div class="topic-meta" style="margin-bottom:var(--space-sm);">
           ${badges.join("")}
@@ -695,6 +773,18 @@
   }
 
   function renderPostCard(p, { isOriginal = false } = {}) {
+    if (p.is_hidden) {
+      const postId = isOriginal ? `op` : `post-${esc(p.id)}`;
+      const kindClass = isOriginal ? " post-card--original" : " post-card--reply";
+      return `
+      <article class="post-card post-card--hidden${kindClass}" id="${postId}">
+        <div class="post-body post-body--hidden">
+          <p class="post-hidden-msg"><i class="fas fa-user-slash" aria-hidden="true"></i> ${esc(
+            t("postHiddenBlockedUser", "This comment is hidden because you have blocked this user.")
+          )}</p>
+        </div>
+      </article>`;
+    }
     const solved = !!(p.is_solution);
     const avatar = p.author_avatar
       ? `<img class="avatar" src="${esc(p.author_avatar)}" alt="" loading="lazy" onerror="this.src='./assets/icons/ico.svg'">`
@@ -716,15 +806,21 @@
 
     const postId = isOriginal ? `op` : `post-${esc(p.id)}`;
     const kindClass = isOP ? " post-card--original" : " post-card--reply";
+    const profileUrl = p.user_id ? `/profile?id=${encodeURIComponent(p.user_id)}` : "";
+    const authorBlock = `${avatar}
+          <div class="username">${esc(p.username)}</div>
+          ${repBadgeHtml(rep, p.author_role)}
+          ${isOP ? `<div class="rep-score">${esc(t("opLabel","Original poster"))}</div>` : `<div class="rep-score">${rep} rep</div>`}`;
+
+    const authorCol = profileUrl
+      ? `<a class="post-author-link" href="${profileUrl}" title="${esc(t("viewUserProfile", "View profile"))}">${authorBlock}</a>`
+      : `<div class="post-author-static">${authorBlock}</div>`;
 
     return `
       <article class="post-card${kindClass}${solved ? " is-solution" : ""}" id="${postId}">
         ${isOP ? `<div class="post-card-ribbon" aria-hidden="true"><span class="post-card-ribbon__text"><i class="fas fa-bolt"></i> ${esc(t("topicOpeningPost", "Topic"))}</span></div>` : ""}
         <div class="post-author">
-          ${avatar}
-          <div class="username">${esc(p.username)}</div>
-          ${repBadgeHtml(rep, p.author_role)}
-          ${isOP ? `<div class="rep-score">${esc(t("opLabel","Original poster"))}</div>` : `<div class="rep-score">${rep} rep</div>`}
+          ${authorCol}
         </div>
         <div class="post-body">
           <div class="post-meta">
@@ -732,6 +828,7 @@
             ${solved ? `<span class="badge badge-solved"><i class="fas fa-check"></i> ${esc(t("solution","Solution"))}</span>` : ""}
             ${!isOP ? `<span class="post-kind-badge" data-kind="reply"><i class="fas fa-reply"></i> ${esc(t("replyPostLabel", "Comment"))}</span>` : ""}
           </div>
+          ${postReplyingToLine(p)}
           <div class="post-text">${body}</div>
           <div class="post-actions">
             <div class="post-actions-reactions" role="group" aria-label="Reactions">
@@ -741,6 +838,7 @@
             ${reactionsHtml}
             </div>
             <div class="post-actions-tools">
+            ${state.user && !state.topic?.is_locked ? `<button type="button" class="post-action-link" data-action="reply" data-post="${esc(p.id)}" data-reply-author="${esc(p.username || "")}"><i class="fas fa-reply"></i> ${esc(t("reply", "Reply"))}</button>` : ""}
             ${!isOP && canMarkSolution() && !solved ? `<button type="button" class="post-action-link" data-action="solve" data-post="${esc(p.id)}"><i class="fas fa-check"></i> ${esc(t("markSolution","Mark as solution"))}</button>` : ""}
             ${!isOP && canMarkSolution() && solved ? `<button type="button" class="post-action-link post-action-link--warn" data-action="unsolve" data-post="${esc(p.id)}"><i class="fas fa-times"></i> ${esc(t("unmarkSolution","Remove solution"))}</button>` : ""}
             ${canEdit(p) ? `<button type="button" class="post-action-link" data-action="edit" data-post="${esc(p.id)}"><i class="fas fa-edit"></i> ${esc(t("edit","Edit"))}</button>` : ""}
@@ -761,7 +859,116 @@
   function canDelete(post) {
     if (!state.user) return false;
     if (String(state.user.id) === String(post.user_id)) return true;
-    return state.user.role === "admin_role" || state.user.role === "moderator_role";
+    const r = state.user.role_id || state.user.role;
+    return r === "super_admin_role" || r === "admin_role" || r === "moderator_role";
+  }
+
+  function excerptForReplyFromPost(postId) {
+    const openId = state.topic?.id;
+    const domId = String(postId) === String(openId) ? "op" : `post-${postId}`;
+    const card = document.getElementById(domId);
+    const textEl = card?.querySelector(".post-text");
+    if (!textEl) return "";
+    return trimReplyExcerpt(markdownToPlainExcerpt(textEl.textContent || ""), 220);
+  }
+
+  /** In-thread context: who you replied to + optional quote from the parent. */
+  function postReplyingToLine(p) {
+    if (!p.reply_to_post_id || !p.reply_to_username) return "";
+    if (p.is_hidden) return "";
+    const openId = state.topic?.id;
+    const toId = String(p.reply_to_post_id);
+    const href =
+      openId && toId === String(openId) ? "#op" : `#post-${esc(p.reply_to_post_id)}`;
+    const who = esc(p.reply_to_username);
+    const exRaw = p.reply_to_excerpt || "";
+    const exPlain = exRaw
+      ? trimReplyExcerpt(markdownToPlainExcerpt(exRaw), 220)
+      : "";
+    const exEsc = exPlain ? esc(exPlain) : "";
+    const jumpLabel = esc(t("replyContextJump", "Show comment"));
+    const headLabel = esc(t("replyContextHead", "In reply to"));
+    const aria = esc(
+      `${t("replyContextHead", "In reply to")} @${p.reply_to_username}. ${t("replyContextJump", "Show comment")}.`
+    );
+    return `<div class="post-reply-context">
+      <a class="post-reply-context__link" href="${href}" aria-label="${aria}">
+        <div class="post-reply-context__head">
+          <span class="post-reply-context__icon" aria-hidden="true"><i class="fas fa-reply"></i></span>
+          <div class="post-reply-context__meta">
+            <div class="post-reply-context__title">
+              <span class="post-reply-context__label">${headLabel}</span>
+              <strong class="post-reply-context__user">@${who}</strong>
+            </div>
+            <span class="post-reply-context__action">${jumpLabel} <i class="fas fa-chevron-up" aria-hidden="true"></i></span>
+          </div>
+        </div>
+        ${
+          exEsc
+            ? `<blockquote class="post-reply-context__quote" cite="${href}">${exEsc}</blockquote>`
+            : ""
+        }
+      </a>
+    </div>`;
+  }
+
+  function clearReplyTarget() {
+    state.replyTarget = null;
+    const bar = $("#composer-reply-bar");
+    if (bar) bar.hidden = true;
+    const txt = $("#composer-reply-text");
+    if (txt) txt.textContent = "";
+    const q = $("#composer-reply-quote");
+    if (q) {
+      q.textContent = "";
+      q.hidden = true;
+    }
+  }
+
+  function paintComposerReplyBar() {
+    const bar = $("#composer-reply-bar");
+    const txt = $("#composer-reply-text");
+    const q = $("#composer-reply-quote");
+    if (!bar || !txt) return;
+    if (!state.replyTarget) {
+      bar.hidden = true;
+      txt.textContent = "";
+      if (q) {
+        q.textContent = "";
+        q.hidden = true;
+      }
+      return;
+    }
+    bar.hidden = false;
+    const u = (state.replyTarget.username || "").trim() || "?";
+    const headLabel = t("replyContextHead", "In reply to");
+    txt.textContent = `${headLabel} @${u}`;
+    if (q) {
+      const ex = (state.replyTarget.excerpt || "").trim();
+      if (ex) {
+        q.textContent = ex;
+        q.hidden = false;
+      } else {
+        q.textContent = "";
+        q.hidden = true;
+      }
+    }
+  }
+
+  function beginReplyTo(postId, username) {
+    if (!state.user || !postId) return;
+    if (state.topic?.is_locked) return;
+    if (state.editMode) cancelPostEdit();
+    const excerpt = excerptForReplyFromPost(postId);
+    state.replyTarget = {
+      id: String(postId),
+      username: String(username || "").trim() || "?",
+      excerpt: excerpt || "",
+    };
+    paintComposerReplyBar();
+    const ta = $("#reply-content");
+    document.getElementById("composer-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => ta?.focus(), 200);
   }
 
   function renderComposer() {
@@ -783,6 +990,16 @@
             <i class="fas fa-pen-to-square" aria-hidden="true"></i>
             <span id="composer-edit-hint"></span>
             <button type="button" class="btn btn-ghost btn-sm" id="cancel-post-edit">${esc(t("cancel", "Cancel"))}</button>
+          </div>
+        </div>
+        <div id="composer-reply-bar" class="composer-reply-bar" hidden>
+          <div class="composer-reply-bar__head">
+            <span class="composer-reply-bar__icon" aria-hidden="true"><i class="fas fa-reply"></i></span>
+            <div class="composer-reply-bar__titles">
+              <span id="composer-reply-text" class="composer-reply-bar__line"></span>
+              <div id="composer-reply-quote" class="composer-reply-bar__quote" hidden></div>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" id="composer-reply-cancel">${esc(t("cancel", "Cancel"))}</button>
           </div>
         </div>
         <div class="composer-tabs">
@@ -819,6 +1036,10 @@
     const count = $("#reply-count");
 
     $("#cancel-post-edit")?.addEventListener("click", () => cancelPostEdit());
+    $("#composer-reply-cancel")?.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      clearReplyTarget();
+    });
     if (!state.editMode) {
       const bar = $("#composer-edit-bar");
       if (bar) bar.hidden = true;
@@ -904,6 +1125,7 @@
     resetComposerSubmitButton();
     renderComposerThumbnails();
     ensurePostImageLightbox($("#composer-form"));
+    paintComposerReplyBar();
   }
 
   function resetComposerSubmitButton() {
@@ -950,6 +1172,7 @@
     if (!post || !state.user) return;
     if (String(state.user.id) !== String(post.user_id)) return;
 
+    clearReplyTarget();
     state.editMode = { kind: isTopic ? "topic" : "post", id: String(postId) };
     const parsed = parseImagesFromMarkdown(post.content || "");
     state.composerImageUrls = parsed.urls;
@@ -1029,22 +1252,27 @@
     btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i>`;
     try {
       const token = localStorage.getItem("auth_token");
+      const body = {
+        topic_id: state.topicId,
+        user_id: user.id,
+        username: user.username,
+        content,
+        lang: (/[\u10A0-\u10FF]/.test(content) ? "ka" : /[\u0400-\u04FF]/.test(content) ? "ru" : "en"),
+      };
+      if (state.replyTarget?.id) {
+        body.reply_to_post_id = state.replyTarget.id;
+      }
       const res = await fetch("/api/forum/topic", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          topic_id: state.topicId,
-          user_id: user.id,
-          username: user.username,
-          content,
-          lang: (/[\u10A0-\u10FF]/.test(content) ? "ka" : /[\u0400-\u04FF]/.test(content) ? "ru" : "en"),
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || data.reason || "failed");
+      clearReplyTarget();
       await loadTopicData();
       if (window.__notifications?.refresh) window.__notifications.refresh();
       const newPost = document.getElementById(`post-${data.postId}`);
@@ -1109,6 +1337,15 @@
     const action = target.dataset.action;
     const postId = target.dataset.post;
 
+    if (action === "unmute-topic-notif") {
+      e.preventDefault();
+      void unmuteTopicNotifications();
+      return;
+    }
+    if (action === "reply") {
+      beginReplyTo(postId, target.dataset.replyAuthor);
+      return;
+    }
     if (action === "solve") return toggleSolution(postId, false);
     if (action === "unsolve") return toggleSolution(postId, true);
     if (action === "delete") return deletePost(postId);
@@ -1275,7 +1512,7 @@
     await forumAppDialog.open({
       type: "alert",
       variant: "error",
-      title: t("errorSending", "Error"),
+      title: t("deleteFailedTitle", "Could not delete"),
       message: msg,
       okText: t("dialogOk", "OK"),
     });
@@ -1299,7 +1536,12 @@
       const res = await fetch("/api/forum/report", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ post_id: postId, reason: reasonTrim, user_id: state.user.id }),
+        body: JSON.stringify({
+          entity_type: "post",
+          entity_id: postId,
+          reason: "other",
+          details: reasonTrim,
+        }),
       });
       if (res.ok) {
         await forumAppDialog.open({
@@ -1314,7 +1556,7 @@
       await forumAppDialog.open({
         type: "alert",
         variant: "error",
-        title: t("errorSending", "Error"),
+        title: t("errorReportSend", "Could not send report"),
         message: d.error || `HTTP ${res.status}`,
         okText: t("dialogOk", "OK"),
       });
@@ -1323,7 +1565,7 @@
       await forumAppDialog.open({
         type: "alert",
         variant: "error",
-        title: t("errorSending", "Error"),
+        title: t("errorReportSend", "Could not send report"),
         message: e.message || "Network error",
         okText: t("dialogOk", "OK"),
       });
@@ -1342,12 +1584,22 @@
       q.set("id", state.topicId);
       q.set("user_id", userId);
       if (bumpView) q.set("count_view", "1");
-      const res = await fetch(`/api/forum/topic?${q.toString()}`);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`/api/forum/topic?${q.toString()}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.status === 403) {
+        const d = await res.json().catch(() => ({}));
+        const msg = d.error || t("topicBlockedAuthor", "This topic is not available to you because you have blocked the author.");
+        $("#topic-content").innerHTML = `<div class="error-state"><i class="fas fa-user-slash"></i> ${esc(msg)}<p style="margin-top:12px;"><a class="btn btn-primary" href="/forum">${esc(t("backToForum", "Back to forum"))}</a></p></div>`;
+        return;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       state.topic = data.topic;
       state.posts = data.posts || [];
+      await refreshNotificationMutes();
       renderTopic();
     } catch (err) {
       console.error(err);

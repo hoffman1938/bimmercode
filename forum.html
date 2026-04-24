@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="index-bento-page">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -9,8 +9,9 @@
 
     <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
     <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
-    <link rel="stylesheet" href="./css/forum.css?v=3.2" />
-    <link rel="stylesheet" href="./css/notifications.css?v=3.2" />
+    <link rel="stylesheet" href="./css/forum.css?v=3.14" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=6" />
+    <link rel="stylesheet" href="./css/notifications.css?v=3.5" />
     <link rel="stylesheet" href="./css/parts-finder.css?v=3.0" />
 
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon" />
@@ -54,34 +55,45 @@
     </script>
   </head>
   <body class="forum-page">
-    <div id="webgl-container" aria-hidden="true"></div>
+    <div id="webgl-container" class="index-bento-bg" aria-hidden="true"></div>
 
     <!-- ==================================================== HEADER -->
-    <header class="forum-header">
-      <button class="btn btn-icon btn-ghost mobile-only" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+    <header class="forum-header index-bento">
+      <button class="btn btn-icon index-header-btn mobile-only" type="button" onclick="toggleMobileMenu()" aria-label="Toggle menu">
         <i class="fas fa-bars" aria-hidden="true"></i>
       </button>
 
-      <a href="/forum" class="logo-container" aria-label="BimmerCodes Forum home">
-        <div class="logo"><i class="fas fa-comments" aria-hidden="true"></i></div>
-        <h1>BimmerCodes <span class="accent">Forum</span></h1>
-      </a>
+      <div class="logo-container index-header-brand">
+        <a class="main_logo_refr" href="/forum" aria-label="BimmerCodes Forum home">
+          <div class="logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
+              <circle cx="50" cy="50" r="35" fill="white" />
+              <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+              <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+              <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+              <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+            </svg>
+          </div>
+          <h1 class="index-header-title">BMW Diagnostic Codes <span class="index-header-title-muted">· Forum</span></h1>
+        </a>
+      </div>
 
       <div class="controls">
-        <a href="/" class="btn btn-ghost" title="Home">
+        <a href="/" class="index-header-btn btn" title="Home">
           <i class="fas fa-home" aria-hidden="true"></i>
           <span data-i18n="homeBtn">Home</span>
         </a>
-        <a href="/vin.html" class="btn btn-ghost" title="VIN Check">
-          <i class="fas fa-barcode" aria-hidden="true"></i>
+        <a href="/vin.html" class="index-header-btn btn" title="VIN Check">
+          <i class="fas fa-fingerprint" aria-hidden="true"></i>
           <span data-i18n="vinBtn">VIN</span>
         </a>
-        <button class="btn btn-ghost" id="forum-language-toggle" onclick="switchForumLanguage()" title="Language">
+        <button type="button" class="index-header-btn btn" id="forum-language-toggle" onclick="switchForumLanguage()" title="Language">
           <i class="fas fa-globe" aria-hidden="true"></i>
           <span id="forum-lang-display">EN</span>
         </button>
         <!-- Bell + dropdown: injected by js/live.js when logged in (not for guests) -->
-        <a href="#" class="btn" id="auth-btn">
+        <a href="#" class="index-header-btn btn" id="auth-btn">
           <i class="fas fa-user" aria-hidden="true"></i>
           <span data-i18n="loginBtn">Login</span>
         </a>
@@ -214,7 +226,7 @@
             <label for="topic-category" data-i18n="categoryLabel">Category</label>
             <div class="input-with-icon">
               <i class="fas fa-layer-group input-icon" aria-hidden="true"></i>
-              <select id="topic-category" required></select>
+              <select id="topic-category"></select>
             </div>
           </div>
 
@@ -222,8 +234,7 @@
             <label for="topic-title" data-i18n="titleLabel">Title</label>
             <div class="input-with-icon">
               <i class="fas fa-heading input-icon" aria-hidden="true"></i>
-              <input type="text" id="topic-title" required minlength="8" maxlength="160"
-                     placeholder="Rough idle on cold start" />
+              <input type="text" id="topic-title" maxlength="160" placeholder="Rough idle on cold start (optional)" />
             </div>
             <div class="field-error" id="topic-title-error"></div>
           </div>
@@ -246,11 +257,15 @@
             </div>
           </div>
 
-          <div class="field">
+          <div class="field field--topic-description">
             <label for="topic-content" data-i18n="contentLabel">Description</label>
-            <textarea id="topic-content" required minlength="20" maxlength="8000"
-                      placeholder="Describe the symptoms, what you've checked, any codes or sounds…"
-                      class="topic-textarea"></textarea>
+            <textarea
+              id="topic-content"
+              maxlength="8000"
+              rows="6"
+              placeholder="Optional — symptoms, what you’ve checked, codes, sounds…"
+              class="topic-textarea"
+            ></textarea>
             <div class="hint textarea-counter">
               <i class="fas fa-align-left" aria-hidden="true"></i>
               <span><span id="topic-content-count">0</span> / 8000</span>
@@ -513,11 +528,11 @@
     </footer>
 
     <script src="./js/footer.js" defer></script>
-    <script src="./js/translations.js?v=3.0" defer></script>
+    <script src="./js/translations.js?v=3.9" defer></script>
     <script src="./js/parts-finder.js?v=3.0" defer></script>
     <script src="./js/script.js?v=3.0" defer></script>
-    <script src="./js/forum.js?v=3.0" defer></script>
-    <script src="./js/live.js?v=3.3" defer></script>
+    <script src="./js/forum.js?v=3.3" defer></script>
+    <script src="./js/live.js?v=3.5" defer></script>
     <script src="./js/modal-escape.js?v=3.0" defer></script>
   </body>
 </html>

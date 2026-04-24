@@ -346,7 +346,10 @@
     <link rel="stylesheet" href="./css/responsive.css?v=2.93" />
     <link rel="stylesheet" href="./css/notifications.css?v=2.91" />
     <link rel="stylesheet" href="./css/parts-finder.css" />
-    <link rel="stylesheet" href="./css/index-bento.css?v=5" />
+    <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
+    <link rel="stylesheet" href="./css/forum.css?v=3.14" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=6" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -389,26 +392,16 @@
     class="bmw-pattern min-h-screen bg-bimmer-bg font-sans text-slate-200 antialiased"
   >
     <div id="webgl-container" class="index-bento-bg"></div>
-    <header
-      class="index-bento flex flex-wrap items-center justify-between gap-4 sm:gap-5"
-    >
-      <div
-        class="logo-container flex min-w-0 max-w-[min(100%,22rem)] flex-1 items-center"
-      >
+    <header class="forum-header index-bento">
+      <div class="logo-container index-header-brand">
         <a
-          class="main_logo_refr group flex min-w-0 items-center gap-3.5 no-underline"
+          class="main_logo_refr"
           href="#"
+          aria-label="BMW Diagnostic Codes"
         >
-          <div class="logo h-10 w-10 shrink-0 sm:h-11 sm:w-11">
+          <div class="logo" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="48"
-                stroke="white"
-                stroke-width="4"
-                fill="black"
-              />
+              <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
               <circle cx="50" cy="50" r="35" fill="white" />
               <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
               <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
@@ -416,53 +409,33 @@
               <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
             </svg>
           </div>
-          <h1
-            class="m-0 truncate text-base font-semibold leading-tight tracking-tight text-slate-100 sm:text-[1.1rem]"
-          >
-            BMW Diagnostic Codes
-          </h1>
+          <h1 class="index-header-title">BMW Diagnostic Codes</h1>
         </a>
       </div>
-      <div
-        class="controls flex flex-wrap items-center justify-end gap-2 sm:gap-3"
-      >
-        <a
-          href="vin.html"
-          class="index-header-btn btn"
-        >
+      <div class="controls">
+        <a href="vin.html" class="index-header-btn btn" title="VIN Check">
           <i class="fas fa-fingerprint" aria-hidden="true"></i>
           <span data-i18n="vinBtn">VIN</span>
         </a>
-        <button
-          id="language-toggle"
-          type="button"
-          class="index-header-btn btn"
-        >
+        <button id="language-toggle" type="button" class="index-header-btn btn" title="Language">
           <i class="fas fa-globe" aria-hidden="true"></i>
           <span>EN</span>
         </button>
-        <button
-          type="button"
-          class="index-header-btn btn"
-          onclick="toggleFavoritesModal()"
-        >
+        <button type="button" class="index-header-btn btn" onclick="toggleFavoritesModal()">
           <i class="fas fa-star" aria-hidden="true"></i>
           <span data-i18n="savedBtn">Saved</span>
         </button>
-        <a
-          href="forum.html"
-          class="index-header-btn btn"
-        >
+        <a href="forum.html" class="index-header-btn btn">
           <i class="fas fa-comments" aria-hidden="true"></i>
           <span data-i18n="forumBtn">Forum</span>
         </a>
         <a
           href="#"
-          class="btn hidden min-h-12"
+          class="index-header-btn btn hidden"
           id="auth-btn"
           onclick="toggleAuthModal()"
         >
-          <i class="fas fa-user"></i>
+          <i class="fas fa-user" aria-hidden="true"></i>
           <span id="btn-login-text">Login</span>
         </a>
       </div>
