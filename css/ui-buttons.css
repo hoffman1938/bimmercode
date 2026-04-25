@@ -129,3 +129,79 @@
   transform: none !important;
   pointer-events: none;
 }
+
+/* =============================================================================
+   Auth dropdown (Profile + Logout)
+   ========================================================================== */
+
+.auth-dropdown-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.auth-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 200;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.97);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  pointer-events: none;
+}
+
+.auth-dropdown-wrap.open .auth-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.auth-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  box-sizing: border-box;
+}
+
+.auth-dropdown-item:hover {
+  background: rgba(37, 99, 235, 0.14);
+  color: #f8fafc;
+}
+
+.auth-dropdown-item i {
+  font-size: 0.9rem;
+  width: 1.1rem;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.auth-dropdown-logout {
+  color: #f87171;
+}
+
+.auth-dropdown-logout:hover {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
+}

@@ -661,29 +661,52 @@ function checkAuthStatus() {
       }
     }
 
-    const path = window.location.pathname || "";
-    const onForumOrTopic =
-      /\/forum(\.html)?$/i.test(path) ||
-      path === "/topic" ||
-      path.startsWith("/topic/") ||
-      /\/topic\.html$/i.test(path);
+    authBtn.classList.add("auth-btn--logged");
+    authBtn.setAttribute("href", "#");
+    authBtn.removeAttribute("onclick");
 
-    if (onForumOrTopic) {
-      // Header chip: real link to profile (init() async runs after forum.js, so this must not open modal)
-      authBtn.classList.add("auth-btn--logged");
-      authBtn.setAttribute("href", "/profile");
-      authBtn.removeAttribute("onclick");
-      authBtn.onclick = null;
-    } else {
-      authBtn.classList.remove("auth-btn--logged");
-      authBtn.setAttribute("href", "#");
-      authBtn.removeAttribute("onclick");
-      authBtn.onclick = (e) => {
-        e.preventDefault();
-        toggleProfileModal();
-      };
+    // Create dropdown wrapper if not already present
+    let wrapper = authBtn.closest(".auth-dropdown-wrap");
+    if (!wrapper) {
+      wrapper = document.createElement("div");
+      wrapper.className = "auth-dropdown-wrap";
+      authBtn.parentNode.insertBefore(wrapper, authBtn);
+      wrapper.appendChild(authBtn);
     }
+    // Remove old dropdown if exists
+    wrapper.querySelector(".auth-dropdown")?.remove();
+
+    let profileLabel = "Profile";
+    let logoutLabel = "Logout";
+    if (typeof APP_TRANSLATIONS !== 'undefined' && typeof currentLanguage !== 'undefined') {
+      profileLabel = APP_TRANSLATIONS[currentLanguage]?.profile || "Profile";
+      logoutLabel = APP_TRANSLATIONS[currentLanguage]?.logout || "Logout";
+    }
+
+    const dropdown = document.createElement("div");
+    dropdown.className = "auth-dropdown";
+    dropdown.innerHTML = `
+      <a href="/profile" class="auth-dropdown-item">
+        <i class="fas fa-user-circle" aria-hidden="true"></i> ${profileLabel}
+      </a>
+      <button type="button" class="auth-dropdown-item auth-dropdown-logout" onclick="logout && logout()">
+        <i class="fas fa-sign-out-alt" aria-hidden="true"></i> ${logoutLabel}
+      </button>
+    `;
+    wrapper.appendChild(dropdown);
+
+    authBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      wrapper.classList.toggle("open");
+    };
   } else {
+    // Remove wrapper if it was added
+    const wrapper = authBtn.closest(".auth-dropdown-wrap");
+    if (wrapper) {
+      wrapper.parentNode.insertBefore(authBtn, wrapper);
+      wrapper.remove();
+    }
     authBtn.classList.remove("auth-btn--logged");
     authBtn.setAttribute("href", "#");
     authBtn.removeAttribute("onclick");
@@ -693,6 +716,13 @@ function checkAuthStatus() {
     };
   }
 }
+
+// Close auth dropdown on click outside
+document.addEventListener("click", (e) => {
+  document.querySelectorAll(".auth-dropdown-wrap.open").forEach((wrap) => {
+    if (!wrap.contains(e.target)) wrap.classList.remove("open");
+  });
+});
 
 // Глобальная функция выхода
 window.logout = function () {

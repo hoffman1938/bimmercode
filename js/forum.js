@@ -493,13 +493,48 @@
     if (!btn) return;
     if (user) {
       btn.classList.add("auth-btn--logged");
+      // Make it a button-like element that toggles a dropdown
+      btn.setAttribute("href", "#");
+      btn.removeAttribute("onclick");
       btn.innerHTML = user.avatar_url
         ? `<img src="${escapeHtml(user.avatar_url)}" alt="" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:8px;border:1px solid rgba(255,255,255,0.2);"> <span>${escapeHtml(user.username)}</span>`
         : `<i class="fas fa-user" aria-hidden="true"></i> <span>${escapeHtml(user.username)}</span>`;
-      btn.setAttribute("href", "/profile");
-      btn.removeAttribute("onclick");
-      btn.onclick = null;
+
+      // Create dropdown if not already present
+      let wrapper = btn.closest(".auth-dropdown-wrap");
+      if (!wrapper) {
+        wrapper = document.createElement("div");
+        wrapper.className = "auth-dropdown-wrap";
+        btn.parentNode.insertBefore(wrapper, btn);
+        wrapper.appendChild(btn);
+      }
+      // Remove old dropdown if exists
+      wrapper.querySelector(".auth-dropdown")?.remove();
+
+      const dropdown = document.createElement("div");
+      dropdown.className = "auth-dropdown";
+      dropdown.innerHTML = `
+        <a href="/profile" class="auth-dropdown-item">
+          <i class="fas fa-user-circle" aria-hidden="true"></i> ${escapeHtml(t("profile", "Profile"))}
+        </a>
+        <button type="button" class="auth-dropdown-item auth-dropdown-logout" onclick="logout && logout()">
+          <i class="fas fa-sign-out-alt" aria-hidden="true"></i> ${escapeHtml(t("logout", "Logout"))}
+        </button>
+      `;
+      wrapper.appendChild(dropdown);
+
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        wrapper.classList.toggle("open");
+      };
     } else {
+      // Remove wrapper if it was added
+      const wrapper = btn.closest(".auth-dropdown-wrap");
+      if (wrapper) {
+        wrapper.parentNode.insertBefore(btn, wrapper);
+        wrapper.remove();
+      }
       btn.classList.remove("auth-btn--logged");
       btn.innerHTML = `<i class="fas fa-user" aria-hidden="true"></i> <span>${escapeHtml(t("loginBtn", "Login"))}</span>`;
       btn.setAttribute("href", "#");
