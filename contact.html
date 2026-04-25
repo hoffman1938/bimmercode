@@ -22,170 +22,170 @@
      crossorigin="anonymous"></script>
     <style>
         /* ─── Page Layout ─── */
-        .contact-page { padding: 40px 20px 80px; max-width: 1100px; margin: 0 auto; }
+        .contact-page { padding: 48px 24px 80px; max-width: 1100px; margin: 0 auto; }
         /* ─── Hero Banner ─── */
         .contact-hero {
             text-align: center;
-            margin-bottom: 50px;
-            padding: 50px 20px;
-            background: linear-gradient(135deg, rgba(0,102,179,0.15) 0%, rgba(0,0,0,0) 60%);
-            border-radius: 20px;
-            border: 1px solid rgba(0,102,179,0.2);
+            margin-bottom: 48px;
+            padding: 48px 24px;
+            background: linear-gradient(135deg, var(--color-primary-alpha-10, rgba(28,105,212,0.10)) 0%, transparent 60%);
+            border-radius: var(--radius-xl, 20px);
+            border: 1px solid var(--color-border, rgba(255,255,255,0.10));
             position: relative;
             overflow: hidden;
         }
         .contact-hero::before {
             content: '';
             position: absolute; inset: 0;
-            background: radial-gradient(ellipse at 20% 50%, rgba(0,102,179,0.12) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 20% 50%, var(--color-primary-alpha-10, rgba(28,105,212,0.08)) 0%, transparent 60%);
         }
         .contact-hero h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 800;
-            color: white;
-            margin-bottom: 15px;
+            font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+            font-weight: 700;
+            color: var(--color-text-primary, #E4E4E7);
+            margin-bottom: 16px;
         }
-        .contact-hero h1 span { color: var(--bmw-sky, #4db8ff); }
-        .contact-hero p { font-size: 1.1rem; color: #aaa; max-width: 550px; margin: 0 auto; line-height: 1.6; }
+        .contact-hero h1 span { color: var(--color-accent, #4DA8FF); }
+        .contact-hero p { font-size: 1rem; color: var(--color-text-secondary, #A1A1AA); max-width: 520px; margin: 0 auto; line-height: 1.65; }
 
         /* ─── Tab Switcher ─── */
         .contact-tabs {
             display: flex;
             gap: 12px;
             justify-content: center;
-            margin-bottom: 36px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
         }
         .contact-tab-btn {
-            padding: 12px 28px;
-            border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.12);
+            padding: 10px 24px;
+            border-radius: var(--radius-pill, 999px);
+            border: 1px solid var(--color-border, rgba(255,255,255,0.10));
             background: rgba(255,255,255,0.04);
-            color: #aaa;
+            color: var(--color-text-secondary, #A1A1AA);
             cursor: pointer;
             font-size: 14px;
-            font-weight: 600;
-            transition: all 0.25s;
+            font-weight: 500;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
             display: flex; align-items: center; gap: 8px;
         }
         .contact-tab-btn.active, .contact-tab-btn:hover {
-            background: var(--bmw-blue, #0066b3);
-            border-color: var(--bmw-blue, #0066b3);
-            color: white;
+            background: var(--color-primary, #1C69D4);
+            border-color: var(--color-primary, #1C69D4);
+            color: #fff;
         }
 
         /* ─── Two-panel grid ─── */
         .contact-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 28px;
+            gap: 24px;
         }
-        @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
 
         /* ─── Form Cards ─── */
         .contact-card {
-            background: rgba(18, 20, 24, 0.9);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 18px;
+            background: var(--color-surface, #151517);
+            border: 1px solid var(--color-border, rgba(255,255,255,0.10));
+            border-radius: var(--radius-xl, 20px);
             padding: 32px;
-            backdrop-filter: blur(12px);
-            transition: border-color 0.3s;
+            transition: border-color 0.2s;
             display: none;
         }
         .contact-card.visible { display: block; }
-        .contact-card:hover { border-color: rgba(0,102,179,0.35); }
+        .contact-card:hover { border-color: var(--color-border-strong, rgba(255,255,255,0.18)); }
 
         .contact-card-header { margin-bottom: 24px; }
-        .contact-card-header h2 { color: white; font-size: 1.25rem; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
-        .contact-card-header h2 i { color: var(--bmw-blue, #0066b3); font-size: 1rem; }
-        .contact-card-header p { color: #999; font-size: 0.9rem; line-height: 1.5; }
+        .contact-card-header h2 { color: var(--color-text-primary, #E4E4E7); font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .contact-card-header h2 i { color: var(--color-primary, #1C69D4); font-size: 1rem; }
+        .contact-card-header p { color: var(--color-text-muted, #71717A); font-size: 0.9rem; line-height: 1.6; }
 
         /* ─── Form Elements ─── */
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; color: #aaa; font-size: 13px; margin-bottom: 7px; font-weight: 500; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: var(--color-text-secondary, #A1A1AA); font-size: 13px; margin-bottom: 8px; font-weight: 500; }
         .form-input {
             width: 100%;
-            padding: 11px 14px;
-            border-radius: 9px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05);
-            color: white;
+            padding: 12px 16px;
+            border-radius: var(--radius-md, 10px);
+            border: 1px solid var(--color-border, rgba(255,255,255,0.10));
+            background: rgba(255,255,255,0.04);
+            color: var(--color-text-primary, #E4E4E7);
             font-size: 14px;
-            transition: border-color 0.2s, background 0.2s;
+            font-family: var(--font-sans, "Inter", sans-serif);
+            transition: border-color 0.2s, box-shadow 0.2s;
             box-sizing: border-box;
         }
         .form-input:focus {
             outline: none;
-            border-color: var(--bmw-blue, #0066b3);
-            background: rgba(0,102,179,0.08);
+            border-color: var(--color-primary, #1C69D4);
+            box-shadow: 0 0 0 3px var(--color-primary-alpha-10, rgba(28,105,212,0.10));
         }
-        .form-input option { background: #1a1a2e; color: white; }
+        .form-input option { background: var(--color-surface-2, #1E1E1E); color: var(--color-text-primary, #E4E4E7); }
         textarea.form-input { resize: vertical; min-height: 130px; }
 
-        .submit-btn {
+        .contact-card .submit-btn {
             width: 100%;
             padding: 13px;
-            background: var(--bmw-blue, #0066b3);
-            color: white;
+            background: var(--color-primary, #1C69D4);
+            color: #fff;
             border: none;
-            border-radius: 9px;
+            border-radius: var(--radius-md, 10px);
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s, transform 0.15s;
             display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .submit-btn:hover { background: #005696; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,102,179,0.35); }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .contact-card .submit-btn:hover { background: var(--color-primary-600, #155BB8); transform: translateY(-1px); }
+        .contact-card .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         .form-status {
             text-align: center;
-            margin-top: 14px;
+            margin-top: 16px;
             font-size: 13px;
             min-height: 20px;
             line-height: 1.5;
         }
-        .form-status.success { color: #2ecc71; }
-        .form-status.error { color: #e74c3c; }
+        .form-status.success { color: var(--color-success, #4CAF50); }
+        .form-status.error { color: var(--color-danger, #E24B4A); }
 
         /* ─── Fallback mailto ─── */
         .mailto-fallback {
             margin-top: 16px;
-            padding: 14px;
-            border: 1px solid rgba(255,200,0,0.3);
-            border-radius: 9px;
-            background: rgba(255,200,0,0.05);
+            padding: 16px;
+            border: 1px solid var(--color-warning-bg, rgba(239,159,39,0.25));
+            border-radius: var(--radius-md, 10px);
+            background: var(--color-warning-bg, rgba(239,159,39,0.08));
             display: none;
         }
-        .mailto-fallback p { color: #f0c040; font-size: 13px; margin-bottom: 10px; }
+        .mailto-fallback p { color: var(--color-warning, #EF9F27); font-size: 13px; margin-bottom: 10px; }
         .mailto-btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 9px 18px;
-            background: rgba(255,200,0,0.15);
-            border: 1px solid rgba(255,200,0,0.4);
-            border-radius: 6px;
-            color: #f0c040;
+            background: var(--color-warning-bg, rgba(239,159,39,0.12));
+            border: 1px solid rgba(239,159,39,0.3);
+            border-radius: var(--radius-sm, 6px);
+            color: var(--color-warning, #EF9F27);
             text-decoration: none;
             font-size: 13px;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: background 0.2s;
         }
-        .mailto-btn:hover { background: rgba(255,200,0,0.25); }
+        .mailto-btn:hover { background: rgba(239,159,39,0.2); }
 
-        /* ─── Info Card (sidebar) ─── */
+        /* ─── Info Card ─── */
         .contact-info-card {
-            background: rgba(18,20,24,0.9);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 18px;
+            background: var(--color-surface, #151517);
+            border: 1px solid var(--color-border, rgba(255,255,255,0.10));
+            border-radius: var(--radius-xl, 20px);
             padding: 32px;
-            margin-top: 28px;
+            margin-top: 24px;
         }
-        .contact-info-card h3 { color: white; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .contact-info-card h3 i { color: var(--bmw-blue, #0066b3); }
-        .info-row { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .contact-info-card h3 { color: var(--color-text-primary, #E4E4E7); font-size: 1.05rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .contact-info-card h3 i { color: var(--color-primary, #1C69D4); }
+        .info-row { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--color-divider, rgba(255,255,255,0.06)); }
         .info-row:last-child { border-bottom: none; }
-        .info-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 10px; background: rgba(0,102,179,0.15); display: flex; align-items: center; justify-content: center; color: var(--bmw-blue, #0066b3); }
-        .info-text strong { display: block; color: white; font-size: 13px; margin-bottom: 3px; }
-        .info-text span { color: #888; font-size: 12px; }
+        .info-icon { width: 40px; height: 40px; min-width: 40px; border-radius: var(--radius-md, 10px); background: var(--color-primary-alpha-10, rgba(28,105,212,0.10)); display: flex; align-items: center; justify-content: center; color: var(--color-primary, #1C69D4); }
+        .info-text strong { display: block; color: var(--color-text-primary, #E4E4E7); font-size: 13px; margin-bottom: 3px; }
+        .info-text span { color: var(--color-text-muted, #71717A); font-size: 12px; }
 
     </style>
 </head>
@@ -219,8 +219,8 @@
             <a href="/forum" class="index-header-btn btn">
                 <i class="fas fa-comments" aria-hidden="true"></i> <span data-i18n="forumBtn">Forum</span>
             </a>
-            <button type="button" class="index-header-btn btn" onclick="switchPageLang()" title="Language">
-                <i class="fas fa-globe" aria-hidden="true"></i> <span id="page-lang-display">EN</span>
+            <button type="button" class="index-header-btn btn" id="language-toggle" title="Language">
+                <i class="fas fa-globe" aria-hidden="true"></i> <span>EN</span>
             </button>
         </div>
     </header>
@@ -362,34 +362,9 @@
     <footer><!-- Content injected by js/footer.js --></footer>
 
     <script src="./js/footer.js"></script>
+    <script src="./js/i18n-init.js"></script>
 
     <script>
-    // ─── i18n ─────────────────────────────────────────────────────────────────
-    function getLang() { return localStorage.getItem('language') || 'en'; }
-    function t(key) {
-        const lang = getLang();
-        return (window.APP_TRANSLATIONS?.[lang]?.[key]) || (window.APP_TRANSLATIONS?.['en']?.[key]) || key;
-    }
-    function applyTranslations() {
-        document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
-        document.querySelectorAll('option[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
-    }
-    applyTranslations();
-    window.addEventListener('languageChanged', applyTranslations);
-
-    // ─── Language Switcher ────────────────────────────────────────────────────
-    const LANGS = ['en', 'ru', 'ka'];
-    const LANG_LABELS = { en: 'EN', ru: 'RU', ka: 'KA' };
-    function switchPageLang() {
-        const cur = getLang();
-        const next = LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length];
-        localStorage.setItem('language', next);
-        document.getElementById('page-lang-display').textContent = LANG_LABELS[next];
-        applyTranslations();
-        window.dispatchEvent(new Event('languageChanged'));
-    }
-    document.getElementById('page-lang-display').textContent = LANG_LABELS[getLang()] || 'EN';
-
     // ─── Tab Switching ─────────────────────────────────────────────────────────
     function switchTab(tab) {
         document.querySelectorAll('.contact-tab-btn').forEach(b => b.classList.remove('active'));

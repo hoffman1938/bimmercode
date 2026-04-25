@@ -365,7 +365,6 @@
     />
     <link rel="manifest" href="./site.webmanifest" />
 
-    <!-- index: SEO block uses .index-seo in index-bento.css -->
     <style>
       .notification-btn {
         display: none !important;
@@ -503,47 +502,59 @@
       <!-- Parts Finder Container -->
       <div id="parts-finder-container" class="hidden"></div>
 
-      <!-- SEO/Page Content -->
-      <section class="seo-content index-seo">
-        <h2>BMW Diagnostic Trouble Codes Database</h2>
-        <p>
-          BimmerCodes.net is a comprehensive BMW DTC database that helps you
-          diagnose and fix issues with your BMW vehicle. Our free tool supports
-          all BMW models including E-series (E30, E36, E46, E60, E90), F-series
-          (F10, F30, F80), and G-series (G20, G30, G80).
-        </p>
-
-        <h3>Supported BMW Diagnostic Systems</h3>
-        <p>
-          Our database includes codes for all major BMW systems: DME/DDE (engine
-          management), EGS (automatic transmission), ABS/DSC (stability
-          control), SRS (airbag systems), KOMBI (instrument cluster), CAS (car
-          access system), FRM (footwell module). Compatible with INPA, ISTA/D,
-          ISTA/P, Rheingold, Carly, BimmerCode, and ELM327 adapters.
-        </p>
-
-        <h3>Коды ошибок BMW на русском языке</h3>
-        <p>
-          Наша база данных полностью поддерживает русский язык. Введите код
-          ошибки BMW и получите подробное описание, возможные причины
-          неисправности и рекомендации по ремонту. Поддерживаются все модели:
-          E39, E46, E53 X5, E60, E65, E70 X5, E90, F01, F10, F30, G20, G30.
-        </p>
-
-        <h3>ბმვ დიაგნოსტიკა ქართულად</h3>
-        <p>
-          ჩვენი მონაცემთა ბაზა მხარს უჭერს ქართულ ენას. შეიყვანეთ BMW შეცდომის
-          კოდი და მიიღეთ დეტალური აღწერა და რემონტის რეკომენდაციები ქართულად.
-        </p>
-
-        <h3>Popular BMW Error Code Categories</h3>
-        <p>
-          Engine codes DME DDE misfires fuel system VANOS. Transmission codes
-          EGS mechatronic torque converter. ABS DSC wheel speed sensors
-          hydraulic pump. Airbag codes SRS seat occupancy crash sensors. Body
-          comfort codes power windows central locking comfort access.
-        </p>
+      <!-- Feature Highlights -->
+      <section class="index-features" id="features-section">
+        <div class="index-features-grid">
+          <a href="#" class="index-feature-card" onclick="document.getElementById('search-input').focus(); return false;">
+            <div class="index-feature-icon">
+              <i class="fas fa-microchip"></i>
+            </div>
+            <h3 data-i18n="featureCardDtcTitle">DTC Database</h3>
+            <p data-i18n="featureCardDtcDesc">50,000+ BMW & Mini fault codes with detailed descriptions and repair guides</p>
+            <span class="index-feature-arrow"><i class="fas fa-arrow-right"></i></span>
+          </a>
+          <a href="vin.html" class="index-feature-card">
+            <div class="index-feature-icon index-feature-icon--teal">
+              <i class="fas fa-fingerprint"></i>
+            </div>
+            <h3 data-i18n="featureCardVinTitle">VIN Decoder</h3>
+            <p data-i18n="featureCardVinDesc">Decode any BMW VIN — model, engine, plant, equipment, and production date</p>
+            <span class="index-feature-arrow"><i class="fas fa-arrow-right"></i></span>
+          </a>
+          <a href="forum.html" class="index-feature-card">
+            <div class="index-feature-icon index-feature-icon--violet">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h3 data-i18n="featureCardCommunityTitle">Community</h3>
+            <p data-i18n="featureCardCommunityDesc">Ask questions, share knowledge, and get help from BMW enthusiasts worldwide</p>
+            <span class="index-feature-arrow"><i class="fas fa-arrow-right"></i></span>
+          </a>
+        </div>
       </section>
+
+      <!-- Stats Bar -->
+      <section class="index-stats-bar">
+        <div class="index-stat">
+          <span class="index-stat-value" data-i18n="statCodesValue">50K+</span>
+          <span class="index-stat-label" data-i18n="statCodesLabel">Error Codes</span>
+        </div>
+        <div class="index-stat-divider"></div>
+        <div class="index-stat">
+          <span class="index-stat-value" data-i18n="statLangsValue">3</span>
+          <span class="index-stat-label" data-i18n="statLangsLabel">Languages</span>
+        </div>
+        <div class="index-stat-divider"></div>
+        <div class="index-stat">
+          <span class="index-stat-value" data-i18n="statSeriesValue">E/F/G</span>
+          <span class="index-stat-label" data-i18n="statSeriesLabel">All Series</span>
+        </div>
+        <div class="index-stat-divider"></div>
+        <div class="index-stat">
+          <span class="index-stat-value" data-i18n="statFreeValue">Free</span>
+          <span class="index-stat-label" data-i18n="statFreeLabel">No Registration</span>
+        </div>
+      </section>
+
     </main>
 
     <footer>

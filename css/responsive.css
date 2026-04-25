@@ -109,8 +109,8 @@
   background: rgba(255,255,255,0.05);
 }
 .offcanvas-content .nav-item.active {
-  background: rgba(0, 102, 179, 0.2);
-  border-color: #0066b3;
+  background: var(--color-primary-alpha-20, rgba(28, 105, 212, 0.20));
+  border-color: var(--color-primary, #1C69D4);
 }
 
 
@@ -205,8 +205,8 @@
   
   .search-box {
     /* Ensure wrapper has the styles */
-    background: var(--f-glass-heavy);
-    border: 1px solid var(--f-glass-border);
+    background: var(--color-surface-glass, rgba(18, 20, 24, 0.72));
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.10));
     border-radius: 30px;
     padding: 12px 20px;
   }

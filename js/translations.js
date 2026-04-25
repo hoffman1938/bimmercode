@@ -463,6 +463,24 @@ window.APP_TRANSLATIONS = {
     reportPromptBody: "Describe what is wrong with this post. Our moderators will review your report.",
     reportReasonLabel: "Reason",
     reportPlaceholder: "E.g. spam, offensive content, offtopic...",
+
+    // === INDEX FEATURE CARDS ===
+    featureCardDtcTitle: "DTC Database",
+    featureCardDtcDesc: "50,000+ BMW & Mini fault codes with detailed descriptions and repair guides",
+    featureCardVinTitle: "VIN Decoder",
+    featureCardVinDesc: "Decode any BMW VIN — model, engine, plant, equipment, and production date",
+    featureCardCommunityTitle: "Community",
+    featureCardCommunityDesc: "Ask questions, share knowledge, and get help from BMW enthusiasts worldwide",
+
+    // === INDEX STATS BAR ===
+    statCodesValue: "50K+",
+    statCodesLabel: "Error Codes",
+    statLangsValue: "3",
+    statLangsLabel: "Languages",
+    statSeriesValue: "E/F/G",
+    statSeriesLabel: "All Series",
+    statFreeValue: "Free",
+    statFreeLabel: "No Registration",
   },
   ru: {
     // === HOME ===
@@ -960,6 +978,24 @@ window.APP_TRANSLATIONS = {
     reportPromptBody: "Кратко опишите, что не так. Модераторы рассмотрят жалобу.",
     reportReasonLabel: "Причина",
     reportPlaceholder: "Напр.: спам, оскорбления, оффтоп...",
+
+    // === INDEX FEATURE CARDS ===
+    featureCardDtcTitle: "База DTC кодов",
+    featureCardDtcDesc: "50 000+ кодов ошибок BMW и Mini с описанием и рекомендациями по ремонту",
+    featureCardVinTitle: "Декодер VIN",
+    featureCardVinDesc: "Расшифровка любого VIN BMW — модель, двигатель, завод, комплектация и дата выпуска",
+    featureCardCommunityTitle: "Сообщество",
+    featureCardCommunityDesc: "Задавайте вопросы, делитесь опытом и получайте помощь от энтузиастов BMW",
+
+    // === INDEX STATS BAR ===
+    statCodesValue: "50K+",
+    statCodesLabel: "Кодов ошибок",
+    statLangsValue: "3",
+    statLangsLabel: "Языка",
+    statSeriesValue: "E/F/G",
+    statSeriesLabel: "Все серии",
+    statFreeValue: "Бесплатно",
+    statFreeLabel: "Без регистрации",
   },
   ka: {
     // === HOME ===
@@ -1456,6 +1492,24 @@ window.APP_TRANSLATIONS = {
     reportPromptBody: "მოკლედ მიუთითეთ, რა არის პრობლემა. მოდერატორები განიხილავენ.",
     reportReasonLabel: "მიზეზი",
     reportPlaceholder: "მაგ: სპამი, არაზუსტი კონტენტი...",
+
+    // === INDEX FEATURE CARDS ===
+    featureCardDtcTitle: "DTC ბაზა",
+    featureCardDtcDesc: "50,000+ BMW და Mini შეცდომის კოდი დეტალური აღწერით და შეკეთების რეკომენდაციებით",
+    featureCardVinTitle: "VIN დეკოდერი",
+    featureCardVinDesc: "ნებისმიერი BMW VIN-ის გაშიფვრა — მოდელი, ძრავი, ქარხანა, აღჭურვილობა",
+    featureCardCommunityTitle: "საზოგადოება",
+    featureCardCommunityDesc: "დასვით კითხვები, გაუზიარეთ ცოდნა და მიიღეთ დახმარება BMW-ს ენთუზიასტებისგან",
+
+    // === INDEX STATS BAR ===
+    statCodesValue: "50K+",
+    statCodesLabel: "შეცდომის კოდი",
+    statLangsValue: "3",
+    statLangsLabel: "ენა",
+    statSeriesValue: "E/F/G",
+    statSeriesLabel: "ყველა სერია",
+    statFreeValue: "უფასო",
+    statFreeLabel: "რეგისტრაციის გარეშე",
   },
 
 

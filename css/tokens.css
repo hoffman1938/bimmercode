@@ -22,8 +22,8 @@
   --color-accent-dark:    #2B7BC4;
 
   /* ---------- Surfaces (dark by default) --------------------------------- */
-  --color-bg-deep:        #050507;   /* page background behind everything */
-  --color-surface:        #141414;   /* base card / nav background */
+  --color-bg-deep:        #0A0A0C;   /* page background — softened from pure black */
+  --color-surface:        #151517;   /* base card / nav background */
   --color-surface-2:      #1E1E1E;   /* elevated card, modal */
   --color-surface-3:      #2A2A2A;   /* input, hover, code block */
   --color-surface-4:      #353535;   /* pressed / active state */
@@ -31,10 +31,10 @@
   --color-surface-glass-2: rgba(28, 32, 40, 0.65);
 
   /* ---------- Text ------------------------------------------------------- */
-  --color-text-primary:   #F0F0F0;
-  --color-text-secondary: #B4B4B4;
-  --color-text-muted:     #8A8A8A;
-  --color-text-disabled:  #5A5A5A;
+  --color-text-primary:   #E4E4E7;   /* warm off-white — easier on eyes */
+  --color-text-secondary: #A1A1AA;   /* zinc-400, warmer */
+  --color-text-muted:     #71717A;   /* zinc-500, better contrast */
+  --color-text-disabled:  #52525B;   /* zinc-600 */
   --color-text-inverse:   #0A0A0A;
   --color-text-on-primary: #FFFFFF;
 
@@ -106,13 +106,13 @@
   --radius-pill: 999px;
 
   /* ---------- Elevation ------------------------------------------------- */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.55);
-  --shadow-glow:      0 0 24px rgba(28, 105, 212, 0.28);
-  --shadow-glow-soft: 0 0 40px rgba(28, 105, 212, 0.15);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.36);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.40);
+  --shadow-glow:      none;   /* removed — moving to calmer aesthetic */
+  --shadow-glow-soft: none;
 
   /* ---------- Motion ---------------------------------------------------- */
   --ease-out:    cubic-bezier(0.22, 0.61, 0.36, 1);
