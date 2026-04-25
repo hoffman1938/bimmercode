@@ -1,5 +1,46 @@
 /* BimmerCodes index — Advanced Tech-Dark, Bento DTC cards (works with style.css) */
 
+/* ── Tailwind replacement: body base styles ── */
+body.index-body {
+  min-height: 100vh;
+  background-color: #0f172a;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #e2e8f0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Tailwind replacement: layout wrappers ── */
+.tw-search-outer {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding-bottom: 0.5rem;
+}
+
+.tw-stack-y > * + * {
+  margin-top: 1.25rem;
+}
+
+/* ── Tailwind replacement: hero card ── */
+.index-hero-card {
+  border-radius: 1.75rem;
+  border: 1px solid rgba(51, 65, 85, 0.4);
+  background: linear-gradient(to bottom, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.4));
+  padding: 1.25rem;
+  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+@media (min-width: 640px) {
+  .index-hero-card {
+    padding: 1.75rem;
+  }
+  .index-hero-card.tw-stack-y > * + * {
+    margin-top: 1.5rem;
+  }
+}
+
 html.index-bento-page {
   background-color: #0f172a;
 }
@@ -182,6 +223,7 @@ header.index-bento button.index-header-btn i {
 /* Hero block (copy hierarchy) */
 .index-hero {
   text-align: left;
+  max-width: 42rem;
 }
 
 .index-hero-kicker {
@@ -268,6 +310,7 @@ header.index-bento button.index-header-btn i {
   padding: 1.5rem 1.25rem;
   margin-top: 0;
   max-width: none;
+  text-align: center;
   background: rgba(30, 41, 59, 0.5);
   border: 1px solid rgba(30, 41, 59, 0.85);
   border-radius: 1.25rem;

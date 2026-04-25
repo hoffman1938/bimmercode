@@ -1,4 +1,4 @@
-const CACHE_NAME = "bimmercodes-v32-sw-fetch-fallback";
+const CACHE_NAME = "bimmercodes-v33-sw-fetch-fallback";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
@@ -14,7 +14,6 @@ const ASSETS_TO_CACHE = [
   "/js/forum.js",
   "/js/topic.js",
   "/js/live.js",
-  "/js/bot_logic.js",
   "/data/codes.json",
   "/assets/icons/ico.svg"
 ];

@@ -14,12 +14,12 @@ export async function onRequestPost({ request, env }) {
     `).bind(
       user_id || null, 
       event_type || 'page_view', 
-      path, 
-      referrer, 
-      user_agent, 
+      path || null, 
+      referrer || null, 
+      user_agent || null, 
       ip, 
       country, 
-      device_type, 
+      device_type || null, 
       meta ? JSON.stringify(meta) : null
     ).run();
 

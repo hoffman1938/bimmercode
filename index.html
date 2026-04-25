@@ -316,23 +316,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap"
     />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        corePlugins: { preflight: false },
-        theme: {
-          extend: {
-            colors: {
-              bimmer: { bg: "#0F172A", surface: "#1E293B", accent: "#2563EB" },
-            },
-            fontFamily: {
-              sans: ["Inter", "system-ui", "sans-serif"],
-              mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
-            },
-          },
-        },
-      };
-    </script>
+
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
     <link rel="dns-prefetch" href="https://www.google-analytics.com" />
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
@@ -389,7 +373,7 @@
     </style>
   </head>
   <body
-    class="bmw-pattern min-h-screen bg-bimmer-bg font-sans text-slate-200 antialiased"
+    class="bmw-pattern index-body"
   >
     <div id="webgl-container" class="index-bento-bg"></div>
     <header class="forum-header index-bento">
@@ -441,12 +425,12 @@
       </div>
     </header>
     <main class="container index-bento">
-      <div class="mt-6 w-full pb-2">
-          <div id="search-container" class="space-y-5">
+      <div class="tw-search-outer">
+          <div id="search-container" class="tw-stack-y">
             <div
-              class="index-hero-card space-y-5 rounded-[1.75rem] border border-slate-700/40 bg-gradient-to-b from-slate-800/80 to-slate-900/40 p-5 shadow-[0_4px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:space-y-6 sm:p-7"
+              class="index-hero-card tw-stack-y"
             >
-              <div class="index-hero max-w-2xl">
+              <div class="index-hero">
                 <p
                   class="index-hero-kicker"
                   data-i18n="indexHeroKicker"
@@ -503,7 +487,7 @@
             <div id="results-container" class="hidden"></div>
             <div
               id="no-results"
-              class="index-no-results message-container hidden text-center"
+              class="index-no-results message-container hidden"
             >
               <i class="fas fa-info-circle" aria-hidden="true"></i>
               <p class="message" data-i18n="noResultsMessage">
