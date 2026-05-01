@@ -776,11 +776,24 @@ async function init() {
     await refreshUserData();
     // 1. Инициализация (как было)
     if (typeof getMockData === "function") bmwCodes = getMockData();
-    const response = await fetch("/data/codes.json");
-    if (response.ok) {
-      const data = await response.json();
+    
+    // Загрузка codes.json
+    const responseCodes = await fetch("/data/codes.json");
+    if (responseCodes.ok) {
+      const data = await responseCodes.json();
       bmwCodes = [...bmwCodes, ...data.codes];
     }
+    
+    // Загрузка data.json
+    const responseData = await fetch("/data/data.json");
+    if (responseData.ok) {
+      const data = await responseData.json();
+      // Объединяем, отдавая приоритет уже загруженным кодам (во избежание дубликатов)
+      const existingCodes = new Set(bmwCodes.map(c => c.code));
+      const newCodes = data.codes.filter(c => !existingCodes.has(c.code));
+      bmwCodes = [...bmwCodes, ...newCodes];
+    }
+
     // Expose to other scripts (forum.js, topic.js) that need to look codes up.
     window.bmwCodes = bmwCodes;
     window.dispatchEvent(new CustomEvent("bmwCodes:ready", { detail: { count: bmwCodes.length } }));
