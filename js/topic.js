@@ -1651,6 +1651,17 @@
     document.getElementById("auth-modal")?.classList.toggle("active");
   };
 
+  // Sync local user state when auth changes (login/logout) so the composer
+  // and post-action buttons refresh without a page reload.
+  window.addEventListener("auth:changed", (e) => {
+    const next = e?.detail?.user ?? (() => {
+      try { return JSON.parse(localStorage.getItem("user_data") || "null"); }
+      catch { return null; }
+    })();
+    state.user = next;
+    if (state.topic) renderTopic();
+  });
+
   window.toggleMobileMenu = function () {
     document.querySelector(".mobile-menu-overlay")?.classList.toggle("active");
     document.querySelector(".mobile-offcanvas")?.classList.toggle("active");
