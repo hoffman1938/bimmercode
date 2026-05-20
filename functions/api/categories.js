@@ -19,12 +19,22 @@ export async function onRequestGet(context) {
       row[`description_${lang}`] || row.description_en || row.description || "";
 
     // Counts per category (topics, last activity)
-    const counts = await env.DB.prepare(
-      `SELECT category, COUNT(*) AS topics_count, MAX(COALESCE(last_reply_at, created_at)) AS last_activity
-         FROM topics
-        WHERE (is_archived IS NULL OR is_archived = 0)
-        GROUP BY category`
-    ).all();
+    let counts;
+    try {
+      counts = await env.DB.prepare(
+        `SELECT category, COUNT(*) AS topics_count, MAX(COALESCE(last_reply_at, created_at)) AS last_activity
+           FROM topics
+          WHERE (is_archived IS NULL OR is_archived = 0)
+          GROUP BY category`
+      ).all();
+    } catch (countErr) {
+      if (!String(countErr?.message || countErr).includes("is_archived")) throw countErr;
+      counts = await env.DB.prepare(
+        `SELECT category, COUNT(*) AS topics_count, MAX(created_at) AS last_activity
+           FROM topics
+          GROUP BY category`
+      ).all();
+    }
     const countsBySlug = {};
     for (const c of counts.results || []) countsBySlug[c.category] = c;
 

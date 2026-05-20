@@ -24,13 +24,27 @@ class PartsFinderUI {
       if (vin) url += `&vin=${vin}`;
       
       const response = await fetch(url);
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        this.showError('Parts service unavailable');
+        return;
+      }
       const data = await response.json();
-      
+
       if (!response.ok) {
         this.showError(data.error || 'Failed to load parts');
         return;
       }
-      
+
+      const hasParts =
+        (data.parts?.primary?.length || 0) +
+        (data.parts?.secondary?.length || 0) +
+        (data.parts?.optional?.length || 0);
+      if (!hasParts) {
+        this.container.innerHTML = '';
+        return;
+      }
+
       this.renderParts(data);
     } catch (error) {
       console.error('Parts Finder Error:', error);

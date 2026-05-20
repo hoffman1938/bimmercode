@@ -46,3 +46,17 @@ BMW is a registered trademark of Bayerische Motoren Werke AG.
 🌐 Live Demo
 
 👉 https://bimmercodes.net
+
+## Cloudflare Pages deploy checklist
+
+After deploying static assets + `functions/`:
+
+1. **Bind D1** in Pages → Settings → Functions → D1 bindings: `DB` → `bmw-db`.
+2. **Bind R2** (uploads): `BUCKET` → `bimmercodes-media`.
+3. **Secrets** (Pages → Settings → Environment variables): `JWT_SECRET`, `TURNSTILE_SECRET_KEY` (and optional admin emails from `.dev.vars.example`).
+4. **Apply D1 migrations** to production:
+   ```bash
+   npm run db:migrate:remote
+   ```
+   Forum APIs need columns such as `topics.is_archived` (migration `013_topics_archive_and_denorm.sql`).
+5. Redeploy after code changes; bump `?v=` on CSS/JS if the CDN caches old bundles.

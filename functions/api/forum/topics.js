@@ -89,9 +89,6 @@ async function handleGet(context) {
     params.push(tag);
   }
 
-  // Exclude archived by default
-  conditions.push("(t.is_archived IS NULL OR t.is_archived = 0)");
-
   // Hide topics by authors the viewer has blocked (JWT only)
   const viewerId = await getViewerIdFromRequest(request, env);
   const blockedIds = viewerId ? await getBlockedUserIdsForBlocker(db, viewerId) : [];
@@ -161,11 +158,13 @@ async function handleGet(context) {
     }
   }
 
+  conditions.push("(t.is_archived IS NULL OR t.is_archived = 0)");
+
   const whereClause = conditions.length
     ? " WHERE " + conditions.join(" AND ")
     : "";
 
-  const query = `
+  const queryWithArchive = `
     SELECT
       t.id, t.user_id, t.username, t.category, t.title, t.content, t.related_code,
       t.lang, t.views, t.is_solved, t.is_pinned, t.is_locked, t.is_archived,
@@ -182,9 +181,36 @@ async function handleGet(context) {
     LIMIT ?
   `;
 
+  const archiveFilter = "(t.is_archived IS NULL OR t.is_archived = 0)";
+  const condsNoArchive = conditions.filter((c) => c !== archiveFilter);
+  const whereNoArchive = condsNoArchive.length
+    ? " WHERE " + condsNoArchive.join(" AND ")
+    : "";
+  const queryNoArchive = `
+    SELECT
+      t.id, t.user_id, t.username, t.category, t.title, t.content, t.related_code,
+      t.lang, t.views, t.is_solved, t.is_pinned, t.is_locked,
+      t.created_at, t.updated_at,
+      COALESCE(t.reply_count, 0)      AS reply_count,
+      t.last_reply_at, t.last_reply_user_id, t.last_reply_username,
+      u.avatar_url   AS author_avatar,
+      u.role_id      AS author_role,
+      u.reputation   AS author_reputation
+    FROM topics t ${searchJoin}
+    LEFT JOIN users u ON u.id = t.user_id
+    ${whereNoArchive}
+    ORDER BY ${effectiveSort}
+    LIMIT ?
+  `;
+
   try {
-    const stmt = db.prepare(query).bind(...params, limit + 1);
-    const { results } = await stmt.all();
+    let results;
+    try {
+      ({ results } = await db.prepare(queryWithArchive).bind(...params, limit + 1).all());
+    } catch (queryErr) {
+      if (!String(queryErr?.message || queryErr).includes("is_archived")) throw queryErr;
+      ({ results } = await db.prepare(queryNoArchive).bind(...params, limit + 1).all());
+    }
 
     const hasMore = results.length > limit;
     const topics = hasMore ? results.slice(0, limit) : results;
