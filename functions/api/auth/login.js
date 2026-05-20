@@ -34,8 +34,10 @@ export async function onRequestPost(context) {
     }
 
     const { email, password, remember_me } = await request.json(); // 'email' field can contain email OR username
+    const identifier = String(email || "").trim();
+    const identifierLower = identifier.toLowerCase();
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return new Response(JSON.stringify({ error: "Username/Email and password are required" }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -43,12 +45,12 @@ export async function onRequestPost(context) {
     }
 
     // 2. Check Account Lockout
-    const lockStatus = await checkAccountLock(env, email);
+    const lockStatus = await checkAccountLock(env, identifier);
     if (lockStatus.locked) {
       const remainingMinutes = Math.ceil((lockStatus.lockedUntil - new Date()) / 60000);
       
       // Log attempted login on locked account
-      await trackLoginAttempt(env, email, ipAddress, false, 'account_locked', userAgent);
+      await trackLoginAttempt(env, identifier, ipAddress, false, 'account_locked', userAgent);
       
       return new Response(JSON.stringify({ 
         error: `Account is temporarily locked due to multiple failed attempts. Please try again in ${remainingMinutes} minutes.` 
@@ -60,14 +62,14 @@ export async function onRequestPost(context) {
 
     // 3. Find user by email OR username
     const user = await env.DB.prepare(
-      "SELECT * FROM users WHERE email = ? OR username = ?"
+      "SELECT * FROM users WHERE LOWER(email) = ? OR username = ? OR LOWER(username) = ?"
     )
-      .bind(email, email)
+      .bind(identifierLower, identifier, identifierLower)
       .first();
 
     if (!user) {
       // Log failed attempt (user not found) - vague error for security
-      await trackLoginAttempt(env, email, ipAddress, false, 'user_not_found', userAgent);
+      await trackLoginAttempt(env, identifier, ipAddress, false, 'user_not_found', userAgent);
       // Wait a bit to prevent timing attacks
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -78,11 +80,20 @@ export async function onRequestPost(context) {
     }
 
     // 4. Verify Password
-    const isValid = await verifyPassword(password, user.password_hash);
-    
+    let isValid = false;
+    try {
+      isValid = await verifyPassword(password, user.password_hash);
+    } catch (verifyErr) {
+      console.error("Password verify error:", verifyErr);
+      return new Response(JSON.stringify({ error: "Invalid credentials" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     if (!isValid) {
       // Log failed attempt (wrong password)
-      await trackLoginAttempt(env, email, ipAddress, false, 'invalid_password', userAgent);
+      await trackLoginAttempt(env, identifier, ipAddress, false, 'invalid_password', userAgent);
       
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
         status: 401,
@@ -92,7 +103,7 @@ export async function onRequestPost(context) {
     
     // 5. Check if active
     if (!user.is_active) {
-       await trackLoginAttempt(env, email, ipAddress, false, 'account_disabled', userAgent);
+       await trackLoginAttempt(env, identifier, ipAddress, false, 'account_disabled', userAgent);
        return new Response(JSON.stringify({ error: "Account is disabled. Please contact support." }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
@@ -100,7 +111,7 @@ export async function onRequestPost(context) {
     }
 
     // 6. Login Success - Track and Audit
-    await trackLoginAttempt(env, email, ipAddress, true, null, userAgent);
+    await trackLoginAttempt(env, identifier, ipAddress, true, null, userAgent);
     
     await logAudit(env, {
       userId: user.id,
@@ -109,7 +120,7 @@ export async function onRequestPost(context) {
       targetEntityId: user.id,
       targetUserId: user.id,
       details: {
-        method: email.includes('@') ? 'email' : 'username',
+        method: identifier.includes('@') ? 'email' : 'username',
         ip: ipAddress
       },
       ipAddress,
@@ -119,7 +130,12 @@ export async function onRequestPost(context) {
     // 7. Get Role, Permissions and Level Data
     const permissions = await getUserPermissions(env, user.id);
     const role = await getUserRole(env, user.id);
-    const level = await getUserLevel(env, user.reputation || 0, user.preferred_lang || 'en');
+    let level = null;
+    try {
+      level = await getUserLevel(env, user.reputation || 0, user.preferred_lang || 'en');
+    } catch (levelErr) {
+      console.error("getUserLevel failed:", levelErr);
+    }
 
     // 8. Generate Token
     const secret = env.JWT_SECRET || "secret-dev-key";
@@ -139,10 +155,14 @@ export async function onRequestPost(context) {
       { expiresIn: expirationSeconds }
     );
 
-    // 9. Update last login
-    await env.DB.prepare(
-      "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?"
-    ).bind(user.id).run();
+    // 9. Update last login (optional column — old DBs may lack it)
+    try {
+      await env.DB.prepare(
+        "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?"
+      ).bind(user.id).run();
+    } catch (loginTsErr) {
+      console.warn("last_login update skipped:", loginTsErr?.message || loginTsErr);
+    }
 
     // 10. Return Response
     return new Response(
@@ -171,9 +191,16 @@ export async function onRequestPost(context) {
     );
   } catch (e) {
     console.error("Login Error:", e);
-    return new Response(JSON.stringify({ error: "Login failed. Please try again." }), { 
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const msg = e?.message || String(e);
+    return new Response(
+      JSON.stringify({
+        error: "Login failed. Please try again.",
+        detail: msg.includes("no such") || msg.includes("D1_ERROR") ? "database_schema" : undefined,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }

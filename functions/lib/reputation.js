@@ -8,13 +8,17 @@
  * @returns {Promise<Object>} - User level object {id, name, color, benefits}
  */
 export async function getUserLevel(env, reputation, lang = 'en') {
-  // Ordered by min_reputation DESC to find the highest matching level
-  const levels = await env.DB.prepare(`
-    SELECT * FROM user_levels 
-    ORDER BY min_reputation DESC
-  `).all();
-  
-  const results = levels.results;
+  let results = [];
+  try {
+    const levels = await env.DB.prepare(`
+      SELECT * FROM user_levels
+      ORDER BY min_reputation DESC
+    `).all();
+    results = levels.results || [];
+  } catch (error) {
+    console.error("getUserLevel: user_levels query failed", error);
+    return null;
+  }
   
   // Find first level where reputation >= min_reputation
   const level = results.find(l => reputation >= l.min_reputation) || results[results.length - 1]; // Fallback to lowest
@@ -27,11 +31,20 @@ export async function getUserLevel(env, reputation, lang = 'en') {
   if (lang === 'ka' && level.name_ka) levelName = level.name_ka;
   if (lang === 'en' && level.name_en) levelName = level.name_en;
 
+  let benefits = {};
+  if (level.benefits) {
+    try {
+      benefits = JSON.parse(level.benefits);
+    } catch {
+      benefits = {};
+    }
+  }
+
   return {
     id: level.id,
     name: levelName,
     color: level.color,
-    benefits: level.benefits ? JSON.parse(level.benefits) : {}
+    benefits,
   };
 }
 
