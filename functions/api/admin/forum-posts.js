@@ -33,30 +33,35 @@ export async function onRequestGet(context) {
 
   const pat = likePattern(rawQ);
 
-  const where = [];
-  const countParams = [];
-  const selectParams = [];
+  const buildWhere = (withDeletedCol) => {
+    const parts = [];
+    const countP = [];
+    const selectP = [];
+    if (withDeletedCol && onlyDeleted) {
+      parts.push("p.is_deleted = 1");
+    }
+    if (pat) {
+      parts.push("(p.content LIKE ? OR t.title LIKE ? OR t.content LIKE ?)");
+      countP.push(pat, pat, pat);
+      selectP.push(pat, pat, pat);
+    }
+    const sql = parts.length ? `WHERE ${parts.join(" AND ")}` : "";
+    return { whereSql: sql, countParams: countP, selectParams: selectP };
+  };
 
-  if (onlyDeleted) {
-    where.push("p.is_deleted = 1");
-  }
+  async function runList(withDeletedCol) {
+    const { whereSql, countParams, selectParams } = buildWhere(withDeletedCol);
+    const deletedSelect = withDeletedCol ? "p.is_deleted," : "0 AS is_deleted,";
 
-  if (pat) {
-    where.push("(p.content LIKE ? OR t.title LIKE ? OR t.content LIKE ?)");
-    countParams.push(pat, pat, pat);
-    selectParams.push(pat, pat, pat);
-  }
-
-  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
-
-  try {
-    const countStmt = env.DB.prepare(
-      `SELECT COUNT(*) AS c
-         FROM posts p
-         INNER JOIN topics t ON t.id = p.topic_id
-         ${whereSql}`
-    );
-    const { c: total } = (await countStmt.bind(...countParams).first()) || { c: 0 };
+    const { c: total } =
+      (await env.DB.prepare(
+        `SELECT COUNT(*) AS c
+           FROM posts p
+           INNER JOIN topics t ON t.id = p.topic_id
+           ${whereSql}`
+      )
+        .bind(...countParams)
+        .first()) || { c: 0 };
 
     const selectBinding = [...selectParams, limit, offset];
     const { results: rows } = await env.DB.prepare(
@@ -66,7 +71,7 @@ export async function onRequestGet(context) {
           p.user_id,
           p.username,
           p.content,
-          p.is_deleted,
+          ${deletedSelect}
           p.is_solution,
           p.created_at,
           t.title AS topic_title,
@@ -80,6 +85,30 @@ export async function onRequestGet(context) {
       .bind(...selectBinding)
       .all();
 
+    return { rows, total };
+  }
+
+  try {
+    let rows;
+    let total;
+    try {
+      ({ rows, total } = await runList(true));
+    } catch (queryErr) {
+      const msg = String(queryErr?.message || queryErr);
+      if (!msg.includes("is_deleted")) throw queryErr;
+      if (onlyDeleted) {
+        return json({
+          success: true,
+          posts: [],
+          total: 0,
+          limit,
+          offset,
+          q: rawQ && String(rawQ).trim() ? String(rawQ).trim() : "",
+        });
+      }
+      ({ rows, total } = await runList(false));
+    }
+
     const items = (rows || []).map((r) => {
       const text = (r.content || "").replace(/\s+/g, " ");
       return {
@@ -91,7 +120,7 @@ export async function onRequestGet(context) {
     return json({
       success: true,
       posts: items,
-      total: Number(total) || 0,
+      total: Number(total ?? 0) || 0,
       limit,
       offset,
       q: rawQ && String(rawQ).trim() ? String(rawQ).trim() : "",
