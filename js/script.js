@@ -57,10 +57,10 @@ function displayCodeDetail(code) {
       const codeDetail = document.getElementById("code-detail");
       if(codeDetail) codeDetail.classList.remove("hidden");
   } else {
-      // Main page behavior
+      // Main page behavior — show the detail card; js/index-premium.js
+      // watches the .hidden class change and handles scroll + section hide.
       if(searchContainer) searchContainer.classList.add("hidden");
       if(codeDetail) codeDetail.classList.remove("hidden");
-      window.scrollTo(0, 0);
   }
 
   // Безопасная проверка данных
@@ -1145,7 +1145,13 @@ function updateLanguage() {
   // 4. Update elements with data-i18n attribute
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
-    if (text[key]) el.textContent = text[key];
+    if (text[key] != null) el.textContent = text[key];
+  });
+
+  // 4b. Update elements with data-i18n-html attribute (rich HTML allowed)
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-html");
+    if (text[key] != null) el.innerHTML = text[key];
   });
 
   // 5. Update elements with data-i18n-placeholder attribute
@@ -1153,6 +1159,9 @@ function updateLanguage() {
     const key = el.getAttribute("data-i18n-placeholder");
     if (text[key]) el.placeholder = text[key];
   });
+
+  // 6. Update html lang attribute for screen readers + CSS
+  document.documentElement.setAttribute("lang", currentLanguage);
 
   // Обновляем чат
 

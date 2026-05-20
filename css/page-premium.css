@@ -1,0 +1,534 @@
+/* =============================================================================
+   BimmerCodes — Static Pages Premium Layer (v1)
+   Used by contact.html, terms.html, privacy.html, profile.html, all.html.
+   Restyles legal hero/section, contact forms, profile, all-codes list, etc.
+   Most static pages have inline <style> blocks defining their bespoke classes
+   (.legal-page, .contact-card, .contact-tab-btn, .form-input). We override
+   those here with higher specificity to match the bc3 aesthetic.
+   ========================================================================== */
+
+/* ---------- Legal pages (terms.html, privacy.html) -------------------- */
+body.bcx .legal-page {
+  width: min(100%, 920px);
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 64px) var(--bc-pad) clamp(56px, 6vw, 80px);
+}
+
+body.bcx .legal-hero {
+  position: relative;
+  padding: clamp(36px, 5vw, 56px) clamp(28px, 4vw, 48px) !important;
+  margin-bottom: 32px !important;
+  background:
+    radial-gradient(80% 80% at 0% 0%, rgba(46,123,255,0.16) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(20,24,34,0.78) 0%, rgba(12,15,21,0.78) 100%) !important;
+  border: 1px solid var(--bc-border-2) !important;
+  border-radius: var(--bc-radius-xl) !important;
+  box-shadow: var(--bc-shadow-card) !important;
+  text-align: center;
+  overflow: hidden;
+}
+body.bcx .legal-hero::before {
+  background: radial-gradient(circle at 0% 0%, rgba(46,123,255,0.18) 0%, transparent 60%) !important;
+}
+body.bcx .legal-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px !important;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(46,123,255,0.2), rgba(46,123,255,0.04));
+  border: 1px solid rgba(79,160,255,0.3);
+  color: var(--bc-blue-bright) !important;
+  font-size: 24px !important;
+  opacity: 1 !important;
+}
+body.bcx .legal-hero h1 {
+  margin: 0 0 10px !important;
+  font-size: clamp(28px, 4vw, 40px) !important;
+  font-weight: 700 !important;
+  color: var(--bc-text) !important;
+  letter-spacing: -0.025em;
+  background: var(--bc-grad-text);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent !important;
+}
+body.bcx .legal-hero .updated {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px !important;
+  color: var(--bc-text-muted) !important;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--bc-border);
+  border-radius: 999px;
+  margin-top: 4px;
+}
+body.bcx .legal-hero .intro {
+  margin: 20px auto 0 !important;
+  color: var(--bc-text-soft) !important;
+  font-size: 15px !important;
+  line-height: 1.65;
+  max-width: 56ch;
+}
+
+body.bcx .legal-toc {
+  padding: 24px 28px !important;
+  margin-bottom: 32px !important;
+  background: linear-gradient(180deg, rgba(20,24,34,0.6) 0%, rgba(12,15,21,0.6) 100%) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-lg) !important;
+}
+body.bcx .legal-toc h3 {
+  margin: 0 0 14px !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+  color: var(--bc-text-muted) !important;
+}
+body.bcx .legal-toc h3 i { color: var(--bc-blue-bright); font-size: 12px; }
+body.bcx .legal-toc ol li a {
+  color: var(--bc-text-soft) !important;
+  font-size: 13.5px !important;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+body.bcx .legal-toc ol li a:hover { color: var(--bc-blue-bright) !important; }
+
+body.bcx .legal-section {
+  padding: 28px 30px !important;
+  margin-bottom: 14px !important;
+  background: linear-gradient(180deg, rgba(20,24,34,0.65) 0%, rgba(12,15,21,0.65) 100%) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-lg) !important;
+  transition: border-color 0.2s;
+}
+body.bcx .legal-section:hover { border-color: var(--bc-border-2) !important; }
+body.bcx .legal-section-header { gap: 14px !important; margin-bottom: 18px !important; }
+body.bcx .legal-section-icon {
+  background: linear-gradient(135deg, rgba(46,123,255,0.16), rgba(46,123,255,0.04)) !important;
+  border: 1px solid rgba(79,160,255,0.28) !important;
+  color: var(--bc-blue-bright) !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  border-radius: 10px !important;
+}
+body.bcx .legal-section h2 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--bc-text) !important;
+  letter-spacing: -0.005em;
+}
+body.bcx .legal-section p,
+body.bcx .legal-section ul,
+body.bcx .legal-section li {
+  color: var(--bc-text-soft) !important;
+  line-height: 1.75;
+  font-size: 14.5px !important;
+}
+body.bcx .legal-section strong { color: var(--bc-text) !important; }
+body.bcx .legal-section a {
+  color: var(--bc-blue-bright) !important;
+  text-decoration: none;
+}
+body.bcx .legal-section a:hover { color: #fff !important; }
+body.bcx .highlight-box {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 14px 16px !important;
+  margin: 16px 0 !important;
+  background: rgba(46,123,255,0.1) !important;
+  border-left: 3px solid var(--bc-blue-bright) !important;
+  border-radius: 0 12px 12px 0 !important;
+  color: var(--bc-text) !important;
+  font-size: 13.5px !important;
+}
+body.bcx .highlight-box i { color: var(--bc-blue-bright); margin-top: 2px; flex-shrink: 0; }
+
+body.bcx .legal-footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px !important;
+  margin-top: 56px !important;
+}
+body.bcx .legal-footer-links a {
+  padding: 10px 18px !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: 999px !important;
+  color: var(--bc-text-soft) !important;
+  font-size: 13px !important;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+body.bcx .legal-footer-links a:hover {
+  background: rgba(46,123,255,0.1) !important;
+  border-color: rgba(46,123,255,0.3) !important;
+  color: var(--bc-text) !important;
+}
+
+/* ---------- Contact page --------------------------------------------- */
+body.bcx .contact-page {
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 64px) var(--bc-pad) clamp(56px, 6vw, 80px);
+}
+
+body.bcx .contact-hero {
+  position: relative;
+  padding: clamp(40px, 5vw, 64px) clamp(28px, 4vw, 48px) !important;
+  margin-bottom: 40px !important;
+  background:
+    radial-gradient(80% 80% at 100% 0%, rgba(46,123,255,0.16) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(20,24,34,0.78) 0%, rgba(12,15,21,0.78) 100%) !important;
+  border: 1px solid var(--bc-border-2) !important;
+  border-radius: var(--bc-radius-xl) !important;
+  box-shadow: var(--bc-shadow-card) !important;
+  text-align: center;
+  overflow: hidden;
+}
+body.bcx .contact-hero h1 {
+  margin: 0 0 14px !important;
+  font-size: clamp(28px, 4vw, 44px) !important;
+  font-weight: 700 !important;
+  color: var(--bc-text) !important;
+  background: var(--bc-grad-text);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent !important;
+  letter-spacing: -0.03em;
+}
+body.bcx .contact-hero p {
+  margin: 0 auto !important;
+  font-size: 15px !important;
+  color: var(--bc-text-soft) !important;
+  max-width: 56ch;
+  line-height: 1.6;
+}
+
+body.bcx .contact-tabs {
+  display: inline-flex !important;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--bc-border);
+  border-radius: 999px;
+  padding: 4px;
+  margin: 0 auto 32px !important;
+  gap: 2px !important;
+}
+body.bcx .contact-page { display: flex; flex-direction: column; align-items: stretch; }
+body.bcx .contact-page .contact-tabs { align-self: center; }
+body.bcx .contact-tab-btn {
+  background: transparent !important;
+  border: none !important;
+  color: var(--bc-text-muted) !important;
+  border-radius: 999px !important;
+  padding: 8px 18px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+body.bcx .contact-tab-btn.active,
+body.bcx .contact-tab-btn:hover {
+  background: var(--bc-blue) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 18px -4px rgba(46,123,255,0.5);
+}
+body.bcx .contact-tab-btn:not(.active):hover {
+  background: rgba(46,123,255,0.12) !important;
+  box-shadow: none;
+}
+
+body.bcx .contact-card {
+  background: linear-gradient(180deg, rgba(20,24,34,0.78) 0%, rgba(12,15,21,0.78) 100%) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-xl) !important;
+  padding: 32px !important;
+  box-shadow: var(--bc-shadow-card);
+}
+body.bcx .contact-card-header h2 {
+  color: var(--bc-text) !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+body.bcx .contact-card-header h2 i {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(46,123,255,0.16), rgba(46,123,255,0.04));
+  border: 1px solid rgba(79,160,255,0.28);
+  color: var(--bc-blue-bright) !important;
+  font-size: 14px !important;
+}
+body.bcx .contact-card-header p {
+  color: var(--bc-text-soft) !important;
+  font-size: 14px !important;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+body.bcx .form-group { margin-bottom: 18px; }
+body.bcx .form-group label {
+  display: block;
+  color: var(--bc-text-soft) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em;
+  margin-bottom: 8px !important;
+}
+body.bcx .form-input {
+  width: 100%;
+  padding: 12px 16px !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: 12px !important;
+  color: var(--bc-text) !important;
+  font-family: inherit;
+  font-size: 14px !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+body.bcx .form-input:focus {
+  outline: none;
+  border-color: rgba(79,160,255,0.5) !important;
+  box-shadow: 0 0 0 3px rgba(46,123,255,0.18) !important;
+}
+body.bcx textarea.form-input {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+body.bcx .submit-btn,
+body.bcx button.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bc-blue) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 12px !important;
+  padding: 12px 22px !important;
+  font-weight: 600 !important;
+  font-size: 14.5px !important;
+  cursor: pointer;
+  box-shadow: var(--bc-shadow-cta) !important;
+  transition: background 0.2s, transform 0.15s;
+}
+body.bcx .submit-btn:hover { background: var(--bc-blue-bright) !important; transform: translateY(-1px); }
+body.bcx .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+body.bcx .form-status {
+  margin-top: 14px;
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 10px;
+  text-align: center;
+}
+body.bcx .form-status.success {
+  background: rgba(94,230,181,0.1);
+  border: 1px solid rgba(94,230,181,0.3);
+  color: var(--bc-mint);
+}
+body.bcx .form-status.error {
+  background: rgba(255,89,101,0.1);
+  border: 1px solid rgba(255,89,101,0.3);
+  color: var(--bc-red);
+}
+
+body.bcx .mailto-fallback {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: rgba(255,178,89,0.08);
+  border: 1px solid rgba(255,178,89,0.25);
+  border-radius: 12px;
+  color: var(--bc-text-soft);
+  font-size: 13px;
+  display: none;
+}
+body.bcx .mailto-fallback p { margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+body.bcx .mailto-fallback i { color: var(--bc-amber); }
+body.bcx .mailto-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bc-blue);
+  color: #fff !important;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 13px;
+}
+body.bcx .mailto-btn:hover { background: var(--bc-blue-bright); }
+
+body.bcx .contact-info-card {
+  background: linear-gradient(180deg, rgba(20,24,34,0.6) 0%, rgba(12,15,21,0.6) 100%) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-xl) !important;
+  padding: 28px !important;
+  margin-top: 28px;
+}
+body.bcx .contact-info-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  color: var(--bc-text) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+body.bcx .contact-info-card h3 i { color: var(--bc-blue-bright); }
+body.bcx .info-row {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+body.bcx .info-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(139,123,255,0.16), rgba(139,123,255,0.04));
+  border: 1px solid rgba(139,123,255,0.28);
+  color: var(--bc-violet);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+body.bcx .info-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+body.bcx .info-text strong {
+  color: var(--bc-text) !important;
+  font-size: 13.5px !important;
+  font-weight: 600;
+}
+body.bcx .info-text span {
+  color: var(--bc-text-muted);
+  font-size: 13px;
+  word-break: break-word;
+}
+
+/* ---------- Profile page --------------------------------------------- */
+body.bcx .profile-page,
+body.bcx main.profile-main {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 40px) var(--bc-pad);
+}
+body.bcx .profile-cover,
+body.bcx .profile-header-card {
+  position: relative;
+  padding: clamp(28px, 4vw, 44px) !important;
+  background:
+    radial-gradient(80% 80% at 100% 0%, rgba(46,123,255,0.14) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(20,24,34,0.78) 0%, rgba(12,15,21,0.78) 100%) !important;
+  border: 1px solid var(--bc-border-2) !important;
+  border-radius: var(--bc-radius-xl) !important;
+  box-shadow: var(--bc-shadow-card) !important;
+  margin-bottom: 22px;
+}
+body.bcx .profile-section,
+body.bcx .profile-card {
+  background: linear-gradient(180deg, rgba(20,24,34,0.7) 0%, rgba(12,15,21,0.7) 100%) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-lg) !important;
+  padding: 24px !important;
+  margin-bottom: 14px;
+}
+body.bcx .profile-section h2,
+body.bcx .profile-card h2,
+body.bcx .profile-section h3 {
+  color: var(--bc-text) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  margin: 0 0 14px;
+}
+
+/* ---------- All-codes page (all.html) --------------------------------
+   The page uses inline <style> with .page-title / .desc / .grid / .card. */
+body.bcx h1.page-title {
+  width: min(100%, var(--bc-container));
+  margin: clamp(28px, 4vw, 48px) auto 8px !important;
+  padding: 0 var(--bc-pad);
+  font-size: clamp(28px, 4vw, 40px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em;
+  background: var(--bc-grad-text);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent !important;
+}
+body.bcx p.desc {
+  width: min(100%, var(--bc-container));
+  margin: 0 auto clamp(20px, 3vw, 32px) !important;
+  padding: 0 var(--bc-pad);
+  font-size: 14.5px !important;
+  line-height: 1.6;
+  color: var(--bc-text-soft) !important;
+  max-width: 76ch;
+}
+body.bcx .grid {
+  width: min(100%, var(--bc-container));
+  margin: 0 auto !important;
+  padding: 0 var(--bc-pad) clamp(48px, 6vw, 80px) !important;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 12px !important;
+}
+body.bcx a.card {
+  display: flex !important;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px !important;
+  background: linear-gradient(180deg, rgba(20,24,34,0.65) 0%, rgba(12,15,21,0.65) 100%) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-md) !important;
+  text-decoration: none;
+  color: inherit !important;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  box-shadow: var(--bc-shadow-card);
+}
+body.bcx a.card:hover {
+  border-color: rgba(46,123,255,0.35) !important;
+  background: linear-gradient(180deg, rgba(28,34,48,0.78) 0%, rgba(16,20,28,0.78) 100%) !important;
+  transform: translateY(-2px);
+}
+body.bcx a.card .code-id {
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: var(--bc-blue-bright) !important;
+  letter-spacing: 0.02em;
+  margin: 0 !important;
+}
+body.bcx a.card .code-title {
+  font-size: 13.5px !important;
+  color: var(--bc-text-soft) !important;
+  line-height: 1.45 !important;
+  margin: 0 !important;
+}
+
+/* ---------- Generic page utilities for static pages ------------------ */
+body.bcx main { min-height: 60vh; }

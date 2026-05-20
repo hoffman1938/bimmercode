@@ -481,6 +481,133 @@ window.APP_TRANSLATIONS = {
     statSeriesLabel: "All Series",
     statFreeValue: "Free",
     statFreeLabel: "No Registration",
+
+    // === PREMIUM HOMEPAGE (v3) ===
+    // Nav
+    navCodes: "Codes",
+    navFeatures: "Features",
+    navSeries: "Series",
+    navFaq: "FAQ",
+    navForum: "Forum",
+    // Mobile sheet
+    sheetSearchCodes: "Search Codes",
+    sheetVinDecoder: "VIN Decoder",
+    sheetForum: "Forum",
+    sheetFeatures: "Features",
+    sheetSupportedSeries: "Supported Series",
+    sheetFaq: "FAQ",
+    sheetAllCodes: "All Codes",
+
+    // Hero
+    heroEyebrow: "BMW &amp; Mini diagnostic codes",
+    heroTitleA: "Decode your",
+    heroTitleB: "in seconds.",
+    heroLead: "Search every DME, DDE, EGS, CAS and SRS fault code with detailed descriptions, repair plans, and parts references. Built for owners, techs, and tuners.",
+    heroCtaSearch: "Search a Code",
+    heroCtaVin: "Decode VIN",
+    heroSearchBtn: "Search",
+    popularLabel: "Popular:",
+
+    // Stats (large)
+    statBigCodes: "Fault Codes",
+    statBigLangs: "Languages",
+    statBigSeries: "All Series",
+    statBigFree: "No Sign-up",
+
+    // Features section
+    sectionFeaturesKicker: "Built for diagnostics",
+    sectionFeaturesTitle: "Everything you need to fix it right.",
+    sectionFeaturesLead: "From OBD-II generic codes to manufacturer-specific hex fault patterns — instant answers with repair guidance and parts lookups.",
+
+    featureDtcTitle: "Complete DTC Database",
+    featureDtcDesc: "50,000+ BMW &amp; Mini fault codes — OBD-II, manufacturer hex, P-codes, CC-IDs — with structured descriptions and recommended actions.",
+    featureDtcCta: "Search the database",
+
+    featureVinTitle: "VIN Decoder",
+    featureVinDesc: "Decode any 17-digit BMW VIN — model, engine, plant, build date, original options.",
+    featureVinCta: "Decode now",
+
+    featureForumTitle: "Community Forum",
+    featureForumDesc: "Ask owners and pros worldwide. Share fixes, get answers, browse threads.",
+    featureForumCta: "Open forum",
+
+    featureI18nTitle: "EN · RU · KA",
+    featureI18nDesc: "Codes &amp; repair notes translated across English, Russian, and Georgian.",
+
+    featureSearchTitle: "Instant Search",
+    featureSearchDesc: "Sub-second fuzzy lookup across codes, P-codes, and descriptions.",
+
+    // Modules section
+    sectionModulesKicker: "By Module",
+    sectionModulesTitle: "Coverage across every BMW control unit.",
+    moduleDmeName: "Engine Management",
+    moduleDdeName: "Diesel ECU",
+    moduleEgsName: "Transmission",
+    moduleCasName: "Access &amp; Start",
+    moduleSrsName: "Airbag &amp; Safety",
+    moduleDscName: "Stability &amp; ABS",
+    moduleFrmName: "Footwell Module",
+    moduleJbeName: "Junction Box",
+    moduleDmeCount: "12,400+ codes",
+    moduleDdeCount: "6,800+ codes",
+    moduleEgsCount: "3,200+ codes",
+    moduleCasCount: "1,900+ codes",
+    moduleSrsCount: "2,150+ codes",
+    moduleDscCount: "2,700+ codes",
+    moduleFrmCount: "1,400+ codes",
+    moduleJbeCount: "980+ codes",
+
+    // Series
+    sectionSeriesKicker: "Every Generation",
+    sectionSeriesTitle: "From E30 to G80 — fully covered.",
+    sectionSeriesLead: "Classic E-Series, refined F-Series, modern G-Series. Diagnostic data for every BMW &amp; Mini built since the late 1980s.",
+    seriesEName: "The Classics",
+    seriesFName: "Modern Era",
+    seriesGName: "Latest Platform",
+    seriesEYears: "1982 → 2013",
+    seriesFYears: "2008 → 2019",
+    seriesGYears: "2017 → today",
+
+    // How it works
+    sectionStepsKicker: "Workflow",
+    sectionStepsTitle: "From check engine light to fix — in 3 steps.",
+    stepEnterTitle: "Enter the code",
+    stepEnterText: "Type any BMW DTC — hex format, OBD-II P-code, or even a CC-ID warning number from the dash.",
+    stepReadTitle: "Read the diagnosis",
+    stepReadText: "Get the exact module, fault meaning, severity, and the most common root causes for your engine.",
+    stepFixTitle: "Follow the repair plan",
+    stepFixText: "Step-by-step checks, recommended parts via RealOEM, and forum threads from owners who already solved it.",
+
+    // Testimonials
+    sectionQuotesKicker: "Loved by Owners",
+    sectionQuotesTitle: "Trusted by the BMW community.",
+    quoteText1: "“Pulled 2A82 on my N54, searched here, found three known fixes. Replaced the exhaust VANOS solenoid in 30 minutes. No more limp mode.”",
+    quoteText2: "“Best BMW DTC site I’ve used. Manufacturer hex codes other tools couldn’t explain — clear descriptions here, in Russian too.”",
+    quoteText3: "“We use this daily in the shop. Faster than ISTA for a quick lookup, and the forum threads on tricky CAS faults are gold.”",
+    quoteRole1: "E92 335i · Berlin",
+    quoteRole2: "F30 320d · Moscow",
+    quoteRole3: "Independent Tech · Tbilisi",
+
+    // FAQ
+    sectionFaqKicker: "FAQ",
+    sectionFaqTitle: "Common questions.",
+    faqQ1: "What is a BMW DTC code?",
+    faqA1: "A BMW DTC (Diagnostic Trouble Code) is a standardized identifier produced by the car’s onboard computers — DME, DDE, EGS, CAS, SRS and others — when they detect a fault. Codes can be generic OBD-II P-codes (e.g. P0128) or BMW manufacturer hex codes (e.g. 2A82, A0B1).",
+    faqQ2: "How do I read BMW error codes?",
+    faqA2: "Use any BMW diagnostic tool — INPA, ISTA, Carly, Bimmercode, Foxwell, or a basic OBD-II scanner. Connect to the OBD port under the dash, query the modules, and search the resulting code here for a clear meaning and likely fix.",
+    faqQ3: "What models do you support?",
+    faqA3: "Every BMW &amp; Mini from the late 1980s onward — E-Series (E30, E36, E39, E46, E60, E90), F-Series (F10, F30, F80), G-Series (G20, G30, G80 M3) and current production cars. Engine, chassis, transmission and body module codes are all included.",
+    faqQ4: "Is it really free?",
+    faqA4: "Yes — full database access, VIN decoding, and forum reading are free with no signup. Create an account only if you want to save favorite codes or post in the forum.",
+    faqQ5: "Are you affiliated with BMW AG?",
+    faqA5: "No. BimmerCodes is an independent enthusiast resource. BMW, Mini and all related marks are trademarks of their respective owners.",
+
+    // Final CTA
+    ctaKicker: "Get started",
+    ctaTitle: "Ready to silence that warning light?",
+    ctaText: "Search a code, decode a VIN, or open the community forum. No signup needed.",
+    ctaSearchBtn: "Search Codes",
+    ctaForumBtn: "Join the Forum",
   },
   ru: {
     // === HOME ===
@@ -996,6 +1123,133 @@ window.APP_TRANSLATIONS = {
     statSeriesLabel: "Все серии",
     statFreeValue: "Бесплатно",
     statFreeLabel: "Без регистрации",
+
+    // === PREMIUM HOMEPAGE (v3) ===
+    // Nav
+    navCodes: "Коды",
+    navFeatures: "Возможности",
+    navSeries: "Серии",
+    navFaq: "FAQ",
+    navForum: "Форум",
+    // Mobile sheet
+    sheetSearchCodes: "Поиск кодов",
+    sheetVinDecoder: "VIN-декодер",
+    sheetForum: "Форум",
+    sheetFeatures: "Возможности",
+    sheetSupportedSeries: "Поддерживаемые серии",
+    sheetFaq: "Вопросы и ответы",
+    sheetAllCodes: "Все коды",
+
+    // Hero
+    heroEyebrow: "диагностических кодов BMW и Mini",
+    heroTitleA: "Расшифруйте свой",
+    heroTitleB: "за секунды.",
+    heroLead: "Ищите любые коды неисправностей DME, DDE, EGS, CAS и SRS — подробные описания, план ремонта и каталог запчастей. Для владельцев, диагностов и тюнеров.",
+    heroCtaSearch: "Найти код",
+    heroCtaVin: "Расшифровать VIN",
+    heroSearchBtn: "Поиск",
+    popularLabel: "Популярное:",
+
+    // Stats (large)
+    statBigCodes: "Кодов ошибок",
+    statBigLangs: "Языка",
+    statBigSeries: "Все серии",
+    statBigFree: "Без регистрации",
+
+    // Features section
+    sectionFeaturesKicker: "Создано для диагностики",
+    sectionFeaturesTitle: "Всё, чтобы починить с первого раза.",
+    sectionFeaturesLead: "От общих OBD-II до фирменных hex-кодов BMW — мгновенные ответы, план ремонта и подбор запчастей.",
+
+    featureDtcTitle: "Полная база DTC",
+    featureDtcDesc: "50 000+ кодов BMW и Mini — OBD-II, hex производителя, P-коды, CC-ID — с понятным описанием и рекомендациями.",
+    featureDtcCta: "Открыть базу",
+
+    featureVinTitle: "VIN-декодер",
+    featureVinDesc: "Расшифровка любого 17-значного VIN BMW — модель, двигатель, завод, дата выпуска, заводские опции.",
+    featureVinCta: "Расшифровать",
+
+    featureForumTitle: "Сообщество",
+    featureForumDesc: "Спросите владельцев и мастеров по всему миру. Делитесь решениями, читайте темы.",
+    featureForumCta: "Открыть форум",
+
+    featureI18nTitle: "EN · RU · KA",
+    featureI18nDesc: "Коды и инструкции переведены на английский, русский и грузинский.",
+
+    featureSearchTitle: "Мгновенный поиск",
+    featureSearchDesc: "Молниеносный fuzzy-поиск по кодам, P-кодам и описаниям.",
+
+    // Modules
+    sectionModulesKicker: "По модулям",
+    sectionModulesTitle: "Покрытие всех блоков управления BMW.",
+    moduleDmeName: "Двигатель (DME)",
+    moduleDdeName: "Дизель ECU",
+    moduleEgsName: "Коробка (EGS)",
+    moduleCasName: "Доступ и запуск",
+    moduleSrsName: "Подушки и безопасность",
+    moduleDscName: "DSC / ABS",
+    moduleFrmName: "Footwell Module",
+    moduleJbeName: "Распред. коробка",
+    moduleDmeCount: "12 400+ кодов",
+    moduleDdeCount: "6 800+ кодов",
+    moduleEgsCount: "3 200+ кодов",
+    moduleCasCount: "1 900+ кодов",
+    moduleSrsCount: "2 150+ кодов",
+    moduleDscCount: "2 700+ кодов",
+    moduleFrmCount: "1 400+ кодов",
+    moduleJbeCount: "980+ кодов",
+
+    // Series
+    sectionSeriesKicker: "Все поколения",
+    sectionSeriesTitle: "От E30 до G80 — полное покрытие.",
+    sectionSeriesLead: "Классика E-серии, современная F-серия, актуальная G-серия. Диагностические данные для всех BMW и Mini с конца 80-х.",
+    seriesEName: "Классика",
+    seriesFName: "Современный ряд",
+    seriesGName: "Актуальная платформа",
+    seriesEYears: "1982 → 2013",
+    seriesFYears: "2008 → 2019",
+    seriesGYears: "2017 → сегодня",
+
+    // How it works
+    sectionStepsKicker: "Как это работает",
+    sectionStepsTitle: "От Check Engine до решения — за 3 шага.",
+    stepEnterTitle: "Введите код",
+    stepEnterText: "Любой DTC BMW — hex-формат, OBD-II P-код или CC-ID с приборной панели.",
+    stepReadTitle: "Прочитайте диагноз",
+    stepReadText: "Точный модуль, смысл ошибки, серьёзность и самые частые причины для вашего двигателя.",
+    stepFixTitle: "Следуйте плану ремонта",
+    stepFixText: "Пошаговые проверки, подбор запчастей через RealOEM и обсуждения от владельцев, уже решивших эту проблему.",
+
+    // Testimonials
+    sectionQuotesKicker: "Доверие сообщества",
+    sectionQuotesTitle: "BMW-сообщество выбирает нас.",
+    quoteText1: "«Поймал 2A82 на своём N54, нашёл здесь три известных решения. Поменял VANOS-соленоид за 30 минут. Limp mode ушёл.»",
+    quoteText2: "«Лучший сайт по кодам BMW. Hex-коды, которые другие инструменты не объясняли — здесь понятны, ещё и на русском.»",
+    quoteText3: "«Используем каждый день в сервисе. Быстрее ISTA для быстрой проверки, а темы форума по CAS — на вес золота.»",
+    quoteRole1: "E92 335i · Берлин",
+    quoteRole2: "F30 320d · Москва",
+    quoteRole3: "Независимый сервис · Тбилиси",
+
+    // FAQ
+    sectionFaqKicker: "FAQ",
+    sectionFaqTitle: "Частые вопросы.",
+    faqQ1: "Что такое код DTC BMW?",
+    faqA1: "DTC (Diagnostic Trouble Code) — стандартизированный идентификатор, который выдают бортовые компьютеры BMW (DME, DDE, EGS, CAS, SRS и др.) при обнаружении неисправности. Бывают универсальные OBD-II P-коды (P0128) и фирменные hex-коды BMW (2A82, A0B1).",
+    faqQ2: "Как считать коды ошибок BMW?",
+    faqA2: "Подойдут INPA, ISTA, Carly, Bimmercode, Foxwell или любой OBD-II сканер. Подключитесь к разъёму OBD под панелью, опросите модули и найдите код здесь — увидите расшифровку и вероятное решение.",
+    faqQ3: "Какие модели поддерживаются?",
+    faqA3: "Все BMW и Mini с конца 80-х: E-серия (E30, E36, E39, E46, E60, E90), F-серия (F10, F30, F80), G-серия (G20, G30, G80 M3) и актуальные модели. Двигатель, шасси, коробка, кузов — всё охвачено.",
+    faqQ4: "Это правда бесплатно?",
+    faqA4: "Да — полный доступ к базе, VIN-декодер и чтение форума без регистрации. Аккаунт нужен только для сохранения кодов и публикаций на форуме.",
+    faqQ5: "Связаны ли вы с BMW AG?",
+    faqA5: "Нет. BimmerCodes — независимый ресурс энтузиастов. BMW, Mini и связанные знаки — товарные знаки их правообладателей.",
+
+    // Final CTA
+    ctaKicker: "Начните сейчас",
+    ctaTitle: "Готовы убрать иконку Check Engine?",
+    ctaText: "Найдите код, расшифруйте VIN или зайдите на форум сообщества. Регистрация не нужна.",
+    ctaSearchBtn: "Найти код",
+    ctaForumBtn: "На форум",
   },
   ka: {
     // === HOME ===
@@ -1510,6 +1764,133 @@ window.APP_TRANSLATIONS = {
     statSeriesLabel: "ყველა სერია",
     statFreeValue: "უფასო",
     statFreeLabel: "რეგისტრაციის გარეშე",
+
+    // === PREMIUM HOMEPAGE (v3) ===
+    // Nav
+    navCodes: "კოდები",
+    navFeatures: "შესაძლებლობები",
+    navSeries: "სერიები",
+    navFaq: "FAQ",
+    navForum: "ფორუმი",
+    // Mobile sheet
+    sheetSearchCodes: "კოდების ძებნა",
+    sheetVinDecoder: "VIN დეკოდერი",
+    sheetForum: "ფორუმი",
+    sheetFeatures: "შესაძლებლობები",
+    sheetSupportedSeries: "მხარდაჭერილი სერიები",
+    sheetFaq: "კითხვა-პასუხი",
+    sheetAllCodes: "ყველა კოდი",
+
+    // Hero
+    heroEyebrow: "BMW და Mini დიაგნოსტიკის კოდი",
+    heroTitleA: "გაშიფრე შენი",
+    heroTitleB: "წამებში.",
+    heroLead: "მოძებნე ნებისმიერი DME, DDE, EGS, CAS და SRS კოდი დეტალური აღწერით, შეკეთების გეგმით და ნაწილების მითითებით. მფლობელებისთვის, ხელოსნებისთვის და მოყვარულებისთვის.",
+    heroCtaSearch: "კოდის ძებნა",
+    heroCtaVin: "VIN-ის გაშიფვრა",
+    heroSearchBtn: "ძებნა",
+    popularLabel: "პოპულარული:",
+
+    // Stats (large)
+    statBigCodes: "კოდი",
+    statBigLangs: "ენა",
+    statBigSeries: "ყველა სერია",
+    statBigFree: "რეგისტრაცია არ სჭირდება",
+
+    // Features section
+    sectionFeaturesKicker: "შექმნილია დიაგნოსტიკისთვის",
+    sectionFeaturesTitle: "ყველაფერი, რომ პრობლემა გადაჭრა.",
+    sectionFeaturesLead: "OBD-II-ის ზოგადი კოდებიდან BMW-ის ფირმულ hex-კოდებამდე — მყისიერი პასუხები, შეკეთების გეგმა და ნაწილების ბაზა.",
+
+    featureDtcTitle: "სრული DTC ბაზა",
+    featureDtcDesc: "50,000+ BMW და Mini კოდი — OBD-II, ფირმული hex, P-კოდები, CC-ID — სტრუქტურირებული აღწერით და რეკომენდაციით.",
+    featureDtcCta: "ბაზის ძებნა",
+
+    featureVinTitle: "VIN დეკოდერი",
+    featureVinDesc: "ნებისმიერი 17-ნიშნა BMW VIN — მოდელი, ძრავი, ქარხანა, წარმოების თარიღი, ორიგინალი ოფციები.",
+    featureVinCta: "გაშიფვრა",
+
+    featureForumTitle: "საზოგადოების ფორუმი",
+    featureForumDesc: "ჰკითხე მფლობელებს და ხელოსნებს მსოფლიოს მასშტაბით. გააზიარე გადაწყვეტა, მოიძიე პასუხები.",
+    featureForumCta: "ფორუმის გახსნა",
+
+    featureI18nTitle: "EN · RU · KA",
+    featureI18nDesc: "კოდები და შეკეთების შენიშვნები თარგმნილია ინგლისურად, რუსულად და ქართულად.",
+
+    featureSearchTitle: "მყისიერი ძებნა",
+    featureSearchDesc: "ულტრა სწრაფი fuzzy-ძებნა კოდებში, P-კოდებში და აღწერებში.",
+
+    // Modules
+    sectionModulesKicker: "მოდულების მიხედვით",
+    sectionModulesTitle: "BMW-ის ყველა მართვის ბლოკი დაფარულია.",
+    moduleDmeName: "ძრავის მართვა",
+    moduleDdeName: "დიზელის ECU",
+    moduleEgsName: "ტრანსმისია",
+    moduleCasName: "წვდომა და გაშვება",
+    moduleSrsName: "ჰაერბაგი და უსაფრთხოება",
+    moduleDscName: "DSC / ABS",
+    moduleFrmName: "Footwell მოდული",
+    moduleJbeName: "Junction Box",
+    moduleDmeCount: "12,400+ კოდი",
+    moduleDdeCount: "6,800+ კოდი",
+    moduleEgsCount: "3,200+ კოდი",
+    moduleCasCount: "1,900+ კოდი",
+    moduleSrsCount: "2,150+ კოდი",
+    moduleDscCount: "2,700+ კოდი",
+    moduleFrmCount: "1,400+ კოდი",
+    moduleJbeCount: "980+ კოდი",
+
+    // Series
+    sectionSeriesKicker: "ყველა თაობა",
+    sectionSeriesTitle: "E30-დან G80-მდე — სრულად დაფარული.",
+    sectionSeriesLead: "კლასიკური E-სერია, რაფინირებული F-სერია, თანამედროვე G-სერია. დიაგნოსტიკის მონაცემები ყველა BMW-ისთვის 80-იანი წლების ბოლოდან.",
+    seriesEName: "კლასიკა",
+    seriesFName: "თანამედროვე ერა",
+    seriesGName: "უახლესი პლატფორმა",
+    seriesEYears: "1982 → 2013",
+    seriesFYears: "2008 → 2019",
+    seriesGYears: "2017 → დღემდე",
+
+    // How it works
+    sectionStepsKicker: "სამუშაო პროცესი",
+    sectionStepsTitle: "Check Engine-დან გადაჭრამდე — 3 ნაბიჯში.",
+    stepEnterTitle: "კოდის შეყვანა",
+    stepEnterText: "ნებისმიერი BMW DTC — hex ფორმატი, OBD-II P-კოდი ან CC-ID პრიბორის პანელიდან.",
+    stepReadTitle: "დიაგნოზის ჩვენება",
+    stepReadText: "ზუსტი მოდული, კოდის მნიშვნელობა, სიმძიმე და ყველაზე გავრცელებული მიზეზები შენი ძრავისთვის.",
+    stepFixTitle: "შეკეთების გეგმის შესრულება",
+    stepFixText: "ნაბიჯ-ნაბიჯ შემოწმებები, ნაწილების შერჩევა RealOEM-ით და ფორუმის თემები მფლობელებისგან, რომლებმაც უკვე გადაჭრეს.",
+
+    // Testimonials
+    sectionQuotesKicker: "მფლობელების მიერ შეფასებული",
+    sectionQuotesTitle: "BMW-ის საზოგადოება გვენდობა.",
+    quoteText1: "„დავიჭირე 2A82 ჩემს N54-ზე, აქ მოვძებნე და სამი ცნობილი გადაწყვეტა ვიპოვე. გამოწურულის VANOS სოლენოიდი 30 წუთში გამოვცვალე. Limp mode გაქრა.“",
+    quoteText2: "„საუკეთესო BMW DTC საიტი. ფირმული hex კოდები, რომლებსაც სხვა ხელსაწყოები ვერ ხსნიდნენ — აქ ნათლადაა, რუსულადაც.“",
+    quoteText3: "„ყოველდღე ვიყენებთ სახელოსნოში. ISTA-ზე სწრაფია სწრაფი მოძიებისთვის, ხოლო CAS-ის რთული თემები ფორუმზე ოქროდ ღირს.“",
+    quoteRole1: "E92 335i · ბერლინი",
+    quoteRole2: "F30 320d · მოსკოვი",
+    quoteRole3: "დამოუკიდებელი ხელოსანი · თბილისი",
+
+    // FAQ
+    sectionFaqKicker: "FAQ",
+    sectionFaqTitle: "ხშირი კითხვები.",
+    faqQ1: "რა არის BMW-ის DTC კოდი?",
+    faqA1: "BMW-ის DTC (Diagnostic Trouble Code) — სტანდარტიზებული იდენტიფიკატორი, რომელსაც გასცემს ბორტ-კომპიუტერი (DME, DDE, EGS, CAS, SRS და სხვა) ხარვეზის აღმოჩენისას. ეს შეიძლება იყოს ზოგადი OBD-II P-კოდი (მაგ. P0128) ან BMW-ის ფირმული hex-კოდი (მაგ. 2A82, A0B1).",
+    faqQ2: "როგორ წავიკითხო BMW-ის შეცდომის კოდები?",
+    faqA2: "გამოიყენე ნებისმიერი დიაგნოსტიკის ხელსაწყო — INPA, ISTA, Carly, Bimmercode, Foxwell ან ჩვეულებრივი OBD-II სკანერი. შეუერთდი OBD პორტს დაფის ქვემოთ, გამოიკითხე მოდულები და ჩვენი ბაზიდან მიიღე ნათელი ახსნა და გადაჭრის გზა.",
+    faqQ3: "რომელ მოდელებს უჭერთ მხარს?",
+    faqA3: "ყველა BMW-სა და Mini-ს, 80-იანი წლების ბოლოდან — E-სერია (E30, E36, E39, E46, E60, E90), F-სერია (F10, F30, F80), G-სერია (G20, G30, G80 M3) და ახალი წარმოების მანქანები. ძრავა, შასი, ტრანსმისია და კარის მოდულის კოდები სრულადაა მოცული.",
+    faqQ4: "მართლა უფასოა?",
+    faqA4: "კი — სრული წვდომა ბაზაზე, VIN დეკოდინგი და ფორუმის კითხვა უფასოა რეგისტრაციის გარეშე. ანგარიში მხოლოდ მაშინ გჭირდება, თუ გსურს კოდების შენახვა ან ფორუმზე პოსტი.",
+    faqQ5: "ხართ BMW AG-სთან დაკავშირებული?",
+    faqA5: "არა. BimmerCodes დამოუკიდებელი ენთუზიასტთა რესურსია. BMW, Mini და მათთან დაკავშირებული ნიშნები მათი მფლობელების სავაჭრო ნიშნებია.",
+
+    // Final CTA
+    ctaKicker: "დაიწყე",
+    ctaTitle: "მზად ხარ ჩააქრო Check Engine-ის სიგნალი?",
+    ctaText: "მოძებნე კოდი, გაშიფრე VIN ან გახსენი ფორუმი. რეგისტრაცია არ სჭირდება.",
+    ctaSearchBtn: "კოდის ძებნა",
+    ctaForumBtn: "ფორუმზე გადასვლა",
   },
 
 
