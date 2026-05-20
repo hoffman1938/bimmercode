@@ -16,29 +16,36 @@ export async function onRequestGet(context) {
   }
 
   try {
-    let query = `
-      SELECT 
+    const whereCol = id ? "id = ?" : "username = ?";
+    const param = id || username;
+
+    const fullSelect = `
+      SELECT
         id, username, email, avatar_url, bio,
         created_at, last_login, age,
         reputation,
         car_model, bmw_year, bmw_body, bmw_engine,
         city, country,
         privacy_level, preferred_lang, is_active,
-        first_name, last_name, role_id as role
-      FROM users 
-      WHERE `;
-    
-    let param;
+        first_name, last_name, role_id AS role
+      FROM users WHERE ${whereCol}`;
 
-    if (id) {
-        query += "id = ?";
-        param = id;
-    } else {
-        query += "username = ?";
-        param = username;
+    const minimalSelect = `
+      SELECT
+        id, username, email, avatar_url, bio,
+        created_at, last_login,
+        reputation, car_model, preferred_lang, is_active,
+        role_id AS role
+      FROM users WHERE ${whereCol}`;
+
+    let user;
+    try {
+      user = await env.DB.prepare(fullSelect).bind(param).first();
+    } catch (queryErr) {
+      const msg = String(queryErr?.message || queryErr);
+      if (!msg.includes("no such column")) throw queryErr;
+      user = await env.DB.prepare(minimalSelect).bind(param).first();
     }
-
-    const user = await env.DB.prepare(query).bind(param).first();
 
     if (!user || user.is_active === 0) {
       return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
