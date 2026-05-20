@@ -55,10 +55,14 @@ export async function ensureEmailAvailable(db, email, exceptUserId) {
   return { ok: true };
 }
 
-/** Keep cached author names on forum content in sync. */
+/** Keep denormalized author names on forum rows in sync (search, triggers, legacy UI). */
 export async function propagateUsername(db, userId, newUsername) {
   await db.prepare("UPDATE topics SET username = ? WHERE user_id = ?").bind(newUsername, userId).run();
   await db.prepare("UPDATE posts SET username = ? WHERE user_id = ?").bind(newUsername, userId).run();
+  await db
+    .prepare("UPDATE topics SET last_reply_username = ? WHERE last_reply_user_id = ?")
+    .bind(newUsername, userId)
+    .run();
 }
 
 function optStr(v, max) {

@@ -167,16 +167,18 @@ async function handleGet(context) {
 
   const queryWithArchive = `
     SELECT
-      t.id, t.user_id, t.username, t.category, t.title, t.content, t.related_code,
+      t.id, t.user_id, COALESCE(u.username, t.username) AS username, t.category, t.title, t.content, t.related_code,
       t.lang, t.views, t.is_solved, t.is_pinned, t.is_locked, t.is_archived,
       t.created_at, t.updated_at,
       COALESCE(t.reply_count, 0)      AS reply_count,
-      t.last_reply_at, t.last_reply_user_id, t.last_reply_username,
+      t.last_reply_at, t.last_reply_user_id,
+      COALESCE(lru.username, t.last_reply_username) AS last_reply_username,
       u.avatar_url   AS author_avatar,
       u.role_id      AS author_role,
       u.reputation   AS author_reputation
     FROM topics t ${searchJoin}
     LEFT JOIN users u ON u.id = t.user_id
+    LEFT JOIN users lru ON lru.id = t.last_reply_user_id
     ${whereClause}
     ORDER BY ${effectiveSort}
     LIMIT ?
@@ -189,16 +191,18 @@ async function handleGet(context) {
     : "";
   const queryNoArchive = `
     SELECT
-      t.id, t.user_id, t.username, t.category, t.title, t.content, t.related_code,
+      t.id, t.user_id, COALESCE(u.username, t.username) AS username, t.category, t.title, t.content, t.related_code,
       t.lang, t.views, t.is_solved, t.is_pinned, t.is_locked,
       t.created_at, t.updated_at,
       COALESCE(t.reply_count, 0)      AS reply_count,
-      t.last_reply_at, t.last_reply_user_id, t.last_reply_username,
+      t.last_reply_at, t.last_reply_user_id,
+      COALESCE(lru.username, t.last_reply_username) AS last_reply_username,
       u.avatar_url   AS author_avatar,
       u.role_id      AS author_role,
       u.reputation   AS author_reputation
     FROM topics t ${searchJoin}
     LEFT JOIN users u ON u.id = t.user_id
+    LEFT JOIN users lru ON lru.id = t.last_reply_user_id
     ${whereNoArchive}
     ORDER BY ${effectiveSort}
     LIMIT ?

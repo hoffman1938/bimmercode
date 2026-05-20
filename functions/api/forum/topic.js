@@ -33,6 +33,7 @@ async function handleGet(context) {
     const topic = await db
       .prepare(
         `SELECT t.*,
+                COALESCE(u.username, t.username) AS username,
                 u.avatar_url   AS author_avatar,
                 u.role_id      AS author_role,
                 u.reputation   AS author_reputation
@@ -59,14 +60,16 @@ async function handleGet(context) {
       .prepare(
         `SELECT
             p.*,
+            COALESCE(u.username, p.username) AS username,
             u.avatar_url   AS author_avatar,
             u.role_id      AS author_role,
             u.reputation   AS author_reputation,
-            rp.username    AS reply_to_username,
+            COALESCE(ru.username, rp.username) AS reply_to_username,
             SUBSTR(COALESCE(rp.content, ''), 1, 360) AS reply_to_excerpt
            FROM posts p
       LEFT JOIN users u ON u.id = p.user_id
       LEFT JOIN posts rp ON rp.id = p.reply_to_post_id
+      LEFT JOIN users ru ON ru.id = rp.user_id
           WHERE p.topic_id = ? AND p.id != p.topic_id
           ORDER BY p.created_at ASC`
       )
