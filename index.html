@@ -2,6 +2,8 @@
 <html lang="en" class="index-bento-page bcx-page scroll-smooth">
   <head>
     <meta charset="UTF-8" />
+    <!-- Root base: prevents third-party scripts (AdSense, Rocket Loader) from rewriting relative asset URLs -->
+    <base href="https://bimmercodes.net/" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
@@ -62,10 +64,8 @@
       content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
     />
 
-    <!-- Google AdSense -->
+    <!-- Google AdSense (script loaded at end of body — avoids breaking CSS URL resolution in head) -->
     <meta name="google-adsense-account" content="ca-pub-6807738591111613">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
-     crossorigin="anonymous"></script>
 
     <!-- ==================== OPEN GRAPH / FACEBOOK ==================== -->
     <meta property="og:type" content="website" />
@@ -322,21 +322,21 @@
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
 
     <!-- Preload critical resources -->
-    <link rel="preload" href="/css/style.css?v=2.94" as="style" />
-    <link rel="preload" href="/css/index-premium.css?v=9" as="style" />
+    <link rel="preload" href="https://bimmercodes.net/css/style.css?v=2.94" as="style" />
+    <link rel="preload" href="https://bimmercodes.net/css/index-premium.css?v=9" as="style" />
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="/css/style.css?v=2.94" />
-    <link rel="stylesheet" href="/css/responsive.css?v=2.93" />
-    <link rel="stylesheet" href="/css/notifications.css?v=2.91" />
-    <link rel="stylesheet" href="/css/parts-finder.css" />
-    <link rel="stylesheet" href="/css/tokens.css?v=3.0" />
-    <link rel="stylesheet" href="/css/ui-buttons.css?v=1" />
-    <link rel="stylesheet" href="/css/forum.css?v=3.14" />
-    <link rel="stylesheet" href="/css/index-bento.css?v=6" />
+    <!-- Styles (origin-absolute URLs — not affected by AdSense / Rocket Loader base) -->
+    <link rel="stylesheet" href="https://bimmercodes.net/css/style.css?v=2.94" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/responsive.css?v=2.93" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/notifications.css?v=2.91" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/parts-finder.css" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/ui-buttons.css?v=1" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/forum.css?v=3.14" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/index-bento.css?v=6" />
     <!-- Premium redesign (site-wide layer first, then page-specific) -->
-    <link rel="stylesheet" href="/css/site-premium.css?v=3" />
-    <link rel="stylesheet" href="/css/index-premium.css?v=9" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/site-premium.css?v=3" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/index-premium.css?v=9" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -353,20 +353,20 @@
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href="./favicon-32x32.png"
+      href="https://bimmercodes.net/favicon-32x32.png"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href="./favicon-16x16.png"
+      href="https://bimmercodes.net/favicon-16x16.png"
     />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href="./apple-touch-icon.png"
+      href="https://bimmercodes.net/apple-touch-icon.png"
     />
-    <link rel="manifest" href="./site.webmanifest" />
+    <link rel="manifest" href="https://bimmercodes.net/site.webmanifest" />
 
     <style>
       .notification-btn { display: none !important; }
@@ -979,7 +979,7 @@
 
     <footer><!-- Content injected by js/footer.js --></footer>
 
-    <script src="/js/footer.js"></script>
+    <script src="https://bimmercodes.net/js/footer.js" data-cfasync="false"></script>
 
     <!-- Favorites modal -->
     <div id="favorites-modal" class="favorites-modal">
@@ -997,17 +997,26 @@
       </div>
     </div>
 
-    <script src="/js/translations.js?v=4"></script>
-    <script src="/js/parts-finder.js"></script>
-    <script src="/js/script.js?v=2.92"></script>
-    <script src="/js/index-premium.js?v=4" defer></script>
+    <script src="https://bimmercodes.net/js/translations.js?v=4" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/parts-finder.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/script.js?v=2.92" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/index-premium.js?v=4" defer data-cfasync="false"></script>
+
+    <!-- Google AdSense (end of body; data-cfasync=false skips Cloudflare Rocket Loader) -->
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
+      crossorigin="anonymous"
+      data-cfasync="false"
+    ></script>
 
     <!-- Google Analytics -->
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-P81YSN8G97"
+      data-cfasync="false"
     ></script>
-    <script>
+    <script data-cfasync="false">
       window.dataLayer = window.dataLayer || [];
       function gtag() { dataLayer.push(arguments); }
       gtag("js", new Date());
@@ -1015,7 +1024,7 @@
     </script>
 
     <!-- Yandex.Metrika counter -->
-    <script type="text/javascript">
+    <script type="text/javascript" data-cfasync="false">
       (function (m, e, t, r, i, k, a) {
         m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); };
         m[i].l = 1 * new Date();
@@ -1194,7 +1203,7 @@
         </form>
       </div>
     </div>
-    <script src="/js/live.js?v=2.91"></script>
-    <script src="/js/modal-escape.js?v=3.0"></script>
+    <script src="https://bimmercodes.net/js/live.js?v=2.91" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/modal-escape.js?v=3.0" data-cfasync="false"></script>
   </body>
 </html>

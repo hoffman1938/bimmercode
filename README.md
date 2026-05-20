@@ -60,3 +60,4 @@ After deploying static assets + `functions/`:
    ```
    Forum APIs need columns such as `topics.is_archived` (migration `013_topics_archive_and_denorm.sql`).
 5. Redeploy after code changes; bump `?v=` on CSS/JS if the CDN caches old bundles.
+6. In Cloudflare dashboard → **Speed** → **Optimization**: turn **Rocket Loader** **Off** (it can break stylesheet URLs when combined with AdSense). Site scripts use `data-cfasync="false"` as a fallback.
