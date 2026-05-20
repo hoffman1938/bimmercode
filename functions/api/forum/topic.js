@@ -11,6 +11,7 @@ import { checkRateLimit, RATE_LIMITS, getIpAddress } from "../../lib/rate-limit.
 import { verifyTurnstile } from "../../lib/turnstile.js";
 import { insertNotificationIfAllowed } from "../../lib/forum-notifications.js";
 import { getViewerIdFromRequest, getBlockedUserIdsForBlocker } from "../../lib/user-blocks.js";
+import { ensureFtsSyncTriggersDropped, withFtsBypass } from "../../lib/fts-bypass.js";
 
 function json(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -297,21 +298,24 @@ async function handlePost(context) {
 
     const postId = crypto.randomUUID();
 
-    await db
-      .prepare(
-        `INSERT INTO posts (id, topic_id, user_id, username, content, lang, reply_to_post_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        postId,
-        data.topic_id,
-        userId,
-        username,
-        content,
-        data.lang || "en",
-        replyToPostId
-      )
-      .run();
+    await ensureFtsSyncTriggersDropped(db);
+    await withFtsBypass(db, async () => {
+      await db
+        .prepare(
+          `INSERT INTO posts (id, topic_id, user_id, username, content, lang, reply_to_post_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`
+        )
+        .bind(
+          postId,
+          data.topic_id,
+          userId,
+          username,
+          content,
+          data.lang || "en",
+          replyToPostId
+        )
+        .run();
+    });
 
     // Notify in background: does not block the JSON response (was serial await per participant + mute check).
     const participants = new Set();

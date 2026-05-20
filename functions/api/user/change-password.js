@@ -1,8 +1,9 @@
 // functions/api/user/change-password.js - Change Password API
 
-import { verifyPassword, hashPassword, validatePasswordStrength } from "../../lib/crypto.js";
+import { verifyPassword } from "../../lib/crypto.js";
 import { logAudit, AUDIT_ACTIONS } from "../../lib/audit.js";
 import { getIpAddress } from "../../lib/rate-limit.js";
+import { getBearerUser, applyNewPassword, jsonResponse } from "../../lib/user-account.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -12,7 +13,12 @@ export async function onRequestPost(context) {
     const { id, current_password, new_password } = await request.json();
 
     if (!id || !current_password || !new_password) {
-      return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+      return jsonResponse({ error: "Missing fields" }, 400);
+    }
+
+    const tokenUser = await getBearerUser(request, env);
+    if (!tokenUser?.id || String(tokenUser.id) !== String(id)) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
     // 1. Verify User & Current Password
@@ -27,18 +33,8 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ error: "Incorrect current password" }), { status: 401 });
     }
 
-    // 2. Validate New Password
-    const validation = validatePasswordStrength(new_password);
-    if (!validation.valid) {
-      return new Response(JSON.stringify({ error: "New password too weak", details: validation.errors }), { status: 400 });
-    }
-
-    // 3. Update Password
-    const newHash = await hashPassword(new_password);
-    
-    await env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?")
-      .bind(newHash, id)
-      .run();
+    const pw = await applyNewPassword(env.DB, id, new_password);
+    if (!pw.ok) return jsonResponse({ error: pw.error, details: pw.details }, 400);
 
     // 4. Log Action
     await logAudit(env, {

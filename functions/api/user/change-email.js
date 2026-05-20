@@ -1,8 +1,9 @@
 // functions/api/user/change-email.js - Change Email API
 
-import { verifyPassword, hashPassword, verifySecurityAnswer } from "../../lib/crypto.js";
+import { verifyPassword, verifySecurityAnswer } from "../../lib/crypto.js";
 import { logAudit, AUDIT_ACTIONS } from "../../lib/audit.js";
 import { getIpAddress } from "../../lib/rate-limit.js";
+import { getBearerUser, validateEmail, ensureEmailAvailable, jsonResponse } from "../../lib/user-account.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -12,7 +13,12 @@ export async function onRequestPost(context) {
     const { id, current_password, new_email, security_answer } = await request.json();
 
     if (!id || !current_password || !new_email) {
-      return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+      return jsonResponse({ error: "Missing fields" }, 400);
+    }
+
+    const tokenUser = await getBearerUser(request, env);
+    if (!tokenUser?.id || String(tokenUser.id) !== String(id)) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
     // 1. Verify User & Current Password
@@ -37,19 +43,15 @@ export async function onRequestPost(context) {
     }
 
     // 2. Validate New Email Format & Uniqueness
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(new_email)) {
-      return new Response(JSON.stringify({ error: "Invalid email format" }), { status: 400 });
-    }
+    const ev = validateEmail(new_email);
+    if (!ev.ok) return jsonResponse({ error: ev.error }, 400);
 
-    const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(new_email).first();
-    if (existing) {
-      return new Response(JSON.stringify({ error: "Email already in use" }), { status: 409 });
-    }
+    const free = await ensureEmailAvailable(env.DB, ev.value, id);
+    if (!free.ok) return jsonResponse({ error: free.error }, 409);
 
     // 3. Update Email
     await env.DB.prepare("UPDATE users SET email = ?, email_verified = 0 WHERE id = ?")
-      .bind(new_email, id)
+      .bind(ev.value, id)
       .run();
 
     // 4. Log Action

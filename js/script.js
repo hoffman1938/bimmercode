@@ -977,8 +977,18 @@ async function init() {
           currentPassword: currentPassword ? "***" : "(empty)"
         });
         
-        // Validate password is provided
-        if (!currentPassword) {
+        const pwInput = document.getElementById("profile-password-confirm");
+        const emailInput = document.getElementById("profile-email");
+        const emailChanged =
+          emailInput && email && String(email).trim().toLowerCase() !== String(user.email || "").toLowerCase();
+
+        if (emailChanged && !currentPassword) {
+          alert("Please enter your current password to change email");
+          btn.textContent = originalText;
+          btn.disabled = false;
+          return;
+        }
+        if (pwInput && !emailChanged && !currentPassword) {
           alert("Please enter your current password to save changes");
           btn.textContent = originalText;
           btn.disabled = false;
@@ -1012,27 +1022,56 @@ async function init() {
             if (upData.url) finalAvatarUrl = upData.url;
           }
 
-          // Обновляем профиль с подтверждением пароля
+          const token = localStorage.getItem("auth_token");
+          if (!token) {
+            alert("Please sign in again");
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return;
+          }
+
+          if (emailChanged) {
+            const emailRes = await fetch("/api/user/change-email", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                id: user.id,
+                current_password: currentPassword,
+                new_email: email.trim(),
+              }),
+            });
+            const emailData = await emailRes.json();
+            if (!emailRes.ok || !emailData.success) {
+              alert("Error: " + (emailData.error || "Email update failed"));
+              btn.textContent = originalText;
+              btn.disabled = false;
+              return;
+            }
+          }
+
+          const payload = { id: user.id, avatar_url: finalAvatarUrl };
+          if (username != null && username !== "") payload.username = username;
+          if (firstName != null) payload.first_name = firstName;
+          if (lastName != null) payload.last_name = lastName;
+          if (age != null) payload.age = age;
+          if (city != null) payload.city = city;
+          if (country != null) payload.country = country;
+          if (carModel != null) payload.car_model = carModel;
+          if (bmwYear != null) payload.bmw_year = bmwYear;
+          if (bmwBody != null) payload.bmw_body = bmwBody;
+          if (bmwEngine != null) payload.bmw_engine = bmwEngine;
+          if (bio != null) payload.bio = bio;
+
           const updateRes = await fetch("/api/user/update", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id: user.id,
-              current_password: currentPassword,
-              username,
-              email,
-              first_name: firstName,
-              last_name: lastName,
-              age,
-              city,
-              country,
-              avatar_url: finalAvatarUrl,
-              car_model: carModel,
-              bmw_year: bmwYear,
-              bmw_body: bmwBody,
-              bmw_engine: bmwEngine,
-              bio,
-            }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
           });
 
           const updateData = await updateRes.json();

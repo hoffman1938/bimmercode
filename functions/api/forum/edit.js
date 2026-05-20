@@ -1,7 +1,10 @@
 // functions/api/forum/edit.js
 
+import { ensureFtsSyncTriggersDropped, withFtsBypass } from "../../lib/fts-bypass.js";
+
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const db = env.DB;
 
   try {
     const { type, id, user_id, content } = await request.json();
@@ -13,32 +16,27 @@ export async function onRequestPost(context) {
       );
     }
 
-    let result;
+    await ensureFtsSyncTriggersDropped(db);
 
-    if (type === "topic") {
-      // Обновляем Тему
-      // Проверяем, что user_id совпадает (безопасность)
-      result = await env.DB.prepare(
-        "UPDATE topics SET content = ? WHERE id = ? AND user_id = ?",
-      )
-        .bind(content, id, user_id)
-        .run();
-      // Keep opening-body mirror post in sync (id = topic id) when it exists
-      if (result.meta.changes > 0) {
-        await env.DB.prepare(
-          "UPDATE posts SET content = ? WHERE id = ? AND user_id = ?",
-        )
+    let result = await withFtsBypass(db, async () => {
+      if (type === "topic") {
+        const topicResult = await db
+          .prepare("UPDATE topics SET content = ? WHERE id = ? AND user_id = ?")
           .bind(content, id, user_id)
           .run();
+        if (topicResult.meta.changes > 0) {
+          await db
+            .prepare("UPDATE posts SET content = ? WHERE id = ? AND user_id = ?")
+            .bind(content, id, user_id)
+            .run();
+        }
+        return topicResult;
       }
-    } else {
-      // Обновляем Пост (ответ)
-      result = await env.DB.prepare(
-        "UPDATE posts SET content = ? WHERE id = ? AND user_id = ?",
-      )
+      return db
+        .prepare("UPDATE posts SET content = ? WHERE id = ? AND user_id = ?")
         .bind(content, id, user_id)
         .run();
-    }
+    });
 
     if (result.meta.changes > 0) {
       return new Response(JSON.stringify({ success: true }), { status: 200 });

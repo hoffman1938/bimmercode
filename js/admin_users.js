@@ -1,5 +1,15 @@
 // js/admin_users.js - Advanced User Management
 
+function escapeAdminHtml(s) {
+  const d = document.createElement("div");
+  d.textContent = s == null ? "" : String(s);
+  return d.innerHTML;
+}
+
+function escapeAdminAttr(s) {
+  return String(s == null ? "" : s).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
 async function loadUsers(page = 1) {
     const btn = document.getElementById('users-loading');
     const tbody = document.getElementById('users-table-body');
@@ -110,7 +120,9 @@ function closeInspectorModal() {
 window.unbanUser = unbanUser;
 window.openActionModal = openActionModal; // Ensure this is available
 window.openRoleModal = openRoleModal;
-
+window.openEditUserModal = openEditUserModal;
+window.closeEditUserModal = closeEditUserModal;
+window.saveUserEdit = saveUserEdit;
 
 function renderUsers(users) {
     const tbody = document.getElementById('users-table-body');
@@ -142,7 +154,8 @@ function renderUsers(users) {
                 </span>
             </td>
             <td>
-                <button class="action-btn" title="Edit Role" onclick="openRoleModal('${user.id}', '${user.username}', '${user.role_id}')"><i class="fas fa-user-tag"></i></button>
+                <button class="action-btn" title="Edit user" onclick="openEditUserModal('${user.id}')"><i class="fas fa-user-pen"></i></button>
+                <button class="action-btn" title="Edit Role" onclick="openRoleModal('${user.id}', '${escapeAdminAttr(user.username)}', '${user.role_id}')"><i class="fas fa-user-tag"></i></button>
                 ${user.is_active ? 
                     `<button class="action-btn btn-danger" title="Ban User" onclick="openActionModal('${user.id}', 'ban')"><i class="fas fa-ban"></i></button>` :
                     `<button class="action-btn" title="Unban User" onclick="openActionModal('${user.id}', 'unban')"><i class="fas fa-undo"></i></button>`
@@ -224,6 +237,116 @@ async function unbanUser(userId) {
     // Let's assume we have /api/admin/unban or generic update.
     // Since we don't have explicit unban, I'll skip for this exact moment but it's trivial to add.
     alert("Unban functionality logic to be connected.");
+}
+
+async function openEditUserModal(userId) {
+  const modal = document.getElementById("edit-user-modal");
+  if (!modal) return;
+  document.getElementById("edit-user-id").value = userId;
+  document.getElementById("edit-user-id-display").textContent = userId;
+  modal.classList.add("active");
+
+  try {
+    const token = localStorage.getItem("auth_token");
+    const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!data.success || !data.user) {
+      alert(data.error || "Failed to load user");
+      return;
+    }
+    const u = data.user;
+    document.getElementById("edit-user-username").value = u.username || "";
+    document.getElementById("edit-user-email").value = u.email || "";
+    document.getElementById("edit-user-password").value = "";
+    document.getElementById("edit-user-role").value = u.role_id || "user_role";
+    document.getElementById("edit-user-active").checked = !!u.is_active;
+    document.getElementById("edit-user-reputation").value = u.reputation ?? 0;
+    document.getElementById("edit-user-first-name").value = u.first_name || "";
+    document.getElementById("edit-user-last-name").value = u.last_name || "";
+    document.getElementById("edit-user-age").value = u.age != null ? u.age : "";
+    document.getElementById("edit-user-country").value = u.country || "";
+    document.getElementById("edit-user-city").value = u.city || "";
+    document.getElementById("edit-user-lang").value = u.preferred_lang || "en";
+    document.getElementById("edit-user-car").value = u.car_model || "";
+    document.getElementById("edit-user-bmw-year").value = u.bmw_year != null ? u.bmw_year : "";
+    document.getElementById("edit-user-bmw-body").value = u.bmw_body || "";
+    document.getElementById("edit-user-bmw-engine").value = u.bmw_engine || "";
+    document.getElementById("edit-user-bio").value = u.bio || "";
+    document.getElementById("edit-user-avatar").value = u.avatar_url || "";
+  } catch (e) {
+    console.error(e);
+    alert("Failed to load user");
+  }
+}
+
+function closeEditUserModal() {
+  document.getElementById("edit-user-modal")?.classList.remove("active");
+}
+
+async function saveUserEdit(e) {
+  e.preventDefault();
+  const userId = document.getElementById("edit-user-id")?.value;
+  if (!userId) return;
+
+  const body = {
+    username: document.getElementById("edit-user-username")?.value?.trim(),
+    email: document.getElementById("edit-user-email")?.value?.trim(),
+    role_id: document.getElementById("edit-user-role")?.value,
+    is_active: document.getElementById("edit-user-active")?.checked ? 1 : 0,
+    reputation: parseInt(document.getElementById("edit-user-reputation")?.value, 10) || 0,
+    first_name: document.getElementById("edit-user-first-name")?.value?.trim(),
+    last_name: document.getElementById("edit-user-last-name")?.value?.trim(),
+    age: document.getElementById("edit-user-age")?.value,
+    country: document.getElementById("edit-user-country")?.value?.trim(),
+    city: document.getElementById("edit-user-city")?.value?.trim(),
+    preferred_lang: document.getElementById("edit-user-lang")?.value,
+    car_model: document.getElementById("edit-user-car")?.value?.trim(),
+    bmw_year: document.getElementById("edit-user-bmw-year")?.value,
+    bmw_body: document.getElementById("edit-user-bmw-body")?.value?.trim(),
+    bmw_engine: document.getElementById("edit-user-bmw-engine")?.value?.trim(),
+    bio: document.getElementById("edit-user-bio")?.value?.trim(),
+    avatar_url: document.getElementById("edit-user-avatar")?.value?.trim(),
+  };
+
+  const newPw = document.getElementById("edit-user-password")?.value;
+  if (newPw) body.new_password = newPw;
+
+  const btn = document.getElementById("edit-user-save-btn");
+  const oldHtml = btn?.innerHTML;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+  }
+
+  try {
+    const token = localStorage.getItem("auth_token");
+    const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      alert(data.error || "Update failed");
+      return;
+    }
+    alert("User updated");
+    closeEditUserModal();
+    loadUsers();
+  } catch (err) {
+    console.error(err);
+    alert("Connection error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = oldHtml;
+    }
+  }
 }
 
 // Listen for search

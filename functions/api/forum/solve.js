@@ -3,6 +3,7 @@
 // +10 / −10 reputation when marking / unmarking (not when OP marks their own post).
 
 import { insertNotificationIfAllowed } from "../../lib/forum-notifications.js";
+import { ensureFtsSyncTriggersDropped, withFtsBypass } from "../../lib/fts-bypass.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -49,7 +50,10 @@ export async function onRequestPost(context) {
       return json({ success: true, is_solution: wasSolution, no_op: true });
     }
 
+    await ensureFtsSyncTriggersDropped(db);
+
     if (wantMark) {
+      await withFtsBypass(db, async () => {
       await db
         .prepare("UPDATE posts SET is_solution = 1 WHERE id = ?")
         .bind(post_id)
@@ -58,6 +62,7 @@ export async function onRequestPost(context) {
         .prepare("UPDATE topics SET is_solved = 1 WHERE id = ?")
         .bind(topic_id)
         .run();
+      });
 
       if (otherUser) {
         await db
@@ -94,10 +99,12 @@ export async function onRequestPost(context) {
     }
 
     // Unmark
+    await withFtsBypass(db, async () => {
     await db
       .prepare("UPDATE posts SET is_solution = 0 WHERE id = ?")
       .bind(post_id)
       .run();
+    });
 
     if (otherUser) {
       await db

@@ -273,10 +273,10 @@
         <form id="edit-profile-form" class="auth-body topic-form" onsubmit="handleProfileUpdate(event)">
           <div class="edit-profile-section">
             <h3 class="edit-profile-section__title" data-i18n="accountSecurityTitle">Account</h3>
-            <p class="edit-profile-hint" data-i18n="accountSecurityHint">Username is fixed. Change email or password using the sections below.</p>
+            <p class="edit-profile-hint" data-i18n="accountSecurityHint">3–20 characters: letters, numbers, underscore. Email and password are updated in the sections below.</p>
             <div class="field">
               <label for="edit-username" data-i18n="usernameLabel">Username</label>
-              <input type="text" id="edit-username" class="input-readonly" readonly autocomplete="username" />
+              <input type="text" id="edit-username" class="form-input" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" autocomplete="username" required />
             </div>
             <div class="field">
               <label for="edit-email-current" data-i18n="emailLabel">Email</label>

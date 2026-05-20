@@ -1,12 +1,16 @@
 // functions/lib/forum-delete.js — CASCADE-safe deletes for D1/SQLite FK constraints
 // (topic_tags → topics, reactions → posts, etc.)
 
+import { ensureFtsSyncTriggersDropped, withFtsBypass } from "./fts-bypass.js";
+
 /**
  * Remove a reply (not the opening row). Caller must enforce permissions.
  * @param {import("@cloudflare/workers-types").D1Database} db
  * @param {string} postId
  */
 export async function deleteSinglePost(db, postId) {
+  await ensureFtsSyncTriggersDropped(db);
+  return withFtsBypass(db, async () => {
   await db.prepare("DELETE FROM reactions WHERE post_id = ?").bind(postId).run();
   try {
     await db.prepare("DELETE FROM post_likes WHERE post_id = ?").bind(postId).run();
@@ -30,6 +34,7 @@ export async function deleteSinglePost(db, postId) {
     /* optional */
   }
   return db.prepare("DELETE FROM posts WHERE id = ?").bind(postId).run();
+  });
 }
 
 /**
@@ -38,6 +43,8 @@ export async function deleteSinglePost(db, postId) {
  * @param {string} topicId
  */
 export async function deleteTopicTree(db, topicId) {
+  await ensureFtsSyncTriggersDropped(db);
+  return withFtsBypass(db, async () => {
   try {
     await db.prepare("DELETE FROM topic_tags WHERE topic_id = ?").bind(topicId).run();
   } catch (e) {
@@ -95,4 +102,5 @@ export async function deleteTopicTree(db, topicId) {
   }
   await db.prepare("DELETE FROM posts WHERE topic_id = ?").bind(topicId).run();
   return db.prepare("DELETE FROM topics WHERE id = ?").bind(topicId).run();
+  });
 }

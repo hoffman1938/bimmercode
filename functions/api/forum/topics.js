@@ -16,6 +16,7 @@ import { verifyToken } from "../../lib/jwt.js";
 import { checkRateLimit, RATE_LIMITS, getIpAddress } from "../../lib/rate-limit.js";
 import { verifyTurnstile } from "../../lib/turnstile.js";
 import { getViewerIdFromRequest, getBlockedUserIdsForBlocker } from "../../lib/user-blocks.js";
+import { ensureFtsSyncTriggersDropped, withFtsBypass } from "../../lib/fts-bypass.js";
 
 const PAGE_SIZE_DEFAULT = 20;
 const PAGE_SIZE_MAX = 50;
@@ -341,33 +342,35 @@ async function handlePost(context) {
     const lang = data.lang || "en";
     const category = String(data.category || "").trim() || "off-topic";
 
-    await db
-      .prepare(
-        `INSERT INTO topics
-          (id, user_id, username, category, title, content, related_code, lang)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        topicId,
-        userId,
-        username,
-        category,
-        title,
-        content,
-        data.related_code || null,
-        lang
-      )
-      .run();
+    await ensureFtsSyncTriggersDropped(db);
+    await withFtsBypass(db, async () => {
+      await db
+        .prepare(
+          `INSERT INTO topics
+            (id, user_id, username, category, title, content, related_code, lang)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .bind(
+          topicId,
+          userId,
+          username,
+          category,
+          title,
+          content,
+          data.related_code || null,
+          lang
+        )
+        .run();
 
-    // Mirror body in `posts` (id = topic id) so reactions API has a real post_id for the opening.
-    // Triggers skip counting this row as a "reply" (id = topic_id).
-    await db
-      .prepare(
-        `INSERT INTO posts (id, topic_id, user_id, username, content, lang)
-         VALUES (?, ?, ?, ?, ?, ?)`
-      )
-      .bind(topicId, topicId, userId, username, content, lang)
-      .run();
+      // Mirror body in `posts` (id = topic id) so reactions API has a real post_id for the opening.
+      await db
+        .prepare(
+          `INSERT INTO posts (id, topic_id, user_id, username, content, lang)
+           VALUES (?, ?, ?, ?, ?, ?)`
+        )
+        .bind(topicId, topicId, userId, username, content, lang)
+        .run();
+    });
 
     // Attach tags (comma-separated)
     if (Array.isArray(data.tags) || typeof data.tags === "string") {

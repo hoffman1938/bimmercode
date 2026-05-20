@@ -811,8 +811,15 @@
     try { me = JSON.parse(localStorage.getItem("user_data") || "null"); } catch (_) {}
     if (!me) return;
 
+    const usernameRaw = ($("#edit-username")?.value || "").trim();
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(usernameRaw)) {
+      alert(tr("usernameInvalid", "Username must be 3–20 characters (letters, numbers, underscore only)."));
+      return;
+    }
+
     const body = {
       id: me.id,
+      username: usernameRaw,
       bio: ($("#edit-bio")?.value || "").trim().slice(0, 300),
       car_model: ($("#edit-car")?.value || "").trim().slice(0, 60),
       city: ($("#edit-city")?.value || "").trim().slice(0, 60),
@@ -832,13 +839,17 @@
     if (btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${escapeHtml(tr("saving","Saving…"))}`; btn.disabled = true; }
 
     try {
+      const token = localStorage.getItem("auth_token");
       const res = await fetch("/api/user/update", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error("update_failed");
-      const token = localStorage.getItem("auth_token");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "update_failed");
       const fresh = await fetch(`/api/user/get?id=${encodeURIComponent(me.id)}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       }).then((r) => r.json());
@@ -888,9 +899,13 @@
     const old = btn ? btn.innerHTML : "";
     if (btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>…`; btn.disabled = true; }
     try {
+      const authToken = localStorage.getItem("auth_token");
       const res = await fetch("/api/user/change-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({ id: me.id, current_password: cur, new_password: nw }),
       });
       const data = await res.json().catch(() => ({}));
@@ -926,9 +941,13 @@
     const old = btn ? btn.innerHTML : "";
     if (btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>…`; btn.disabled = true; }
     try {
+      const authToken = localStorage.getItem("auth_token");
       const res = await fetch("/api/user/change-email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({ id: me.id, current_password: curPw, new_email: newEmail }),
       });
       const data = await res.json().catch(() => ({}));

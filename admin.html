@@ -420,6 +420,90 @@
         </div>
     </div>
 
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="auth-modal">
+        <div class="auth-content" style="max-width: 520px; max-height: 90vh; overflow-y: auto;">
+            <button class="close-auth" onclick="closeEditUserModal()"><i class="fas fa-times"></i></button>
+            <h2>Edit user</h2>
+            <p style="color: #94a3b8; font-size: 13px;">ID: <span id="edit-user-id-display"></span></p>
+            <input type="hidden" id="edit-user-id">
+            <form id="edit-user-form" onsubmit="saveUserEdit(event)" style="margin-top: 16px;">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="edit-user-username" class="form-input" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" required>
+                </div>
+                <div class="input-group">
+                    <label>Email (login)</label>
+                    <input type="email" id="edit-user-email" class="form-input" required>
+                </div>
+                <div class="input-group">
+                    <label>New password (leave blank to keep)</label>
+                    <input type="password" id="edit-user-password" class="form-input" autocomplete="new-password">
+                </div>
+                <div class="input-group">
+                    <label>Role</label>
+                    <select id="edit-user-role" class="form-input">
+                        <option value="user_role">User</option>
+                        <option value="moderator_role">Moderator</option>
+                        <option value="senior_moderator_role">Senior Moderator</option>
+                        <option value="admin_role">Administrator</option>
+                        <option value="super_admin_role">Super Administrator</option>
+                    </select>
+                </div>
+                <div class="input-group" style="display:flex; gap:12px; align-items:center;">
+                    <label style="margin:0;"><input type="checkbox" id="edit-user-active" checked> Active account</label>
+                </div>
+                <div class="input-group">
+                    <label>Reputation</label>
+                    <input type="number" id="edit-user-reputation" class="form-input" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label>First / Last name</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <input type="text" id="edit-user-first-name" class="form-input" placeholder="First">
+                        <input type="text" id="edit-user-last-name" class="form-input" placeholder="Last">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Age / Country</label>
+                    <div style="display:grid; grid-template-columns:1fr 2fr; gap:8px;">
+                        <input type="number" id="edit-user-age" class="form-input" min="13" max="120">
+                        <input type="text" id="edit-user-country" class="form-input">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>City / UI language</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <input type="text" id="edit-user-city" class="form-input">
+                        <select id="edit-user-lang" class="form-input">
+                            <option value="en">EN</option>
+                            <option value="ru">RU</option>
+                            <option value="ka">KA</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Car / Year / Body / Engine</label>
+                    <input type="text" id="edit-user-car" class="form-input" placeholder="Car model">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:8px;">
+                        <input type="number" id="edit-user-bmw-year" class="form-input" placeholder="Year">
+                        <input type="text" id="edit-user-bmw-body" class="form-input" placeholder="Body">
+                        <input type="text" id="edit-user-bmw-engine" class="form-input" placeholder="Engine">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Bio</label>
+                    <textarea id="edit-user-bio" class="form-input" rows="3" maxlength="300"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Avatar URL</label>
+                    <input type="text" id="edit-user-avatar" class="form-input">
+                </div>
+                <button type="submit" class="submit-btn" id="edit-user-save-btn">Save changes</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Role Edit Modal -->
     <div id="role-modal" class="auth-modal">
         <div class="auth-content">
