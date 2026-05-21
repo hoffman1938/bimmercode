@@ -114,15 +114,19 @@
      scroll the results into view so they don't sit below the fold. */
   const resultsEl = $("#results-container");
   if (resultsEl && "MutationObserver" in window) {
+    let scrollScheduled = false;
     const mo = new MutationObserver(() => {
-      const visible = !resultsEl.classList.contains("hidden") &&
-                      resultsEl.children.length > 0;
-      if (visible) {
+      const visible =
+        !resultsEl.classList.contains("hidden") && resultsEl.children.length > 0;
+      if (!visible || scrollScheduled) return;
+      scrollScheduled = true;
+      requestAnimationFrame(() => {
+        scrollScheduled = false;
         const top = resultsEl.getBoundingClientRect().top + window.scrollY - 100;
         if (window.scrollY < top - 50) {
           window.scrollTo({ top, behavior: "smooth" });
         }
-      }
+      });
     });
     mo.observe(resultsEl, { attributes: true, childList: true, attributeFilter: ["class"] });
   }
@@ -161,14 +165,19 @@
   function tryExactMatch(value) {
     const term = (value || "").trim().toUpperCase();
     if (term.length < 4) return null;
+    const lookup = window.__bmwCodeLookup;
+    if (lookup?.byCode || lookup?.byPCode) {
+      return lookup.byCode.get(term) || lookup.byPCode.get(term) || null;
+    }
     const codes = window.bmwCodes || [];
     if (!codes.length) return null;
-    // Look for direct code match (case-insensitive) or exact P-code match.
-    const direct = codes.find(
-      (c) => (c.code || "").toUpperCase() === term ||
-             (c.pCodes || []).some((p) => (p || "").toUpperCase() === term)
+    return (
+      codes.find(
+        (c) =>
+          (c.code || "").toUpperCase() === term ||
+          (c.pCodes || []).some((p) => (p || "").toUpperCase() === term),
+      ) || null
     );
-    return direct || null;
   }
 
   let lastAutoOpened = null;

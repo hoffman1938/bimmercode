@@ -34,6 +34,62 @@ let bmwCodes = [];
 let selectedCode = null;
 let chatOpen = false;
 let debounceTimer;
+let searchRunId = 0;
+
+const SEARCH_MIN_CHARS = 2;
+const SEARCH_MAX_RESULTS = 60;
+/** Shorter terms only match code / P-code fields (not titles) to avoid huge hit lists. */
+const SEARCH_TITLE_MIN_CHARS = 4;
+
+function codeTitleText(code, lang) {
+  const t = code?.title;
+  if (!t) return "";
+  if (typeof t === "string") return t;
+  return t[lang] || t.en || t.ru || t.ka || "";
+}
+
+function buildCodeLookup(codes) {
+  const byCode = new Map();
+  const byPCode = new Map();
+  for (const c of codes) {
+    if (c?.code) byCode.set(String(c.code).toUpperCase(), c);
+    for (const p of c.pCodes || []) {
+      if (p) byPCode.set(String(p).toUpperCase(), c);
+    }
+  }
+  return { byCode, byPCode };
+}
+
+function codeMatchesQuery(code, q, lang) {
+  const codeStr = (code.code || "").toLowerCase();
+  if (codeStr.includes(q)) return true;
+  if (q.length >= SEARCH_TITLE_MIN_CHARS) {
+    if (codeTitleText(code, lang).toLowerCase().includes(q)) return true;
+    if (code.pCodes?.some((p) => String(p).toLowerCase().includes(q))) return true;
+  } else if (code.pCodes?.some((p) => String(p).toLowerCase().includes(q))) {
+    return true;
+  }
+  return false;
+}
+
+function searchCodes(term, lang = currentLanguage) {
+  const q = String(term || "").trim().toLowerCase();
+  if (q.length < SEARCH_MIN_CHARS) {
+    return { items: [], truncated: false, query: q };
+  }
+  const items = [];
+  let truncated = false;
+  for (let i = 0; i < bmwCodes.length; i++) {
+    if (!codeMatchesQuery(bmwCodes[i], q, lang)) continue;
+    if (items.length < SEARCH_MAX_RESULTS) {
+      items.push(bmwCodes[i]);
+    } else {
+      truncated = true;
+      break;
+    }
+  }
+  return { items, truncated, query: q };
+}
 
 // UI Text Translations
 // Removed local translations object in favor of global APP_TRANSLATIONS in js/translations.js
@@ -797,6 +853,7 @@ async function init() {
 
     // Expose to other scripts (forum.js, topic.js) that need to look codes up.
     window.bmwCodes = bmwCodes;
+    window.__bmwCodeLookup = buildCodeLookup(bmwCodes);
     window.dispatchEvent(new CustomEvent("bmwCodes:ready", { detail: { count: bmwCodes.length } }));
     setupRegisterForm();
     setupLoginForm();
@@ -1124,9 +1181,9 @@ function setupEventListeners() {
   // 1. Поиск (только если есть input)
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
+    searchInput.addEventListener("input", () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => handleSearch(e.target.value), 300);
+      debounceTimer = setTimeout(() => handleSearch(), 400);
     });
   }
 
@@ -1217,42 +1274,66 @@ function updateLanguage() {
 }
 
 function handleSearch() {
-  // Fix for Forum/Other pages where search input might not exist
   if (!searchInput || !resultsContainer) return;
 
-  const term = searchInput.value.trim().toLowerCase();
+  const term = searchInput.value.trim();
+  const runId = ++searchRunId;
 
   if (term === "") {
     resultsContainer.classList.add("hidden");
-    if(emptyState) emptyState.classList.remove("hidden");
-    if(noResults) noResults.classList.add("hidden");
+    resultsContainer.innerHTML = "";
+    if (emptyState) emptyState.classList.remove("hidden");
+    if (noResults) noResults.classList.add("hidden");
     return;
   }
 
-  const filtered = bmwCodes.filter(
-    (c) =>
-      c.code.toLowerCase().includes(term) ||
-      c.title[currentLanguage].toLowerCase().includes(term) ||
-      (c.pCodes && c.pCodes.some((p) => p.toLowerCase().includes(term))),
-  );
-
-  if (filtered.length === 0) {
+  if (term.length < SEARCH_MIN_CHARS) {
     resultsContainer.classList.add("hidden");
-    emptyState.classList.add("hidden");
-    noResults.classList.remove("hidden");
-  } else {
-    renderResults(filtered);
+    resultsContainer.innerHTML = "";
+    if (emptyState) emptyState.classList.remove("hidden");
+    if (noResults) noResults.classList.add("hidden");
+    return;
+  }
+
+  const doSearch = () => {
+    if (runId !== searchRunId) return;
+    const { items, truncated } = searchCodes(term, currentLanguage);
+
+    if (items.length === 0) {
+      resultsContainer.classList.add("hidden");
+      resultsContainer.innerHTML = "";
+      if (emptyState) emptyState.classList.add("hidden");
+      if (noResults) noResults.classList.remove("hidden");
+      return;
+    }
+
+    renderResults(items, { truncated });
     resultsContainer.classList.remove("hidden");
-    emptyState.classList.add("hidden");
-    noResults.classList.add("hidden");
+    if (emptyState) emptyState.classList.add("hidden");
+    if (noResults) noResults.classList.add("hidden");
+  };
+
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(doSearch, { timeout: 120 });
+  } else {
+    requestAnimationFrame(doSearch);
   }
 }
 
-function renderResults(codes) {
-  resultsContainer.innerHTML = "";
+function renderResults(codes, opts = {}) {
   const favorites = JSON.parse(localStorage.getItem("bmwFavorites")) || [];
   const t = APP_TRANSLATIONS[currentLanguage] || APP_TRANSLATIONS["en"];
   const ctaLabel = t.solutionCta || "View solution";
+  const frag = document.createDocumentFragment();
+
+  if (opts.truncated) {
+    const hint = document.createElement("p");
+    hint.className = "search-results-hint";
+    hint.textContent =
+      t.searchResultsTruncated ||
+      `Showing first ${SEARCH_MAX_RESULTS} matches — enter a more specific code.`;
+    frag.appendChild(hint);
+  }
 
   codes.forEach((code) => {
     const el = document.createElement("div");
@@ -1309,8 +1390,11 @@ function renderResults(codes) {
       });
     }
 
-    resultsContainer.appendChild(el);
+    frag.appendChild(el);
   });
+
+  resultsContainer.innerHTML = "";
+  resultsContainer.appendChild(frag);
 }
 
 // ==========================================

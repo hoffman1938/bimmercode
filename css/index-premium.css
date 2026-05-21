@@ -742,6 +742,16 @@ body.index-body.bc3 > .bc3-sheet.open {
 .bc3 #results-container {
   margin-top: 16px;
 }
+.bc3 .search-results-hint {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--bc-text-muted, #9ca3af);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--bc-border, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+}
 .bc3 #no-results {
   margin: 16px auto 0;
   max-width: 720px;
