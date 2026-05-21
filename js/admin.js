@@ -209,6 +209,12 @@ function switchTab(tabId, context = {}) {
     if (tabId === 'settings') {
         if(typeof loadSettings === 'function') loadSettings();
     }
+    if (tabId === 'codes' && typeof loadAdminCodes === 'function') loadAdminCodes();
+    if (tabId === 'garage' && typeof loadAdminGarage === 'function') loadAdminGarage();
+    if (tabId === 'marketplace' && typeof loadAdminMarketplace === 'function') loadAdminMarketplace();
+    if (tabId === 'seo' && typeof loadAdminSeo === 'function') loadAdminSeo();
+    if (tabId === 'ads' && typeof loadAdminAds === 'function') loadAdminAds();
+    if (tabId === 'notifications' && typeof loadAdminNotifications === 'function') loadAdminNotifications();
 }
 
 async function loadDashboardStats() {
@@ -224,6 +230,14 @@ async function loadDashboardStats() {
         if (dataStats.success) {
             const s = dataStats.stats;
             const container = document.getElementById('stats-container');
+            const growthGrid = document.getElementById('dashboard-growth-grid');
+            if (growthGrid) {
+                growthGrid.innerHTML = `
+                    <div class="stat-card"><div class="stat-value">${s.growth?.new_users_24h ?? 0}</div><div>New users (24h)</div></div>
+                    <div class="stat-card"><div class="stat-value">${s.content?.new_topics_24h ?? 0}</div><div>New topics (24h)</div></div>
+                    <div class="stat-card"><div class="stat-value">${s.content?.new_posts_24h ?? 0}</div><div>New posts (24h)</div></div>
+                `;
+            }
             container.innerHTML = `
                 <div class="stat-card" onclick="switchTab('users', { role: '' })">
                     <div class="stat-value">${s.users.total}</div>
@@ -273,6 +287,32 @@ async function loadDashboardStats() {
                         <td style="text-align:right;">${p.count} views</td>
                     </tr>
                 `).join('');
+            }
+        }
+
+        const resDash = await fetch(`${API_URL}/admin/dashboard`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const dash = await resDash.json();
+        if (dash.success && dash.widgets) {
+            const w = dash.widgets;
+            const tu = document.getElementById('top-users-body');
+            if (tu) {
+                tu.innerHTML = (w.top_users || []).map(u =>
+                    `<tr><td>${u.username}</td><td style="text-align:right">${u.post_count} posts</td></tr>`
+                ).join('') || '<tr><td colspan="2">No data</td></tr>';
+            }
+            const tt = document.getElementById('top-topics-body');
+            if (tt) {
+                tt.innerHTML = (w.top_topics || []).map(t =>
+                    `<tr><td>${t.title?.substring(0,40)}</td><td style="text-align:right">${t.reply_count} replies</td></tr>`
+                ).join('') || '<tr><td colspan="2">No data</td></tr>';
+            }
+            const ts = document.getElementById('top-searches-body');
+            if (ts) {
+                ts.innerHTML = (w.top_searches || []).map(s =>
+                    `<tr><td>${s.query}</td><td style="text-align:right">${s.cnt}</td></tr>`
+                ).join('') || '<tr><td colspan="2">No searches logged yet</td></tr>';
             }
         }
 
@@ -386,7 +426,9 @@ form.addEventListener('submit', async (e) => {
 
         if (type === 'ban') {
             endpoint = '/admin/ban';
+            const hrs = document.getElementById('ban-duration-hours')?.value;
             body = { user_id: userId, reason: reason };
+            if (hrs) body.duration_hours = parseInt(hrs, 10);
         } else if (type === 'unban') {
             endpoint = '/admin/unban';
             body = { user_id: userId, reason: reason };

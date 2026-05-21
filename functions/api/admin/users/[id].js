@@ -77,13 +77,23 @@ export async function onRequestGet(context) {
         ORDER BY created_at DESC LIMIT 10
       `).bind(userId).all();
 
+      let bans = [];
+      try {
+        const r = await env.DB.prepare(
+          `SELECT reason, banned_at, expires_at, lifted_at, issued_by
+           FROM user_bans WHERE user_id = ? ORDER BY banned_at DESC LIMIT 20`
+        ).bind(userId).all();
+        bans = r.results || [];
+      } catch (_) {}
+
       return new Response(JSON.stringify({
           success: true,
           user: user,
           history: {
               logins,
               warnings,
-              reputation
+              reputation,
+              bans
           }
       }), { headers: { "Content-Type": "application/json" } });
 
@@ -162,6 +172,26 @@ export async function onRequestPatch(context) {
       const pw = await applyNewPassword(env.DB, targetId, body.new_password);
       if (!pw.ok) return jsonResponse({ error: pw.error, details: pw.details }, 400);
       changed.push("password");
+    }
+
+    const restrictionFields = [
+      "is_muted",
+      "shadow_banned",
+      "restrict_uploads",
+      "restrict_links",
+      "restrict_new_topics",
+      "vin_verified",
+      "vin",
+      "badges_json",
+    ];
+    for (const key of restrictionFields) {
+      if (body[key] !== undefined) {
+        columnMap[key] =
+          key === "vin" || key === "badges_json"
+            ? body[key]
+            : body[key] ? 1 : 0;
+        changed.push(key);
+      }
     }
 
     Object.keys(columnMap).forEach((k) => {

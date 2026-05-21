@@ -1,5 +1,7 @@
 // js/admin_forum.js - Forum Management (Categories & Tags)
 
+let _adminCategories = [];
+
 // --- CATEGORIES ---
 
 async function loadCategories() {
@@ -12,7 +14,8 @@ async function loadCategories() {
         const data = await res.json();
 
         if (data.success) {
-            renderCategories(data.categories);
+            _adminCategories = data.categories || [];
+            renderCategories(_adminCategories);
         }
     } catch (e) {
         list.innerHTML = '<p class="error">Failed to load categories</p>';
@@ -32,11 +35,17 @@ function renderCategories(categories) {
                 <div>
                     <h4 style="margin:0; font-size:1.1rem; color:#f8fafc;">${cat.title} 
                         <span style="font-size:0.8rem; color:#64748b; font-weight:normal; margin-left:8px;">(Order: ${cat.sort_order})</span>
+                        ${cat.is_hidden ? '<span class="tag">hidden</span>' : ''}
+                        ${cat.is_private ? '<span class="tag">private</span>' : ''}
+                        ${cat.is_vip ? '<span class="tag">vip</span>' : ''}
+                        ${cat.is_archived ? '<span class="tag">archived</span>' : ''}
                     </h4>
                     <div style="font-size:0.9rem; color:#94a3b8; margin-top:4px;">${cat.description || 'No description'}</div>
                 </div>
             </div>
             <div>
+                <button class="action-btn" onclick="moveCategory('${cat.id}', -1)" title="Move up"><i class="fas fa-arrow-up"></i></button>
+                <button class="action-btn" onclick="moveCategory('${cat.id}', 1)" title="Move down"><i class="fas fa-arrow-down"></i></button>
                 <button class="action-btn" onclick="editCategory('${cat.id}')"><i class="fas fa-edit"></i></button>
                 <button class="action-btn btn-danger" onclick="deleteCategory('${cat.id}')"><i class="fas fa-trash"></i></button>
             </div>
@@ -56,6 +65,10 @@ function openCategoryModal(cat = null) {
         document.getElementById('cat-desc').value = cat.description;
         document.getElementById('cat-icon').value = cat.icon;
         document.getElementById('cat-order').value = cat.sort_order;
+        document.getElementById('cat-hidden').checked = !!cat.is_hidden;
+        document.getElementById('cat-private').checked = !!cat.is_private;
+        document.getElementById('cat-vip').checked = !!cat.is_vip;
+        document.getElementById('cat-archived').checked = !!cat.is_archived;
     } else {
         document.getElementById('cat-modal-title').textContent = "New Category";
         document.getElementById('category-form').reset();
@@ -78,7 +91,13 @@ document.getElementById('category-form').addEventListener('submit', async (e) =>
     const order = document.getElementById('cat-order').value;
 
     const method = id ? 'PUT' : 'POST';
-    const body = { title, description, icon, sort_order: parseInt(order) };
+    const body = {
+        title, description, icon, sort_order: parseInt(order, 10),
+        is_hidden: document.getElementById('cat-hidden')?.checked,
+        is_private: document.getElementById('cat-private')?.checked,
+        is_vip: document.getElementById('cat-vip')?.checked,
+        is_archived: document.getElementById('cat-archived')?.checked,
+    };
     if (id) body.id = id;
 
     try {
@@ -196,8 +215,30 @@ async function deleteTag(id) {
     }
 }
 
+function editCategory(id) {
+    const cat = _adminCategories.find((c) => c.id === id);
+    if (cat) openCategoryModal(cat);
+}
+
+async function moveCategory(id, dir) {
+    const idx = _adminCategories.findIndex((c) => c.id === id);
+    if (idx < 0) return;
+    const swap = idx + dir;
+    if (swap < 0 || swap >= _adminCategories.length) return;
+    const order = _adminCategories.map((c) => c.id);
+    [order[idx], order[swap]] = [order[swap], order[idx]];
+    const token = localStorage.getItem('auth_token');
+    await fetch(`${API_URL}/admin/categories`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reorder: order }),
+    });
+    loadCategories();
+}
+
 // Make functions global for HTML onclick attributes
-window.editCategory = openCategoryModal;
+window.editCategory = editCategory;
+window.moveCategory = moveCategory;
 window.deleteCategory = deleteCategory;
 window.createTag = createTag;
 window.deleteTag = deleteTag;

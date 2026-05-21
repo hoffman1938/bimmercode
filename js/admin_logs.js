@@ -1,28 +1,40 @@
 // js/admin_logs.js - Audit Logs Viewer
 
+let logsPage = 1;
+let logsTotal = 0;
+
 async function loadLogs(page = 1) {
+    logsPage = page;
     const tbody = document.getElementById('logs-table-body');
     if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Loading logs...</td></tr>';
 
+    const action = document.getElementById('logs-action-filter')?.value?.trim() || '';
+    const userId = document.getElementById('logs-user-filter')?.value?.trim() || '';
+
     try {
         const token = localStorage.getItem('auth_token');
-        // Retrieve logs with simpler query for now, add filtering later
-        // Need to create an endpoint specifically for this or generic logs endpoint.
-        // Assuming /api/admin/audit-logs exists or we create it.
-        // I haven't created it yet! I skipped it in backend phase.
-        // Wait, I need to create /api/admin/logs.js first!
-        
-        // Let's create the API first, then this file. 
-        // But since I am writing this file now, I'll assume the endpoint will be /api/admin/logs
-        
-        const res = await fetch(`${API_URL}/admin/logs?limit=50&offset=${(page-1)*50}`, {
+        let url = `${API_URL}/admin/logs?limit=50&offset=${(page - 1) * 50}`;
+        if (action) url += `&action=${encodeURIComponent(action)}`;
+        if (userId) url += `&user_id=${encodeURIComponent(userId)}`;
+
+        const res = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
         const data = await res.json();
-        
+
         if (data.success) {
             renderLogs(data.logs);
+            logsTotal = data.pagination?.total ?? 0;
+            const pag = document.getElementById('logs-pagination');
+            if (pag) {
+                const pages = Math.max(1, Math.ceil(logsTotal / 50));
+                let html = '';
+                if (page > 1) html += `<button class="btn" onclick="loadLogs(${page - 1})">Prev</button>`;
+                html += `<span style="margin:0 10px;">Page ${page}/${pages}</span>`;
+                if (page < pages) html += `<button class="btn" onclick="loadLogs(${page + 1})">Next</button>`;
+                pag.innerHTML = html;
+            }
         } else {
              if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Error: ${data.error}</td></tr>`;
         }
@@ -44,7 +56,6 @@ function renderLogs(logs) {
         let detailsHtml = '';
         try {
             const parsed = JSON.parse(log.details);
-            // Create a mini-table or formatted list for details
             detailsHtml = '<div style="font-size:11px; font-family:monospace; white-space:pre-wrap;">' + 
                           escapeHtml(JSON.stringify(parsed, null, 2)) + 
                           '</div>';
@@ -52,19 +63,17 @@ function renderLogs(logs) {
             detailsHtml = escapeHtml(log.details || '');
         }
 
-        // Format Date to User's Locale
         const dateObj = new Date(log.created_at.endsWith('Z') ? log.created_at : log.created_at + 'Z'); 
         const dateStr = dateObj.toLocaleString();
+        const actor = log.actor_username || log.username || log.user_id;
 
         return `
         <tr>
             <td style="color:#aaa; font-size:12px; white-space:nowrap;">${dateStr}</td>
-            <td>${log.username || log.user_id}</td>
+            <td>${actor}</td>
             <td><span class="tag">${log.action}</span></td>
             <td>${log.target_entity_type} <span style="font-size:10px; color:#666;">${log.target_entity_id ? '('+log.target_entity_id.substring(0,8)+')' : ''}</span></td>
-            <td>
-                ${detailsHtml}
-            </td>
+            <td>${detailsHtml}</td>
         </tr>
     `}).join('');
 }

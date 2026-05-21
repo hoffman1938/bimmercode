@@ -12,6 +12,11 @@ import { verifyTurnstile } from "../../lib/turnstile.js";
 import { insertNotificationIfAllowed } from "../../lib/forum-notifications.js";
 import { getViewerIdFromRequest, getBlockedUserIdsForBlocker } from "../../lib/user-blocks.js";
 import { ensureFtsSyncTriggersDropped, withFtsBypass } from "../../lib/fts-bypass.js";
+import {
+  getUserRestrictions,
+  restrictionError,
+  stripLinksIfNeeded,
+} from "../../lib/user-restrictions.js";
 
 function json(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -249,6 +254,10 @@ async function handlePost(context) {
       return json({ error: "Too many replies from this IP." }, 429);
     }
 
+    const flags = await getUserRestrictions(db, userId);
+    const restrErr = restrictionError(flags, "reply");
+    if (restrErr) return json({ error: restrErr }, 403);
+
     // --- 3. Turnstile (optional) -------------------------------------
     if (data.turnstile_token || request.headers.get("cf-turnstile-response")) {
       const ts = await verifyTurnstile(
@@ -261,7 +270,7 @@ async function handlePost(context) {
       }
     }
 
-    const content = String(data.content).trim();
+    const content = stripLinksIfNeeded(String(data.content).trim(), flags);
     if (content.length < 2 || content.length > 8000) {
       return json({ error: "Content length invalid" }, 400);
     }

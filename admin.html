@@ -56,7 +56,13 @@
                 <li><a href="#forum" data-admin-tab="forum"><i class="fas fa-layer-group"></i> Forum Structure</a></li>
                 <li><a href="#posts" data-admin-tab="posts"><i class="fas fa-comments"></i> Forum posts</a></li>
                 <li><a href="#reports" data-admin-tab="reports"><i class="fas fa-flag"></i> Reports</a></li>
+                <li><a href="#codes" data-admin-tab="codes"><i class="fas fa-car-battery"></i> Error Codes</a></li>
+                <li><a href="#garage" data-admin-tab="garage"><i class="fas fa-warehouse"></i> Garage</a></li>
+                <li><a href="#marketplace" data-admin-tab="marketplace"><i class="fas fa-store"></i> Marketplace</a></li>
                 <li><a href="#messages" data-admin-tab="messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="#seo" data-admin-tab="seo"><i class="fas fa-search"></i> SEO</a></li>
+                <li><a href="#notifications" data-admin-tab="notifications"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li><a href="#ads" data-admin-tab="ads"><i class="fas fa-ad"></i> Ads</a></li>
                 <li><a href="#logs" data-admin-tab="logs"><i class="fas fa-history"></i> Audit Logs</a></li>
                 <li><a href="#settings" data-admin-tab="settings"><i class="fas fa-cogs"></i> Settings</a></li>
             </ul>
@@ -99,11 +105,28 @@
                     </div>
                 </div>
 
+                <div id="dashboard-growth-grid" class="stat-grid" style="margin-top: 8px;"></div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="dashboard-card">
+                        <h3>Top Users (7 days)</h3>
+                        <table class="data-table"><tbody id="top-users-body"></tbody></table>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Hot Topics</h3>
+                        <table class="data-table"><tbody id="top-topics-body"></tbody></table>
+                    </div>
+                </div>
+
                 <div class="dashboard-card">
                     <h3>Top Pages</h3>
                     <table class="data-table">
                         <tbody id="top-pages-body"></tbody>
                     </table>
+                </div>
+                <div class="dashboard-card" style="margin-top:16px;">
+                    <h3>Popular searches (7 days)</h3>
+                    <table class="data-table"><tbody id="top-searches-body"></tbody></table>
                 </div>
             </div>
 
@@ -112,7 +135,7 @@
                 <div class="dashboard-header">
                     <h2>User Management</h2>
                     <div class="search-box" style="width: 300px;">
-                        <input type="text" id="user-search" placeholder="Search by username or email..." style="width: 100%;">
+                        <input type="text" id="user-search" placeholder="Username, email, VIN, or IP (e.g. 192.168.1.1)..." style="width: 100%;">
                         <i class="fas fa-search"></i>
                     </div>
                 </div>
@@ -272,8 +295,64 @@
             </div>
 
             <!-- Logs Section -->
+            <div id="tab-codes" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Error Codes</h2>
+                    <button class="btn" type="button" onclick="importDtcCodes()"><i class="fas fa-file-import"></i> Import from JSON</button>
+                </div>
+                <div class="search-box" style="max-width:320px;margin-bottom:12px;">
+                    <input type="text" id="codes-search" placeholder="Search code..." oninput="debounceCodesSearch()">
+                </div>
+                <div class="dashboard-card">
+                    <table class="data-table"><thead><tr><th>Code</th><th>Title</th><th>Severity</th><th>Published</th><th></th></tr></thead>
+                    <tbody id="codes-table-body"></tbody></table>
+                </div>
+            </div>
+
+            <div id="tab-garage" class="dashboard-section hidden">
+                <h2>Garage moderation</h2>
+                <div class="dashboard-card"><table class="data-table"><thead><tr><th>User</th><th>Model</th><th>Featured</th><th>Approved</th><th></th></tr></thead>
+                <tbody id="garage-table-body"></tbody></table></div>
+            </div>
+
+            <div id="tab-marketplace" class="dashboard-section hidden">
+                <h2>Marketplace listings</h2>
+                <div class="dashboard-card"><table class="data-table"><thead><tr><th>Title</th><th>Seller</th><th>Price</th><th>Status</th><th></th></tr></thead>
+                <tbody id="marketplace-table-body"></tbody></table></div>
+            </div>
+
+            <div id="tab-seo" class="dashboard-section hidden">
+                <h2>SEO</h2>
+                <div class="dashboard-card">
+                    <h3>Page meta</h3>
+                    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+                        <input type="text" id="seo-path" placeholder="/code/P0100" class="form-input" style="flex:1;min-width:200px;">
+                        <input type="text" id="seo-title" placeholder="Title" class="form-input" style="flex:1;">
+                        <button class="btn" type="button" onclick="saveSeoMeta()">Save</button>
+                    </div>
+                    <textarea id="seo-description" placeholder="Meta description" class="form-input" style="width:100%;height:60px;"></textarea>
+                    <table class="data-table" style="margin-top:16px;"><tbody id="seo-meta-body"></tbody></table>
+                </div>
+            </div>
+
+            <div id="tab-notifications" class="dashboard-section hidden">
+                <h2>Notification templates</h2>
+                <div class="dashboard-card"><table class="data-table"><tbody id="notif-templates-body"></tbody></table></div>
+            </div>
+
+            <div id="tab-ads" class="dashboard-section hidden">
+                <h2>Ad slots</h2>
+                <div class="dashboard-card"><table class="data-table"><tbody id="ads-slots-body"></tbody></table></div>
+            </div>
+
             <div id="tab-logs" class="dashboard-section hidden">
                 <h2>Audit Logs</h2>
+                <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+                    <input type="text" id="logs-action-filter" placeholder="Action" class="form-input" style="max-width:160px;">
+                    <input type="text" id="logs-user-filter" placeholder="User ID" class="form-input" style="max-width:200px;">
+                    <button class="btn" type="button" onclick="loadLogs(1)">Filter</button>
+                </div>
+                <div id="logs-pagination" style="margin-bottom:10px;"></div>
                 <div class="dashboard-card">
                     <table class="data-table">
                          <thead>
@@ -389,6 +468,12 @@
                      <label>Sort Order</label>
                      <input type="number" id="cat-order" value="0" class="form-input">
                  </div>
+                 <div class="input-group" style="display:flex;gap:12px;flex-wrap:wrap;">
+                     <label><input type="checkbox" id="cat-hidden"> Hidden</label>
+                     <label><input type="checkbox" id="cat-private"> Private</label>
+                     <label><input type="checkbox" id="cat-vip"> VIP</label>
+                     <label><input type="checkbox" id="cat-archived"> Archived</label>
+                 </div>
                  
                  <button type="submit" class="submit-btn">Save</button>
              </form>
@@ -409,7 +494,10 @@
                 </div>
 
                 <div id="ban-options" class="hidden">
-                    <p style="color: #e74c3c; font-size: 13px; margin-bottom: 10px;">This will permanently ban the user.</p>
+                    <div class="input-group">
+                        <label>Duration (hours, empty = permanent)</label>
+                        <input type="number" id="ban-duration-hours" min="1" placeholder="e.g. 72" class="form-input">
+                    </div>
                 </div>
                 
                 <button type="submit" class="submit-btn" id="action-submit-btn">Execute</button>
@@ -559,10 +647,16 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
      crossorigin="anonymous" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_utils.js" data-cfasync="false"></script>
-    <script src="https://bimmercodes.net/js/admin.js?v=5" data-cfasync="false"></script>
-    <script src="https://bimmercodes.net/js/admin_users.js" data-cfasync="false"></script>
-    <script src="https://bimmercodes.net/js/admin_forum.js" data-cfasync="false"></script>
-    <script src="https://bimmercodes.net/js/admin_logs.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin.js?v=6" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_users.js?v=2" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_forum.js?v=2" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_codes.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_garage.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_marketplace.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_seo.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_ads.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_notifications.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_logs.js?v=2" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_messages.js" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_settings.js" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_reports.js" data-cfasync="false"></script>

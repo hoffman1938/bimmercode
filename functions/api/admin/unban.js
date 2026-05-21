@@ -15,6 +15,12 @@ export async function onRequestPost(context) {
     if (!user_id) return new Response("Missing user_id", { status: 400 });
 
     await env.DB.prepare("UPDATE users SET is_active = 1 WHERE id = ?").bind(user_id).run();
+    try {
+      await env.DB.prepare(
+        `UPDATE user_bans SET lifted_at = CURRENT_TIMESTAMP, lifted_by = ?
+         WHERE user_id = ? AND lifted_at IS NULL`
+      ).bind(adminId, user_id).run();
+    } catch (_) { /* table optional */ }
     
     // Log
     await logAudit(env, {

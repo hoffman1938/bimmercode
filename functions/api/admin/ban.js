@@ -37,22 +37,40 @@ export async function onRequestPost(context) {
            return new Response(JSON.stringify({ error: "Cannot ban user with equal or higher role" }), { status: 403 });
       }
       
-      // Execute Ban (Set is_active = 0)
-      // Or in a real system, we might have a `banned_until` column. 
-      // For now, let's just use `is_active = 0` (permanent ban) or maybe add a `ban_reason` field if strictly needed.
-      // Let's assume permanent ban for now based on 'ban_user' permission. 
-      // 'temp_ban_user' would use duration.
-      
-      await env.DB.prepare("UPDATE users SET is_active = 0 WHERE id = ?").bind(user_id).run();
-      
-      // 4. Audit Log
+      let expiresAt = null;
+      const durationLabel =
+        duration_hours && Number(duration_hours) > 0
+          ? `${duration_hours}h`
+          : "permanent";
+      if (duration_hours && Number(duration_hours) > 0) {
+        expiresAt = new Date(
+          Date.now() + Number(duration_hours) * 3600000
+        ).toISOString();
+      }
+
+      const banId = crypto.randomUUID();
+      try {
+        await env.DB.prepare(
+          `INSERT INTO user_bans (id, user_id, issued_by, reason, expires_at)
+           VALUES (?, ?, ?, ?, ?)`
+        )
+          .bind(banId, user_id, adminId, reason, expiresAt)
+          .run();
+      } catch (e) {
+        console.warn("[ban] user_bans insert skipped", e.message);
+      }
+
+      await env.DB.prepare("UPDATE users SET is_active = 0 WHERE id = ?")
+        .bind(user_id)
+        .run();
+
       await logAudit(env, {
           userId: adminId,
           action: AUDIT_ACTIONS.USER_BANNED,
           targetEntityType: 'user',
           targetEntityId: user_id,
           targetUserId: user_id,
-          details: { reason, duration: 'permanent' },
+          details: { reason, duration: durationLabel, expires_at: expiresAt, ban_id: banId },
           ipAddress: getIpAddress(request)
       });
       

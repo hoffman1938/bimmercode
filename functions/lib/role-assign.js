@@ -6,6 +6,9 @@
 
 export const ROLE_LEVEL_BY_ID = {
   user_role: 1,
+  verified_owner_role: 2,
+  vendor_role: 2,
+  bmw_technician_role: 2,
   moderator_role: 2,
   senior_moderator_role: 3,
   admin_role: 4,

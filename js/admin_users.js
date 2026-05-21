@@ -3,6 +3,9 @@
 /** Mirror of functions/lib/role-assign.js for UI (server enforces the same rules). */
 const ALL_PANEL_ROLES = [
   { id: "user_role", label: "User" },
+  { id: "verified_owner_role", label: "Verified Owner" },
+  { id: "vendor_role", label: "Vendor" },
+  { id: "bmw_technician_role", label: "BMW Technician" },
   { id: "moderator_role", label: "Moderator" },
   { id: "senior_moderator_role", label: "Senior Moderator" },
   { id: "admin_role", label: "Administrator" },
@@ -73,7 +76,11 @@ function escapeAdminAttr(s) {
   return String(s == null ? "" : s).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
+let usersPage = 1;
+let usersTotal = 0;
+
 async function loadUsers(page = 1) {
+    usersPage = page;
     const btn = document.getElementById('users-loading');
     const tbody = document.getElementById('users-table-body');
     const search = document.getElementById('user-search').value;
@@ -98,6 +105,8 @@ async function loadUsers(page = 1) {
         
         if (data.success) {
             renderUsers(data.users);
+            usersTotal = data.pagination?.total ?? 0;
+            renderUsersPagination();
         }
     } catch (e) {
         console.error("Load users error:", e);
@@ -162,6 +171,11 @@ async function openInspector(userId) {
                          ${h.reputation.length ? h.reputation.map(r => `<div>${r.change_amount > 0 ? '+' : ''}${r.change_amount}: ${r.reason}</div>`).join('') : '<p style="opacity:0.6">No changes</p>'}
                     </div>
                 </div>
+                <h4 style="margin-top:12px;">Ban history</h4>
+                ${(h.bans && h.bans.length) ? h.bans.map(b => `<div style="font-size:0.85em;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+                  ${b.reason} — ${b.expires_at ? 'until ' + new Date(b.expires_at).toLocaleString() : 'permanent'}
+                  ${b.lifted_at ? ' (lifted)' : ''}
+                </div>`).join('') : '<p style="opacity:0.6">No ban records</p>'}
             `;
         } else {
             body.innerHTML = `<p style="color:red">Error: ${data.error}</p>`;
@@ -183,6 +197,8 @@ function closeInspectorModal() {
 window.unbanUser = unbanUser;
 window.openActionModal = openActionModal; // Ensure this is available
 window.openRoleModal = openRoleModal;
+window.openInspector = openInspector;
+window.closeInspectorModal = closeInspectorModal;
 window.openEditUserModal = openEditUserModal;
 window.closeEditUserModal = closeEditUserModal;
 window.saveUserEdit = saveUserEdit;
@@ -217,6 +233,7 @@ function renderUsers(users) {
                 </span>
             </td>
             <td>
+                <button class="action-btn" title="Inspector" onclick="openInspector('${user.id}')"><i class="fas fa-id-card"></i></button>
                 <button class="action-btn" title="Edit user" onclick="openEditUserModal('${user.id}')"><i class="fas fa-user-pen"></i></button>
                 ${
                   canManageUserRole(getActorRoleId(), user.role_id)
@@ -237,6 +254,9 @@ function getRoleBadge(roleId) {
     if (roleId === 'admin_role') return '<span class="role-badge" style="background:#c0392b;">Admin</span>';
     if (roleId === 'senior_moderator_role') return '<span class="role-badge" style="background:#d35400;">Sr. Mod</span>';
     if (roleId === 'moderator_role') return '<span class="role-badge" style="background:#27ae60;">Mod</span>';
+    if (roleId === 'verified_owner_role') return '<span class="role-badge" style="background:#2980b9;">Verified</span>';
+    if (roleId === 'bmw_technician_role') return '<span class="role-badge" style="background:#16a085;">Technician</span>';
+    if (roleId === 'vendor_role') return '<span class="role-badge" style="background:#8e44ad;">Vendor</span>';
     return '<span class="role-badge" style="background:#7f8c8d;">User</span>';
 }
 
@@ -302,14 +322,28 @@ async function saveRole() {
     }
 }
 
+function renderUsersPagination() {
+  const el = document.getElementById('users-pagination');
+  if (!el) return;
+  const pages = Math.max(1, Math.ceil(usersTotal / 20));
+  let html = '';
+  if (usersPage > 1) html += `<button class="btn" onclick="loadUsers(${usersPage - 1})">Prev</button>`;
+  html += `<span style="padding:0 12px;">Page ${usersPage} / ${pages} (${usersTotal} users)</span>`;
+  if (usersPage < pages) html += `<button class="btn" onclick="loadUsers(${usersPage + 1})">Next</button>`;
+  el.innerHTML = html;
+}
+
 async function unbanUser(userId) {
     if(!confirm("Are you sure you want to unban this user?")) return;
-    
-    // Implement unban API call here (Update user is_active = 1)
-    // For now, re-use ban endpoint with specific flag or create unban endpoint.
-    // Let's assume we have /api/admin/unban or generic update.
-    // Since we don't have explicit unban, I'll skip for this exact moment but it's trivial to add.
-    alert("Unban functionality logic to be connected.");
+    const token = localStorage.getItem('auth_token');
+    const res = await fetch(`${API_URL}/admin/unban`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, reason: 'Admin unban' }),
+    });
+    const data = await res.json();
+    if (data.success) loadUsers(usersPage);
+    else alert(data.error || 'Failed');
 }
 
 async function openEditUserModal(userId) {

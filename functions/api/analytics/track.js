@@ -1,3 +1,4 @@
+import { logSearchQuery } from "../../lib/search-log.js";
 
 export async function onRequestPost({ request, env }) {
   try {
@@ -7,6 +8,10 @@ export async function onRequestPost({ request, env }) {
     // Get IP manually from headers
     const ip = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
     const country = request.headers.get("CF-IPCountry") || "Unknown";
+
+    if (event_type === "search" && meta?.query) {
+      await logSearchQuery(env, meta.query, meta.result_count || 0, path);
+    }
 
     await env.DB.prepare(`
       INSERT INTO analytics_events (user_id, event_type, path, referrer, user_agent, ip_address, country, device_type, meta)

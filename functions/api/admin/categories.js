@@ -81,7 +81,17 @@ async function handlePut(context) {
     const { request, env } = context;
     try {
         const data = await request.json();
-        const { id, title, description, icon, sort_order, is_active, min_role_read, min_role_write } = data;
+        const { id, title, description, icon, sort_order, is_active, min_role_read, min_role_write,
+          is_hidden, is_private, is_vip, is_archived, reorder } = data;
+
+        if (reorder && Array.isArray(reorder)) {
+            for (let i = 0; i < reorder.length; i++) {
+                await env.DB.prepare("UPDATE categories SET sort_order = ? WHERE id = ?")
+                    .bind(i, reorder[i])
+                    .run();
+            }
+            return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" }});
+        }
         
         if (!id) return new Response(JSON.stringify({ error: "ID required" }), { status: 400 });
 
@@ -96,6 +106,10 @@ async function handlePut(context) {
         if (is_active !== undefined) { updates.push("is_active = ?"); params.push(is_active); }
         if (min_role_read) { updates.push("min_role_read = ?"); params.push(min_role_read); }
         if (min_role_write) { updates.push("min_role_write = ?"); params.push(min_role_write); }
+        if (is_hidden !== undefined) { updates.push("is_hidden = ?"); params.push(is_hidden ? 1 : 0); }
+        if (is_private !== undefined) { updates.push("is_private = ?"); params.push(is_private ? 1 : 0); }
+        if (is_vip !== undefined) { updates.push("is_vip = ?"); params.push(is_vip ? 1 : 0); }
+        if (is_archived !== undefined) { updates.push("is_archived = ?"); params.push(is_archived ? 1 : 0); }
 
         if (updates.length === 0) return new Response(JSON.stringify({ error: "No fields to update" }), { status: 400 });
 

@@ -17,6 +17,11 @@ import { checkRateLimit, RATE_LIMITS, getIpAddress } from "../../lib/rate-limit.
 import { verifyTurnstile } from "../../lib/turnstile.js";
 import { getViewerIdFromRequest, getBlockedUserIdsForBlocker } from "../../lib/user-blocks.js";
 import { ensureFtsSyncTriggersDropped, withFtsBypass } from "../../lib/fts-bypass.js";
+import {
+  getUserRestrictions,
+  restrictionError,
+  stripLinksIfNeeded,
+} from "../../lib/user-restrictions.js";
 
 const PAGE_SIZE_DEFAULT = 20;
 const PAGE_SIZE_MAX = 50;
@@ -298,6 +303,10 @@ async function handlePost(context) {
       return jsonResponse({ error: "Too many new topics from this IP." }, 429);
     }
 
+    const flags = await getUserRestrictions(db, userId);
+    const restrErr = restrictionError(flags, "new_topic");
+    if (restrErr) return jsonResponse({ error: restrErr }, 403);
+
     // --- 3. Turnstile (optional) -------------------------------------
     if (data.turnstile_token || request.headers.get("cf-turnstile-response")) {
       const ts = await verifyTurnstile(
@@ -311,7 +320,7 @@ async function handlePost(context) {
     }
 
     let title = String(data.title ?? "").trim();
-    let content = String(data.content ?? "").trim();
+    let content = stripLinksIfNeeded(String(data.content ?? "").trim(), flags);
     // All fields optional: store defaults so NOT NULL + list UI always have a line to show
     if (!title) title = "(no title)";
     if (title.length > 160) title = title.slice(0, 160);

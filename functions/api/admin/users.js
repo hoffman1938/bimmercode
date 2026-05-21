@@ -35,22 +35,33 @@ export async function onRequestGet(context) {
           }
       }
       
-      // 2. Search Logic (Smart)
+      const ipSearch = url.searchParams.get("ip") === "1" || (search && /^\d{1,3}(\.\d{1,3}){3}$/.test(search.trim()));
+
+      // 2. Search Logic (Smart + IP via login_attempts)
       if (search) {
           const searchLower = search.toLowerCase();
+          if (ipSearch) {
+              whereClauses.push(
+                `id IN (
+                  SELECT DISTINCT u2.id FROM users u2
+                  INNER JOIN login_attempts la
+                    ON la.identifier = u2.email OR la.identifier = u2.username
+                  WHERE la.ip_address LIKE ?
+                )`
+              );
+              params.push(`%${search.trim()}%`);
+          } else {
           let searchConditions = [];
           
-          // Match Username or Email
           searchConditions.push("username LIKE ?");
           params.push(`%${search}%`);
           searchConditions.push("email LIKE ?");
           params.push(`%${search}%`);
-          
-          // Match Role ID text
           searchConditions.push("role_id LIKE ?");
           params.push(`%${search}%`);
+          searchConditions.push("vin LIKE ?");
+          params.push(`%${search}%`);
           
-          // Match Status keywords
           if (searchLower.includes('ban') || searchLower.includes('block')) {
               searchConditions.push("is_active = 0");
           }
@@ -59,6 +70,7 @@ export async function onRequestGet(context) {
           }
           
           whereClauses.push(`(${searchConditions.join(" OR ")})`);
+          }
       }
       
       // Assemble Query
