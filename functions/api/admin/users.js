@@ -1,5 +1,6 @@
 // functions/api/admin/users.js - List Users API (Protected)
 import { authenticateAdminRequest } from "../../lib/admin-gate.js";
+import { buildRoleFilterClause } from "../../lib/role-filters.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -12,7 +13,8 @@ export async function onRequestGet(context) {
       const url = new URL(request.url);
       const limit = parseInt(url.searchParams.get("limit")) || 20;
       const offset = parseInt(url.searchParams.get("offset")) || 0;
-      const search = url.searchParams.get("search");
+      const rawSearch = url.searchParams.get("search");
+      const search = rawSearch && String(rawSearch).trim() ? String(rawSearch).trim() : null;
       const roleFilter = url.searchParams.get("role");
       
       let query = `
@@ -25,13 +27,12 @@ export async function onRequestGet(context) {
       let whereClauses = [];
       let params = [];
       
-      // 1. Role Filter
+      // 1. Role Filter (canonical + legacy role_id values)
       if (roleFilter) {
-          if (roleFilter === 'banned') {
-              whereClauses.push("is_active = 0");
-          } else {
-              whereClauses.push("role_id = ?");
-              params.push(roleFilter);
+          const rf = buildRoleFilterClause(roleFilter);
+          if (rf.clause) {
+              whereClauses.push(rf.clause);
+              params.push(...rf.params);
           }
       }
       
@@ -59,8 +60,13 @@ export async function onRequestGet(context) {
           params.push(`%${search}%`);
           searchConditions.push("role_id LIKE ?");
           params.push(`%${search}%`);
-          searchConditions.push("vin LIKE ?");
-          params.push(`%${search}%`);
+          try {
+            await env.DB.prepare("SELECT vin FROM users LIMIT 1").first();
+            searchConditions.push("vin LIKE ?");
+            params.push(`%${search}%`);
+          } catch {
+            /* vin column not migrated yet */
+          }
           
           if (searchLower.includes('ban') || searchLower.includes('block')) {
               searchConditions.push("is_active = 0");

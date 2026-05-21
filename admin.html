@@ -141,11 +141,16 @@
                 </div>
                 <!-- Filters -->
                 <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-                    <select id="role-filter" onchange="loadUsers()" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 5px; border-radius: 4px;">
+                    <select id="role-filter" onchange="loadUsers(1)" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 5px; border-radius: 4px;">
                         <option value="">All Roles</option>
-                        <option value="admin_role">Admins</option>
-                        <option value="moderator_role">Moderators</option>
-                        <option value="user_role">Users</option>
+                        <option value="super_admin_role">Super Admin</option>
+                        <option value="admin_role">Administrator</option>
+                        <option value="senior_moderator_role">Senior Moderator</option>
+                        <option value="moderator_role">Moderator</option>
+                        <option value="bmw_technician_role">BMW Technician</option>
+                        <option value="verified_owner_role">Verified Owner</option>
+                        <option value="vendor_role">Vendor</option>
+                        <option value="user_role">User</option>
                         <option value="banned">Banned</option>
                     </select>
                 </div>
@@ -648,7 +653,7 @@
      crossorigin="anonymous" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_utils.js" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin.js?v=6" data-cfasync="false"></script>
-    <script src="https://bimmercodes.net/js/admin_users.js?v=2" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_users.js?v=3" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_forum.js?v=2" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_codes.js" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_garage.js" data-cfasync="false"></script>

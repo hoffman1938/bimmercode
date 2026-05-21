@@ -91,9 +91,9 @@ async function loadUsers(page = 1) {
 
     try {
         const token = localStorage.getItem('auth_token');
-        let url = `${API_URL}/admin/users?limit=20&offset=${(page-1)*20}&search=${encodeURIComponent(search)}`;
-        if (roleFilter) url += `&role=${roleFilter}`; // API support for role filter needed? We can add client side filter for now or update API later. 
-        // Note: Our current API might not support role filtering yet, but let's assume we'll use search for now or add it.
+        let url = `${API_URL}/admin/users?limit=20&offset=${(page-1)*20}`;
+        if (search.trim()) url += `&search=${encodeURIComponent(search.trim())}`;
+        if (roleFilter) url += `&role=${encodeURIComponent(roleFilter)}`;
 
         const res = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -249,7 +249,19 @@ function renderUsers(users) {
     `).join('');
 }
 
+function normalizeRoleIdForBadge(roleId) {
+    const legacy = {
+        user: 'user_role',
+        moderator: 'moderator_role',
+        senior_moderator: 'senior_moderator_role',
+        admin: 'admin_role',
+        super_admin: 'super_admin_role',
+    };
+    return legacy[roleId] || roleId;
+}
+
 function getRoleBadge(roleId) {
+    roleId = normalizeRoleIdForBadge(roleId);
     if (roleId === 'super_admin_role') return '<span class="role-badge" style="background:#8e44ad;">Super Admin</span>';
     if (roleId === 'admin_role') return '<span class="role-badge" style="background:#c0392b;">Admin</span>';
     if (roleId === 'senior_moderator_role') return '<span class="role-badge" style="background:#d35400;">Sr. Mod</span>';
@@ -467,9 +479,32 @@ async function saveUserEdit(e) {
   }
 }
 
+async function initRoleFilterOptions() {
+  const select = document.getElementById('role-filter');
+  if (!select) return;
+  const current = select.value;
+  try {
+    const token = localStorage.getItem('auth_token');
+    const res = await fetch(`${API_URL}/admin/roles`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.success && Array.isArray(data.filters) && data.filters.length) {
+      select.innerHTML = data.filters
+        .map((o) => `<option value="${o.value}">${o.label}</option>`)
+        .join('');
+      if (current) select.value = current;
+    }
+  } catch (_) { /* keep static HTML options */ }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initRoleFilterOptions();
+});
+
 // Listen for search
 if(document.getElementById('user-search')) {
     document.getElementById('user-search').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') loadUsers();
+        if (e.key === 'Enter') loadUsers(1);
     });
 }
