@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!link) return;
             e.preventDefault();
             switchTab(link.dataset.adminTab);
-            if (window.innerWidth <= 768) {
-                document.querySelector('.sidebar')?.classList.remove('active');
+            if (window.innerWidth <= 1024) {
+                setAdminSidebarOpen(false);
             }
         });
     }
@@ -140,22 +140,35 @@ function logoutAdmin() {
     window.location.href = 'index.html';
 }
 
-// Sidebar Toggle
-function toggleAdminSidebar() {
-    document.querySelector('.sidebar').classList.toggle('active');
+function setAdminSidebarOpen(open) {
+    const sidebar = document.getElementById('admin-sidebar') || document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const toggle = document.getElementById('sidebar-toggle');
+    if (!sidebar) return;
+    sidebar.classList.toggle('active', open);
+    document.body.classList.toggle('admin-sidebar-open', open);
+    if (backdrop) {
+        backdrop.hidden = !open;
+        backdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+    }
+    if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
-// Close sidebar when clicking outside on mobile (optional enhancement)
-document.addEventListener('click', (e) => {
-    const sidebar = document.querySelector('.sidebar');
-    const toggle = document.getElementById('sidebar-toggle');
-    
-    if (window.innerWidth <= 768 && 
-        sidebar.classList.contains('active') && 
-        !sidebar.contains(e.target) && 
-        !toggle.contains(e.target)) {
-        sidebar.classList.remove('active');
-    }
+function toggleAdminSidebar() {
+    const sidebar = document.getElementById('admin-sidebar') || document.querySelector('.sidebar');
+    setAdminSidebarOpen(!sidebar?.classList.contains('active'));
+}
+
+window.toggleAdminSidebar = toggleAdminSidebar;
+
+document.getElementById('sidebar-backdrop')?.addEventListener('click', () => setAdminSidebarOpen(false));
+
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 1024) setAdminSidebarOpen(false);
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setAdminSidebarOpen(false);
 });
 
 function switchTab(tabId, context = {}) {

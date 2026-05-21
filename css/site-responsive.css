@@ -1,0 +1,363 @@
+/* ==========================================================================
+   SITE-RESPONSIVE.CSS — load LAST on all public pages (after premium layers)
+   Fixes modals, headers, grids, tables, legal pages, VIN, profile.
+   ========================================================================== */
+
+html.bcx-page,
+body.bcx-page,
+body.bcx {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+body.bcx img,
+body.bcx video,
+body.bcx svg,
+body.bcx canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* --- Prevent iOS input zoom ---------------------------------------------- */
+body.bcx input,
+body.bcx select,
+body.bcx textarea,
+body.bcx .auth-input {
+  font-size: max(16px, 1em);
+}
+
+/* --- Modals (forum .modal + index .auth-modal) ----------------------------- */
+body.bcx .modal,
+body.bcx .auth-modal,
+body.bcx .favorites-modal {
+  padding: max(12px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+body.bcx .modal-card,
+body.bcx .modal-card--glass,
+body.bcx .auth-card,
+body.bcx .auth-content,
+body.bcx .favorites-content {
+  width: min(100%, 520px);
+  max-width: calc(100vw - 24px);
+  max-height: min(92dvh, calc(100vh - 24px));
+  margin: auto;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+body.bcx .modal-body,
+body.bcx .auth-body,
+body.bcx .auth-content {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body.bcx .auth-header,
+body.bcx .modal-header {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+body.bcx .auth-tabs,
+body.bcx .input-with-icon,
+body.bcx .field {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body.bcx .input-with-icon input {
+  min-width: 0;
+  width: 100%;
+}
+
+body.bcx .auth-form,
+body.bcx .auth-form.active {
+  min-width: 0;
+}
+
+body.bcx .topic-modal {
+  max-width: min(640px, calc(100vw - 24px));
+}
+
+body.bcx .modal-footer,
+body.bcx .topic-modal-footer {
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+body.bcx .modal-footer .btn,
+body.bcx .topic-modal-footer .btn {
+  flex: 1 1 auto;
+  min-width: min(140px, 100%);
+}
+
+/* --- Header (forum, index, profile, vin) ---------------------------------- */
+body.bcx header.forum-header.index-bento,
+body.bcx header.forum-header {
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 10px clamp(12px, 3vw, 20px);
+  min-width: 0;
+}
+
+body.bcx header.forum-header .logo-container,
+body.bcx header.forum-header .index-header-brand {
+  min-width: 0;
+  flex: 1 1 120px;
+}
+
+body.bcx header.forum-header .index-header-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(52vw, 280px);
+}
+
+body.bcx header.forum-header .controls {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+body.bcx main.forum-container,
+body.bcx main.index-bento,
+body.bcx .bc3-main {
+  padding-left: clamp(12px, 3vw, 24px);
+  padding-right: clamp(12px, 3vw, 24px);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- Forum layout --------------------------------------------------------- */
+body.bcx .forum-hero {
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+body.bcx .forum-hero .hero-stats {
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+body.bcx .forum-toolbar {
+  min-width: 0;
+}
+
+body.bcx .filter-bar {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+body.bcx .filter-bar .chip {
+  flex-shrink: 0;
+}
+
+/* --- Topic view ----------------------------------------------------------- */
+body.bcx .topic-view-header,
+body.bcx .topic-header-row {
+  min-width: 0;
+}
+
+body.bcx .post-text-body,
+body.bcx .post-text-body pre,
+body.bcx .composer-preview {
+  overflow-x: auto;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+body.bcx .composer-toolbar {
+  flex-wrap: wrap;
+}
+
+/* --- Profile -------------------------------------------------------------- */
+body.bcx .profile-header-panel,
+body.bcx .profile-layout {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body.bcx .profile-stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+/* --- Legal / contact ------------------------------------------------------ */
+body.bcx .legal-container,
+body.bcx .contact-page-wrap,
+body.bcx .page-premium-wrap {
+  width: min(100%, 900px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(12px, 4vw, 24px);
+  padding-right: clamp(12px, 4vw, 24px);
+  box-sizing: border-box;
+}
+
+/* --- VIN page ------------------------------------------------------------- */
+body.bcx .vin-page,
+body.bcx .vin-container,
+body.bcx #vin-form {
+  max-width: 100%;
+  min-width: 0;
+}
+
+body.bcx .vin-result-grid,
+body.bcx .vin-specs-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+}
+
+/* --- Index search results ------------------------------------------------- */
+body.bcx #results-container,
+body.bcx #code-detail,
+body.bcx #parts-finder-container {
+  max-width: 100%;
+  min-width: 0;
+}
+
+body.bcx #results-container .code-item {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* --- Tables fallback scroll ----------------------------------------------- */
+body.bcx .table-wrap,
+body.bcx .dashboard-card {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* --- Tablet --------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  body.bcx header.forum-header .index-header-title-muted {
+    display: none;
+  }
+
+  body.bcx .forum-layout,
+  body.bcx .topic-view {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* --- Mobile --------------------------------------------------------------- */
+@media (max-width: 768px) {
+  body.bcx .modal,
+  body.bcx .auth-modal {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  body.bcx .modal-card,
+  body.bcx .modal-card--glass,
+  body.bcx .auth-card,
+  body.bcx .auth-content,
+  body.bcx .favorites-content {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    border-radius: 0 !important;
+    margin: 0;
+  }
+
+  body.bcx .auth-header {
+    padding: 20px 16px 14px !important;
+  }
+
+  body.bcx .auth-body,
+  body.bcx .modal-body {
+    padding: 16px !important;
+  }
+
+  body.bcx .auth-footer {
+    padding: 12px 16px  max(16px, env(safe-area-inset-bottom)) !important;
+  }
+
+  body.bcx header.forum-header .controls {
+    width: 100%;
+  }
+
+  body.bcx header.forum-header .index-header-btn span:not(.sr-only):not(#forum-lang-display) {
+    display: none;
+  }
+
+  body.bcx header.forum-header .index-header-btn {
+    min-width: 2.75rem;
+    padding: 0 0.65rem;
+  }
+
+  body.bcx .forum-hero h2 {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+  }
+
+  body.bcx .topic-modal-header {
+    padding: 20px 16px 12px !important;
+  }
+
+  body.bcx .topic-form.auth-body {
+    padding: 16px !important;
+  }
+}
+
+/* --- Small phones --------------------------------------------------------- */
+@media (max-width: 480px) {
+  body.bcx header.forum-header .index-header-title {
+    font-size: 0.85rem;
+    max-width: 38vw;
+  }
+
+  body.bcx .auth-header h2,
+  body.bcx .modal-header h2 {
+    font-size: 1.25rem !important;
+  }
+
+  body.bcx .auth-tabs {
+    width: 100%;
+  }
+
+  body.bcx .auth-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  body.bcx .btn-block {
+    width: 100%;
+  }
+
+  body.bcx .category-item-admin {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 375px) {
+  body.bcx header.forum-header .index-header-title {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bcx .modal-card,
+  body.bcx .auth-card {
+    animation: none !important;
+  }
+}

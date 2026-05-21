@@ -214,7 +214,7 @@ function renderUsers(users) {
 
     tbody.innerHTML = users.map(user => `
         <tr>
-            <td>
+            <td data-label="Username">
                 <div class="user-cell">
                     <img src="${window.adminUtils ? window.adminUtils.getAvatar(user.avatar_url) : 'assets/default-avatar.png'}" class="user-avatar" alt="${user.username}">
                     <div class="user-info-text">
@@ -223,16 +223,16 @@ function renderUsers(users) {
                     </div>
                 </div>
             </td>
-            <td>${user.email}</td>
-            <td>${getRoleBadge(user.role_id)}</td>
-            <td><i class="fas fa-star" style="color:#f1c40f;"></i> ${user.reputation || 0}</td>
-            <td>${calculateUserLevel(user.reputation)}</td>
-            <td>
+            <td data-label="Email">${user.email}</td>
+            <td data-label="Role">${getRoleBadge(user.role_id)}</td>
+            <td data-label="Reputation"><i class="fas fa-star" style="color:#f1c40f;"></i> ${user.reputation || 0}</td>
+            <td data-label="Level">${calculateUserLevel(user.reputation)}</td>
+            <td data-label="Status">
                 <span class="status-badge ${user.is_active ? 'status-active' : 'status-banned'}">
                     ${user.is_active ? 'Active' : 'Banned'}
                 </span>
             </td>
-            <td>
+            <td data-label="Actions" class="admin-actions-cell">
                 <button class="action-btn" title="Inspector" onclick="openInspector('${user.id}')"><i class="fas fa-id-card"></i></button>
                 <button class="action-btn" title="Edit user" onclick="openEditUserModal('${user.id}')"><i class="fas fa-user-pen"></i></button>
                 ${

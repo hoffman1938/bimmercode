@@ -378,23 +378,37 @@
     display: inline; /* Keep text visible if space permits, or hide? */
   }
   
-  /* 3. MODALS FULLSCREEN */
-  .auth-content, .modal-content {
+  /* 3. MODALS — full viewport on small screens */
+  .auth-content,
+  .modal-content,
+  .modal-card,
+  .auth-card,
+  .favorites-content {
     width: 100% !important;
-    height: 100% !important;
     max-width: 100% !important;
-    max-height: 100% !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh;
     border-radius: 0 !important;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Align to top to prevent cut-off */
-    padding: 20px;
-    padding-bottom: 40px; /* Space for bottom scroll */
-    overflow-y: auto !important; /* Force scroll */
+    justify-content: flex-start;
+    padding: 0;
+    overflow: hidden !important;
+    margin: 0 !important;
   }
-  
-  .auth-modal {
-    padding: 0; /* Remove padding around modal */
+
+  .auth-body,
+  .modal-body {
+    padding: 20px !important;
+    overflow-y: auto !important;
+    flex: 1 1 auto;
+  }
+
+  .auth-modal,
+  .modal,
+  .favorites-modal {
+    padding: 0 !important;
+    align-items: stretch !important;
   }
   
   /* 4. CHAT WIDGET */

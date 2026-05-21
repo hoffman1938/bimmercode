@@ -13,16 +13,16 @@
     <link rel="stylesheet" href="https://bimmercodes.net/css/index-bento.css?v=6" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js" data-cfasync="false"></script>
-    <link rel="stylesheet" href="https://bimmercodes.net/css/admin.css?v=2">
+    <link rel="stylesheet" href="https://bimmercodes.net/css/admin.css?v=3">
     <link rel="stylesheet" href="https://bimmercodes.net/css/notifications.css">
     <link rel="shortcut icon" href="https://bimmercodes.net/assets/icons/ico.svg" type="image/x-icon">
     </head>
-<body class="bmw-pattern index-bento-page">
+<body class="bmw-pattern index-bento-page admin-page">
     <div id="webgl-container" class="index-bento-bg" aria-hidden="true"></div>
-    <header class="forum-header index-bento">
-        <div class="logo-container index-header-brand" style="display:flex;align-items:center;gap:0.75rem;">
-            <button id="sidebar-toggle" class="action-btn" style="margin:0; display: none;" onclick="toggleAdminSidebar()">
-                <i class="fas fa-bars"></i>
+    <header class="forum-header index-bento admin-header">
+        <div class="logo-container index-header-brand admin-header-brand">
+            <button type="button" id="sidebar-toggle" class="action-btn admin-sidebar-toggle" aria-label="Open menu" aria-expanded="false" onclick="toggleAdminSidebar()">
+                <i class="fas fa-bars" aria-hidden="true"></i>
             </button>
             <a class="main_logo_refr" href="index.html" aria-label="BimmerCodes admin">
                 <div class="logo" aria-hidden="true">
@@ -40,16 +40,18 @@
                 </h1>
             </a>
         </div>
-        <div class="controls">
-            <a href="index.html" class="index-header-btn btn"><i class="fas fa-home" aria-hidden="true"></i> Back to Site</a>
-            <a href="forum.html" class="index-header-btn btn"><i class="fas fa-comments" aria-hidden="true"></i> Forum</a>
-            <a href="vin.html" class="index-header-btn btn"><i class="fas fa-fingerprint" aria-hidden="true"></i> VIN</a>
-            <button type="button" class="index-header-btn btn" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout</button>
+        <div class="controls admin-header-controls">
+            <a href="index.html" class="index-header-btn btn"><i class="fas fa-home" aria-hidden="true"></i><span class="admin-btn-label">Back</span></a>
+            <a href="forum.html" class="index-header-btn btn"><i class="fas fa-comments" aria-hidden="true"></i><span class="admin-btn-label">Forum</span></a>
+            <a href="vin.html" class="index-header-btn btn"><i class="fas fa-fingerprint" aria-hidden="true"></i><span class="admin-btn-label">VIN</span></a>
+            <button type="button" class="index-header-btn btn" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt" aria-hidden="true"></i><span class="admin-btn-label">Logout</span></button>
         </div>
     </header>
 
+    <div id="sidebar-backdrop" class="admin-sidebar-backdrop" hidden aria-hidden="true"></div>
+
     <div class="admin-container">
-        <aside class="sidebar">
+        <aside class="sidebar" id="admin-sidebar" aria-label="Admin navigation">
             <ul class="sidebar-menu">
                 <li><a href="#dashboard" class="active" data-admin-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="#users" data-admin-tab="users"><i class="fas fa-users"></i> Users</a></li>
@@ -73,14 +75,14 @@
             <div id="tab-dashboard" class="dashboard-section">
                 <h2>Overview</h2>
                 <!-- Realtime Stats -->
-                <div class="dashboard-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(15, 23, 42, 0.4)); border: 1px solid rgba(59, 130, 246, 0.3);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="dashboard-card admin-realtime-card">
+                    <div class="admin-realtime-row">
                         <div>
-                            <h3 style="margin:0; color: #60a5fa;">Real-Time Activity</h3>
-                            <p style="margin: 5px 0 0 0; color: #94a3b8;">Users active in last 15 minutes</p>
+                            <h3 class="admin-realtime-title">Real-Time Activity</h3>
+                            <p class="admin-realtime-sub">Users active in last 15 minutes</p>
                         </div>
-                        <div style="text-align: right;">
-                            <span id="active-users-count" style="font-size: 3rem; font-weight: 800; color: white; text-shadow: 0 0 20px rgba(59,130,246,0.5);">0</span>
+                        <div class="admin-realtime-value-wrap">
+                            <span id="active-users-count" class="admin-realtime-value">0</span>
                         </div>
                     </div>
                 </div>
@@ -94,7 +96,7 @@
                 </div>
                 
                 <!-- Charts -->
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+                <div class="admin-grid admin-grid--charts">
                     <div class="dashboard-card">
                         <h3>Traffic Pattern (24h)</h3>
                         <canvas id="trafficChart" height="200"></canvas>
@@ -107,7 +109,7 @@
 
                 <div id="dashboard-growth-grid" class="stat-grid" style="margin-top: 8px;"></div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                <div class="admin-grid admin-grid--half">
                     <div class="dashboard-card">
                         <h3>Top Users (7 days)</h3>
                         <table class="data-table"><tbody id="top-users-body"></tbody></table>
@@ -134,14 +136,13 @@
             <div id="tab-users" class="dashboard-section hidden">
                 <div class="dashboard-header">
                     <h2>User Management</h2>
-                    <div class="search-box" style="width: 300px;">
-                        <input type="text" id="user-search" placeholder="Username, email, VIN, or IP (e.g. 192.168.1.1)..." style="width: 100%;">
+                    <div class="search-box admin-users-search">
+                        <input type="text" id="user-search" placeholder="Username, email, VIN, or IP…">
                         <i class="fas fa-search"></i>
                     </div>
                 </div>
-                <!-- Filters -->
-                <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-                    <select id="role-filter" onchange="loadUsers(1)" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 5px; border-radius: 4px;">
+                <div class="admin-toolbar">
+                    <select id="role-filter" class="admin-select admin-role-filter" onchange="loadUsers(1)">
                         <option value="">All Roles</option>
                         <option value="super_admin_role">Super Admin</option>
                         <option value="admin_role">Administrator</option>
@@ -155,7 +156,8 @@
                     </select>
                 </div>
                 <div class="dashboard-card">
-                    <table class="data-table">
+                    <div class="table-wrap">
+                    <table class="data-table data-table--stack">
                         <thead>
                             <tr>
                                 <th>Username</th>
@@ -171,6 +173,7 @@
                             <!-- Populated by JS -->
                         </tbody>
                     </table>
+                    </div>
                     <div id="users-pagination" style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;"></div>
                     <div id="users-loading" style="text-align: center; padding: 20px;">
                         <i class="fas fa-spinner fa-spin"></i> Loading...
@@ -359,6 +362,7 @@
                 </div>
                 <div id="logs-pagination" style="margin-bottom:10px;"></div>
                 <div class="dashboard-card">
+                    <div class="table-wrap">
                     <table class="data-table">
                          <thead>
                             <tr>
@@ -373,6 +377,7 @@
                              <!-- JS -->
                          </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
             
@@ -652,7 +657,7 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
      crossorigin="anonymous" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_utils.js" data-cfasync="false"></script>
-    <script src="https://bimmercodes.net/js/admin.js?v=6" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin.js?v=7" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_users.js?v=3" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_forum.js?v=2" data-cfasync="false"></script>
     <script src="https://bimmercodes.net/js/admin_codes.js" data-cfasync="false"></script>
