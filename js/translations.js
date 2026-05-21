@@ -500,7 +500,6 @@ window.APP_TRANSLATIONS = {
     sheetFeatures: "Features",
     sheetSupportedSeries: "Supported Series",
     sheetFaq: "FAQ",
-    sheetAllCodes: "All Codes",
 
     // Hero
     heroEyebrow: "BMW &amp; Mini diagnostic codes",
@@ -1146,7 +1145,6 @@ window.APP_TRANSLATIONS = {
     sheetFeatures: "Возможности",
     sheetSupportedSeries: "Поддерживаемые серии",
     sheetFaq: "Вопросы и ответы",
-    sheetAllCodes: "Все коды",
 
     // Hero
     heroEyebrow: "диагностических кодов BMW и Mini",
@@ -1791,7 +1789,6 @@ window.APP_TRANSLATIONS = {
     sheetFeatures: "შესაძლებლობები",
     sheetSupportedSeries: "მხარდაჭერილი სერიები",
     sheetFaq: "კითხვა-პასუხი",
-    sheetAllCodes: "ყველა კოდი",
 
     // Hero
     heroEyebrow: "BMW და Mini დიაგნოსტიკის კოდი",

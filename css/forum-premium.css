@@ -165,17 +165,24 @@ body.bcx #new-topic-btn {
 /* ---------- Filter bar / chips --------------------------------------- */
 body.bcx .filter-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  justify-content: flex-start;
+  gap: 12px;
   margin-bottom: 22px;
   padding: 14px 16px;
   background: linear-gradient(180deg, rgba(20,24,34,0.5) 0%, rgba(12,15,21,0.5) 100%);
   border: 1px solid var(--bc-border);
   border-radius: 14px;
+  min-width: 0;
 }
-body.bcx .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+body.bcx .filter-bar .chips {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
 body.bcx .chip {
   display: inline-flex;
   align-items: center;

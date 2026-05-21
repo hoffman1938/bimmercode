@@ -136,16 +136,47 @@ body.bcx .forum-toolbar {
   min-width: 0;
 }
 
+/* Filter bar: chips scroll in one row; sort stays pinned on the right */
 body.bcx .filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap !important;
+  min-width: 0;
+  overflow: visible;
+}
+
+body.bcx .filter-bar .chips {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap !important;
+  gap: 6px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  flex-wrap: nowrap;
-  padding-bottom: 4px;
-  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  padding: 2px 0;
+  mask-image: linear-gradient(90deg, #000 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent 100%);
+}
+
+body.bcx .filter-bar .chips::-webkit-scrollbar {
+  display: none;
 }
 
 body.bcx .filter-bar .chip {
   flex-shrink: 0;
+  scroll-snap-align: start;
+  white-space: nowrap;
+}
+
+body.bcx .filter-bar .sort-select,
+body.bcx .filter-bar select.sort-select {
+  flex: 0 0 auto;
+  margin-left: 0 !important;
+  min-width: min(9.5rem, 38vw);
+  max-width: 11rem;
 }
 
 /* --- Topic view ----------------------------------------------------------- */
@@ -300,6 +331,88 @@ body.bcx .dashboard-card {
 }
 
 /* --- Small phones --------------------------------------------------------- */
+/* --- Footer (all pages with footer.js + body.bcx) ------------------------- */
+body.bcx footer {
+  box-sizing: border-box;
+  padding-left: clamp(12px, 4vw, var(--bc-pad, 24px));
+  padding-right: clamp(12px, 4vw, var(--bc-pad, 24px));
+}
+
+body.bcx footer .footer-container {
+  width: min(100%, var(--bc-container, 1200px));
+  box-sizing: border-box;
+}
+
+body.bcx footer .footer-text {
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  body.bcx footer {
+    margin-top: clamp(32px, 6vw, 56px) !important;
+    padding-top: 28px !important;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    text-align: center !important;
+  }
+
+  body.bcx footer .footer-container {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px !important;
+    grid-template-columns: unset !important;
+  }
+
+  body.bcx footer .footer-left {
+    align-items: center;
+    text-align: center;
+    max-width: 100%;
+  }
+
+  body.bcx footer .footer-subtext {
+    max-width: 28rem;
+  }
+
+  body.bcx footer .footer-links {
+    justify-content: center;
+    width: 100%;
+    gap: 10px 14px;
+  }
+
+  body.bcx footer .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  body.bcx .filter-bar .sort-select,
+  body.bcx .filter-bar select.sort-select {
+    min-width: 8.25rem;
+    max-width: 9.5rem;
+    font-size: 12px;
+  }
+
+  body.bcx footer .footer-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    max-width: 17.5rem;
+    margin-inline: auto;
+  }
+
+  body.bcx footer .footer-links a {
+    width: 100%;
+    min-height: 2.5rem;
+    font-size: 12.5px;
+  }
+}
+
 @media (max-width: 480px) {
   body.bcx header.forum-header .index-header-title {
     font-size: 0.85rem;
