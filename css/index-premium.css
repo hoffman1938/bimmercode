@@ -130,18 +130,30 @@ body.index-body.bc3::after {
    since they need to keep their `position: fixed`. */
 body.index-body.bc3 > header,
 body.index-body.bc3 > main,
-body.index-body.bc3 > footer,
-body.index-body.bc3 > .bc3-sheet { position: relative; z-index: 1; }
-body.index-body.bc3 > .bc3-sheet { position: fixed; }
+body.index-body.bc3 > footer { position: relative; z-index: 1; }
+
+/* Sheet must sit above main (was z-index:1 → menu drew under hero) */
+body.index-body.bc3 > .bc3-sheet {
+  position: fixed;
+  z-index: 5000;
+  pointer-events: none;
+  visibility: hidden;
+}
+body.index-body.bc3 > .bc3-sheet.open {
+  pointer-events: auto;
+  visibility: visible;
+}
 
 /* ---------- Nav --------------------------------------------------------- */
 .bc3-nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "brand actions";
   align-items: center;
-  gap: 24px;
+  gap: 10px 12px;
   padding: 14px clamp(14px, 4vw, 32px);
   padding-top: calc(14px + env(safe-area-inset-top));
   background: linear-gradient(180deg, rgba(7,8,11,0.85) 0%, rgba(7,8,11,0.55) 100%);
@@ -149,9 +161,13 @@ body.index-body.bc3 > .bc3-sheet { position: fixed; }
   -webkit-backdrop-filter: saturate(180%) blur(18px);
   border-bottom: 1px solid var(--bc-border);
   font-family: inherit;
-  min-height: 64px;
+  min-height: 56px;
   max-width: 100%;
+  flex-wrap: nowrap;
 }
+.bc3-nav__brand { grid-area: brand; }
+.bc3-nav__links { grid-area: links; }
+.bc3-nav__actions { grid-area: actions; }
 .bc3-nav__actions { min-width: 0; }
 
 .bc3-nav__brand {
@@ -193,6 +209,13 @@ body.index-body.bc3 > .bc3-sheet { position: fixed; }
   align-items: center;
   gap: 4px;
   margin: 0 auto;
+  justify-self: center;
+}
+@media (min-width: 981px) {
+  .bc3-nav {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "brand links actions";
+  }
 }
 .bc3-nav__link {
   position: relative;
@@ -288,31 +311,55 @@ body.index-body.bc3 > .bc3-sheet { position: fixed; }
   .bc3-nav__actions .bc3-pill:not(.bc3-pill--primary):not(#auth-btn) { padding: 0 10px; min-width: 40px; justify-content: center; }
   .bc3-nav__burger { display: inline-flex; }
 }
-@media (max-width: 520px) {
-  .bc3-nav { gap: 10px; padding-left: 12px; padding-right: 12px; }
-  .bc3-nav__title { font-size: 13.5px; }
-  /* Hide secondary pills on phones — keep only language + login + burger */
+@media (max-width: 720px) {
   .bc3-nav__actions a[href*="vin"],
   .bc3-nav__actions a[href*="forum"],
-  .bc3-nav__actions button[onclick*="Favorites"] { display: none; }
-  .bc3-nav__actions { gap: 6px; }
-  .bc3-nav__actions .bc3-pill { padding: 0 10px; min-width: 40px; height: 38px; }
+  .bc3-nav__actions button[onclick*="Favorites"] {
+    display: none !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .bc3-nav {
+    gap: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    min-height: 52px;
+  }
+  .bc3-nav__title { font-size: 13.5px; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
+  .bc3-nav__actions { gap: 6px; flex-wrap: nowrap; }
+  .bc3-nav__actions #language-toggle { display: none !important; }
+  .bc3-nav__actions .bc3-pill:not(#auth-btn):not(.bc3-nav__burger) { display: none !important; }
+  .bc3-nav__actions #auth-btn.hidden { display: none !important; }
+  .bc3-nav__actions #auth-btn:not(.hidden) { display: inline-flex !important; }
 }
 
 /* Mobile sheet */
 .bc3-sheet {
   position: fixed;
   inset: 0;
-  z-index: 200;
-  background: rgba(5,7,11,0.78);
-  backdrop-filter: blur(8px);
-  display: none;
+  z-index: 5000;
+  background: rgba(5, 7, 11, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
   align-items: stretch;
   justify-content: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s;
 }
-.bc3-sheet.open { display: flex; }
+.bc3-sheet.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 .bc3-sheet__panel {
-  width: min(360px, 100%);
+  width: min(360px, 92vw);
+  max-width: 100%;
+  height: 100%;
+  overflow-y: auto;
   background: linear-gradient(180deg, #0E1118 0%, #0A0C12 100%);
   border-left: 1px solid var(--bc-border);
   padding: 24px;

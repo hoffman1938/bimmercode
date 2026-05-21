@@ -104,32 +104,61 @@ body.bcx h3 { white-space: normal; }
 
 /* ---------- Universal premium header (works on top of `forum-header`) -- */
 body.bcx header.forum-header,
-body.bcx header.index-bento {
+body.bcx header.index-bento,
+body.bcx header.bc3-nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  display: flex;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "menu brand actions";
   align-items: center;
-  gap: 16px;
-  min-height: 64px;
-  padding: 14px clamp(14px, 4vw, 32px) !important;
-  padding-top: calc(14px + env(safe-area-inset-top)) !important;
+  gap: 8px 10px !important;
+  min-height: 56px;
+  padding: 12px clamp(12px, 4vw, 28px) !important;
+  padding-top: calc(12px + env(safe-area-inset-top)) !important;
   background: linear-gradient(180deg, rgba(7,8,11,0.88) 0%, rgba(7,8,11,0.6) 100%) !important;
   border-bottom: 1px solid var(--bc-border) !important;
   backdrop-filter: saturate(180%) blur(18px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(18px) !important;
   box-shadow: 0 4px 24px rgba(0,0,0,0.18) !important;
   max-width: 100%;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
+}
+
+/* Index bc3-nav uses brand | actions (no leading burger column) */
+body.bcx header.bc3-nav {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-areas: "brand actions" !important;
+}
+@media (min-width: 981px) {
+  body.bcx header.bc3-nav {
+    grid-template-columns: auto 1fr auto !important;
+    grid-template-areas: "brand links actions" !important;
+  }
+  body.bcx header.bc3-nav .bc3-nav__links {
+    grid-area: links;
+    justify-self: center;
+  }
+}
+
+body.bcx header.forum-header > .mobile-only,
+body.bcx header.forum-header > button.mobile-only {
+  grid-area: menu;
+  justify-self: start;
+  margin: 0 !important;
 }
 
 body.bcx header .logo-container,
-body.bcx header .index-header-brand {
+body.bcx header .index-header-brand,
+body.bcx header .bc3-nav__brand {
+  grid-area: brand;
   display: flex;
   align-items: center;
   min-width: 0;
-  max-width: min(100%, 30rem);
+  max-width: 100%;
   flex: 0 1 auto;
+  overflow: hidden;
 }
 body.bcx header a.main_logo_refr {
   display: inline-flex;
@@ -167,13 +196,16 @@ body.bcx header h1.index-header-title .index-header-title-muted {
 }
 
 /* Controls (header right-side actions) become premium pills */
-body.bcx header .controls {
-  margin-left: auto;
+body.bcx header .controls,
+body.bcx header .bc3-nav__actions {
+  grid-area: actions;
+  margin-left: 0 !important;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  justify-self: end;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -285,9 +317,45 @@ body.bcx header .mobile-only.btn-icon {
   body.bcx header #auth-btn span { display: inline !important; }
   body.bcx header #auth-btn i { font-size: 12px !important; }
 }
+@media (max-width: 768px) {
+  body.bcx header.forum-header .controls a[href="/"],
+  body.bcx header.forum-header .controls a[href*="vin.html"],
+  body.bcx header.forum-header .controls a[title="Home"],
+  body.bcx header.forum-header .controls a[title="VIN Check"] {
+    display: none !important;
+  }
+  body.bcx header h1.index-header-title .index-header-title-muted {
+    display: none !important;
+  }
+}
+
 @media (max-width: 520px) {
-  body.bcx header { gap: 10px; padding-left: 12px !important; padding-right: 12px !important; }
-  body.bcx header h1.index-header-title { font-size: 14px !important; }
+  body.bcx header {
+    gap: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    min-height: 52px;
+  }
+  body.bcx header h1.index-header-title {
+    font-size: 13px !important;
+    max-width: 38vw;
+  }
+  body.bcx header.forum-header #forum-language-toggle {
+    display: none !important;
+  }
+}
+
+/* Forum / topic mobile drawer above page content */
+body.bcx .mobile-menu-overlay {
+  z-index: 4998 !important;
+}
+body.bcx .mobile-offcanvas {
+  z-index: 4999 !important;
+  width: min(300px, 88vw) !important;
+}
+body.bcx .mobile-menu-overlay.active {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* ---------- Universal premium footer ---------------------------------- */

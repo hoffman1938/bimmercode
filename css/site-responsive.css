@@ -104,33 +104,12 @@ body.bcx .topic-modal-footer .btn {
   min-width: min(140px, 100%);
 }
 
-/* --- Header (forum, index, profile, vin) ---------------------------------- */
-body.bcx header.forum-header.index-bento,
-body.bcx header.forum-header {
-  flex-wrap: wrap;
-  gap: 8px 10px;
-  padding: 10px clamp(12px, 3vw, 20px);
-  min-width: 0;
-}
-
-body.bcx header.forum-header .logo-container,
-body.bcx header.forum-header .index-header-brand {
-  min-width: 0;
-  flex: 1 1 120px;
-}
-
-body.bcx header.forum-header .index-header-title {
+/* Header layout: site-premium.css grid — only touch-ups here */
+body.bcx header.forum-header .index-header-title,
+body.bcx header .bc3-nav__title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: min(52vw, 280px);
-}
-
-body.bcx header.forum-header .controls {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-  min-width: 0;
 }
 
 body.bcx main.forum-container,
@@ -258,6 +237,10 @@ body.bcx .dashboard-card {
 
 /* --- Mobile --------------------------------------------------------------- */
 @media (max-width: 768px) {
+  body.bcx header.forum-header .controls {
+    width: auto;
+  }
+
   body.bcx .modal,
   body.bcx .auth-modal {
     padding: 0;
