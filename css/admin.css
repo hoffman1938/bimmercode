@@ -1,5 +1,17 @@
 /* css/admin.css - Premium Admin Panel Styling */
 
+/* Hidden until js/admin.js confirms admin via API (see admin-gate.js) */
+html.admin-gate-pending body {
+  background: var(--admin-bg, #0f172a);
+}
+html.admin-gate-pending #webgl-container,
+html.admin-gate-pending .forum-header,
+html.admin-gate-pending .admin-container,
+html.admin-gate-pending .auth-modal,
+html.admin-gate-pending .modal {
+  display: none !important;
+}
+
 :root {
     --admin-bg: #0f172a;
     --admin-sidebar-bg: rgba(15, 23, 42, 0.95);

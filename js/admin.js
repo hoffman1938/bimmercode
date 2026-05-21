@@ -4,23 +4,35 @@ console.log("Admin JS Loaded - Version 2 (Auth Token Fix)"); // DEBUG
 const API_URL = "/api";
 let currentUser = null;
 
+function unlockAdminPanel() {
+    document.documentElement.classList.remove('admin-gate-pending');
+}
+
+function lockAndLeaveAdmin(url) {
+    document.documentElement.classList.add('admin-gate-pending');
+    window.location.replace(url);
+}
+
 // On Load
 document.addEventListener('DOMContentLoaded', async () => {
-    await checkAdminAuth();
-    loadUsers();
-    
-    // Search Listener
-    document.getElementById('user-search').addEventListener('input', debounce(loadUsers, 500));
+    const ok = await checkAdminAuth();
+    if (!ok) return;
+
+    if (typeof loadUsers === 'function') loadUsers();
+
+    const search = document.getElementById('user-search');
+    if (search) search.addEventListener('input', debounce(loadUsers, 500));
 });
 
 // Auth: valid JWT is not enough — server checks admin_role / super_admin_role.
 // Local dev: `pages dev` uses a separate local D1; run `npm run db:migrate:local` and
 // set ADMIN_PANEL_EMAILS or admin role in DB. Use admin.html or /admin (see _redirects).
+/** @returns {Promise<boolean>} */
 async function checkAdminAuth() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-        window.location.href = 'index.html?need_login=1';
-        return;
+        lockAndLeaveAdmin('/index.html?need_login=1');
+        return false;
     }
 
     try {
@@ -28,8 +40,8 @@ async function checkAdminAuth() {
     } catch (e) {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
-        window.location.href = 'index.html?bad_token=1';
-        return;
+        lockAndLeaveAdmin('/index.html?bad_token=1');
+        return false;
     }
 
     let res;
@@ -39,26 +51,30 @@ async function checkAdminAuth() {
         });
     } catch (e) {
         console.error('[admin] /api/admin/stats network error', e);
-        return;
+        lockAndLeaveAdmin('/index.html?admin=denied');
+        return false;
     }
 
     if (res.status === 401) {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
-        window.location.href = 'index.html?session=1';
-        return;
+        lockAndLeaveAdmin('/index.html?session=1');
+        return false;
     }
     if (res.status === 403) {
         console.warn('[admin] 403: not admin in this DB, or wrong JWT_SECRET');
-        window.location.href = 'index.html?admin=denied';
-        return;
+        lockAndLeaveAdmin('/index.html?admin=denied');
+        return false;
     }
     if (!res.ok) {
         console.error('[admin] /api/admin/stats HTTP', res.status);
-        return;
+        lockAndLeaveAdmin('/index.html?admin=denied');
+        return false;
     }
 
+    unlockAdminPanel();
     switchTab('dashboard');
+    return true;
 }
 
 function logoutAdmin() {

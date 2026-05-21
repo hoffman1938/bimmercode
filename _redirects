@@ -1,0 +1,3 @@
+# Cloudflare Pages — pretty URLs
+/admin      /admin.html 200
+/admin/     /admin.html 200
