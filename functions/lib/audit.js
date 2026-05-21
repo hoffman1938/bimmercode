@@ -191,6 +191,8 @@ export const AUDIT_ACTIONS = {
   TOPIC_PINNED: 'topic_pinned',
   TOPIC_UNPINNED: 'topic_unpinned',
   TOPIC_ARCHIVED: 'topic_archived',
+  POST_PINNED: 'post_pinned',
+  POST_UNPINNED: 'post_unpinned',
   
   // Warnings and reports
   WARNING_ISSUED: 'warning_issued',

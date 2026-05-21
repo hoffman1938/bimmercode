@@ -1108,6 +1108,11 @@ select.sort-select:focus {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-glow-soft);
 }
+.post-card.is-pinned {
+  border-color: rgba(239, 159, 39, 0.45);
+  box-shadow: 0 0 0 1px rgba(239, 159, 39, 0.2);
+}
+
 .post-card.is-solution {
   border-color: rgba(76, 175, 80, 0.5);
   box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.2);

@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS posts (
     content TEXT NOT NULL,
     lang TEXT DEFAULT 'en',
     is_solution BOOLEAN DEFAULT 0,
+    is_pinned INTEGER DEFAULT 0,
     is_deleted BOOLEAN DEFAULT 0,
     deleted_by TEXT,
     deleted_at TIMESTAMP,

@@ -518,6 +518,7 @@
           <span><i class="fas fa-eye"></i> ${topic.views || 0}</span>
           <span class="sep" aria-hidden="true"></span>
           <span><i class="fas fa-reply"></i> ${posts.length}</span>
+          ${isStaff() ? staffPinTopicButton(topic) : ""}
         </div>
       </article>
 
@@ -786,6 +787,7 @@
       </article>`;
     }
     const solved = !!(p.is_solution);
+    const pinned = !!(p.is_pinned);
     const avatar = p.author_avatar
       ? `<img class="avatar" src="${esc(p.author_avatar)}" alt="" loading="lazy" onerror="this.src='./assets/icons/ico.svg'">`
       : `<div class="avatar" style="display:flex;align-items:center;justify-content:center;font-weight:700;font-size:28px;">${esc((p.username||'?')[0]?.toUpperCase())}</div>`;
@@ -817,7 +819,7 @@
       : `<div class="post-author-static">${authorBlock}</div>`;
 
     return `
-      <article class="post-card${kindClass}${solved ? " is-solution" : ""}" id="${postId}">
+      <article class="post-card${kindClass}${solved ? " is-solution" : ""}${pinned ? " is-pinned" : ""}" id="${postId}">
         ${isOP ? `<div class="post-card-ribbon" aria-hidden="true"><span class="post-card-ribbon__text"><i class="fas fa-bolt"></i> ${esc(t("topicOpeningPost", "Topic"))}</span></div>` : ""}
         <div class="post-author">
           ${authorCol}
@@ -825,6 +827,7 @@
         <div class="post-body">
           <div class="post-meta">
             <a class="permalink" href="#${postId}"><i class="fas fa-link"></i> ${esc(timeAgo(p.created_at))}</a>
+            ${pinned ? `<span class="badge badge-pinned"><i class="fas fa-thumbtack"></i> ${esc(t("pinned","Pinned"))}</span>` : ""}
             ${solved ? `<span class="badge badge-solved"><i class="fas fa-check"></i> ${esc(t("solution","Solution"))}</span>` : ""}
             ${!isOP ? `<span class="post-kind-badge" data-kind="reply"><i class="fas fa-reply"></i> ${esc(t("replyPostLabel", "Comment"))}</span>` : ""}
           </div>
@@ -843,11 +846,37 @@
             ${!isOP && canMarkSolution() && solved ? `<button type="button" class="post-action-link post-action-link--warn" data-action="unsolve" data-post="${esc(p.id)}"><i class="fas fa-times"></i> ${esc(t("unmarkSolution","Remove solution"))}</button>` : ""}
             ${canEdit(p) ? `<button type="button" class="post-action-link" data-action="edit" data-post="${esc(p.id)}"><i class="fas fa-edit"></i> ${esc(t("edit","Edit"))}</button>` : ""}
             ${canDelete(p) ? `<button type="button" class="post-action-link post-action-link--danger" data-action="delete" data-post="${esc(p.id)}"><i class="fas fa-trash"></i> ${esc(t("delete","Delete"))}</button>` : ""}
+            ${isStaff() ? staffPinPostButton(p, isOP) : ""}
             ${state.user && !isOP ? `<button type="button" class="post-action-link" data-action="report" data-post="${esc(p.id)}"><i class="fas fa-flag"></i> ${esc(t("report","Report"))}</button>` : ""}
             </div>
           </div>
         </div>
       </article>`;
+  }
+
+  const STAFF_ROLES = new Set([
+    "super_admin_role",
+    "admin_role",
+    "senior_moderator_role",
+    "moderator_role",
+  ]);
+
+  function isStaff() {
+    const r = state.user?.role_id || state.user?.role;
+    return !!r && STAFF_ROLES.has(r);
+  }
+
+  function staffPinTopicButton(topic) {
+    const pinned = !!topic.is_pinned;
+    const label = pinned ? t("unpinTopic", "Unpin topic") : t("pinTopic", "Pin topic");
+    return `<button type="button" class="post-action-link topic-header-pin" data-action="${pinned ? "unpin-topic" : "pin-topic"}" title="${esc(label)}"><i class="fas fa-thumbtack"></i> ${esc(label)}</button>`;
+  }
+
+  function staffPinPostButton(p, isOP) {
+    const pinned = isOP ? !!state.topic?.is_pinned : !!p.is_pinned;
+    const label = pinned ? t("unpinPost", "Unpin comment") : t("pinPost", "Pin comment");
+    const action = pinned ? "unpin-post" : "pin-post";
+    return `<button type="button" class="post-action-link" data-action="${action}" data-post="${esc(p.id)}" title="${esc(label)}"><i class="fas fa-thumbtack"></i> ${esc(label)}</button>`;
   }
 
   function canMarkSolution() {
@@ -860,7 +889,7 @@
     if (!state.user) return false;
     if (String(state.user.id) === String(post.user_id)) return true;
     const r = state.user.role_id || state.user.role;
-    return r === "super_admin_role" || r === "admin_role" || r === "moderator_role";
+    return STAFF_ROLES.has(r);
   }
 
   function excerptForReplyFromPost(postId) {
@@ -1351,6 +1380,33 @@
     if (action === "delete") return deletePost(postId);
     if (action === "edit")   return beginPostEdit(postId);
     if (action === "report") return reportPost(postId);
+    if (action === "pin-topic") return togglePin("topic", state.topicId, true);
+    if (action === "unpin-topic") return togglePin("topic", state.topicId, false);
+    if (action === "pin-post" && postId) return togglePin("post", postId, true);
+    if (action === "unpin-post" && postId) return togglePin("post", postId, false);
+  }
+
+  async function togglePin(type, id, pin) {
+    if (!state.user || !isStaff()) return;
+    const token = localStorage.getItem("auth_token");
+    const errBox = $("#reply-error");
+    try {
+      const res = await fetch("/api/forum/pin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ type, id, pin }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      if (errBox) errBox.textContent = "";
+      await loadTopicData();
+    } catch (e) {
+      console.error("pin:", e);
+      if (errBox) errBox.textContent = e.message || t("errorSending", "Error");
+    }
   }
 
   function openReactionPicker(anchorEl) {

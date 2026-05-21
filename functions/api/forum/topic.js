@@ -56,9 +56,8 @@ async function handleGet(context) {
       );
     }
 
-    const { results: posts } = await db
-      .prepare(
-        `SELECT
+    const postsSqlWithPin = `
+        SELECT
             p.*,
             COALESCE(u.username, p.username) AS username,
             u.avatar_url   AS author_avatar,
@@ -71,10 +70,20 @@ async function handleGet(context) {
       LEFT JOIN posts rp ON rp.id = p.reply_to_post_id
       LEFT JOIN users ru ON ru.id = rp.user_id
           WHERE p.topic_id = ? AND p.id != p.topic_id
-          ORDER BY p.created_at ASC`
-      )
-      .bind(topicId)
-      .all();
+          ORDER BY COALESCE(p.is_pinned, 0) DESC, p.created_at ASC`;
+
+    const postsSqlLegacy = postsSqlWithPin.replace(
+      "ORDER BY COALESCE(p.is_pinned, 0) DESC, p.created_at ASC",
+      "ORDER BY p.created_at ASC"
+    );
+
+    let posts;
+    try {
+      ({ results: posts } = await db.prepare(postsSqlWithPin).bind(topicId).all());
+    } catch (pinErr) {
+      if (!String(pinErr?.message || "").includes("is_pinned")) throw pinErr;
+      ({ results: posts } = await db.prepare(postsSqlLegacy).bind(topicId).all());
+    }
 
     const cleanPosts = (posts || []).map((p) => {
       if (p.user_id && blockedSet.has(String(p.user_id))) {
