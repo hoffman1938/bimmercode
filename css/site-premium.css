@@ -343,6 +343,13 @@ body.bcx header .mobile-only.btn-icon {
   body.bcx header.forum-header #forum-language-toggle {
     display: none !important;
   }
+  /* Static pages (no mobile drawer): keep language in the header */
+  body.bcx:not(:has(#mobile-menu-content)) header.forum-header #forum-language-toggle {
+    display: inline-flex !important;
+  }
+  body.bcx header #language-toggle {
+    display: inline-flex !important;
+  }
 }
 
 /* Forum / topic mobile drawer above page content */

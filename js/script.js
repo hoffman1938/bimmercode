@@ -1222,6 +1222,8 @@ function updateLanguage() {
     const span = languageToggle.querySelector("span");
     if (span) span.textContent = langLabels[currentLanguage];
   }
+  const sheetLangDisplay = document.getElementById("bc3-sheet-lang-display");
+  if (sheetLangDisplay) sheetLangDisplay.textContent = langLabels[currentLanguage];
 
   const text = APP_TRANSLATIONS[currentLanguage];
 
@@ -1810,15 +1812,18 @@ window.initMobileMenu = function() {
     menuContent.appendChild(authContainer);
     
     // 3. Clone Language Toggle
-    const langToggle = document.getElementById('forum-language-toggle');
-    const topicLangToggle = document.getElementById('topic-language-toggle');
-    const targetToggle = langToggle || topicLangToggle;
+    const langToggle =
+      document.getElementById('forum-language-toggle') ||
+      document.getElementById('topic-language-toggle') ||
+      document.getElementById('language-toggle');
+    const targetToggle = langToggle;
     
     if(targetToggle) {
         const langClone = targetToggle.cloneNode(true);
         langClone.onclick = () => {
              if (typeof switchForumLanguage === 'function') switchForumLanguage();
              else if (typeof switchTopicLanguage === 'function') switchTopicLanguage();
+             else targetToggle.click();
         };
         langClone.style.marginTop = "20px";
         langClone.style.width = "100%";

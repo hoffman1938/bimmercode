@@ -328,8 +328,8 @@ body.index-body.bc3 > .bc3-sheet.open {
   }
   .bc3-nav__title { font-size: 13.5px; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
   .bc3-nav__actions { gap: 6px; flex-wrap: nowrap; }
-  .bc3-nav__actions #language-toggle { display: none !important; }
-  .bc3-nav__actions .bc3-pill:not(#auth-btn):not(.bc3-nav__burger) { display: none !important; }
+  .bc3-nav__actions #language-toggle { display: inline-flex !important; }
+  .bc3-nav__actions .bc3-pill:not(#auth-btn):not(.bc3-nav__burger):not(#language-toggle) { display: none !important; }
   .bc3-nav__actions #auth-btn.hidden { display: none !important; }
   .bc3-nav__actions #auth-btn:not(.hidden) { display: inline-flex !important; }
 }
@@ -393,6 +393,22 @@ body.index-body.bc3 > .bc3-sheet.open {
 }
 .bc3-sheet__link i { width: 18px; color: var(--bc-blue-bright); }
 .bc3-sheet__link:hover { background: rgba(255,255,255,0.05); border-color: var(--bc-border); }
+button.bc3-sheet__link {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+}
+.bc3-sheet__lang-code {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--bc-blue-bright);
+  opacity: 0.9;
+}
 
 /* ---------- Container --------------------------------------------------- */
 .bc3-wrap {

@@ -29,6 +29,9 @@
   $$("[data-bc3-sheet-close]").forEach((el) =>
     el.addEventListener("click", closeSheet)
   );
+  $("#bc3-sheet-language")?.addEventListener("click", () => {
+    document.getElementById("language-toggle")?.click();
+  });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && sheet?.classList.contains("open")) closeSheet();
   });
