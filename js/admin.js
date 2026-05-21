@@ -8,9 +8,22 @@ function unlockAdminPanel() {
     document.documentElement.classList.remove('admin-gate-pending');
 }
 
+function safeAdminRedirect(url) {
+    const target = new URL(url, window.location.origin).href;
+    document.documentElement.classList.add("admin-gate-pending");
+    try {
+        if (window.self !== window.top) {
+            window.top.location.replace(target);
+        } else {
+            window.location.replace(target);
+        }
+    } catch (_) {
+        window.location.href = target;
+    }
+}
+
 function lockAndLeaveAdmin(url) {
-    document.documentElement.classList.add('admin-gate-pending');
-    window.location.replace(url);
+    safeAdminRedirect(url);
 }
 
 // On Load
@@ -27,6 +40,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Auth: valid JWT is not enough — server checks admin_role / super_admin_role.
 // Local dev: `pages dev` uses a separate local D1; run `npm run db:migrate:local` and
 // set ADMIN_PANEL_EMAILS or admin role in DB. Use admin.html or /admin (see _redirects).
+/** Refresh role from API so promoted super-admins are not blocked by stale user_data. */
+async function refreshAdminUserCache(token) {
+    try {
+        const raw = localStorage.getItem("user_data");
+        const me = raw ? JSON.parse(raw) : null;
+        if (!me?.id) return;
+        const res = await fetch(`${API_URL}/user/get?id=${encodeURIComponent(me.id)}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const fresh = await res.json();
+        const merged = {
+            ...me,
+            ...fresh,
+            role_id: fresh.role_id || fresh.role || me.role_id,
+        };
+        localStorage.setItem("user_data", JSON.stringify(merged));
+    } catch (e) {
+        console.warn("[admin] user refresh skipped", e);
+    }
+}
+
 /** @returns {Promise<boolean>} */
 async function checkAdminAuth() {
     const token = localStorage.getItem('auth_token');
@@ -36,7 +71,7 @@ async function checkAdminAuth() {
     }
 
     try {
-        JSON.parse(atob(token.split('.')[1]));
+        JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     } catch (e) {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
@@ -44,9 +79,11 @@ async function checkAdminAuth() {
         return false;
     }
 
+    await refreshAdminUserCache(token);
+
     let res;
     try {
-        res = await fetch(`${API_URL}/admin/stats`, {
+        res = await fetch(`${API_URL}/admin/access`, {
             headers: { Authorization: `Bearer ${token}` }
         });
     } catch (e) {

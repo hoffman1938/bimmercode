@@ -1,4 +1,4 @@
-const CACHE_NAME = "bimmercodes-v33-sw-fetch-fallback";
+const CACHE_NAME = "bimmercodes-v34-admin-nav";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
@@ -48,14 +48,22 @@ self.addEventListener("fetch", (event) => {
 
   // 1. Navigation strategy (Network First -> Cache -> Fallback)
   if (event.request.mode === 'navigate') {
+    const path = new URL(event.request.url).pathname;
+    const isAdminNav =
+      path === "/admin" ||
+      path === "/admin/" ||
+      path === "/admin.html";
     event.respondWith(
       (async () => {
         try {
-          // Use original request to preserve cookies/headers
           return await fetch(event.request);
         } catch (error) {
-          return caches.match(event.request)
-            .then(cached => cached || caches.match("/index.html"));
+          if (isAdminNav) {
+            const adminPage = await caches.match("/admin.html");
+            if (adminPage) return adminPage;
+          }
+          const cached = await caches.match(event.request);
+          return cached || caches.match("/index.html");
         }
       })()
     );
