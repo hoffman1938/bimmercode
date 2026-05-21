@@ -782,6 +782,34 @@ body.bcx .post-action-link:hover {
   body.bcx .post-author .avatar,
   body.bcx .post-author img { width: 40px !important; height: 40px !important; }
   body.bcx .post-body { padding: 16px 16px !important; }
+  body.bcx .post-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  body.bcx .post-actions-tools {
+    justify-content: flex-start;
+    width: 100%;
+    gap: 8px;
+  }
+  body.bcx .post-actions-tools .post-action-link {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+    justify-content: center;
+  }
+  body.bcx .topic-header-meta {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px 10px !important;
+  }
+  body.bcx .topic-header-meta .sep { display: none !important; }
+  body.bcx .topic-header-meta .topic-header-pin {
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: center;
+    margin-top: 6px;
+  }
 }
 
 /* ---------- Reactions ------------------------------------------------- */

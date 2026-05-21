@@ -514,3 +514,49 @@
   background: rgba(0, 102, 179, 0.35);
   color: #fff;
 }
+
+/* --- Mobile: panel anchored to viewport (not the 40px icon button) -------- */
+@media (max-width: 768px) {
+  body.bcx header .controls,
+  body.bcx header .bc3-nav__actions {
+    overflow: visible !important;
+  }
+
+  #notif-btn-wrapper {
+    overflow: visible !important;
+    z-index: 1;
+  }
+
+  #notif-btn-wrapper:has(.notifications-dropdown.active) {
+    z-index: 2100;
+  }
+
+  .notifications-dropdown {
+    position: fixed !important;
+    top: calc(60px + env(safe-area-inset-top, 0px)) !important;
+    right: max(12px, env(safe-area-inset-right, 0px)) !important;
+    left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    width: auto !important;
+    max-width: none !important;
+    box-sizing: border-box;
+    z-index: 2100 !important;
+  }
+
+  .notif-list {
+    max-height: min(360px, 50dvh);
+  }
+
+  .notif-header {
+    padding: 12px 14px;
+  }
+
+  .notif-filter-bar {
+    padding: 0 10px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notif-header .notif-action-btn {
+    font-size: 11px;
+  }
+}

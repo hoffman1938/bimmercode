@@ -329,7 +329,8 @@
     font-size: 20px;
   }
   
-  .topic-header-meta {
+  /* Premium pages use body.bcx — topic meta stays horizontal (site-responsive.css) */
+  body:not(.bcx) .topic-header-meta {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
