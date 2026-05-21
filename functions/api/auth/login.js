@@ -179,6 +179,7 @@ export async function onRequestPost(context) {
           avatar_url: user.avatar_url,
           lang: user.preferred_lang,
           role: role?.name || 'user',
+          role_id: role?.id || user.role_id || 'user_role',
           role_display: role?.display_name || 'User',
           bio: user.bio,
           car_model: user.car_model,

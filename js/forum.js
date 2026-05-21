@@ -78,12 +78,49 @@
     catch { return null; }
   }
 
+  // Map API/login role strings (name or id) → role_id used by badges
+  function normalizeRoleId(role) {
+    if (role == null || role === "") return "user_role";
+    const r = String(role).trim().toLowerCase();
+    const map = {
+      super_admin: "super_admin_role",
+      super_admin_role: "super_admin_role",
+      admin: "admin_role",
+      admin_role: "admin_role",
+      senior_moderator: "senior_moderator_role",
+      senior_moderator_role: "senior_moderator_role",
+      moderator: "moderator_role",
+      moderator_role: "moderator_role",
+      user: "user_role",
+      user_role: "user_role",
+    };
+    return map[r] || r;
+  }
+
+  function userRoleLabel(user) {
+    if (!user) return t("lvlMember", "Member");
+    const raw =
+      user.role_display ||
+      (typeof user.level === "object" ? user.level?.name : user.level);
+    if (raw != null && String(raw).trim() && String(raw) !== "undefined") {
+      return String(raw).trim();
+    }
+    const lvl = reputationLevel(
+      Number(user.reputation) || 0,
+      normalizeRoleId(user.role_id || user.role),
+    );
+    return lvl?.label || t("lvlMember", "Member");
+  }
+
   // ============================================================ Reputation badge
   function reputationLevel(rep = 0, role = "user_role") {
-    if (role === "super_admin_role")
+    const roleId = normalizeRoleId(role);
+    if (roleId === "super_admin_role")
       return { key: "super", icon: "fa-user-shield", label: t("roleSuperAdmin", "Super admin") };
-    if (role === "admin_role") return { key: "admin", icon: "fa-crown", label: t("roleAdmin", "Admin") };
-    if (role === "moderator_role") return { key: "mod", icon: "fa-shield-alt", label: t("roleMod", "Moderator") };
+    if (roleId === "admin_role") return { key: "admin", icon: "fa-crown", label: t("roleAdmin", "Admin") };
+    if (roleId === "senior_moderator_role")
+      return { key: "senior-mod", icon: "fa-user-shield", label: t("roleMod", "Moderator") };
+    if (roleId === "moderator_role") return { key: "mod", icon: "fa-shield-alt", label: t("roleMod", "Moderator") };
     if (rep >= 3000) return { key: "master",  icon: "fa-star",        label: t("lvlMaster",  "Master") };
     if (rep >= 1000) return { key: "expert",  icon: "fa-award",       label: t("lvlExpert",  "Expert") };
     if (rep >= 250)  return { key: "regular", icon: "fa-user-check",  label: t("lvlRegular", "Regular") };
@@ -92,7 +129,7 @@
   }
 
   function repBadgeHtml(rep, role) {
-    const lvl = reputationLevel(rep || 0, role || "user_role");
+    const lvl = reputationLevel(rep || 0, normalizeRoleId(role));
     return `<span class="rep-badge rep-${lvl.key}" title="${escapeHtml(lvl.label)}"><i class="fas ${lvl.icon}"></i> ${escapeHtml(lvl.label)}</span>`;
   }
 
@@ -379,7 +416,7 @@
     if (!mobile) return;
 
     const isTopicPage = !!document.querySelector(".topic-view");
-    const categoriesHtml = $("#categories-nav")?.innerHTML || buildCategoriesNavHtml();
+    const categoriesHtml = $("#categories-nav") ? buildCategoriesNavHtml() : "";
 
     let quickLinks = `
       <a href="/" class="mobile-menu-link" onclick="${closeMobileMenuJs}">
@@ -400,13 +437,13 @@
       const avatar = user.avatar_url
         ? `<img class="mobile-menu-user__avatar" src="${escapeHtml(user.avatar_url)}" alt="" onerror="this.onerror=null;this.src='./assets/icons/ico.svg'">`
         : `<div class="mobile-menu-user__avatar mobile-menu-user__avatar--letter">${escapeHtml((user.username || "?")[0]?.toUpperCase())}</div>`;
-      const lvl = reputationLevel(user.reputation, user.role_id || user.role);
+      const roleText = userRoleLabel(user);
       accountHtml = `
         <div class="mobile-menu-user">
           ${avatar}
           <div class="mobile-menu-user__info">
             <div class="mobile-menu-user__name">${escapeHtml(user.username)}</div>
-            <div class="mobile-menu-user__role">${escapeHtml(lvl.label)}</div>
+            <div class="mobile-menu-user__role">${escapeHtml(roleText)}</div>
           </div>
         </div>
         <a href="/profile" class="mobile-menu-link mobile-menu-link--secondary" onclick="${closeMobileMenuJs}">
@@ -547,7 +584,7 @@
       <div class="user-card">
         ${avatar}
         <div class="username">${escapeHtml(user.username)}</div>
-        ${repBadgeHtml(user.reputation, user.role_id || user.role)}
+        ${repBadgeHtml(user.reputation, normalizeRoleId(user.role_id || user.role))}
         <div class="actions">
           <a href="/profile" class="btn btn-ghost user-card-profile-link"><i class="fas fa-user-circle" aria-hidden="true"></i> ${escapeHtml(t("profile", "Profile"))}</a>
           <button class="btn btn-danger" onclick="logout && logout()"><i class="fas fa-sign-out-alt"></i> ${escapeHtml(t("logout", "Logout"))}</button>
@@ -667,13 +704,16 @@
     document.documentElement.setAttribute("lang", state.lang);
     const dict = window.APP_TRANSLATIONS?.[state.lang] || {};
     const fall = window.APP_TRANSLATIONS?.en || {};
+    const mobileRoot = $("#mobile-menu-content");
     $$("[data-i18n]").forEach((el) => {
+      if (mobileRoot && mobileRoot.contains(el)) return;
       const key = el.getAttribute("data-i18n");
       if (!key) return;
       const val = dict[key] ?? fall[key];
       if (val !== undefined) el.textContent = val;
     });
     $$("[data-i18n-placeholder]").forEach((el) => {
+      if (mobileRoot && mobileRoot.contains(el)) return;
       const key = el.getAttribute("data-i18n-placeholder");
       if (!key) return;
       const val = dict[key] ?? fall[key];
@@ -683,16 +723,16 @@
     if (disp) disp.textContent = { en: "EN", ru: "RU", ka: "GE" }[state.lang] || "EN";
   }
 
-  window.switchForumLanguage = function switchForumLanguage() {
+  window.switchForumLanguage = async function switchForumLanguage() {
     const order = ["en", "ru", "ka"];
     state.lang = order[(order.indexOf(state.lang) + 1) % order.length];
     localStorage.setItem("forumLanguage", state.lang);
     localStorage.setItem("language", state.lang);
     applyI18n();
-    renderUserCard();
-    void loadCategories(); // category titles + hero stats + mobile menu
     renderHeaderAuth();
-    renderMobileMenu();
+    renderUserCard();
+    if ($("#categories-nav")) await loadCategories();
+    else renderMobileMenu();
     rerenderVisibleTopics();
     try {
       document.dispatchEvent(
@@ -725,7 +765,7 @@
   window.filterTopicsByCategory = (slug) => window.__forum.setCategory(slug);
 
   /** Call after changing `forumLanguage` outside forum.js (e.g. topic page). */
-  window.__forumSyncLang = function __forumSyncLang() {
+  window.__forumSyncLang = async function __forumSyncLang() {
     state.lang =
       localStorage.getItem("forumLanguage") ||
       localStorage.getItem("language") ||
@@ -733,8 +773,8 @@
     applyI18n();
     renderHeaderAuth();
     renderUserCard();
-    renderMobileMenu();
-    if ($("#hero-stats")) void loadCategories();
+    if ($("#categories-nav")) await loadCategories();
+    else renderMobileMenu();
     rerenderVisibleTopics();
   };
 

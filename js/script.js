@@ -24,12 +24,10 @@ const languageToggle = document.getElementById("language-toggle");
 let currentLanguage = localStorage.getItem("forumLanguage") || "en";
 
 // Keep in sync with forum/topic `switchForumLanguage` (no full reload).
-window.addEventListener("languageChanged", () => {
-  currentLanguage = localStorage.getItem("forumLanguage") || "en";
+window.addEventListener("languageChanged", (e) => {
+  currentLanguage = e?.detail?.lang || localStorage.getItem("forumLanguage") || "en";
   document.documentElement.setAttribute("lang", currentLanguage);
-  if (typeof window.__forumRenderMobileMenu === "function") {
-    window.__forumRenderMobileMenu();
-  }
+  // Mobile drawer is rebuilt by forum.js after categories load — avoid racing a partial re-render
 });
 let isDarkMode = true;
 let bmwCodes = [];
@@ -852,8 +850,11 @@ async function init() {
       drawEditor();
     }
 
-    // Initialize Mobile Menu
-    initMobileMenu();
+    if (typeof window.__forumRenderMobileMenu === "function") {
+      window.__forumRenderMobileMenu();
+    } else if (typeof initMobileMenu === "function") {
+      initMobileMenu();
+    }
 
 
 
@@ -1208,7 +1209,6 @@ function updateLanguage() {
   // Обновляем чат
 
   
-  // Forum/topic: forum.js owns the mobile drawer
   if (typeof window.__forumRenderMobileMenu === "function") {
     window.__forumRenderMobileMenu();
   } else if (typeof initMobileMenu === "function") {

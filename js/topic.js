@@ -1684,17 +1684,15 @@
     if (disp) disp.textContent = { en: "EN", ru: "RU", ka: "GE" }[state.lang] || "EN";
   }
 
-  window.switchForumLanguage = function () {
+  window.switchForumLanguage = async function () {
     const order = ["en", "ru", "ka"];
     state.lang = order[(order.indexOf(state.lang) + 1) % order.length];
     localStorage.setItem("forumLanguage", state.lang);
     localStorage.setItem("language", state.lang);
-    if (typeof window.__forumSyncLang === "function") window.__forumSyncLang();
+    if (typeof window.__forumSyncLang === "function") await window.__forumSyncLang();
     else applyI18n();
     if (state.topic) renderTopic();
-    // Second pass: composer tabs use data-i18n in freshly inserted HTML; shell uses static data-i18n
     applyI18n();
-    if (typeof window.__forumRenderMobileMenu === "function") window.__forumRenderMobileMenu();
     try {
       document.dispatchEvent(
         new CustomEvent("languageChanged", { detail: { lang: state.lang } }),
