@@ -923,6 +923,9 @@ body.bcx .field-error {
   color: var(--bc-red) !important;
   min-height: 16px;
 }
+#login-email, #reg-email, #reg-username, #login-password, #reg-password {
+  padding-left: 10%!important;
+}
 body.bcx .field input,
 body.bcx .field select,
 body.bcx .field textarea,
