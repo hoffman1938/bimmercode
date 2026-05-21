@@ -1626,7 +1626,7 @@ window.APP_TRANSLATIONS = {
     pinTopic: "თემის მიმაგრება",
     unpinTopic: "თემის განმორთვა",
     pinPost: "კომენტარის მიმაგრება",
-    unpinPost: "კომენტარის განმორთვა",
+    unpinPost: "კომენტარის პინის მოხსნა",
     locked: "ჩაკეტილი",
     relatedCode: "შეცდომის კოდი",
     by: "ავტორი",
