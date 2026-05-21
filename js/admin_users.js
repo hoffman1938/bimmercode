@@ -1,5 +1,68 @@
 // js/admin_users.js - Advanced User Management
 
+/** Mirror of functions/lib/role-assign.js for UI (server enforces the same rules). */
+const ALL_PANEL_ROLES = [
+  { id: "user_role", label: "User" },
+  { id: "moderator_role", label: "Moderator" },
+  { id: "senior_moderator_role", label: "Senior Moderator" },
+  { id: "admin_role", label: "Administrator" },
+  { id: "super_admin_role", label: "Super Administrator" },
+];
+
+function getActorRoleId() {
+  try {
+    const u = JSON.parse(localStorage.getItem("user_data") || "null");
+    return u?.role_id || null;
+  } catch {
+    return null;
+  }
+}
+
+function canManageUserRole(actorId, targetRoleId) {
+  if (!actorId || !targetRoleId) return false;
+  if (targetRoleId === "super_admin_role") return actorId === "super_admin_role";
+  if (targetRoleId === "admin_role") {
+    return actorId === "super_admin_role" || actorId === "admin_role";
+  }
+  if (actorId === "moderator_role" || actorId === "senior_moderator_role") {
+    return targetRoleId !== "admin_role" && targetRoleId !== "super_admin_role";
+  }
+  if (actorId === "admin_role") return targetRoleId !== "super_admin_role";
+  return actorId === "super_admin_role";
+}
+
+function getAssignableRoleOptions(actorId) {
+  if (actorId === "super_admin_role") return ALL_PANEL_ROLES.slice();
+  if (actorId === "admin_role") {
+    return ALL_PANEL_ROLES.filter((r) => r.id !== "super_admin_role");
+  }
+  if (actorId === "senior_moderator_role" || actorId === "moderator_role") {
+    return ALL_PANEL_ROLES.filter(
+      (r) => r.id !== "super_admin_role" && r.id !== "admin_role"
+    );
+  }
+  return ALL_PANEL_ROLES.filter((r) => r.id === "user_role");
+}
+
+function fillRoleSelect(selectEl, actorId, selectedId) {
+  if (!selectEl) return;
+  const opts = getAssignableRoleOptions(actorId);
+  selectEl.innerHTML = opts
+    .map(
+      (r) =>
+        `<option value="${r.id}"${r.id === selectedId ? " selected" : ""}>${r.label}</option>`
+    )
+    .join("");
+  if (selectedId && !opts.some((r) => r.id === selectedId)) {
+    const label =
+      ALL_PANEL_ROLES.find((r) => r.id === selectedId)?.label || selectedId;
+    selectEl.insertAdjacentHTML(
+      "afterbegin",
+      `<option value="${selectedId}" selected disabled>${label} (no permission to change)</option>`
+    );
+  }
+}
+
 function escapeAdminHtml(s) {
   const d = document.createElement("div");
   d.textContent = s == null ? "" : String(s);
@@ -155,7 +218,11 @@ function renderUsers(users) {
             </td>
             <td>
                 <button class="action-btn" title="Edit user" onclick="openEditUserModal('${user.id}')"><i class="fas fa-user-pen"></i></button>
-                <button class="action-btn" title="Edit Role" onclick="openRoleModal('${user.id}', '${escapeAdminAttr(user.username)}', '${user.role_id}')"><i class="fas fa-user-tag"></i></button>
+                ${
+                  canManageUserRole(getActorRoleId(), user.role_id)
+                    ? `<button class="action-btn" title="Edit Role" onclick="openRoleModal('${user.id}', '${escapeAdminAttr(user.username)}', '${user.role_id}')"><i class="fas fa-user-tag"></i></button>`
+                    : ""
+                }
                 ${user.is_active ? 
                     `<button class="action-btn btn-danger" title="Ban User" onclick="openActionModal('${user.id}', 'ban')"><i class="fas fa-ban"></i></button>` :
                     `<button class="action-btn" title="Unban User" onclick="openActionModal('${user.id}', 'unban')"><i class="fas fa-undo"></i></button>`
@@ -186,10 +253,16 @@ function calculateUserLevel(rep) {
 function openRoleModal(userId, username, currentRole) {
     const modal = document.getElementById('role-modal');
     if(!modal) return;
+
+    const actorId = getActorRoleId();
+    if (!canManageUserRole(actorId, currentRole)) {
+      alert("You do not have permission to change this user's role.");
+      return;
+    }
     
     document.getElementById('role-user-id').value = userId;
     document.getElementById('role-username-display').textContent = username;
-    document.getElementById('role-select').value = currentRole;
+    fillRoleSelect(document.getElementById('role-select'), actorId, currentRole);
     
     modal.classList.add('active');
 }
@@ -260,7 +333,11 @@ async function openEditUserModal(userId) {
     document.getElementById("edit-user-username").value = u.username || "";
     document.getElementById("edit-user-email").value = u.email || "";
     document.getElementById("edit-user-password").value = "";
-    document.getElementById("edit-user-role").value = u.role_id || "user_role";
+    fillRoleSelect(
+      document.getElementById("edit-user-role"),
+      getActorRoleId(),
+      u.role_id || "user_role"
+    );
     document.getElementById("edit-user-active").checked = !!u.is_active;
     document.getElementById("edit-user-reputation").value = u.reputation ?? 0;
     document.getElementById("edit-user-first-name").value = u.first_name || "";
@@ -290,10 +367,17 @@ async function saveUserEdit(e) {
   const userId = document.getElementById("edit-user-id")?.value;
   if (!userId) return;
 
+  const newRoleId = document.getElementById("edit-user-role")?.value;
+  const assignable = getAssignableRoleOptions(getActorRoleId()).map((r) => r.id);
+  if (newRoleId && !assignable.includes(newRoleId)) {
+    alert("You cannot assign this role.");
+    return;
+  }
+
   const body = {
     username: document.getElementById("edit-user-username")?.value?.trim(),
     email: document.getElementById("edit-user-email")?.value?.trim(),
-    role_id: document.getElementById("edit-user-role")?.value,
+    role_id: newRoleId,
     is_active: document.getElementById("edit-user-active")?.checked ? 1 : 0,
     reputation: parseInt(document.getElementById("edit-user-reputation")?.value, 10) || 0,
     first_name: document.getElementById("edit-user-first-name")?.value?.trim(),

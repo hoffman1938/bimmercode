@@ -13,6 +13,7 @@ import {
   propagateUsername,
   jsonResponse,
 } from "../../../lib/user-account.js";
+import { validateRoleChange } from "../../../lib/role-assign.js";
 
 function emailInList(env, email, varName) {
   const raw = env[varName];
@@ -135,20 +136,25 @@ export async function onRequestPatch(context) {
 
     if (body.role_id !== undefined && body.role_id !== user.role_id) {
       const adminRole = await getUserRole(env, auth.userId);
-      const targetRole = await env.DB.prepare("SELECT level, name FROM roles WHERE id = ?")
+      const targetRole = await env.DB.prepare("SELECT id FROM roles WHERE id = ?")
         .bind(body.role_id)
         .first();
       if (!targetRole) return jsonResponse({ error: "Invalid role ID" }, 400);
 
-      const isSuper = adminRole?.id === "super_admin_role";
       const superPromo =
         body.role_id === "super_admin_role" &&
         user.email &&
         emailInList(env, user.email, "SUPER_ADMIN_PROMOTE_EMAILS");
 
-      if (!isSuper && (adminRole?.level || 0) < targetRole.level && !superPromo) {
-        return jsonResponse({ error: "Cannot assign a role higher than your own" }, 403);
-      }
+      const check = validateRoleChange({
+        actorRoleId: adminRole?.id,
+        targetCurrentRoleId: user.role_id,
+        newRoleId: body.role_id,
+        superPromoAllowed: superPromo,
+      });
+      if (!check.ok) return jsonResponse({ error: check.error }, 403);
+
+      columnMap.role_id = body.role_id;
       changed.push("role_id");
     }
 

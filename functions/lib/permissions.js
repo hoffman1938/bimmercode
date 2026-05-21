@@ -122,8 +122,14 @@ export async function hasRoleLevel(env, userId, minLevel) {
 const SYNTHETIC_ROLES_BY_ID = {
   user_role: { id: "user_role", name: "user", display_name: "User", level: 1 },
   moderator_role: { id: "moderator_role", name: "moderator", display_name: "Moderator", level: 2 },
-  admin_role: { id: "admin_role", name: "admin", display_name: "Administrator", level: 3 },
-  super_admin_role: { id: "super_admin_role", name: "super_admin", display_name: "Super Administrator", level: 4 },
+  senior_moderator_role: {
+    id: "senior_moderator_role",
+    name: "senior_moderator",
+    display_name: "Senior Moderator",
+    level: 3,
+  },
+  admin_role: { id: "admin_role", name: "admin", display_name: "Administrator", level: 4 },
+  super_admin_role: { id: "super_admin_role", name: "super_admin", display_name: "Super Administrator", level: 5 },
 };
 
 /** Optional env `ADMIN_PANEL_EMAILS` — comma/semicolon list, grants `admin_role` (e.g. before DB role is fixed). */

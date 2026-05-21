@@ -1,6 +1,7 @@
 // functions/api/admin/roles/assign.js - Assign User Roles
 import { authenticateAdminRequest } from "../../../lib/admin-gate.js";
 import { getUserRole } from "../../../lib/permissions.js";
+import { validateRoleChange } from "../../../lib/role-assign.js";
 
 /** Comma/semicolon emails — allow admin (non-super) to grant super_admin_role only to these accounts (bootstrap). */
 function emailInList(env, email, varName) {
@@ -36,16 +37,24 @@ export async function onRequestPost(context) {
              return new Response(JSON.stringify({ error: "Invalid role ID" }), { status: 400 });
         }
 
-        const isSuper = adminRole.id === "super_admin_role";
-        const targetUser = await env.DB.prepare("SELECT email FROM users WHERE id = ?").bind(user_id).first();
+        const targetUser = await env.DB.prepare("SELECT email, role_id FROM users WHERE id = ?").bind(user_id).first();
+        if (!targetUser) {
+             return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+        }
+
         const superPromoAllowed =
           role_id === "super_admin_role" &&
-          targetUser?.email &&
+          targetUser.email &&
           emailInList(env, targetUser.email, "SUPER_ADMIN_PROMOTE_EMAILS");
 
-        // Super admin can assign any; admin cannot assign a strictly higher level unless bootstrap list allows
-        if (!isSuper && adminRole.level < targetRoleParams.level && !superPromoAllowed) {
-             return new Response(JSON.stringify({ error: "Cannot assign a role higher than your own" }), { status: 403 });
+        const check = validateRoleChange({
+          actorRoleId: adminRole?.id,
+          targetCurrentRoleId: targetUser.role_id,
+          newRoleId: role_id,
+          superPromoAllowed,
+        });
+        if (!check.ok) {
+             return new Response(JSON.stringify({ error: check.error }), { status: 403 });
         }
 
         // Update User
