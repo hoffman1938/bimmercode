@@ -27,6 +27,9 @@ let currentLanguage = localStorage.getItem("forumLanguage") || "en";
 window.addEventListener("languageChanged", () => {
   currentLanguage = localStorage.getItem("forumLanguage") || "en";
   document.documentElement.setAttribute("lang", currentLanguage);
+  if (typeof window.__forumRenderMobileMenu === "function") {
+    window.__forumRenderMobileMenu();
+  }
 });
 let isDarkMode = true;
 let bmwCodes = [];
@@ -1205,9 +1208,11 @@ function updateLanguage() {
   // Обновляем чат
 
   
-  // Re-render mobile menu with new language
-  if (typeof initMobileMenu === 'function') {
-      initMobileMenu();
+  // Forum/topic: forum.js owns the mobile drawer
+  if (typeof window.__forumRenderMobileMenu === "function") {
+    window.__forumRenderMobileMenu();
+  } else if (typeof initMobileMenu === "function") {
+    initMobileMenu();
   }
 }
 
@@ -1636,6 +1641,12 @@ window.toggleMobileMenu = function() {
 window.initMobileMenu = function() {
     const menuContent = document.getElementById('mobile-menu-content');
     if (!menuContent) return;
+
+    // forum.js / topic.js render the drawer (home, categories, account, language)
+    if (typeof window.__forumRenderMobileMenu === "function") {
+        window.__forumRenderMobileMenu();
+        return;
+    }
     
     // Clear previous usage if needed
     menuContent.innerHTML = '';

@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./css/notifications.css?v=3.6" />
     <link rel="stylesheet" href="./css/parts-finder.css?v=3.0" />
     <link rel="stylesheet" href="./css/site-premium.css?v=5" />
-    <link rel="stylesheet" href="./css/forum-premium.css?v=5" />
+    <link rel="stylesheet" href="./css/forum-premium.css?v=6" />
     <link rel="stylesheet" href="./css/responsive.css?v=5" />
     <link rel="stylesheet" href="./css/site-responsive.css?v=3" />
     <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon" />
@@ -93,6 +93,17 @@
         </a>
       </div>
     </header>
+
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    <aside class="mobile-offcanvas" aria-label="Mobile navigation">
+      <div class="offcanvas-header">
+        <h2 data-i18n="menu">Menu</h2>
+        <button class="btn btn-icon btn-ghost" onclick="toggleMobileMenu()" aria-label="Close menu">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="offcanvas-content" id="mobile-menu-content"></div>
+    </aside>
 
     <main class="forum-container">
       <section class="topic-view">
@@ -349,10 +360,10 @@
     <script src="./js/translations.js?v=4" defer></script>
     <script src="./js/parts-finder.js?v=3.0" defer></script>
     <script src="./js/script.js?v=3.0" defer></script>
-    <script src="./js/forum.js?v=3.3" defer></script>
+    <script src="./js/forum.js?v=3.4" defer></script>
     <script src="./js/image-to-webp.js?v=3.0" defer></script>
     <script src="./js/forum-image-lightbox.js?v=3.0" defer></script>
-    <script src="./js/topic.js?v=3.15" defer></script>
+    <script src="./js/topic.js?v=3.16" defer></script>
     <script src="./js/live.js?v=3.5" defer></script>
     <script src="./js/modal-escape.js?v=3.0" defer></script>
   </body>

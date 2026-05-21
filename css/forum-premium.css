@@ -1039,31 +1039,158 @@ body.bcx .load-more {
 
 /* ---------- Mobile menu offcanvas content ---------------------------- */
 body.bcx .offcanvas-content {
+  display: block;
+  padding: 12px 14px 20px !important;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.bcx .mobile-menu-shell {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 14px;
+  min-width: 0;
 }
-body.bcx .offcanvas-content a,
-body.bcx .offcanvas-content button {
+
+body.bcx .mobile-menu-quick,
+body.bcx .mobile-menu-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+body.bcx .mobile-menu-footer {
+  padding-top: 14px;
+  border-top: 1px solid var(--bc-border);
+}
+
+body.bcx .mobile-menu-link {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid transparent;
-  background: transparent;
+  background: rgba(255,255,255,0.03);
   color: var(--bc-text);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
+  font-family: inherit;
+  text-align: left;
   cursor: pointer;
+  box-sizing: border-box;
+  transition: background 0.15s, border-color 0.15s;
 }
-body.bcx .offcanvas-content a:hover,
-body.bcx .offcanvas-content button:hover {
-  background: rgba(255,255,255,0.05);
+body.bcx .mobile-menu-link span {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+body.bcx .mobile-menu-link:hover {
+  background: rgba(255,255,255,0.06);
   border-color: var(--bc-border);
 }
-body.bcx .offcanvas-content i { width: 18px; color: var(--bc-blue-bright); }
+body.bcx .mobile-menu-link > i {
+  width: 18px;
+  flex-shrink: 0;
+  text-align: center;
+  color: var(--bc-blue-bright);
+}
+body.bcx .mobile-menu-link--primary {
+  background: var(--bc-blue) !important;
+  border-color: rgba(255,255,255,0.14) !important;
+  color: #fff !important;
+  justify-content: center;
+}
+body.bcx .mobile-menu-link--danger {
+  background: rgba(255,89,101,0.12) !important;
+  border-color: rgba(255,89,101,0.28) !important;
+  color: #ffb4bc !important;
+}
+body.bcx .mobile-menu-link--lang {
+  margin-top: 4px;
+  justify-content: center;
+  background: rgba(46,123,255,0.12) !important;
+  border-color: rgba(46,123,255,0.28) !important;
+}
+
+body.bcx .mobile-menu-categories.sidebar-card {
+  padding: 12px 12px 10px !important;
+  margin: 0;
+  min-width: 0;
+}
+
+body.bcx .mobile-menu-nav .nav-item {
+  align-items: flex-start;
+  padding: 10px 12px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+body.bcx .mobile-menu-nav .nav-item .nav-item__label,
+body.bcx .mobile-menu-nav .nav-item > span:not(.nav-count):not(.nav-dot) {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+body.bcx .mobile-menu-nav .nav-item .nav-icon,
+body.bcx .mobile-menu-nav .nav-item .nav-dot {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+body.bcx .mobile-menu-nav .nav-item .nav-count {
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: flex-start;
+}
+
+body.bcx .mobile-menu-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 2px 10px;
+  min-width: 0;
+}
+body.bcx .mobile-menu-user__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--bc-border);
+  background: #1a1f2e;
+}
+body.bcx .mobile-menu-user__avatar--letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--bc-text);
+}
+body.bcx .mobile-menu-user__info {
+  flex: 1;
+  min-width: 0;
+}
+body.bcx .mobile-menu-user__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bc-text);
+  word-break: break-word;
+}
+body.bcx .mobile-menu-user__role {
+  font-size: 12px;
+  color: var(--bc-text-muted);
+  margin-top: 2px;
+}
 
 /* ---------- Topic meta blocks (notification banner, etc.) ----------- */
 body.bcx .topic-notif-muted-banner {

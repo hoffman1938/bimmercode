@@ -341,15 +341,17 @@
     } catch (e) { console.error("loadCategories error:", e); }
   }
 
-  function renderCategoriesNav() {
-    const nav = $("#categories-nav");
-    if (!nav) return;
+  const closeMobileMenuJs =
+    "if(typeof toggleMobileMenu==='function')toggleMobileMenu();";
+
+  function buildCategoriesNavHtml() {
     const active = state.category;
     const allClass = active === "all" ? "nav-item active" : "nav-item";
     let html = `
-      <a href="#" class="${allClass}" data-category="all" onclick="event.preventDefault(); __forum.setCategory('all');">
+      <a href="#" class="${allClass}" data-category="all"
+         onclick="event.preventDefault();__forum.setCategory('all');${closeMobileMenuJs}">
         <i class="fas fa-stream nav-icon" aria-hidden="true"></i>
-        <span>${escapeHtml(t("allTopics", "All Topics"))}</span>
+        <span class="nav-item__label">${escapeHtml(t("allTopics", "All Topics"))}</span>
       </a>
     `;
     for (const cat of state.categories) {
@@ -360,26 +362,102 @@
       const color = cat.color || "var(--color-primary)";
       html += `
         <a href="#" class="${cls}" data-category="${escapeHtml(cat.slug)}" style="--cat-color:${escapeHtml(color)};"
-           onclick="event.preventDefault(); __forum.setCategory('${escapeHtml(cat.slug)}');">
+           onclick="event.preventDefault();__forum.setCategory('${escapeHtml(cat.slug)}');${closeMobileMenuJs}">
           <span class="nav-dot" aria-hidden="true"></span>
           <i class="${escapeHtml(cat.icon)} nav-icon" style="color:${escapeHtml(color)};" aria-hidden="true"></i>
-          <span>${escapeHtml(cat.title)}</span>
+          <span class="nav-item__label">${escapeHtml(cat.title)}</span>
           ${count}
         </a>
       `;
     }
-    nav.innerHTML = html;
+    return html;
+  }
 
-    // Mirror into mobile offcanvas
+  /** Full mobile drawer: home, categories, account, language (single source of truth). */
+  function renderMobileMenu() {
     const mobile = $("#mobile-menu-content");
-    if (mobile) {
-      mobile.innerHTML = `
-        <div class="sidebar-card">
-          <h3 class="sidebar-title">${escapeHtml(t("categoriesTitle", "Categories"))}</h3>
-          <nav class="nav-menu">${html}</nav>
-        </div>
-      `;
+    if (!mobile) return;
+
+    const isTopicPage = !!document.querySelector(".topic-view");
+    const categoriesHtml = $("#categories-nav")?.innerHTML || buildCategoriesNavHtml();
+
+    let quickLinks = `
+      <a href="/" class="mobile-menu-link" onclick="${closeMobileMenuJs}">
+        <i class="fas fa-home" aria-hidden="true"></i>
+        <span>${escapeHtml(t("homeBtn", "Home"))}</span>
+      </a>`;
+    if (isTopicPage) {
+      quickLinks += `
+      <a href="/forum" class="mobile-menu-link" onclick="${closeMobileMenuJs}">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>${escapeHtml(t("backToTopics", "Back"))}</span>
+      </a>`;
     }
+
+    const user = getUser();
+    let accountHtml;
+    if (user) {
+      const avatar = user.avatar_url
+        ? `<img class="mobile-menu-user__avatar" src="${escapeHtml(user.avatar_url)}" alt="" onerror="this.onerror=null;this.src='./assets/icons/ico.svg'">`
+        : `<div class="mobile-menu-user__avatar mobile-menu-user__avatar--letter">${escapeHtml((user.username || "?")[0]?.toUpperCase())}</div>`;
+      const lvl = reputationLevel(user.reputation, user.role_id || user.role);
+      accountHtml = `
+        <div class="mobile-menu-user">
+          ${avatar}
+          <div class="mobile-menu-user__info">
+            <div class="mobile-menu-user__name">${escapeHtml(user.username)}</div>
+            <div class="mobile-menu-user__role">${escapeHtml(lvl.label)}</div>
+          </div>
+        </div>
+        <a href="/profile" class="mobile-menu-link mobile-menu-link--secondary" onclick="${closeMobileMenuJs}">
+          <i class="fas fa-user-circle" aria-hidden="true"></i>
+          <span>${escapeHtml(t("profile", "Profile"))}</span>
+        </a>
+        <button type="button" class="mobile-menu-link mobile-menu-link--danger" onclick="${closeMobileMenuJs}logout&&logout()">
+          <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+          <span>${escapeHtml(t("logout", "Logout"))}</span>
+        </button>`;
+    } else {
+      accountHtml = `
+        <button type="button" class="mobile-menu-link mobile-menu-link--primary"
+          onclick="${closeMobileMenuJs}toggleAuthModal&&toggleAuthModal()">
+          <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+          <span>${escapeHtml(t("loginRegister", "Login / Register"))}</span>
+        </button>`;
+    }
+
+    const langLabel = { en: "EN", ru: "RU", ka: "GE" }[state.lang] || "EN";
+    const categoriesBlock = $("#categories-nav")
+      ? `
+        <div class="sidebar-card mobile-menu-categories">
+          <h3 class="sidebar-title">${escapeHtml(t("categoriesTitle", "Categories"))}</h3>
+          <nav class="nav-menu mobile-menu-nav">${categoriesHtml}</nav>
+        </div>`
+      : "";
+
+    mobile.innerHTML = `
+      <div class="mobile-menu-shell">
+        <nav class="mobile-menu-quick" aria-label="${escapeHtml(t("menu", "Menu"))}">
+          ${quickLinks}
+        </nav>
+        ${categoriesBlock}
+        <div class="mobile-menu-footer">
+          ${accountHtml}
+          <button type="button" class="mobile-menu-link mobile-menu-link--lang" onclick="switchForumLanguage&&switchForumLanguage()">
+            <i class="fas fa-globe" aria-hidden="true"></i>
+            <span>${escapeHtml(langLabel)}</span>
+          </button>
+        </div>
+      </div>`;
+  }
+
+  window.__forumRenderMobileMenu = renderMobileMenu;
+
+  function renderCategoriesNav() {
+    const nav = $("#categories-nav");
+    if (!nav) return;
+    nav.innerHTML = buildCategoriesNavHtml();
+    renderMobileMenu();
   }
 
   function renderCategoryOptions() {
@@ -458,6 +536,7 @@
           <p>${escapeHtml(t("loginToPost", "Join the community to post"))}</p>
           <button class="btn btn-primary" onclick="toggleAuthModal()">${escapeHtml(t("loginRegister", "Login / Register"))}</button>
         </div>`;
+      renderMobileMenu();
       return;
     }
     const avatar = user.avatar_url
@@ -474,6 +553,7 @@
           <button class="btn btn-danger" onclick="logout && logout()"><i class="fas fa-sign-out-alt"></i> ${escapeHtml(t("logout", "Logout"))}</button>
         </div>
       </div>`;
+    renderMobileMenu();
   }
 
   // Make renderUserCard callable from script.js on login/logout,
@@ -610,8 +690,9 @@
     localStorage.setItem("language", state.lang);
     applyI18n();
     renderUserCard();
-    void loadCategories(); // category titles + hero stats
+    void loadCategories(); // category titles + hero stats + mobile menu
     renderHeaderAuth();
+    renderMobileMenu();
     rerenderVisibleTopics();
     try {
       document.dispatchEvent(
@@ -652,6 +733,7 @@
     applyI18n();
     renderHeaderAuth();
     renderUserCard();
+    renderMobileMenu();
     if ($("#hero-stats")) void loadCategories();
     rerenderVisibleTopics();
   };
@@ -893,7 +975,13 @@
     renderUserCard();
 
     const isForumPage = !!document.getElementById("topics-list-container");
-    if (!isForumPage) return;
+    const isTopicPage = !!document.querySelector(".topic-view");
+    if (!isForumPage && !isTopicPage) return;
+
+    if (isTopicPage && !isForumPage) {
+      renderMobileMenu();
+      return;
+    }
 
     document.body.classList.add("forum-page");
     bindFilters();

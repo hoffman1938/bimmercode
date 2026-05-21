@@ -1694,6 +1694,7 @@
     if (state.topic) renderTopic();
     // Second pass: composer tabs use data-i18n in freshly inserted HTML; shell uses static data-i18n
     applyI18n();
+    if (typeof window.__forumRenderMobileMenu === "function") window.__forumRenderMobileMenu();
     try {
       document.dispatchEvent(
         new CustomEvent("languageChanged", { detail: { lang: state.lang } }),
@@ -1716,6 +1717,7 @@
     })();
     state.user = next;
     if (state.topic) renderTopic();
+    if (typeof window.__forumRenderMobileMenu === "function") window.__forumRenderMobileMenu();
   });
 
   window.toggleMobileMenu = function () {
@@ -1730,6 +1732,7 @@
       return;
     }
     applyI18n();
+    if (typeof window.__forumRenderMobileMenu === "function") window.__forumRenderMobileMenu();
     loadTopicData({ bumpView: true });
   });
 })();
