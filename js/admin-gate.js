@@ -4,7 +4,7 @@
  * - With token → hide UI until /api/admin/stats confirms admin/super_admin (no role guess from stale cache).
  */
 (function () {
-  var LOGIN = "/index.html?need_login=1";
+  var LOGIN = "/index.html?need_login=1&return=" + encodeURIComponent("/admin.html");
 
   function safeReplace(url) {
     var target = new URL(url, window.location.origin).href;

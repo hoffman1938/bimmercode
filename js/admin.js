@@ -66,7 +66,7 @@ async function refreshAdminUserCache(token) {
 async function checkAdminAuth() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-        lockAndLeaveAdmin('/index.html?need_login=1');
+        lockAndLeaveAdmin('/index.html?need_login=1&return=' + encodeURIComponent('/admin.html'));
         return false;
     }
 
