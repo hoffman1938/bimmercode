@@ -28,6 +28,20 @@ function lockAndLeaveAdmin(url) {
 
 // On Load
 document.addEventListener('DOMContentLoaded', async () => {
+    // Sidebar: prevent <base href> + href="#" from navigating to https://bimmercodes.net/#
+    const sidebar = document.querySelector('.sidebar-menu');
+    if (sidebar) {
+        sidebar.addEventListener('click', (e) => {
+            const link = e.target.closest('[data-admin-tab]');
+            if (!link) return;
+            e.preventDefault();
+            switchTab(link.dataset.adminTab);
+            if (window.innerWidth <= 768) {
+                document.querySelector('.sidebar')?.classList.remove('active');
+            }
+        });
+    }
+
     const ok = await checkAdminAuth();
     if (!ok) return;
 
@@ -35,6 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const search = document.getElementById('user-search');
     if (search) search.addEventListener('input', debounce(loadUsers, 500));
+
+    // Deep link: /admin#users
+    const hashTab = (location.hash || '').replace(/^#/, '');
+    if (hashTab && document.getElementById(`tab-${hashTab}`)) {
+        switchTab(hashTab);
+    }
 });
 
 // Auth: valid JWT is not enough — server checks admin_role / super_admin_role.
@@ -139,21 +159,24 @@ document.addEventListener('click', (e) => {
 });
 
 function switchTab(tabId, context = {}) {
-    // Hide all sections
+    const panel = document.getElementById(`tab-${tabId}`);
+    if (!panel) {
+        console.warn('[admin] unknown tab:', tabId);
+        return;
+    }
+
     document.querySelectorAll('.dashboard-section').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.sidebar-menu a').forEach(el => el.classList.remove('active'));
 
-    // Show target
-    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-    
-    // Update active link
-    const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
-    sidebarLinks.forEach(link => {
-        // Simple check for now
-        if(link.getAttribute('onclick') && link.getAttribute('onclick').includes(`'${tabId}'`)) {
-            link.classList.add('active');
-        }
+    panel.classList.remove('hidden');
+
+    document.querySelectorAll('.sidebar-menu a[data-admin-tab]').forEach(link => {
+        if (link.dataset.adminTab === tabId) link.classList.add('active');
     });
+
+    if (history.replaceState) {
+        history.replaceState(null, '', `${location.pathname}${location.search}#${tabId}`);
+    }
 
     // Load data based on tab
     if (tabId === 'dashboard') loadDashboardStats();
@@ -395,6 +418,8 @@ form.addEventListener('submit', async (e) => {
 });
 
 // Utils
+window.switchTab = switchTab;
+
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
