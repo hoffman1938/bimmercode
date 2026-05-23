@@ -42,7 +42,12 @@ window.APP_TRANSLATIONS = {
     chatError: "Could not reach the assistant. Please try again in a moment.",
     chatLimitReached: "Daily free limit reached. Try again tomorrow.",
     chatLimitHint: "Free messages left today: {n}",
-    
+    chatLimitModalTitle: "Free AI messages used up",
+    chatLimitModalBody:
+      "You've reached today's limit for the assistant. Ask the community on the forum — real owners and techs share diagnostics, coding tips, and fixes from experience.",
+    chatLimitModalForumBtn: "Ask on the forum",
+    chatLimitModalLaterBtn: "Maybe later",
+
     // === FORUM / FORUM.JS ===
     allTopics: "All Topics",
     diagnostics: "Diagnostics",
@@ -663,6 +668,11 @@ window.APP_TRANSLATIONS = {
     chatError: "Не удалось связаться с ассистентом. Попробуйте чуть позже.",
     chatLimitReached: "Дневной бесплатный лимит исчерпан. Зайдите завтра.",
     chatLimitHint: "Бесплатных сообщений сегодня: {n}",
+    chatLimitModalTitle: "Бесплатные сообщения ассистенту закончились",
+    chatLimitModalBody:
+      "На сегодня лимит исчерпан. Задайте вопрос на форуме — участники подскажут по диагностике, кодированию и реальным случаям из практики.",
+    chatLimitModalForumBtn: "Спросить на форуме",
+    chatLimitModalLaterBtn: "Позже",
 
     // === FORUM ===
     allTopics: "Все темы",
@@ -1319,6 +1329,11 @@ window.APP_TRANSLATIONS = {
     chatError: "ასისტენტთან კავშირი ვერ მოხერხდა. სცადეთ მოგვიანებით.",
     chatLimitReached: "დღიური უფასო ლიმიტი ამოიწურა. ხვალ სცადეთ.",
     chatLimitHint: "დღეს დარჩენილი უფასო შეტყობინება: {n}",
+    chatLimitModalTitle: "უფასო შეტყობინებების ლიმიტი ამოიწურა",
+    chatLimitModalBody:
+      "დღევანდელი ლიმიტი ამოიწურა. დასვით კითხვა ფორუმზე — მონაწილეები დაგეხმარებიან დიაგნოსტიკასა და კოდირებაში პრაქტიკული გამოცდილებით.",
+    chatLimitModalForumBtn: "ფორუმზე კითხვა",
+    chatLimitModalLaterBtn: "მოგვიანებით",
 
     // === FORUM ===
     allTopics: "ყველა თემა",

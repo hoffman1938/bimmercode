@@ -1265,9 +1265,14 @@ function updateLanguage() {
   // 6. Update html lang attribute for screen readers + CSS
   document.documentElement.setAttribute("lang", currentLanguage);
 
-  // Обновляем чат
+  // AI chat widget + other listeners
+  window.dispatchEvent(
+    new CustomEvent("languageChanged", { detail: { lang: currentLanguage } })
+  );
+  if (typeof window.updateChatContext === "function") {
+    window.updateChatContext();
+  }
 
-  
   if (typeof window.__forumRenderMobileMenu === "function") {
     window.__forumRenderMobileMenu();
   } else if (typeof initMobileMenu === "function") {

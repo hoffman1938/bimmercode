@@ -2,6 +2,12 @@
 
 import { checkRateLimit, getIpAddress, RATE_LIMITS } from "../../lib/rate-limit.js";
 import { runAssistantCascade } from "../../lib/ai-assistant.js";
+import {
+  AI_CHAT_DAILY_MAX,
+  checkAiChatDailyAllowance,
+  getAiChatUsage,
+  incrementAiChatUsage,
+} from "../../lib/ai-chat-usage.js";
 
 const JSON_HEADERS = { "Content-Type": "application/json; charset=utf-8" };
 
@@ -42,13 +48,15 @@ export async function onRequestPost(context) {
       );
     }
 
-    const daily = await checkRateLimit(env, ip, RATE_LIMITS.AI_CHAT_DAILY);
-    if (!daily.allowed) {
+    const dailyAllowance = await checkAiChatDailyAllowance(env.DB, ip);
+    if (!dailyAllowance.allowed) {
       return json(
         {
           error: "daily_limit",
           message: "Daily free assistant limit reached. Try again tomorrow.",
-          resetAt: daily.resetAt.toISOString(),
+          remaining: 0,
+          used: dailyAllowance.count,
+          limit: AI_CHAT_DAILY_MAX,
         },
         429
       );
@@ -63,11 +71,14 @@ export async function onRequestPost(context) {
 
     const { text, provider } = await runAssistantCascade(env, messages);
 
+    const usage = await incrementAiChatUsage(env.DB, ip);
+
     return json({
       reply: text,
       provider,
-      remaining: Math.max(0, daily.remaining),
-      resetAt: daily.resetAt.toISOString(),
+      remaining: usage.remaining,
+      used: usage.count,
+      limit: AI_CHAT_DAILY_MAX,
     });
   } catch (e) {
     const msg = e?.message || "Assistant error";
@@ -75,6 +86,17 @@ export async function onRequestPost(context) {
     console.error("AI chat error:", msg);
     return json({ error: "assistant_error", message: msg }, status);
   }
+}
+
+export async function onRequestGet(context) {
+  const { request, env } = context;
+  const ip = getIpAddress(request);
+  const usage = await getAiChatUsage(env.DB, ip);
+  return json({
+    remaining: usage.remaining,
+    used: usage.count,
+    limit: AI_CHAT_DAILY_MAX,
+  });
 }
 
 export async function onRequestOptions() {

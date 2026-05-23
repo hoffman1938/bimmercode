@@ -58,6 +58,12 @@
     currentLang = LANGS[(idx + 1) % LANGS.length];
     localStorage.setItem(STORAGE_KEY, currentLang);
     applyTranslations();
+    window.dispatchEvent(
+      new CustomEvent("languageChanged", { detail: { lang: currentLang } })
+    );
+    if (typeof window.updateChatContext === "function") {
+      window.updateChatContext();
+    }
   }
 
   // Expose for inline onclick or external use

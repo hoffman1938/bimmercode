@@ -51,6 +51,9 @@
 
     document.querySelectorAll(".mobile-offcanvas.active").forEach(push);
 
+    const aiLimitModal = document.getElementById("bc-ai-limit-modal");
+    if (aiLimitModal && aiLimitModal.classList.contains("is-visible")) push(aiLimitModal);
+
     return out;
   }
 
@@ -122,6 +125,14 @@
     }
     if (id === "profile-modal") {
       el.classList.remove("active");
+      return true;
+    }
+    if (id === "bc-ai-limit-modal") {
+      if (typeof window.hideBcAiLimitModal === "function") {
+        window.hideBcAiLimitModal();
+        return true;
+      }
+      el.classList.remove("is-visible");
       return true;
     }
     if (id === "favorites-modal") {

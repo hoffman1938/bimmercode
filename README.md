@@ -58,7 +58,7 @@ Floating widget on all pages → `POST /api/ai/chat`.
 3. Google Gemini — `gemini-1.5-flash` (optional secret)
 4. Cohere — `command-r-08-2024` (optional secret)
 
-**Rate limits (per IP, needs KV for production):** 8 messages/minute, 40/day. Enable `RATE_LIMIT_KV` in `wrangler.toml` after `npm run kv:create:ratelimit`.
+**Rate limits (per IP):** 8 messages/minute (KV optional), **40/day** tracked in D1 (`ai_chat_usage`). Apply migration: `npm run db:migrate:remote` (includes `021_ai_chat_usage.sql`).
 
 **Secrets (production):**
 

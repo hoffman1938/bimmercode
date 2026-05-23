@@ -182,6 +182,14 @@ function updateLanguage() {
 
   const vinInput = document.getElementById("vin-input");
   if (vinInput) vinInput.placeholder = "WBA...";
+
+  document.documentElement.setAttribute("lang", currentLanguage);
+  window.dispatchEvent(
+    new CustomEvent("languageChanged", { detail: { lang: currentLanguage } })
+  );
+  if (typeof window.updateChatContext === "function") {
+    window.updateChatContext();
+  }
 }
 
 if (document.getElementById("language-toggle")) {

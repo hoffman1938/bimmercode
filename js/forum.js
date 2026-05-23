@@ -1029,6 +1029,19 @@
     setupInfiniteScroll();
     setupScrollToTop();
 
+    if (new URLSearchParams(location.search).get("new") === "1") {
+      setTimeout(() => {
+        if (typeof window.openNewTopicModal === "function") {
+          window.openNewTopicModal();
+        }
+      }, 400);
+      try {
+        const u = new URL(location.href);
+        u.searchParams.delete("new");
+        history.replaceState(null, "", u.pathname + u.search + u.hash);
+      } catch (_) {}
+    }
+
     await loadCategories();
     loadPopularTags();
     fetchTopics({ reset: true });

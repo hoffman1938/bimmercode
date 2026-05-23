@@ -14,20 +14,67 @@
     return ["en", "ru", "ka"].includes(l) ? l : "en";
   }
 
-  const FALLBACK_EN = {
-    chatTitle: "BimmerCodes AI Assistant",
-    chatStatus: "Free · EN / RU / KA",
-    chatPlaceholder: "Ask about a code (P0301, 118001) or symptoms…",
-    chatWelcome:
-      "Hi! I help with BMW/Mini fault codes and coding. Send a DTC or describe the issue.",
-    chatSend: "Send",
-    chatClose: "Close",
-    chatOpenLabel: "Open AI assistant",
-    chatThinking: "Thinking…",
-    chatError: "Could not reach the assistant. Try again later.",
-    chatLimitReached: "Daily free limit reached. Try again tomorrow.",
-    chatLimitHint: "Free messages left today: {n}",
+  const FALLBACK = {
+    en: {
+      chatTitle: "BimmerCodes AI Assistant",
+      chatStatus: "Free · EN / RU / KA · fault codes & coding",
+      chatPlaceholder: "Ask about a code (P0301, 118001) or symptoms…",
+      chatWelcome:
+        "Hi! I help with BMW/Mini fault codes, symptoms, and BimmerCode topics. Send a DTC or describe the issue — I'll reply in your language.",
+      chatSend: "Send",
+      chatClose: "Close chat",
+      chatOpenLabel: "Open AI assistant",
+      chatThinking: "Thinking…",
+      chatError: "Could not reach the assistant. Please try again in a moment.",
+      chatLimitReached: "Daily free limit reached. Try again tomorrow.",
+      chatLimitHint: "Free messages left today: {n}",
+      chatLimitModalTitle: "Free AI messages used up",
+      chatLimitModalBody:
+        "You've reached today's limit for the assistant. Ask the community on the forum — real owners and techs share diagnostics, coding tips, and fixes from experience.",
+      chatLimitModalForumBtn: "Ask on the forum",
+      chatLimitModalLaterBtn: "Maybe later",
+    },
+    ru: {
+      chatTitle: "AI-ассистент BimmerCodes",
+      chatStatus: "Бесплатно · RU / EN / KA · коды и кодирование",
+      chatPlaceholder: "Спросите про код (P0301, 118001) или симптомы…",
+      chatWelcome:
+        "Привет! Помогу с кодами ошибок BMW/Mini, симптомами и BimmerCode. Пришлите DTC или опишите проблему — отвечу на вашем языке.",
+      chatSend: "Отправить",
+      chatClose: "Закрыть чат",
+      chatOpenLabel: "Открыть AI-ассистента",
+      chatThinking: "Думаю…",
+      chatError: "Не удалось связаться с ассистентом. Попробуйте чуть позже.",
+      chatLimitReached: "Дневной бесплатный лимит исчерпан. Зайдите завтра.",
+      chatLimitHint: "Бесплатных сообщений сегодня: {n}",
+      chatLimitModalTitle: "Бесплатные сообщения ассистенту закончились",
+      chatLimitModalBody:
+        "На сегодня лимит исчерпан. Задайте вопрос на форуме — участники подскажут по диагностике, кодированию и реальным случаям из практики.",
+      chatLimitModalForumBtn: "Спросить на форуме",
+      chatLimitModalLaterBtn: "Позже",
+    },
+    ka: {
+      chatTitle: "BimmerCodes AI ასისტენტი",
+      chatStatus: "უფასო · KA / RU / EN · კოდები და კოდირება",
+      chatPlaceholder: "კოდი ან სიმპტომი (P0301, 118001)…",
+      chatWelcome:
+        "გამარჯობა! დაგეხმარებით BMW/Mini შეცდომის კოდებში, სიმპტომებსა და BimmerCode-ში. გამოგიგზავნეთ DTC ან აღწერეთ პრობლემა — ვუპასუხებთ თქვენს ენაზე.",
+      chatSend: "გაგზავნა",
+      chatClose: "ჩატის დახურვა",
+      chatOpenLabel: "AI ასისტენტის გახსნა",
+      chatThinking: "ვფიქრობ…",
+      chatError: "ასისტენტთან კავშირი ვერ მოხერხდა. სცადეთ მოგვიანებით.",
+      chatLimitReached: "დღიური უფასო ლიმიტი ამოიწურა. ხვალ სცადეთ.",
+      chatLimitHint: "დღეს დარჩენილი უფასო შეტყობინება: {n}",
+      chatLimitModalTitle: "უფასო შეტყობინებების ლიმიტი ამოიწურა",
+      chatLimitModalBody:
+        "დღევანდელი ლიმიტი ამოიწურა. დასვით კითხვა ფორუმზე — მონაწილეები დაგეხმარებიან დიაგნოსტიკასა და კოდირებაში პრაქტიკული გამოცდილებით.",
+      chatLimitModalForumBtn: "ფორუმზე კითხვა",
+      chatLimitModalLaterBtn: "მოგვიანებით",
+    },
   };
+
+  const FORUM_NEW_TOPIC_URL = "/forum.html?new=1";
 
   function t(key) {
     const lang = getLang();
@@ -35,7 +82,8 @@
     return (
       (T[lang] && T[lang][key]) ||
       (T.en && T.en[key]) ||
-      FALLBACK_EN[key] ||
+      (FALLBACK[lang] && FALLBACK[lang][key]) ||
+      FALLBACK.en[key] ||
       key
     );
   }
@@ -56,30 +104,50 @@
   }
 
   function clientDailyRemaining() {
+    const data = readClientUsage();
+    return Math.max(0, CLIENT_DAILY_MAX - data.count);
+  }
+
+  function todayKey() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function readClientUsage() {
     try {
       const raw = localStorage.getItem(CLIENT_DAILY_KEY);
-      const today = new Date().toISOString().slice(0, 10);
-      if (!raw) return CLIENT_DAILY_MAX;
+      const today = todayKey();
+      if (!raw) return { date: today, count: 0 };
       const data = JSON.parse(raw);
-      if (data.date !== today) return CLIENT_DAILY_MAX;
-      return Math.max(0, CLIENT_DAILY_MAX - (data.count || 0));
+      if (data.date !== today) return { date: today, count: 0 };
+      return { date: today, count: Math.max(0, Number(data.count) || 0) };
     } catch {
-      return CLIENT_DAILY_MAX;
+      return { date: todayKey(), count: 0 };
     }
   }
 
-  function bumpClientDaily() {
+  function writeClientUsage(count) {
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const raw = localStorage.getItem(CLIENT_DAILY_KEY);
-      const data = raw ? JSON.parse(raw) : { date: today, count: 0 };
-      if (data.date !== today) {
-        data.date = today;
-        data.count = 0;
-      }
-      data.count = (data.count || 0) + 1;
-      localStorage.setItem(CLIENT_DAILY_KEY, JSON.stringify(data));
+      localStorage.setItem(
+        CLIENT_DAILY_KEY,
+        JSON.stringify({ date: todayKey(), count: Math.max(0, count) })
+      );
     } catch (_) {}
+  }
+
+  function bumpClientDaily() {
+    const data = readClientUsage();
+    writeClientUsage(data.count + 1);
+  }
+
+  function syncClientUsageFromServer(used) {
+    if (typeof used !== "number" || used < 0) return;
+    writeClientUsage(used);
+  }
+
+  function reconcileClientUsageFromHistory() {
+    const userMsgs = history.filter((m) => m.role === "user").length;
+    const data = readClientUsage();
+    writeClientUsage(Math.max(data.count, userMsgs));
   }
 
   function escHtml(s) {
@@ -87,6 +155,112 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
+  }
+
+  /** Shared refs after mount — used by updateChatContext */
+  let ui = null;
+  let limitModal = null;
+  let history = [];
+  let busy = false;
+
+  function isDailyLimitExhausted() {
+    return clientDailyRemaining() <= 0;
+  }
+
+  function setChatInputLocked(locked) {
+    if (!ui) return;
+    ui.input.disabled = locked;
+    ui.sendBtn.disabled = locked || busy;
+    if (locked) ui.sendBtn.classList.add("bc-ai-send--locked");
+    else ui.sendBtn.classList.remove("bc-ai-send--locked");
+  }
+
+  function mountLimitModal() {
+    if (document.getElementById("bc-ai-limit-modal")) return;
+
+    const el = document.createElement("div");
+    el.id = "bc-ai-limit-modal";
+    el.className = "bc-ai-limit-modal";
+    el.setAttribute("role", "dialog");
+    el.setAttribute("aria-modal", "true");
+    el.setAttribute("aria-labelledby", "bc-ai-limit-modal-title");
+    el.innerHTML = `
+      <div class="bc-ai-limit-modal__backdrop" data-bc-ai-limit-dismiss></div>
+      <div class="bc-ai-limit-modal__card">
+        <button type="button" class="bc-ai-limit-modal__close" data-bc-ai-limit-dismiss aria-label="${escHtml(t("chatClose"))}">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <div class="bc-ai-limit-modal__icon" aria-hidden="true">
+          <i class="fas fa-users"></i>
+        </div>
+        <h2 class="bc-ai-limit-modal__title" id="bc-ai-limit-modal-title"></h2>
+        <p class="bc-ai-limit-modal__body" id="bc-ai-limit-modal-body"></p>
+        <div class="bc-ai-limit-modal__actions">
+          <a class="bc-ai-limit-modal__cta" id="bc-ai-limit-forum-link" href="${FORUM_NEW_TOPIC_URL}">
+            <i class="fas fa-comments" aria-hidden="true"></i>
+            <span id="bc-ai-limit-forum-label"></span>
+          </a>
+          <button type="button" class="bc-ai-limit-modal__ghost" id="bc-ai-limit-later"></button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(el);
+
+    limitModal = {
+      root: el,
+      title: document.getElementById("bc-ai-limit-modal-title"),
+      body: document.getElementById("bc-ai-limit-modal-body"),
+      forumLabel: document.getElementById("bc-ai-limit-forum-label"),
+      laterBtn: document.getElementById("bc-ai-limit-later"),
+      forumLink: document.getElementById("bc-ai-limit-forum-link"),
+    };
+
+    el.querySelectorAll("[data-bc-ai-limit-dismiss]").forEach((node) => {
+      node.addEventListener("click", hideLimitModal);
+    });
+    limitModal.laterBtn.addEventListener("click", hideLimitModal);
+
+    limitModal.forumLink.addEventListener("click", (e) => {
+      if (window.location.pathname.replace(/\/$/, "").endsWith("/forum.html")) {
+        e.preventDefault();
+        hideLimitModal();
+        if (typeof window.openNewTopicModal === "function") {
+          window.openNewTopicModal();
+        }
+      }
+    });
+
+    window.hideBcAiLimitModal = hideLimitModal;
+  }
+
+  function applyLimitModalLocale() {
+    if (!limitModal) return;
+    limitModal.title.textContent = t("chatLimitModalTitle");
+    limitModal.body.textContent = t("chatLimitModalBody");
+    limitModal.forumLabel.textContent = t("chatLimitModalForumBtn");
+    limitModal.laterBtn.textContent = t("chatLimitModalLaterBtn");
+    limitModal.forumLink.setAttribute("href", FORUM_NEW_TOPIC_URL);
+  }
+
+  function showLimitModal() {
+    if (!limitModal) mountLimitModal();
+    applyLimitModalLocale();
+    limitModal.root.classList.add("is-visible");
+    document.body.style.overflow = "hidden";
+    limitModal.laterBtn.focus();
+  }
+
+  function hideLimitModal() {
+    if (!limitModal) return;
+    limitModal.root.classList.remove("is-visible");
+    document.body.style.overflow = "";
+  }
+
+  function handleDailyLimitHit() {
+    setChatInputLocked(true);
+    updateLimitLabel(0);
+    appendBot(t("chatLimitReached"));
+    showLimitModal();
   }
 
   function mountWidget() {
@@ -121,138 +295,213 @@
     `;
     document.body.appendChild(root);
 
-    const fab = document.getElementById("bc-ai-fab");
-    const panel = document.getElementById("bc-ai-panel");
-    const closeBtn = document.getElementById("bc-ai-close");
-    const messagesEl = document.getElementById("bc-ai-messages");
-    const form = document.getElementById("bc-ai-form");
-    const input = document.getElementById("bc-ai-input");
-    const sendBtn = document.getElementById("bc-ai-send");
-    const limitEl = document.getElementById("bc-ai-limit");
+    history = loadHistory();
+    reconcileClientUsageFromHistory();
 
-    let history = loadHistory();
-    let busy = false;
-
-    function updateLimitLabel(remaining) {
-      const n = remaining != null ? remaining : clientDailyRemaining();
-      limitEl.textContent = t("chatLimitHint").replace("{n}", String(n));
-    }
-
-    function renderMessages() {
-      messagesEl.innerHTML = "";
-      if (!history.length) {
-        const welcome = document.createElement("div");
-        welcome.className = "bc-ai-msg bc-ai-msg--bot";
-        welcome.textContent = t("chatWelcome");
-        messagesEl.appendChild(welcome);
-      } else {
-        for (const m of history) {
-          const el = document.createElement("div");
-          el.className = "bc-ai-msg bc-ai-msg--" + (m.role === "user" ? "user" : "bot");
-          el.textContent = m.content;
-          messagesEl.appendChild(el);
-        }
-      }
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function setOpen(open) {
-      panel.classList.toggle("is-open", open);
-      panel.setAttribute("aria-hidden", open ? "false" : "true");
-      if (open) {
-        renderMessages();
-        updateLimitLabel();
-        input.focus();
-      }
-    }
-
-    fab.addEventListener("click", () => setOpen(!panel.classList.contains("is-open")));
-    closeBtn.addEventListener("click", () => setOpen(false));
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (busy) return;
-      const text = input.value.trim();
-      if (!text) return;
-
-      if (clientDailyRemaining() <= 0) {
-        appendBot(t("chatLimitReached"));
-        return;
-      }
-
-      busy = true;
-      sendBtn.disabled = true;
-      input.value = "";
-
-      history.push({ role: "user", content: text });
-      appendUser(text);
-      const typing = appendBot(t("chatThinking"), true);
-
-      try {
-        const res = await fetch("/api/ai/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: history, lang: getLang() }),
-        });
-        const data = await res.json().catch(() => ({}));
-
-        typing.remove();
-
-        if (!res.ok) {
-          const msg =
-            data.message ||
-            (data.error === "daily_limit" ? t("chatLimitReached") : t("chatError"));
-          appendBot(msg);
-          if (res.status !== 429) history.pop();
-        } else {
-          history.push({ role: "assistant", content: data.reply });
-          appendBot(data.reply);
-          bumpClientDaily();
-          updateLimitLabel(data.remaining);
-          saveHistory(history);
-        }
-      } catch {
-        typing.remove();
-        appendBot(t("chatError"));
-        history.pop();
-      } finally {
-        busy = false;
-        sendBtn.disabled = false;
-      }
-    });
-
-    function appendUser(text) {
-      const el = document.createElement("div");
-      el.className = "bc-ai-msg bc-ai-msg--user";
-      el.textContent = text;
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function appendBot(text, typing) {
-      const el = document.createElement("div");
-      el.className = "bc-ai-msg bc-ai-msg--bot" + (typing ? " bc-ai-msg--typing" : "");
-      el.textContent = text;
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      return el;
-    }
-
-    window.updateChatContext = function () {
-      const status = document.getElementById("bc-ai-status");
-      if (status) status.textContent = t("chatStatus");
-      updateLimitLabel();
+    ui = {
+      fab: document.getElementById("bc-ai-fab"),
+      panel: document.getElementById("bc-ai-panel"),
+      closeBtn: document.getElementById("bc-ai-close"),
+      title: document.getElementById("bc-ai-title"),
+      status: document.getElementById("bc-ai-status"),
+      messagesEl: document.getElementById("bc-ai-messages"),
+      form: document.getElementById("bc-ai-form"),
+      input: document.getElementById("bc-ai-input"),
+      sendBtn: document.getElementById("bc-ai-send"),
+      limitEl: document.getElementById("bc-ai-limit"),
     };
 
+    ui.fab.addEventListener("click", () => setOpen(!ui.panel.classList.contains("is-open")));
+    ui.closeBtn.addEventListener("click", () => setOpen(false));
+
+    ui.form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      sendMessage();
+    });
+
+    // Enter — отправить, Shift+Enter — новая строка
+    ui.input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        if (typeof ui.form.requestSubmit === "function") {
+          ui.form.requestSubmit();
+        } else {
+          sendMessage();
+        }
+      }
+    });
+
+    mountLimitModal();
+
+    window.updateChatContext = applyChatLocale;
+
+    window.addEventListener("languageChanged", applyChatLocale);
+    window.addEventListener("storage", (e) => {
+      if (e.key === LANG_KEY || e.key === "language") applyChatLocale();
+    });
+
+    applyChatLocale();
     renderMessages();
     updateLimitLabel();
+    refreshUsageFromServer();
+    if (isDailyLimitExhausted()) setChatInputLocked(true);
+  }
 
-    window.addEventListener("languageChanged", () => {
-      document.getElementById("bc-ai-title").textContent = t("chatTitle");
-      document.getElementById("bc-ai-status").textContent = t("chatStatus");
-      input.placeholder = t("chatPlaceholder");
+  function applyChatLocale() {
+    if (!ui) return;
+    ui.title.textContent = t("chatTitle");
+    ui.status.textContent = t("chatStatus");
+    ui.input.placeholder = t("chatPlaceholder");
+    ui.fab.setAttribute("aria-label", t("chatOpenLabel"));
+    ui.closeBtn.setAttribute("aria-label", t("chatClose"));
+    ui.sendBtn.setAttribute("aria-label", t("chatSend"));
+    applyLimitModalLocale();
+    updateLimitLabel();
+    if (!history.length) renderMessages();
+  }
+
+  function updateLimitLabel(remaining) {
+    if (!ui) return;
+    const n =
+      typeof remaining === "number" && remaining >= 0
+        ? remaining
+        : clientDailyRemaining();
+    ui.limitEl.textContent = t("chatLimitHint").replace("{n}", String(n));
+    if (n <= 0) setChatInputLocked(true);
+  }
+
+  async function refreshUsageFromServer() {
+    try {
+      const res = await fetch("/api/ai/chat", { method: "GET" });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (typeof data.used === "number") syncClientUsageFromServer(data.used);
+      updateLimitLabel(
+        typeof data.remaining === "number" ? data.remaining : clientDailyRemaining()
+      );
+    } catch (_) {
       updateLimitLabel();
-    });
+    }
+  }
+
+  function renderMessages() {
+    if (!ui) return;
+    ui.messagesEl.innerHTML = "";
+    if (!history.length) {
+      const welcome = document.createElement("div");
+      welcome.className = "bc-ai-msg bc-ai-msg--bot";
+      welcome.textContent = t("chatWelcome");
+      ui.messagesEl.appendChild(welcome);
+    } else {
+      for (const m of history) {
+        const el = document.createElement("div");
+        el.className = "bc-ai-msg bc-ai-msg--" + (m.role === "user" ? "user" : "bot");
+        el.textContent = m.content;
+        ui.messagesEl.appendChild(el);
+      }
+    }
+    ui.messagesEl.scrollTop = ui.messagesEl.scrollHeight;
+  }
+
+  function setOpen(open) {
+    ui.panel.classList.toggle("is-open", open);
+    ui.panel.setAttribute("aria-hidden", open ? "false" : "true");
+    document.body.classList.toggle("bc-ai-chat-open", open);
+    if (open) {
+      applyChatLocale();
+      renderMessages();
+      refreshUsageFromServer();
+      if (isDailyLimitExhausted()) {
+        setChatInputLocked(true);
+      } else {
+        setChatInputLocked(false);
+        ui.input.focus();
+      }
+    } else {
+      document.body.classList.remove("bc-ai-chat-open");
+    }
+  }
+
+  async function sendMessage() {
+    if (!ui || busy) return;
+    const text = ui.input.value.trim();
+    if (!text) return;
+
+    if (isDailyLimitExhausted()) {
+      handleDailyLimitHit();
+      return;
+    }
+
+    busy = true;
+    ui.sendBtn.disabled = true;
+    ui.input.value = "";
+
+    history.push({ role: "user", content: text });
+    appendUser(text);
+    const typing = appendBot(t("chatThinking"), true);
+
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history, lang: getLang() }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      typing.remove();
+
+      if (!res.ok) {
+        if (data.error === "daily_limit" || res.status === 429) {
+          history.pop();
+          handleDailyLimitHit();
+        } else {
+          const msg = data.message || t("chatError");
+          appendBot(msg);
+          history.pop();
+        }
+      } else {
+        history.push({ role: "assistant", content: data.reply });
+        appendBot(data.reply);
+        if (typeof data.used === "number") {
+          syncClientUsageFromServer(data.used);
+        } else {
+          bumpClientDaily();
+        }
+        const left =
+          typeof data.remaining === "number" ? data.remaining : clientDailyRemaining();
+        updateLimitLabel(left);
+        saveHistory(history);
+        if (left <= 0) {
+          showLimitModal();
+        }
+      }
+    } catch {
+      typing.remove();
+      appendBot(t("chatError"));
+      history.pop();
+    } finally {
+      busy = false;
+      if (!isDailyLimitExhausted()) {
+        setChatInputLocked(false);
+      }
+    }
+  }
+
+  function appendUser(text) {
+    const el = document.createElement("div");
+    el.className = "bc-ai-msg bc-ai-msg--user";
+    el.textContent = text;
+    ui.messagesEl.appendChild(el);
+    ui.messagesEl.scrollTop = ui.messagesEl.scrollHeight;
+  }
+
+  function appendBot(text, typing) {
+    const el = document.createElement("div");
+    el.className = "bc-ai-msg bc-ai-msg--bot" + (typing ? " bc-ai-msg--typing" : "");
+    el.textContent = text;
+    ui.messagesEl.appendChild(el);
+    ui.messagesEl.scrollTop = ui.messagesEl.scrollHeight;
+    return el;
   }
 
   if (document.readyState === "loading") {
