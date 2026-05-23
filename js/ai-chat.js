@@ -9,7 +9,10 @@
   const CLIENT_DAILY_KEY = "bc_ai_daily";
   const CLIENT_DAILY_MAX = 40;
 
+  let langOverride = null;
+
   function getLang() {
+    if (langOverride && ["en", "ru", "ka"].includes(langOverride)) return langOverride;
     const l = localStorage.getItem(LANG_KEY) || localStorage.getItem("language") || "en";
     return ["en", "ru", "ka"].includes(l) ? l : "en";
   }
@@ -335,10 +338,14 @@
 
     window.updateChatContext = applyChatLocale;
 
-    window.addEventListener("languageChanged", applyChatLocale);
+    window.addEventListener("languageChanged", (e) => {
+      applyChatLocale(e?.detail?.lang);
+    });
     window.addEventListener("storage", (e) => {
       if (e.key === LANG_KEY || e.key === "language") applyChatLocale();
     });
+
+    bindLanguageToggleWatch();
 
     applyChatLocale();
     renderMessages();
@@ -347,8 +354,24 @@
     if (isDailyLimitExhausted()) setChatInputLocked(true);
   }
 
-  function applyChatLocale() {
+  function bindLanguageToggleWatch() {
+    const selector =
+      "#language-toggle, #bc3-sheet-language, #forum-language-toggle, #topic-language-toggle, .mobile-menu-link--lang";
+    document.addEventListener(
+      "click",
+      (e) => {
+        if (!e.target.closest(selector)) return;
+        queueMicrotask(() => applyChatLocale());
+        setTimeout(() => applyChatLocale(), 0);
+      },
+      true
+    );
+  }
+
+  function applyChatLocale(forcedLang) {
     if (!ui) return;
+    langOverride = forcedLang && ["en", "ru", "ka"].includes(forcedLang) ? forcedLang : null;
+
     ui.title.textContent = t("chatTitle");
     ui.status.textContent = t("chatStatus");
     ui.input.placeholder = t("chatPlaceholder");
@@ -356,8 +379,14 @@
     ui.closeBtn.setAttribute("aria-label", t("chatClose"));
     ui.sendBtn.setAttribute("aria-label", t("chatSend"));
     applyLimitModalLocale();
+
+    const welcomeEl = ui.messagesEl.querySelector("[data-bc-ai-welcome]");
+    if (welcomeEl) welcomeEl.textContent = t("chatWelcome");
+
     updateLimitLabel();
     if (!history.length) renderMessages();
+
+    langOverride = null;
   }
 
   function updateLimitLabel(remaining) {
@@ -390,6 +419,7 @@
     if (!history.length) {
       const welcome = document.createElement("div");
       welcome.className = "bc-ai-msg bc-ai-msg--bot";
+      welcome.setAttribute("data-bc-ai-welcome", "1");
       welcome.textContent = t("chatWelcome");
       ui.messagesEl.appendChild(welcome);
     } else {
