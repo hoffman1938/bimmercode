@@ -384,6 +384,7 @@ function renderPage(code, lang) {
     const urlLang = new URLSearchParams(location.search).get('lang');
     if (urlLang) localStorage.setItem('language', urlLang);
   </script>
+  <script src="/js/ai-chat-loader.js?v=1" defer data-cfasync="false"></script>
 </body>
 </html>`;
 }

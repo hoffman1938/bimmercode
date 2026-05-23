@@ -46,3 +46,26 @@ BMW is a registered trademark of Bayerische Motoren Werke AG.
 🌐 Live Demo
 
 👉 https://bimmercodes.net
+
+## AI assistant (hybrid chat)
+
+Floating widget on all pages → `POST /api/ai/chat`.
+
+**Provider cascade (free tiers):**
+
+1. Cloudflare Workers AI — `@cf/zai-org/glm-4.7-flash`, then `@cf/meta/llama-3.1-8b-instruct-fast` (already bound as `AI` in `wrangler.toml`)
+2. Groq — `llama-3.1-8b-instant` (optional secret)
+3. Google Gemini — `gemini-1.5-flash` (optional secret)
+4. Cohere — `command-r-08-2024` (optional secret)
+
+**Rate limits (per IP, needs KV for production):** 8 messages/minute, 40/day. Enable `RATE_LIMIT_KV` in `wrangler.toml` after `npm run kv:create:ratelimit`.
+
+**Secrets (production):**
+
+```bash
+npx wrangler pages secret put GROQ_API_KEY
+npx wrangler pages secret put GEMINI_API_KEY
+npx wrangler pages secret put COHERE_API_KEY
+```
+
+Local dev: add the same keys to `.dev.vars`. Without fallbacks, only Workers AI is used.

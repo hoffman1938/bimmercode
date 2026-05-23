@@ -59,6 +59,17 @@ export const RATE_LIMITS = {
     maxAttempts: 120,
     windowMinutes: 1,
     key: 'search'
+  },
+  /** AI assistant widget — burst + generous daily free tier */
+  AI_CHAT_BURST: {
+    maxAttempts: 8,
+    windowMinutes: 1,
+    key: 'ai_chat_burst'
+  },
+  AI_CHAT_DAILY: {
+    maxAttempts: 40,
+    windowMinutes: 1440,
+    key: 'ai_chat_day'
   }
 };
 

@@ -47,4 +47,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     
     trackPageView();
+
+    // AI assistant (all pages with footer)
+    if (!window.__bcAiChatLoader) {
+        const loader = document.createElement('script');
+        loader.src = '/js/ai-chat-loader.js?v=1';
+        loader.defer = true;
+        loader.setAttribute('data-cfasync', 'false');
+        document.body.appendChild(loader);
+    }
 });
