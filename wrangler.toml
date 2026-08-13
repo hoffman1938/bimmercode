@@ -1,0 +1,60 @@
+name = "bimmercode"
+pages_build_output_dir = "./"
+compatibility_date = "2024-01-01"
+
+# ------------------------------------------------------------------
+# D1 database
+# ------------------------------------------------------------------
+[[d1_databases]]
+binding = "DB" # env.DB
+database_name = "bmw-db"
+database_id = "6e997484-ee10-48d1-a4d6-78d95216721f"
+migrations_dir = "migrations"
+
+# ------------------------------------------------------------------
+# R2 bucket — user-uploaded media (forum images, avatars)
+# ------------------------------------------------------------------
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "bimmercodes-media"
+
+# ------------------------------------------------------------------
+# KV namespace for rate-limit buckets (optional but strongly recommended)
+# Create via: wrangler kv:namespace create RATE_LIMIT_KV
+# Then fill in the id below.
+# ------------------------------------------------------------------
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT_KV"
+# id = "<your-kv-namespace-id>"
+
+# ------------------------------------------------------------------
+# Workers AI — used by functions/lib/moderation.js
+# Requires Workers AI enabled on the account.
+# ------------------------------------------------------------------
+[ai]
+binding = "AI" # env.AI
+
+# ------------------------------------------------------------------
+# Environment variables
+# Secrets must be set via `wrangler pages secret put <NAME>` — do NOT commit.
+#   - JWT_SECRET              : HS256 signing key for auth tokens
+#   - TURNSTILE_SECRET_KEY    : server-side Turnstile secret
+#   - PROMOTE_SECRET          : optional one-time GET /api/admin/promote?email=&secret= bootstrap
+#   - GROQ_API_KEY            : optional AI chat fallback (Llama 3.1 8B instant)
+#   - GEMINI_API_KEY          : optional AI chat fallback (Gemini 1.5 Flash)
+#   - COHERE_API_KEY          : optional AI chat fallback (Command R)
+#   - ADMIN_PANEL_EMAILS         : optional comma-separated emails that get admin_role (emergency / until DB updated)
+#   - SUPER_ADMIN_PROMOTE_EMAILS : optional; admin user may assign super_admin_role only to these emails (bootstrap)
+# Public variables (can be committed):
+# ------------------------------------------------------------------
+[vars]
+APP_URL             = "https://bimmercodes.net"
+ENVIRONMENT         = "production"
+# Public Turnstile sitekey — safe to expose. Paste it here and in HTML.
+TURNSTILE_SITE_KEY  = ""
+
+# ------------------------------------------------------------------
+# Preview / staging overrides
+# ------------------------------------------------------------------
+[env.preview.vars]
+ENVIRONMENT = "preview"

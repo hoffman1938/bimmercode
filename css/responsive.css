@@ -1,0 +1,456 @@
+/* ==========================================================================
+   RESPONSIVE.CSS (Mobile First Approach Overrides)
+   Targeting: Mobile (320px+), Tablet (768px+), Desktop (1024px+)
+   ========================================================================== */
+
+/* --- SHARED UTILITIES --- */
+.desktop-only {
+  display: flex !important;
+}
+
+.burger-btn {
+  display: none; /* Hidden on desktop */
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  margin-right: 15px;
+  transition: all 0.2s;
+}
+
+.burger-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* OFF-CANVAS MENU (Hidden by default) */
+.mobile-offcanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: rgba(18, 20, 24, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 2000;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-offcanvas.active {
+  transform: translateX(0);
+}
+
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.mobile-menu-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.offcanvas-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.offcanvas-header h2 {
+  font-size: 20px;
+  color: white;
+  margin: 0;
+}
+
+.close-offcanvas {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.offcanvas-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Off-canvas Nav Items */
+.offcanvas-content .nav-item {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+}
+.offcanvas-content .nav-item.active {
+  background: var(--color-primary-alpha-20, rgba(28, 105, 212, 0.20));
+  border-color: var(--color-primary, #1C69D4);
+}
+
+
+/* --- TABLETS & SMALL LAPTOPS (Max 1024px) --- */
+@media (max-width: 1024px) {
+  /* Hide Desktop Elements */
+  .desktop-only {
+    display: none !important;
+  }
+
+  .share-buttons {
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Show Burger */
+  .burger-btn {
+    display: flex;
+  }
+  
+  /* Hide Sidebar on Forum Main */
+  .forum-layout .sidebar {
+    display: none;
+  }
+  .topic-view-layout .sidebar {
+    display: none;
+  }
+  
+  /* Single Column Layouts */
+  .forum-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .topic-view-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* Header adjustments */
+  header {
+    padding: 10px 15px;
+    height: auto;
+  }
+  
+  /* HIDE HEADER TEXT ON MOBILE */
+  .logo-container h1 {
+     display: none;
+  }
+  
+  /* Make controls smaller */
+  .controls {
+     gap: 5px;
+  }
+  
+  .controls .btn span {
+     display: none; /* Icon only buttons */
+  }
+  
+  .controls .btn {
+     padding: 8px; /* Square-ish buttons */
+     min-width: 50px;
+     place-content: center;
+  }
+
+  /* Fix Header Alignment on Mobile */
+  .topics-header {
+    flex-direction: column-reverse; /* Search on top, button on bottom or vice versa? Actually Search usually top. */
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .topics-header .search-box {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .topics-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Fix Double Border on Search Input */
+  .search-box input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    height: auto !important;
+  }
+  
+  .search-box {
+    /* Ensure wrapper has the styles */
+    background: var(--color-surface-glass, rgba(18, 20, 24, 0.72));
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.10));
+    border-radius: 30px;
+    padding: 12px 20px;
+  }
+  
+  /* --- PROFILE & EDIT RESPONSIVENESS --- */
+  .profile-header-panel {
+     padding: 0;
+     border-radius: var(--f-radius-lg);
+  }
+  
+  .profile-cover-bg {
+     height: 150px;
+  }
+  
+  .profile-avatar-large {
+     width: 120px;
+     height: 120px;
+  }
+  
+  .profile-stats-grid {
+     grid-template-columns: 1fr; /* Stack stats on mobile */
+  }
+  
+  /* EDIT PROFILE MODAL FIXES */
+  #edit-profile-modal .auth-content {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      padding: 20px;
+      justify-content: flex-start;
+      overflow-y: auto;
+  }
+  
+  .auth-input, .edit-textarea {
+      font-size: 16px; /* Stop iOS zoom */
+  }
+  
+}
+
+/* --- MOBILE DEVICES (Max 768px) --- */
+@media (max-width: 768px) {
+  
+  /* 1. TOPIC LIST CARDS */
+  .topic-row {
+    display: flex !important; /* Force Flex over Grid */
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 15px;
+    position: relative;
+  }
+  
+  /* Avatar & Title Row */
+  .topic-row {
+    position: relative;
+    padding-left: 20px;
+  }
+  
+  .topic-status-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    border-radius: 50%; /* Rounded on mobile */
+  }
+
+  .topic-main-content {
+    width: 100%;
+  }
+
+  .topic-main-content h3 {
+    font-size: 16px;
+    padding-right: 50px; /* Space for icon */
+    margin-bottom: 12px;
+  }
+
+  /* Reflow Meta Line */
+  .topic-meta-line {
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12px;
+  }
+  
+  .topic-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  /* Stats Row at bottom */
+  .topic-stats {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    gap: 15px;
+    text-align: left;
+    justify-content: flex-start;
+  }
+  
+  .topic-stats div {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* 2. TOPIC VIEW MOBILE */
+  
+  /* Header Info */
+  .topic-header-row {
+    flex-direction: column;
+  }
+  
+  .topic-header-main h1 {
+    font-size: 20px;
+  }
+  
+  /* Premium pages use body.bcx — topic meta stays horizontal (site-responsive.css) */
+  body:not(.bcx) .topic-header-meta {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  /* Post Card Layout */
+  .post-card {
+    grid-template-columns: 1fr; /* Stacked */
+  }
+  
+  .post-user-panel {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 15px;
+    text-align: left;
+    border-right: none;
+    border-bottom: 1px solid var(--f-glass-border);
+    background: rgba(0,0,0,0.3);
+  }
+  
+  .post-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 18px;
+    margin-bottom: 0;
+    margin-right: 12px;
+  }
+  
+  .post-content-panel {
+    padding: 20px;
+  }
+  
+  .post-text-body pre {
+    overflow-x: auto; /* Ensure code blocks scroll */
+    max-width: 100%;
+  }
+
+  /* Sticky Action Bar (Optional enhancement, sticking to flow for now to avoid complexity) */
+  .post-footer-actions {
+    justify-content: space-between;
+  }
+  
+  .btn-action span {
+    display: inline; /* Keep text visible if space permits, or hide? */
+  }
+  
+  /* 3. MODALS — full viewport on small screens */
+  .auth-content,
+  .modal-content,
+  .modal-card,
+  .auth-card,
+  .favorites-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh;
+    border-radius: 0 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 0;
+    overflow: hidden !important;
+    margin: 0 !important;
+  }
+
+  .auth-body,
+  .modal-body {
+    padding: 20px !important;
+    overflow-y: auto !important;
+    flex: 1 1 auto;
+  }
+
+  .auth-modal,
+  .modal,
+  .favorites-modal {
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+  
+  /* 4. CHAT WIDGET */
+  .chat-window {
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+  }
+  
+  /* Contact Form Mobile Fix */
+  .legal-container {
+      margin: 20px 10px !important;
+      padding: 15px !important;
+  }
+
+  /* Footer stacking on mobile */
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .footer-links {
+    justify-content: center;
+  }
+}
+
+/* --- SMALL MOBILE (Max 375px) --- */
+@media (max-width: 375px) {
+  .logo-container h1 {
+    display: none; /* Hide text logo on very small screens */
+  }
+  
+  .controls .btn span {
+    display: none; /* Hide auth text */
+  }
+  
+  .search-box input {
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+
+# Misc
+.DS_Store
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cloudflare Wrangler
+.wrangler/
+.dev.vars
+
+# Seed data & dev utility scripts (already applied to remote D1)
+seed_*.sql
+clear_parts.sql
+fix_role_id.sql
+generate_parts.js
+setup_parts_finder.sh
+reload_parts.sh

@@ -1,0 +1,13 @@
+# Copy: cp .dev.vars.example .dev.vars
+# wrangler pages dev loads .dev.vars for Functions (set vars, then restart dev).
+#
+# JWT_SECRET — if you set it, use the same for every dev session, or log in again after a change.
+#
+JWT_SECRET=change-me-in-dev-only
+
+# Local admin without editing D1: email must match users.email exactly (Worker reads this in getUserRole).
+# Without this line, /api/admin/* returns 403 unless users.role_id is admin_role / super_admin_role.
+ADMIN_PANEL_EMAILS=giowulaia76@gmail.com
+
+# Optional: let admin (not super) assign super_admin_role in the UI only to these emails.
+SUPER_ADMIN_PROMOTE_EMAILS=giowulaia76@gmail.com

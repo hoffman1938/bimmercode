@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en" class="index-bento-page bcx-page">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>BMW Diagnostic Forum — BimmerCodes</title>
+    <meta name="description" content="Community forum for BMW owners and mechanics. Discuss fault codes, diagnostics, coding, parts and repairs in English, Russian, and Georgian." />
+    <meta name="theme-color" content="#050507" />
+
+    <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
+    <link rel="stylesheet" href="./css/forum.css?v=3.15" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=6" />
+    <link rel="stylesheet" href="./css/notifications.css?v=3.6" />
+    <link rel="stylesheet" href="./css/parts-finder.css?v=3.0" />
+    <link rel="stylesheet" href="./css/site-premium.css?v=5" />
+    <link rel="stylesheet" href="./css/forum-premium.css?v=6" />
+    <link rel="stylesheet" href="./css/responsive.css?v=5" />
+    <link rel="stylesheet" href="./css/site-responsive.css?v=3" />
+
+    <link rel="shortcut icon" href="./assets/icons/ico.svg" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+    <!-- Cloudflare Turnstile (explicit render via js/forum.js). -->
+    <script>
+      // Inject your Turnstile sitekey at build/deploy time, e.g.:
+      //   window.TURNSTILE_SITE_KEY = '<%= env.TURNSTILE_SITE_KEY %>';
+      window.TURNSTILE_SITE_KEY = window.TURNSTILE_SITE_KEY || "";
+      window.onTurnstileReady = function () {
+        if (!window.turnstile || !window.TURNSTILE_SITE_KEY) return;
+        document.querySelectorAll(".cf-turnstile").forEach(function (el) {
+          if (el.dataset.rendered === "1") return;
+          try {
+            window.turnstile.render(el, {
+              sitekey: window.TURNSTILE_SITE_KEY,
+              theme: el.dataset.theme || "dark",
+              appearance: "interaction-only",
+            });
+            el.dataset.rendered = "1";
+          } catch (e) { console.warn("turnstile.render failed:", e); }
+        });
+      };
+    </script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileReady&render=explicit" async defer></script>
+
+    <!-- JSON-LD: forum landing page -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "DiscussionForumPosting",
+      "name": "BimmerCodes Forum",
+      "url": "https://bimmercodes.net/forum",
+      "description": "BMW enthusiast discussion forum covering diagnostics, fault codes, coding, and repairs."
+    }
+    </script>
+  </head>
+  <body class="forum-page bcx">
+    <div id="webgl-container" class="index-bento-bg" aria-hidden="true"></div>
+
+    <!-- ==================================================== HEADER -->
+    <header class="forum-header index-bento">
+      <button class="btn btn-icon index-header-btn mobile-only" type="button" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+      </button>
+
+      <div class="logo-container index-header-brand">
+        <a class="main_logo_refr" href="/forum" aria-label="BimmerCodes Forum home">
+          <div class="logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
+              <circle cx="50" cy="50" r="35" fill="white" />
+              <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+              <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+              <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+              <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+            </svg>
+          </div>
+          <h1 class="index-header-title">BMW Diagnostic Codes <span class="index-header-title-muted">· Forum</span></h1>
+        </a>
+      </div>
+
+      <div class="controls">
+        <a href="/" class="index-header-btn btn" title="Home">
+          <i class="fas fa-home" aria-hidden="true"></i>
+          <span data-i18n="homeBtn">Home</span>
+        </a>
+        <a href="/vin.html" class="index-header-btn btn" title="VIN Check">
+          <i class="fas fa-fingerprint" aria-hidden="true"></i>
+          <span data-i18n="vinBtn">VIN</span>
+        </a>
+        <button type="button" class="index-header-btn btn" id="forum-language-toggle" onclick="switchForumLanguage()" title="Language">
+          <i class="fas fa-globe" aria-hidden="true"></i>
+          <span id="forum-lang-display">EN</span>
+        </button>
+        <!-- Bell + dropdown: injected by js/live.js when logged in (not for guests) -->
+        <a href="#" class="index-header-btn btn" id="auth-btn">
+          <i class="fas fa-user" aria-hidden="true"></i>
+          <span data-i18n="loginBtn">Login</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- ==================================================== MOBILE MENU -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    <aside class="mobile-offcanvas" aria-label="Mobile navigation">
+      <div class="offcanvas-header">
+        <h2 data-i18n="menu">Menu</h2>
+        <button class="btn btn-icon btn-ghost" onclick="toggleMobileMenu()" aria-label="Close menu">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="offcanvas-content" id="mobile-menu-content"></div>
+    </aside>
+
+    <!-- ==================================================== MAIN -->
+    <main class="forum-container">
+      <!-- Hero banner -->
+      <section class="forum-hero" aria-label="Forum welcome">
+        <div>
+          <h2 data-i18n="heroTitle">BMW knowledge, shared by enthusiasts.</h2>
+          <p data-i18n="heroSubtitle">
+            Fault codes, coding, parts and repair — ask, answer and level up. EN · RU · KA.
+          </p>
+        </div>
+        <div class="hero-stats" id="hero-stats" aria-live="polite"></div>
+      </section>
+
+      <!-- Toolbar: search + new topic -->
+      <div class="forum-toolbar">
+        <div class="search-field">
+          <i class="fas fa-search search-icon" aria-hidden="true"></i>
+          <input
+            type="search"
+            id="forum-search"
+            placeholder="Search topics, codes, authors..."
+            data-i18n-placeholder="forumSearchPlaceholder"
+            autocomplete="off"
+            aria-label="Search forum"
+          />
+          <kbd class="search-kbd">/</kbd>
+        </div>
+        <button class="btn btn-primary" onclick="openNewTopicModal()" id="new-topic-btn">
+          <i class="fas fa-plus" aria-hidden="true"></i>
+          <span data-i18n="newTopic">New Topic</span>
+        </button>
+      </div>
+
+      <!-- Filter / sort bar -->
+      <div class="filter-bar" role="toolbar" aria-label="Filter and sort topics">
+        <div class="chips" id="filter-chips">
+          <button class="chip active" data-filter="all" data-i18n="filterAll">All</button>
+          <button class="chip" data-filter="unanswered" data-i18n="filterUnanswered">Unanswered</button>
+          <button class="chip" data-filter="solved" data-i18n="filterSolved">Solved</button>
+          <button class="chip" data-filter="pinned" data-i18n="filterPinned">Pinned</button>
+        </div>
+        <select id="sort-select" class="sort-select" aria-label="Sort topics">
+          <option value="newest" data-i18n="sortNewest">Newest</option>
+          <option value="popular" data-i18n="sortPopular">Most replies</option>
+          <option value="most_viewed" data-i18n="sortViews">Most viewed</option>
+          <option value="recently_active" data-i18n="sortActive">Recently active</option>
+        </select>
+      </div>
+
+      <div class="forum-layout">
+        <!-- ============================================= SIDEBAR -->
+        <aside class="sidebar" aria-label="Forum sidebar">
+          <div class="sidebar-card" id="user-sidebar-card">
+            <div class="guest-card">
+              <p data-i18n="loginToPost">Join the community to post</p>
+              <button class="btn btn-primary" onclick="toggleAuthModal()" data-i18n="loginRegister">
+                Login / Register
+              </button>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <h3 class="sidebar-title" data-i18n="categoriesTitle">Categories</h3>
+            <nav class="nav-menu" id="categories-nav" aria-label="Categories">
+              <a href="#" class="nav-item active" data-category="all" onclick="filterTopicsByCategory('all'); return false;">
+                <i class="fas fa-stream nav-icon" aria-hidden="true"></i>
+                <span data-i18n="allTopics">All Topics</span>
+              </a>
+            </nav>
+          </div>
+
+          <div class="sidebar-card" id="popular-tags-card" hidden>
+            <h3 class="sidebar-title" data-i18n="popularTags">Popular tags</h3>
+            <div class="chips" id="popular-tags"></div>
+          </div>
+
+        </aside>
+
+        <!-- ============================================= TOPICS -->
+        <section aria-label="Topics list">
+          <div id="topics-list-container" class="topics-list" aria-live="polite" aria-busy="true">
+            <!-- Skeleton placeholders injected by JS -->
+          </div>
+          <div id="infinite-sentinel" class="infinite-sentinel" aria-hidden="true"></div>
+          <div id="load-more-status" class="load-more" hidden>
+            <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+            <span data-i18n="loading">Loading…</span>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ==================================================== NEW TOPIC MODAL -->
+    <div id="new-topic-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="new-topic-title">
+      <div class="modal-card modal-card--glass topic-modal">
+        <button class="modal-close auth-close" onclick="closeModal('new-topic-modal')" aria-label="Close">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-header topic-modal-header">
+          <div class="auth-brand">
+            <div class="auth-brand-logo"><i class="fas fa-pen-to-square" aria-hidden="true"></i></div>
+          </div>
+          <h2 id="new-topic-title" data-i18n="createTopic">Create a new topic</h2>
+          <p class="auth-subtitle" data-i18n="createTopicSubtitle">
+            Ask the community — add details, relevant code and tags to help others help you.
+          </p>
+        </div>
+
+        <form id="create-topic-form" class="modal-body auth-body topic-form">
+          <div class="field">
+            <label for="topic-category" data-i18n="categoryLabel">Category</label>
+            <div class="input-with-icon">
+              <i class="fas fa-layer-group input-icon" aria-hidden="true"></i>
+              <select id="topic-category"></select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="topic-title" data-i18n="titleLabel">Title</label>
+            <div class="input-with-icon">
+              <i class="fas fa-heading input-icon" aria-hidden="true"></i>
+              <input type="text" id="topic-title" maxlength="160" placeholder="Rough idle on cold start (optional)" />
+            </div>
+            <div class="field-error" id="topic-title-error"></div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="topic-code" data-i18n="relatedCodeLabel">Related error code (optional)</label>
+              <div class="input-with-icon">
+                <i class="fas fa-code input-icon" aria-hidden="true"></i>
+                <input type="text" id="topic-code" placeholder="e.g. 29CD, P0171" />
+              </div>
+              <div class="hint" id="topic-code-feedback"></div>
+            </div>
+            <div class="field">
+              <label for="topic-tags" data-i18n="tagsLabel">Tags (optional)</label>
+              <div class="input-with-icon">
+                <i class="fas fa-tags input-icon" aria-hidden="true"></i>
+                <input type="text" id="topic-tags" placeholder="e46, misfire, cold-start" />
+              </div>
+            </div>
+          </div>
+
+          <div class="field field--topic-description">
+            <label for="topic-content" data-i18n="contentLabel">Description</label>
+            <textarea
+              id="topic-content"
+              maxlength="8000"
+              rows="6"
+              placeholder="Optional — symptoms, what you’ve checked, codes, sounds…"
+              class="topic-textarea"
+            ></textarea>
+            <div class="hint textarea-counter">
+              <i class="fas fa-align-left" aria-hidden="true"></i>
+              <span><span id="topic-content-count">0</span> / 8000</span>
+            </div>
+          </div>
+
+          <div id="similar-topics-suggestions" aria-live="polite"></div>
+          <div id="turnstile-topic" class="cf-turnstile" data-theme="dark"></div>
+        </form>
+
+        <div class="modal-footer topic-modal-footer">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('new-topic-modal')" data-i18n="cancel">
+            <span>Cancel</span>
+          </button>
+          <button type="submit" form="create-topic-form" class="btn btn-primary" id="publish-btn">
+            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+            <span data-i18n="publish">Publish</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== AUTH MODAL -->
+    <div id="auth-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+      <div class="modal-card auth-card">
+        <button class="modal-close auth-close" onclick="toggleAuthModal()" aria-label="Close">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-header">
+          <div class="auth-brand">
+            <div class="auth-brand-logo"><i class="fas fa-comments" aria-hidden="true"></i></div>
+          </div>
+          <h2 id="auth-title" data-i18n="welcomeBack">Welcome back</h2>
+          <p class="auth-subtitle" id="auth-subtitle" data-i18n="authSubtitleLogin">
+            Sign in to post, react, and save answers.
+          </p>
+        </div>
+
+        <div class="modal-body auth-body">
+          <div class="auth-tabs" role="tablist" data-active="login">
+            <button class="auth-tab active" id="tab-login" type="button" role="tab"
+                    aria-selected="true" onclick="switchAuthTab('login')" data-i18n="loginTab">
+              Login
+            </button>
+            <button class="auth-tab" id="tab-register" type="button" role="tab"
+                    aria-selected="false" onclick="switchAuthTab('register')" data-i18n="registerTab">
+              Register
+            </button>
+            <span class="auth-tabs-thumb" aria-hidden="true"></span>
+          </div>
+
+          <form id="login-form" class="auth-form active" autocomplete="on">
+            <div class="field">
+              <label for="login-email" data-i18n="emailUsernameLabel">Email or username</label>
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                <input type="text" id="login-email" required autocomplete="username"
+                       placeholder="you@example.com" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="login-password" data-i18n="passwordLabel">Password</label>
+              <div class="input-with-icon input-with-action">
+                <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                <input type="password" id="login-password" required
+                       autocomplete="current-password" placeholder="••••••••" />
+                <button type="button" class="input-eye" data-target="login-password"
+                        aria-label="Show password" tabindex="-1">
+                  <i class="fas fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+            <div class="auth-extra">
+              <a href="#" class="auth-link" onclick="showRecoveryModal(); return false;"
+                 data-i18n="forgotPasswordLink">Forgot password?</a>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="signInBtn">
+              <i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i>
+              <span>Sign In</span>
+            </button>
+            <p id="login-msg" class="auth-msg"></p>
+          </form>
+
+          <form id="register-form" class="auth-form" autocomplete="on" style="display:none;">
+            <div class="field">
+              <label for="reg-username" data-i18n="usernameLabel">Username</label>
+              <div class="input-with-icon">
+                <i class="fas fa-user input-icon" aria-hidden="true"></i>
+                <input type="text" id="reg-username" required minlength="3" maxlength="24"
+                       autocomplete="username" placeholder="e30_enjoyer" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="reg-email" data-i18n="emailLabel">Email</label>
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                <input type="email" id="reg-email" required autocomplete="email"
+                       placeholder="you@example.com" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="reg-password" data-i18n="passwordLabel">Password</label>
+              <div class="input-with-icon input-with-action">
+                <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                <input type="password" id="reg-password" required minlength="8"
+                       autocomplete="new-password" placeholder="Min 8 characters" />
+                <button type="button" class="input-eye" data-target="reg-password"
+                        aria-label="Show password" tabindex="-1">
+                  <i class="fas fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="pw-strength" data-strength="0" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="hint" data-i18n="passwordHint">Min 8 characters, mix of letters and numbers.</div>
+            </div>
+            <div class="field">
+              <label for="reg-question" data-i18n="securityQuestionLabel">Security question</label>
+              <div class="input-with-icon">
+                <i class="fas fa-shield-halved input-icon" aria-hidden="true"></i>
+                <select id="reg-question" required>
+                  <option value="" disabled selected data-i18n="securityQuestionPlaceholder">Select…</option>
+                  <option value="first_pet" data-i18n="q_first_pet">What was your first pet's name?</option>
+                  <option value="mother_maiden" data-i18n="q_mother_maiden">What is your mother's maiden name?</option>
+                  <option value="first_car" data-i18n="q_first_car">What was your first car model?</option>
+                  <option value="city_born" data-i18n="q_city_born">In which city were you born?</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="reg-answer" data-i18n="securityAnswerLabel">Answer</label>
+              <div class="input-with-icon">
+                <i class="fas fa-key input-icon" aria-hidden="true"></i>
+                <input type="text" id="reg-answer" required placeholder="Your answer" />
+              </div>
+            </div>
+            <div id="turnstile-register" class="cf-turnstile" data-theme="dark"></div>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="createAccountBtn">
+              <i class="fas fa-user-plus" aria-hidden="true"></i>
+              <span>Create account</span>
+            </button>
+            <p id="reg-msg" class="auth-msg"></p>
+          </form>
+        </div>
+
+        <div class="auth-footer">
+          <i class="fas fa-shield-halved" aria-hidden="true"></i>
+          <span data-i18n="authSecuredBy">Protected by Cloudflare Turnstile · TLS encrypted</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== RECOVERY MODAL -->
+    <div id="recovery-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="recovery-title">
+      <div class="modal-card auth-card">
+        <button class="modal-close auth-close" onclick="closeRecoveryModal()" aria-label="Close">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-header">
+          <div class="auth-brand">
+            <div class="auth-brand-logo"><i class="fas fa-unlock-keyhole" aria-hidden="true"></i></div>
+          </div>
+          <h2 id="recovery-title" data-i18n="resetPassword">Reset password</h2>
+          <p class="auth-subtitle" data-i18n="recoverySubtitle">
+            We'll ask you one security question, then let you set a new password.
+          </p>
+        </div>
+
+        <div class="modal-body auth-body">
+          <!-- Step indicator -->
+          <div class="auth-steps" aria-hidden="true">
+            <span class="auth-step active" id="rec-step-ind-1">
+              <b>1</b> <span data-i18n="recoveryStepIdentity">Identify</span>
+            </span>
+            <span class="auth-steps-line"></span>
+            <span class="auth-step" id="rec-step-ind-2">
+              <b>2</b> <span data-i18n="recoveryStepVerify">Verify &amp; reset</span>
+            </span>
+          </div>
+
+          <form id="recovery-step-1" class="auth-form active">
+            <p class="auth-hint" data-i18n="recoveryStep1Hint">
+              Enter your email to find your account.
+            </p>
+            <div class="field">
+              <label for="rec-email" data-i18n="emailLabel">Email</label>
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                <input type="email" id="rec-email" required placeholder="you@example.com" />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="continueBtn">
+              <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              <span>Continue</span>
+            </button>
+            <p class="auth-msg" id="rec-msg-1"></p>
+          </form>
+
+          <form id="recovery-step-2" class="auth-form" style="display:none;">
+            <div class="auth-question" id="rec-question-display"></div>
+            <div class="field">
+              <label for="rec-answer" data-i18n="yourAnswer">Your answer</label>
+              <div class="input-with-icon">
+                <i class="fas fa-key input-icon" aria-hidden="true"></i>
+                <input type="text" id="rec-answer" required placeholder="Answer" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="rec-new-password" data-i18n="newPassword">New password</label>
+              <div class="input-with-icon input-with-action">
+                <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                <input type="password" id="rec-new-password" required minlength="8"
+                       autocomplete="new-password" placeholder="Min 8 characters" />
+                <button type="button" class="input-eye" data-target="rec-new-password"
+                        aria-label="Show password" tabindex="-1">
+                  <i class="fas fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="resetPassword">
+              <i class="fas fa-check" aria-hidden="true"></i>
+              <span>Reset password</span>
+            </button>
+            <p class="auth-msg" id="rec-msg-2"></p>
+          </form>
+        </div>
+
+        <div class="auth-footer">
+          <i class="fas fa-shield-halved" aria-hidden="true"></i>
+          <span data-i18n="authSecuredBy">Protected by Cloudflare Turnstile · TLS encrypted</span>
+        </div>
+      </div>
+    </div>
+
+    <button
+      class="fab-top"
+      id="fab-scroll-top"
+      aria-label="Scroll to top"
+      onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+      type="button"
+    >
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <!-- ============================= CODE DETAIL MODAL (shared) ============================= -->
+    <div id="code-detail-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="hideDetail && hideDetail()" aria-label="Close">&times;</span>
+        <div id="code-detail" class="hidden"></div>
+        <div id="parts-finder-container" class="hidden"></div>
+      </div>
+    </div>
+    <!-- Required by script.js even if we don't search from the forum. -->
+    <div id="search-container" style="display:none;"></div>
+
+    <footer>
+      <!-- injected by js/footer.js -->
+    </footer>
+
+    <script src="./js/footer.js" defer></script>
+    <script src="./js/translations.js?v=4" defer></script>
+    <script src="./js/parts-finder.js?v=3.0" defer></script>
+    <script src="./js/script.js?v=3.0" defer></script>
+    <script src="./js/forum.js?v=3.5" defer></script>
+    <script src="./js/live.js?v=3.5" defer></script>
+    <script src="./js/modal-escape.js?v=3.0" defer></script>
+  </body>
+</html>

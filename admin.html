@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en" class="index-bento-page">
+<head>
+    <meta charset="UTF-8">
+    <base href="https://bimmercodes.net/" />
+    <script src="https://bimmercodes.net/js/admin-gate.js" data-cfasync="false"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BMW Diagnostic Codes</title>
+    <link rel="stylesheet" href="https://bimmercodes.net/css/style.css">
+    <link rel="stylesheet" href="https://bimmercodes.net/css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/ui-buttons.css?v=1" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/forum.css?v=3.14" />
+    <link rel="stylesheet" href="https://bimmercodes.net/css/index-bento.css?v=6" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" data-cfasync="false"></script>
+    <link rel="stylesheet" href="https://bimmercodes.net/css/admin.css?v=3">
+    <link rel="stylesheet" href="https://bimmercodes.net/css/notifications.css">
+    <link rel="shortcut icon" href="https://bimmercodes.net/assets/icons/ico.svg" type="image/x-icon">
+    </head>
+<body class="bmw-pattern index-bento-page admin-page">
+    <div id="webgl-container" class="index-bento-bg" aria-hidden="true"></div>
+    <header class="forum-header index-bento admin-header">
+        <div class="logo-container index-header-brand admin-header-brand">
+            <button type="button" id="sidebar-toggle" class="action-btn admin-sidebar-toggle" aria-label="Open menu" aria-expanded="false" onclick="toggleAdminSidebar()">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+            <a class="main_logo_refr" href="index.html" aria-label="BimmerCodes admin">
+                <div class="logo" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black"/>
+                        <circle cx="50" cy="50" r="35" fill="white"/>
+                        <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0"/>
+                        <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white"/>
+                        <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white"/>
+                        <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0"/>
+                    </svg>
+                </div>
+                <h1 class="index-header-title">
+                    BMW Diagnostic Codes <span class="index-header-title-muted">· Admin</span>
+                </h1>
+            </a>
+        </div>
+        <div class="controls admin-header-controls">
+            <a href="index.html" class="index-header-btn btn"><i class="fas fa-home" aria-hidden="true"></i><span class="admin-btn-label">Back</span></a>
+            <a href="forum.html" class="index-header-btn btn"><i class="fas fa-comments" aria-hidden="true"></i><span class="admin-btn-label">Forum</span></a>
+            <a href="vin.html" class="index-header-btn btn"><i class="fas fa-fingerprint" aria-hidden="true"></i><span class="admin-btn-label">VIN</span></a>
+            <button type="button" class="index-header-btn btn" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt" aria-hidden="true"></i><span class="admin-btn-label">Logout</span></button>
+        </div>
+    </header>
+
+    <div id="sidebar-backdrop" class="admin-sidebar-backdrop" hidden aria-hidden="true"></div>
+
+    <div class="admin-container">
+        <aside class="sidebar" id="admin-sidebar" aria-label="Admin navigation">
+            <ul class="sidebar-menu">
+                <li><a href="#dashboard" class="active" data-admin-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#users" data-admin-tab="users"><i class="fas fa-users"></i> Users</a></li>
+                <li><a href="#forum" data-admin-tab="forum"><i class="fas fa-layer-group"></i> Forum Structure</a></li>
+                <li><a href="#posts" data-admin-tab="posts"><i class="fas fa-comments"></i> Forum posts</a></li>
+                <li><a href="#reports" data-admin-tab="reports"><i class="fas fa-flag"></i> Reports</a></li>
+                <li><a href="#codes" data-admin-tab="codes"><i class="fas fa-car-battery"></i> Error Codes</a></li>
+                <li><a href="#garage" data-admin-tab="garage"><i class="fas fa-warehouse"></i> Garage</a></li>
+                <li><a href="#marketplace" data-admin-tab="marketplace"><i class="fas fa-store"></i> Marketplace</a></li>
+                <li><a href="#messages" data-admin-tab="messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="#seo" data-admin-tab="seo"><i class="fas fa-search"></i> SEO</a></li>
+                <li><a href="#notifications" data-admin-tab="notifications"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li><a href="#ads" data-admin-tab="ads"><i class="fas fa-ad"></i> Ads</a></li>
+                <li><a href="#logs" data-admin-tab="logs"><i class="fas fa-history"></i> Audit Logs</a></li>
+                <li><a href="#settings" data-admin-tab="settings"><i class="fas fa-cogs"></i> Settings</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <div id="tab-dashboard" class="dashboard-section">
+                <h2>Overview</h2>
+                <!-- Realtime Stats -->
+                <div class="dashboard-card admin-realtime-card">
+                    <div class="admin-realtime-row">
+                        <div>
+                            <h3 class="admin-realtime-title">Real-Time Activity</h3>
+                            <p class="admin-realtime-sub">Users active in last 15 minutes</p>
+                        </div>
+                        <div class="admin-realtime-value-wrap">
+                            <span id="active-users-count" class="admin-realtime-value">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Stats Grid -->
+                <div class="stat-grid" id="stats-container">
+                    <!-- Loading Stats -->
+                    <div class="stat-card"><div class="stat-value">...</div><div>Total Users</div></div>
+                    <div class="stat-card"><div class="stat-value">...</div><div>Posts</div></div>
+                    <div class="stat-card"><div class="stat-value">...</div><div>Reports</div></div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="admin-grid admin-grid--charts">
+                    <div class="dashboard-card">
+                        <h3>Traffic Pattern (24h)</h3>
+                        <canvas id="trafficChart" height="200"></canvas>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Device Usage</h3>
+                        <canvas id="deviceChart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div id="dashboard-growth-grid" class="stat-grid" style="margin-top: 8px;"></div>
+
+                <div class="admin-grid admin-grid--half">
+                    <div class="dashboard-card">
+                        <h3>Top Users (7 days)</h3>
+                        <table class="data-table"><tbody id="top-users-body"></tbody></table>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Hot Topics</h3>
+                        <table class="data-table"><tbody id="top-topics-body"></tbody></table>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>Top Pages</h3>
+                    <table class="data-table">
+                        <tbody id="top-pages-body"></tbody>
+                    </table>
+                </div>
+                <div class="dashboard-card" style="margin-top:16px;">
+                    <h3>Popular searches (7 days)</h3>
+                    <table class="data-table"><tbody id="top-searches-body"></tbody></table>
+                </div>
+            </div>
+
+            <!-- User Management Section -->
+            <div id="tab-users" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>User Management</h2>
+                    <div class="search-box admin-users-search">
+                        <input type="text" id="user-search" placeholder="Username, email, VIN, or IP…">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="admin-toolbar">
+                    <select id="role-filter" class="admin-select admin-role-filter" onchange="loadUsers(1)">
+                        <option value="">All Roles</option>
+                        <option value="super_admin_role">Super Admin</option>
+                        <option value="admin_role">Administrator</option>
+                        <option value="senior_moderator_role">Senior Moderator</option>
+                        <option value="moderator_role">Moderator</option>
+                        <option value="bmw_technician_role">BMW Technician</option>
+                        <option value="verified_owner_role">Verified Owner</option>
+                        <option value="vendor_role">Vendor</option>
+                        <option value="user_role">User</option>
+                        <option value="banned">Banned</option>
+                    </select>
+                </div>
+                <div class="dashboard-card">
+                    <div class="table-wrap">
+                    <table class="data-table data-table--stack">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Reputation</th>
+                                <th>Level</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                    </div>
+                    <div id="users-pagination" style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;"></div>
+                    <div id="users-loading" style="text-align: center; padding: 20px;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forum Management Section -->
+            <div id="tab-forum" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Forum Structure</h2>
+                    <button class="btn" onclick="openCategoryModal()"> <i class="fas fa-plus"></i> New Category</button>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>Categories</h3>
+                    <div id="categories-list" class="categories-list-admin">
+                        <!-- Populated JS -->
+                        <p style="padding: 20px; text-align: center;">Loading categories...</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card" style="margin-top: 20px;">
+                    <div class="dashboard-header" style="margin-bottom: 10px;">
+                        <h3>Tags</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="new-tag-name" placeholder="Tag Name" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 5px; border-radius: 4px;">
+                            <input type="color" id="new-tag-color" value="#3498db" style="border: none; padding: 0; background: none; height: 30px; width: 30px; cursor: pointer;">
+                            <button class="action-btn" onclick="createTag()">Add Tag</button>
+                        </div>
+                    </div>
+                    <div id="tags-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- All forum posts (search) -->
+            <div id="tab-posts" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Forum posts</h2>
+                    <div class="dashboard-header__actions forum-posts-toolbar" role="toolbar" aria-label="Search forum posts">
+                        <label for="forum-posts-search" class="visually-hidden">Search in posts and topic titles</label>
+                        <input type="search" id="forum-posts-search" class="admin-input-search" placeholder="Word or phrase in any post or topic…" autocomplete="off">
+                        <label class="forum-posts-check">
+                            <input type="checkbox" id="forum-posts-deleted-only"> Deleted only
+                        </label>
+                        <button type="button" class="action-btn" onclick="loadForumPosts(1)" title="Run search"><i class="fas fa-search"></i></button>
+                        <button type="button" class="action-btn" onclick="loadForumPosts(forumPostsPage || 1)" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+                <p class="forum-posts-hint">Search looks through every reply and the first post in each thread (title + body). Leave empty to browse all posts, newest first.</p>
+                <div class="dashboard-card">
+                    <div id="forum-posts-summary" class="forum-posts-summary" aria-live="polite"></div>
+                    <div class="table-wrap">
+                    <table class="data-table forum-posts-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Topic</th>
+                                <th>Author</th>
+                                <th>Excerpt</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="forum-posts-tbody">
+                        </tbody>
+                    </table>
+                    </div>
+                    <div id="forum-posts-loading" class="forum-posts-loading" style="display: none; text-align: center; padding: 20px;">
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading…
+                    </div>
+                    <div id="forum-posts-pagination" class="forum-posts-pagination"></div>
+                </div>
+            </div>
+
+            <!-- Reports / Moderation Section -->
+            <div id="tab-reports" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Moderation Queue</h2>
+                    <div class="dashboard-header__actions moderation-toolbar" role="toolbar" aria-label="Moderation filters">
+                        <div class="tab-switcher" role="tablist" aria-label="Queue type">
+                            <button type="button" class="mod-tab mod-tab--active" id="mod-tab-reports" role="tab" aria-selected="true" onclick="ModDash.setTab('reports')"><i class="fas fa-flag" aria-hidden="true"></i> User reports</button>
+                            <button type="button" class="mod-tab" id="mod-tab-ai" role="tab" aria-selected="false" onclick="ModDash.setTab('ai_flagged')"><i class="fas fa-robot" aria-hidden="true"></i> AI flagged</button>
+                        </div>
+                        <label for="report-status-filter" class="visually-hidden">Status</label>
+                        <select id="report-status-filter" class="admin-select" onchange="ModDash.setStatus(this.value)">
+                            <option value="pending">Pending</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="dismissed">Dismissed</option>
+                        </select>
+                        <button type="button" class="action-btn" onclick="ModDash.load()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Reported Item</th>
+                                <th>Reason</th>
+                                <th>Reporter</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                    <div id="reports-loading" style="text-align: center; padding: 20px; display:none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Section -->
+            <div id="tab-messages" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Messages</h2>
+                    <button class="action-btn" onclick="loadMessages()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+                <div id="messages-list">
+                    <!-- JS -->
+                </div>
+            </div>
+
+            <!-- Logs Section -->
+            <div id="tab-codes" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>Error Codes</h2>
+                    <button class="btn" type="button" onclick="importDtcCodes()"><i class="fas fa-file-import"></i> Import from JSON</button>
+                </div>
+                <div class="search-box" style="max-width:320px;margin-bottom:12px;">
+                    <input type="text" id="codes-search" placeholder="Search code..." oninput="debounceCodesSearch()">
+                </div>
+                <div class="dashboard-card">
+                    <table class="data-table"><thead><tr><th>Code</th><th>Title</th><th>Severity</th><th>Published</th><th></th></tr></thead>
+                    <tbody id="codes-table-body"></tbody></table>
+                </div>
+            </div>
+
+            <div id="tab-garage" class="dashboard-section hidden">
+                <h2>Garage moderation</h2>
+                <div class="dashboard-card"><table class="data-table"><thead><tr><th>User</th><th>Model</th><th>Featured</th><th>Approved</th><th></th></tr></thead>
+                <tbody id="garage-table-body"></tbody></table></div>
+            </div>
+
+            <div id="tab-marketplace" class="dashboard-section hidden">
+                <h2>Marketplace listings</h2>
+                <div class="dashboard-card"><table class="data-table"><thead><tr><th>Title</th><th>Seller</th><th>Price</th><th>Status</th><th></th></tr></thead>
+                <tbody id="marketplace-table-body"></tbody></table></div>
+            </div>
+
+            <div id="tab-seo" class="dashboard-section hidden">
+                <h2>SEO</h2>
+                <div class="dashboard-card">
+                    <h3>Page meta</h3>
+                    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+                        <input type="text" id="seo-path" placeholder="/code/P0100" class="form-input" style="flex:1;min-width:200px;">
+                        <input type="text" id="seo-title" placeholder="Title" class="form-input" style="flex:1;">
+                        <button class="btn" type="button" onclick="saveSeoMeta()">Save</button>
+                    </div>
+                    <textarea id="seo-description" placeholder="Meta description" class="form-input" style="width:100%;height:60px;"></textarea>
+                    <table class="data-table" style="margin-top:16px;"><tbody id="seo-meta-body"></tbody></table>
+                </div>
+            </div>
+
+            <div id="tab-notifications" class="dashboard-section hidden">
+                <h2>Notification templates</h2>
+                <div class="dashboard-card"><table class="data-table"><tbody id="notif-templates-body"></tbody></table></div>
+            </div>
+
+            <div id="tab-ads" class="dashboard-section hidden">
+                <h2>Ad slots</h2>
+                <div class="dashboard-card"><table class="data-table"><tbody id="ads-slots-body"></tbody></table></div>
+            </div>
+
+            <div id="tab-logs" class="dashboard-section hidden">
+                <h2>Audit Logs</h2>
+                <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+                    <input type="text" id="logs-action-filter" placeholder="Action" class="form-input" style="max-width:160px;">
+                    <input type="text" id="logs-user-filter" placeholder="User ID" class="form-input" style="max-width:200px;">
+                    <button class="btn" type="button" onclick="loadLogs(1)">Filter</button>
+                </div>
+                <div id="logs-pagination" style="margin-bottom:10px;"></div>
+                <div class="dashboard-card">
+                    <div class="table-wrap">
+                    <table class="data-table">
+                         <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Target</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                         <tbody id="logs-table-body">
+                             <!-- JS -->
+                         </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Section -->
+            <div id="tab-settings" class="dashboard-section hidden">
+                <div class="dashboard-header">
+                    <h2>System Configuration</h2>
+                    <button class="btn" onclick="saveSettings()"> <i class="fas fa-save"></i> Save Changes</button>
+                </div>
+
+                 <div class="dashboard-card" style="max-width: 800px;">
+                    <h3>General Settings</h3>
+                    <form id="settings-form" onsubmit="event.preventDefault(); saveSettings();">
+                        <div class="input-group">
+                            <label>Site Name</label>
+                            <input type="text" id="set-site-name" class="form-input" placeholder="BMW Diagnostic Codes">
+                        </div>
+
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div>
+                                <strong style="color: white; display: block;">Maintenance Mode</strong>
+                                <span style="font-size: 0.85em; color: #aaa;">Only admins can access the site when enabled.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="set-maintenance">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div>
+                                <strong style="color: white; display: block;">Open Registration</strong>
+                                <span style="font-size: 0.85em; color: #aaa;">Allow new users to sign up.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="set-registration">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+                        <h3>Announcement Banner</h3>
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <label style="margin:0;">Show Banner</label>
+                            <label class="switch">
+                                <input type="checkbox" id="set-banner-active">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Banner Message</label>
+                            <input type="text" id="set-banner-msg" class="form-input" placeholder="e.g., Server maintenance scheduled for...">
+                        </div>
+                        
+                         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                         
+                         <h3>Global Push Notification</h3>
+                         <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 15px; border-radius: 8px;">
+                            <p style="margin-top:0; font-size:0.9em; color:#93c5fd;">Send a permanent notification to ALL active users. Use sparingly.</p>
+                            <div class="input-group">
+                                <label>Message</label>
+                                <input type="text" id="broadcast-msg" class="form-input" placeholder="e.g., New features are now live!">
+                            </div>
+                            <button class="btn" style="width:100%; background: var(--admin-primary);" onclick="sendBroadcast(event)"><i class="fas fa-paper-plane"></i> Send to All Users</button>
+                         </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="category-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeCategoryModal()"><i class="fas fa-times"></i></button>
+             <h2 id="cat-modal-title">New Category</h2>
+             <form id="category-form">
+                 <input type="hidden" id="cat-id">
+                 
+                 <div class="input-group">
+                     <label>Title</label>
+                     <input type="text" id="cat-title" required class="form-input">
+                 </div>
+                 
+                 <div class="input-group">
+                     <label>Description</label>
+                     <textarea id="cat-desc" class="form-input"></textarea>
+                 </div>
+                 
+                 <div class="input-group">
+                     <label>Icon (FontAwesome class)</label>
+                     <input type="text" id="cat-icon" placeholder="fas fa-folder" class="form-input">
+                 </div>
+
+                 <div class="input-group">
+                     <label>Sort Order</label>
+                     <input type="number" id="cat-order" value="0" class="form-input">
+                 </div>
+                 <div class="input-group" style="display:flex;gap:12px;flex-wrap:wrap;">
+                     <label><input type="checkbox" id="cat-hidden"> Hidden</label>
+                     <label><input type="checkbox" id="cat-private"> Private</label>
+                     <label><input type="checkbox" id="cat-vip"> VIP</label>
+                     <label><input type="checkbox" id="cat-archived"> Archived</label>
+                 </div>
+                 
+                 <button type="submit" class="submit-btn">Save</button>
+             </form>
+        </div>
+    </div>
+
+    <div id="action-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeActionModal()"><i class="fas fa-times"></i></button>
+            <h2 id="action-title">Action</h2>
+            <form id="action-form">
+                <input type="hidden" id="target-user-id">
+                <input type="hidden" id="action-type">
+                
+                <div class="input-group">
+                    <label style="display: block; margin-bottom: 5px; color: #ccc;">Reason</label>
+                    <textarea id="action-reason" required style="width: 100%; height: 100px; background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 10px; border-radius: 5px;"></textarea>
+                </div>
+
+                <div id="ban-options" class="hidden">
+                    <div class="input-group">
+                        <label>Duration (hours, empty = permanent)</label>
+                        <input type="number" id="ban-duration-hours" min="1" placeholder="e.g. 72" class="form-input">
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="action-submit-btn">Execute</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="auth-modal">
+        <div class="auth-content" style="max-width: 520px; max-height: 90vh; overflow-y: auto;">
+            <button class="close-auth" onclick="closeEditUserModal()"><i class="fas fa-times"></i></button>
+            <h2>Edit user</h2>
+            <p style="color: #94a3b8; font-size: 13px;">ID: <span id="edit-user-id-display"></span></p>
+            <input type="hidden" id="edit-user-id">
+            <form id="edit-user-form" onsubmit="saveUserEdit(event)" style="margin-top: 16px;">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="edit-user-username" class="form-input" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" required>
+                </div>
+                <div class="input-group">
+                    <label>Email (login)</label>
+                    <input type="email" id="edit-user-email" class="form-input" required>
+                </div>
+                <div class="input-group">
+                    <label>New password (leave blank to keep)</label>
+                    <input type="password" id="edit-user-password" class="form-input" autocomplete="new-password">
+                </div>
+                <div class="input-group">
+                    <label>Role</label>
+                    <select id="edit-user-role" class="form-input">
+                        <option value="user_role">User</option>
+                        <option value="moderator_role">Moderator</option>
+                        <option value="senior_moderator_role">Senior Moderator</option>
+                        <option value="admin_role">Administrator</option>
+                        <option value="super_admin_role">Super Administrator</option>
+                    </select>
+                </div>
+                <div class="input-group" style="display:flex; gap:12px; align-items:center;">
+                    <label style="margin:0;"><input type="checkbox" id="edit-user-active" checked> Active account</label>
+                </div>
+                <div class="input-group">
+                    <label>Reputation</label>
+                    <input type="number" id="edit-user-reputation" class="form-input" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label>First / Last name</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <input type="text" id="edit-user-first-name" class="form-input" placeholder="First">
+                        <input type="text" id="edit-user-last-name" class="form-input" placeholder="Last">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Age / Country</label>
+                    <div style="display:grid; grid-template-columns:1fr 2fr; gap:8px;">
+                        <input type="number" id="edit-user-age" class="form-input" min="13" max="120">
+                        <input type="text" id="edit-user-country" class="form-input">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>City / UI language</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <input type="text" id="edit-user-city" class="form-input">
+                        <select id="edit-user-lang" class="form-input">
+                            <option value="en">EN</option>
+                            <option value="ru">RU</option>
+                            <option value="ka">KA</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Car / Year / Body / Engine</label>
+                    <input type="text" id="edit-user-car" class="form-input" placeholder="Car model">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:8px;">
+                        <input type="number" id="edit-user-bmw-year" class="form-input" placeholder="Year">
+                        <input type="text" id="edit-user-bmw-body" class="form-input" placeholder="Body">
+                        <input type="text" id="edit-user-bmw-engine" class="form-input" placeholder="Engine">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Bio</label>
+                    <textarea id="edit-user-bio" class="form-input" rows="3" maxlength="300"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Avatar URL</label>
+                    <input type="text" id="edit-user-avatar" class="form-input">
+                </div>
+                <button type="submit" class="submit-btn" id="edit-user-save-btn">Save changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Role Edit Modal -->
+    <div id="role-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeRoleModal()"><i class="fas fa-times"></i></button>
+            <h2>Assign Role</h2>
+            <p>User: <strong id="role-username-display" style="color:white;"></strong></p>
+            
+            <input type="hidden" id="role-user-id">
+            
+            <div class="input-group" style="margin-top:20px;">
+                <label>Select Role</label>
+                <select id="role-select" class="form-input">
+                    <option value="user_role">User</option>
+                    <option value="moderator_role">Moderator</option>
+                    <option value="senior_moderator_role">Senior Moderator</option>
+                    <option value="admin_role">Administrator</option>
+                    <option value="super_admin_role">Super Administrator</option>
+                    <option value="banned">Banned</option>
+                </select>
+            </div>
+            
+            <button class="submit-btn" onclick="saveRole()">Save Role</button>
+        </div>
+    </div>
+
+    <!-- Report Details Modal -->
+    <div id="report-details-modal" class="auth-modal">
+        <div class="auth-content">
+            <button class="close-auth" onclick="closeReportDetailsModal()"><i class="fas fa-times"></i></button>
+            <h2>Report Details</h2>
+            <div id="report-details-content" style="margin-top: 20px;">
+                <!-- Populated by JS -->
+                <p>Loading...</p>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-danger" id="btn-report-ban" onclick="">Ban User</button>
+                <button class="btn" id="btn-report-dismiss" onclick="">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Inspector Modal -->
+    <div id="inspector-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>User Inspector</h2>
+                <button class="close-modal" onclick="closeInspectorModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="inspector-body">
+                <div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <meta name="google-adsense-account" content="ca-pub-6807738591111613">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
+     crossorigin="anonymous" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_utils.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin.js?v=7" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_users.js?v=3" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_forum.js?v=2" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_codes.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_garage.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_marketplace.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_seo.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_ads.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_notifications.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_logs.js?v=2" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_messages.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_settings.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/admin_reports.js" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/modal-escape.js?v=3.0" data-cfasync="false"></script>
+    <script src="https://bimmercodes.net/js/ai-chat-loader.js?v=1" defer data-cfasync="false"></script>
+</body>
+</html>

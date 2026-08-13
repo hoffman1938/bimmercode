@@ -1,0 +1,159 @@
+/* =============================================================================
+   BimmerCodes — Design Tokens (Forum v2)
+   Single source of truth for colors, spacing, typography, radii, motion.
+   Used by forum.html, topic.html and (progressively) the rest of the app.
+   Backward-compatible aliases for legacy --bmw-* variables are kept at the
+   bottom so existing CSS keeps working while we migrate components.
+   ========================================================================== */
+
+:root {
+  /* ---------- Brand ------------------------------------------------------- */
+  --color-primary:        #1C69D4;   /* BMW Blue */
+  --color-primary-600:    #155BB8;
+  --color-primary-700:    #0F4A9E;
+  --color-primary-200:    #6FA4E8;
+  --color-primary-100:    #A9C8F1;
+  --color-primary-alpha-10: rgba(28, 105, 212, 0.10);
+  --color-primary-alpha-20: rgba(28, 105, 212, 0.20);
+  --color-primary-alpha-30: rgba(28, 105, 212, 0.30);
+
+  /* Accent (sky) — used for logo highlight, gradient pairs */
+  --color-accent:         #4DA8FF;
+  --color-accent-dark:    #2B7BC4;
+
+  /* ---------- Surfaces (dark by default) --------------------------------- */
+  --color-bg-deep:        #0A0A0C;   /* page background — softened from pure black */
+  --color-surface:        #151517;   /* base card / nav background */
+  --color-surface-2:      #1E1E1E;   /* elevated card, modal */
+  --color-surface-3:      #2A2A2A;   /* input, hover, code block */
+  --color-surface-4:      #353535;   /* pressed / active state */
+  --color-surface-glass:  rgba(18, 20, 24, 0.72);
+  --color-surface-glass-2: rgba(28, 32, 40, 0.65);
+
+  /* ---------- Text ------------------------------------------------------- */
+  --color-text-primary:   #E4E4E7;   /* warm off-white — easier on eyes */
+  --color-text-secondary: #A1A1AA;   /* zinc-400, warmer */
+  --color-text-muted:     #71717A;   /* zinc-500, better contrast */
+  --color-text-disabled:  #52525B;   /* zinc-600 */
+  --color-text-inverse:   #0A0A0A;
+  --color-text-on-primary: #FFFFFF;
+
+  /* ---------- Borders / dividers ---------------------------------------- */
+  --color-border:         rgba(255, 255, 255, 0.10);
+  --color-border-strong:  rgba(255, 255, 255, 0.18);
+  --color-border-focus:   var(--color-primary);
+  --color-divider:        rgba(255, 255, 255, 0.06);
+
+  /* ---------- Semantic --------------------------------------------------- */
+  --color-success:        #4CAF50;
+  --color-success-bg:     rgba(76, 175, 80, 0.14);
+  --color-warning:        #EF9F27;
+  --color-warning-bg:     rgba(239, 159, 39, 0.14);
+  --color-danger:         #E24B4A;
+  --color-danger-bg:      rgba(226, 75, 74, 0.14);
+  --color-info:           #3B9DF8;
+  --color-info-bg:        rgba(59, 157, 248, 0.14);
+
+  /* Reputation tiers — used for user badges */
+  --color-rep-newcomer:   #8A8A8A;
+  --color-rep-member:     #4DA8FF;
+  --color-rep-regular:    #4CAF50;
+  --color-rep-expert:     #EF9F27;
+  --color-rep-master:     #E24B4A;
+  --color-rep-admin:      #C70039;
+
+  /* ---------- Typography ------------------------------------------------ */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Exo 2', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+  --font-size-xs:   12px;
+  --font-size-sm:   13px;
+  --font-size-md:   14px;
+  --font-size-base: 15px;
+  --font-size-lg:   17px;
+  --font-size-xl:   20px;
+  --font-size-2xl:  24px;
+  --font-size-3xl:  32px;
+  --font-size-display: clamp(28px, 5vw, 44px);
+
+  --font-weight-regular: 400;
+  --font-weight-medium:  500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:    700;
+
+  --line-height-tight:   1.2;
+  --line-height-normal:  1.5;
+  --line-height-loose:   1.7;
+
+  /* ---------- Spacing (4px grid) ---------------------------------------- */
+  --space-0:   0;
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+
+  /* ---------- Radius ---------------------------------------------------- */
+  --radius-xs:   3px;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-2xl:  28px;
+  --radius-pill: 999px;
+
+  /* ---------- Elevation ------------------------------------------------- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.36);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.40);
+  --shadow-glow:      none;   /* removed — moving to calmer aesthetic */
+  --shadow-glow-soft: none;
+
+  /* ---------- Motion ---------------------------------------------------- */
+  --ease-out:    cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-fast:   120ms;
+  --duration-normal: 220ms;
+  --duration-slow:   380ms;
+
+  --transition-base: all var(--duration-normal) var(--ease-out);
+  --transition-fast: all var(--duration-fast)   var(--ease-out);
+
+  /* ---------- Layout ---------------------------------------------------- */
+  --container-max:     1280px;
+  --container-padding: clamp(16px, 4vw, 32px);
+  --header-height:     64px;
+  --sidebar-width:     260px;
+  --z-header:          100;
+  --z-modal:           1000;
+  --z-toast:           1200;
+
+  /* Safe-area insets (notches) */
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --sar: env(safe-area-inset-right);
+
+  /* =============================================================
+     Backward-compatible aliases — keep legacy CSS working.
+     Do NOT use these in new code; prefer the tokens above.
+     ============================================================= */
+  --bmw-blue:      var(--color-primary);
+  --bmw-dark-blue: var(--color-primary-700);
+  --bmw-sky:       var(--color-accent);
+  --bg-deep:       var(--color-bg-deep);
+  --glass-bg:      var(--color-surface-glass);
+  --glass-border:  var(--color-border);
+  --glass-highlight: rgba(255, 255, 255, 0.03);
+  --text-main:     var(--color-text-primary);
+  --text-muted:    var(--color-text-muted);
+  --radius-xl-legacy: 24px;
+  --transition:    var(--transition-base);
+  --shadow-glow-legacy: var(--shadow-glow);
+}

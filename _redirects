@@ -1,0 +1,2 @@
+# Do not add /admin → /admin.html here: it can conflict with Cloudflare pretty-URL
+# redirects and cause ERR_TOO_MANY_REDIRECTS. Use /admin.html or /admin (functions/admin.js).

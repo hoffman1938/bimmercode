@@ -1,0 +1,207 @@
+/* =============================================================================
+   BimmerCodes — shared buttons (index, VIN, legal, forum, profile, static pages)
+   One visual system: glass surface + blue focus/hover (matches index-bento).
+   Load after tokens (optional) and before page-specific CSS.
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-sizing: border-box;
+  padding: 0.5rem 0.9rem;
+  min-height: 2.5rem;
+  border-radius: 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  transition:
+    background 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s,
+    filter 0.15s,
+    transform 0.12s;
+}
+
+.btn:hover {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #f8fafc;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.12);
+}
+
+.btn:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Primary CTA (e.g. New topic) */
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 1px solid transparent;
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.45);
+  color: #fff;
+}
+
+/* Ghost: toolbar / secondary (forum header, filters) */
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: #94a3b8;
+  box-shadow: none;
+}
+
+.btn-ghost:hover {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: transparent;
+  color: #f1f5f9;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
+}
+
+/* Icon-only square */
+.btn-icon {
+  padding: 0;
+  width: 2.5rem;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+}
+
+/* Danger */
+.btn-danger {
+  background: rgba(226, 75, 74, 0.14);
+  border-color: rgba(226, 75, 74, 0.35);
+  color: #f87171;
+}
+
+.btn-danger:hover {
+  background: rgba(226, 75, 74, 0.22);
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #fecaca;
+}
+
+/* Soft red outline (profile delete, etc.) */
+.btn-danger-ghost {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+.btn-danger-ghost:hover {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fee2e2;
+}
+
+/* Full width (auth, forms) */
+.btn-block {
+  width: 100%;
+  padding: 12px 16px !important;
+  min-height: 46px !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600;
+}
+
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  pointer-events: none;
+}
+
+/* =============================================================================
+   Auth dropdown (Profile + Logout)
+   ========================================================================== */
+
+.auth-dropdown-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.auth-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 200;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.97);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  pointer-events: none;
+}
+
+.auth-dropdown-wrap.open .auth-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.auth-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  box-sizing: border-box;
+}
+
+.auth-dropdown-item:hover {
+  background: rgba(37, 99, 235, 0.14);
+  color: #f8fafc;
+}
+
+.auth-dropdown-item i {
+  font-size: 0.9rem;
+  width: 1.1rem;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.auth-dropdown-logout {
+  color: #f87171;
+}
+
+.auth-dropdown-logout:hover {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
+}

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:yandex="http://news.yandex.ru"
+     xmlns:media="http://search.yahoo.com/mrss/"
+     xmlns:turbo="http://turbo.yandex.ru"
+     version="2.0">
+  <channel>
+    <title>BMW Diagnostic Codes - Коды ошибок BMW</title>
+    <link>https://bimmercodes.net/</link>
+    <description>База данных кодов ошибок BMW с решениями и рекомендациями по ремонту</description>
+    <language>ru</language>
+    <turbo:analytics type="Yandex" id="XXXXXXXX"></turbo:analytics>
+    
+    <!-- Главная страница -->
+    <item turbo="true">
+      <title>BMW Diagnostic Codes - База кодов ошибок BMW</title>
+      <link>https://bimmercodes.net/</link>
+      <turbo:content>
+        <![CDATA[
+          <header>
+            <h1>BMW Diagnostic Codes</h1>
+            <h2>Бесплатная база данных кодов ошибок BMW</h2>
+          </header>
+          <p>Наша база данных поможет вам диагностировать и устранить неисправности вашего BMW. Поддерживаются все модели: E-серия, F-серия, G-серия.</p>
+          <h2>Поддерживаемые системы</h2>
+          <ul>
+            <li>DME/DDE - Управление двигателем</li>
+            <li>EGS - Автоматическая коробка передач</li>
+            <li>ABS/DSC - Антиблокировочная система</li>
+            <li>SRS - Система подушек безопасности</li>
+            <li>KOMBI - Комбинация приборов</li>
+          </ul>
+          <button formaction="https://bimmercodes.net/" data-background-color="#0066b3" data-color="white" data-primary="true">Поиск кодов ошибок</button>
+        ]]>
+      </turbo:content>
+    </item>
+    
+    <!-- 
+    Пример страницы для конкретного кода ошибки:
+    
+    <item turbo="true">
+      <title>Код ошибки BMW 102613 - Описание и решение</title>
+      <link>https://bimmercodes.net/code/102613</link>
+      <turbo:content>
+        <![CDATA[
+          <header>
+            <h1>BMW Error Code 102613</h1>
+          </header>
+          <p>Описание ошибки и рекомендации по ремонту...</p>
+        ]]>
+      </turbo:content>
+    </item>
+    -->
+    
+  </channel>
+</rss>

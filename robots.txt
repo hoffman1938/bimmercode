@@ -1,0 +1,40 @@
+# robots.txt for BMW Diagnostic Codes
+# https://bimmercodes.net/robots.txt
+
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Specific rules for Yandex
+User-agent: Yandex
+Allow: /
+Crawl-delay: 2
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Block unnecessary files
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /node_modules/
+
+# Allow CSS and JS for rendering
+Allow: /*.css$
+Allow: /*.js$
+Allow: /style.css
+Allow: /script.js
+Allow: /data.js
+
+# Sitemap location
+Sitemap: https://bimmercodes.net/sitemap.xml
+
+# Host (для Яндекса - указывает основной домен)
+Host: https://bimmercodes.net/

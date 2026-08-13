@@ -1,0 +1,788 @@
+/* =============================================================================
+   BimmerCodes — Site-wide Premium Layer (v1)
+   Loaded LAST on every page (forum, topic, vin, contact, terms, profile, etc.)
+   so it overrides legacy styles. Restyles shared components (header, footer,
+   buttons, forms, modals) to match the new homepage aesthetic — no HTML
+   restructuring required.
+
+   Pages should add  body class="… bcx"  to opt-in.
+   ========================================================================== */
+
+/* ---------- Design tokens (page-scoped) -------------------------------- */
+body.bcx {
+  --bc-bg:           #07080B;
+  --bc-bg-2:         #0B0D12;
+  --bc-surface:      rgba(18, 22, 30, 0.72);
+  --bc-surface-2:    rgba(24, 30, 42, 0.78);
+  --bc-surface-3:    rgba(32, 40, 55, 0.65);
+  --bc-border:       rgba(255, 255, 255, 0.07);
+  --bc-border-2:     rgba(255, 255, 255, 0.12);
+  --bc-border-hot:   rgba(56, 132, 255, 0.45);
+
+  --bc-text:         #F4F6FA;
+  --bc-text-soft:    #B7BFCC;
+  --bc-text-muted:   #7C8597;
+  --bc-text-faint:   #4E5666;
+
+  --bc-blue:         #2E7BFF;
+  --bc-blue-bright:  #4FA0FF;
+  --bc-blue-deep:    #1E5BD6;
+  --bc-cyan:         #56D2FF;
+  --bc-violet:       #8B7BFF;
+  --bc-mint:         #5EE6B5;
+  --bc-amber:        #FFB259;
+  --bc-red:          #FF5965;
+
+  --bc-grad-text:    linear-gradient(180deg, #FFFFFF 0%, #B6C6E2 100%);
+  --bc-grad-cta:     linear-gradient(135deg, #4FA0FF 0%, #2E7BFF 100%);
+  --bc-shadow-card:  0 1px 0 rgba(255,255,255,0.04) inset,
+                     0 24px 60px -20px rgba(0,0,0,0.55),
+                     0 8px 24px -8px rgba(0,0,0,0.4);
+  --bc-shadow-cta:   0 12px 36px -8px rgba(46, 123, 255, 0.55),
+                     0 4px 14px -2px rgba(46, 123, 255, 0.35);
+
+  --bc-ease:         cubic-bezier(0.22, 0.61, 0.36, 1);
+  --bc-radius-md:    14px;
+  --bc-radius-lg:    20px;
+  --bc-radius-xl:    28px;
+  --bc-container:    1280px;
+  --bc-pad:          clamp(16px, 4vw, 32px);
+}
+
+/* ---------- Base background ------------------------------------------- */
+html.bcx-page,
+body.bcx { background: var(--bc-bg); }
+
+body.bcx {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--bc-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+html.bcx-page { overflow-x: hidden; }
+
+/* Page background: deep gradient + subtle grid overlay + soft halo */
+body.bcx::before,
+body.bcx::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+body.bcx::before {
+  background:
+    radial-gradient(900px 500px at 80% -10%, rgba(46,123,255,0.14) 0%, transparent 60%),
+    radial-gradient(700px 460px at -10% 30%, rgba(139,123,255,0.08) 0%, transparent 60%),
+    linear-gradient(180deg, var(--bc-bg) 0%, #08090D 60%, #06070A 100%);
+}
+body.bcx::after {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 25%, transparent 75%);
+          mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 25%, transparent 75%);
+  opacity: 0.5;
+}
+
+/* Hide legacy WebGL/halo container; we use CSS-only background. */
+body.bcx #webgl-container { display: none !important; }
+
+/* Lift the flow content above background pseudo-elements. */
+body.bcx > header,
+body.bcx > main,
+body.bcx > footer { position: relative; z-index: 1; }
+
+/* Override the legacy `h1 { white-space: nowrap }` that breaks responsive text. */
+body.bcx h1,
+body.bcx h2,
+body.bcx h3 { white-space: normal; }
+
+/* ---------- Universal premium header (works on top of `forum-header`) -- */
+body.bcx header.forum-header,
+body.bcx header.index-bento,
+body.bcx header.bc3-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "menu brand actions";
+  align-items: center;
+  gap: 8px 10px !important;
+  min-height: 56px;
+  padding: 12px clamp(12px, 4vw, 28px) !important;
+  padding-top: calc(12px + env(safe-area-inset-top)) !important;
+  background: linear-gradient(180deg, rgba(7,8,11,0.88) 0%, rgba(7,8,11,0.6) 100%) !important;
+  border-bottom: 1px solid var(--bc-border) !important;
+  backdrop-filter: saturate(180%) blur(18px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(18px) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18) !important;
+  max-width: 100%;
+  flex-wrap: nowrap !important;
+}
+
+/* Index bc3-nav uses brand | actions (no leading burger column) */
+body.bcx header.bc3-nav {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-areas: "brand actions" !important;
+}
+@media (min-width: 981px) {
+  body.bcx header.bc3-nav {
+    grid-template-columns: auto 1fr auto !important;
+    grid-template-areas: "brand links actions" !important;
+  }
+  body.bcx header.bc3-nav .bc3-nav__links {
+    grid-area: links;
+    justify-self: center;
+  }
+}
+
+body.bcx header.forum-header > .mobile-only,
+body.bcx header.forum-header > button.mobile-only {
+  grid-area: menu;
+  justify-self: start;
+  margin: 0 !important;
+}
+
+body.bcx header .logo-container,
+body.bcx header .index-header-brand,
+body.bcx header .bc3-nav__brand {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+body.bcx header a.main_logo_refr {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+body.bcx header .logo {
+  width: 38px !important;
+  height: 38px !important;
+  flex-shrink: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+body.bcx header .logo svg { width: 100%; height: 100%; display: block; }
+body.bcx header h1.index-header-title {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.2 !important;
+  color: var(--bc-text) !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap !important;
+}
+body.bcx header h1.index-header-title .index-header-title-muted {
+  color: var(--bc-text-muted) !important;
+  font-weight: 500 !important;
+}
+
+/* Controls (header right-side actions) become premium pills */
+body.bcx header .controls,
+body.bcx header .bc3-nav__actions {
+  grid-area: actions;
+  margin-left: 0 !important;
+  display: flex;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  gap: 6px;
+  min-width: 0;
+}
+
+body.bcx header .controls .btn,
+body.bcx header .controls a.btn,
+body.bcx header .controls button.btn,
+body.bcx header .index-header-btn,
+body.bcx header a.index-header-btn,
+body.bcx header button.index-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 14px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--bc-text-soft) !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: 999px !important;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+  font-family: inherit;
+}
+body.bcx header .controls .btn:hover,
+body.bcx header .index-header-btn:hover {
+  background: rgba(255,255,255,0.09) !important;
+  border-color: var(--bc-border-2) !important;
+  color: var(--bc-text) !important;
+}
+body.bcx header .controls .btn i,
+body.bcx header .index-header-btn i { font-size: 12px; opacity: 0.85; }
+
+/* Icon-only header buttons (mobile burger etc.) */
+body.bcx header .btn-icon,
+body.bcx header .index-header-btn.btn-icon {
+  width: 40px;
+  min-width: 40px;
+  padding: 0 !important;
+}
+
+/* Auth button (login / user) — primary blue */
+body.bcx header #auth-btn:not(.auth-btn--logged) {
+  background: var(--bc-blue) !important;
+  border-color: rgba(255,255,255,0.16) !important;
+  color: #fff !important;
+  box-shadow: var(--bc-shadow-cta) !important;
+}
+body.bcx header #auth-btn:not(.auth-btn--logged):hover {
+  background: var(--bc-blue-bright) !important;
+}
+
+/* Logged-in auth pill with avatar */
+body.bcx header #auth-btn.auth-btn--logged { padding-left: 4px !important; }
+body.bcx header #auth-btn.auth-btn--logged img {
+  width: 28px !important; height: 28px !important;
+  border-radius: 999px !important;
+  object-fit: cover !important;
+  margin: 0 4px 0 0 !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+
+/* Mobile-only burger inside header */
+body.bcx header .mobile-only.btn-icon {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--bc-border) !important;
+  color: var(--bc-text) !important;
+}
+
+/* Mobile: hide secondary header pills' labels on phones, keep only the icon.
+   Use font-size:0 to hide any bare text nodes (pages that don't wrap text
+   in a <span>), then restore icon size via the <i> child. Selectors here
+   mirror the base header rule's specificity so the override wins. */
+@media (max-width: 720px) {
+  body.bcx header .controls .btn,
+  body.bcx header .controls a.btn,
+  body.bcx header .controls button.btn,
+  body.bcx header .index-header-btn,
+  body.bcx header a.index-header-btn,
+  body.bcx header button.index-header-btn {
+    width: 40px !important;
+    min-width: 40px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    font-size: 0 !important;
+    gap: 0 !important;
+  }
+  body.bcx header .controls .btn > i,
+  body.bcx header .controls a.btn > i,
+  body.bcx header .controls button.btn > i,
+  body.bcx header .index-header-btn > i,
+  body.bcx header a.index-header-btn > i,
+  body.bcx header button.index-header-btn > i { font-size: 13px !important; }
+  body.bcx header .controls .btn span,
+  body.bcx header .index-header-btn span { display: none !important; }
+  /* Keep auth pill expanded with its label */
+  body.bcx header #auth-btn,
+  body.bcx header a#auth-btn,
+  body.bcx header .controls #auth-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    padding: 0 14px !important;
+    font-size: 13.5px !important;
+    gap: 8px !important;
+  }
+  body.bcx header #auth-btn span { display: inline !important; }
+  body.bcx header #auth-btn i { font-size: 12px !important; }
+}
+@media (max-width: 768px) {
+  body.bcx header.forum-header .controls a[href="/"],
+  body.bcx header.forum-header .controls a[href*="vin.html"],
+  body.bcx header.forum-header .controls a[title="Home"],
+  body.bcx header.forum-header .controls a[title="VIN Check"] {
+    display: none !important;
+  }
+  body.bcx header h1.index-header-title .index-header-title-muted {
+    display: none !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body.bcx header {
+    gap: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    min-height: 52px;
+  }
+  body.bcx header h1.index-header-title {
+    font-size: 13px !important;
+    max-width: 38vw;
+  }
+  body.bcx header.forum-header #forum-language-toggle {
+    display: none !important;
+  }
+  /* Static pages (no mobile drawer): keep language in the header */
+  body.bcx:not(:has(#mobile-menu-content)) header.forum-header #forum-language-toggle {
+    display: inline-flex !important;
+  }
+  body.bcx header #language-toggle {
+    display: inline-flex !important;
+  }
+}
+
+/* Forum / topic mobile drawer above page content */
+body.bcx .mobile-menu-overlay {
+  z-index: 4998 !important;
+}
+body.bcx .mobile-offcanvas {
+  z-index: 4999 !important;
+  width: min(300px, 88vw) !important;
+}
+body.bcx .mobile-menu-overlay.active {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ---------- Universal premium footer ---------------------------------- */
+body.bcx footer {
+  position: relative;
+  margin-top: 80px;
+  padding: 48px var(--bc-pad) calc(40px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, transparent 0%, rgba(7,8,11,0.9) 60%) !important;
+  border-top: 1px solid var(--bc-border) !important;
+  text-align: left !important;
+  color: var(--bc-text-soft) !important;
+}
+body.bcx footer .footer-container {
+  width: min(100%, var(--bc-container));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 1.4fr auto;
+  align-items: end;
+  gap: 32px;
+}
+body.bcx footer .footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+body.bcx footer .footer-text {
+  margin: 0;
+  font-size: 14px !important;
+  color: var(--bc-text) !important;
+  font-weight: 500;
+}
+body.bcx footer .footer-subtext {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--bc-text-muted);
+}
+body.bcx footer .footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+body.bcx footer .footer-links a {
+  font-size: 13.5px;
+  color: var(--bc-text-soft) !important;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+body.bcx footer .footer-links a:hover { color: var(--bc-text) !important; }
+@media (max-width: 640px) {
+  body.bcx footer .footer-container { grid-template-columns: 1fr; gap: 18px; }
+}
+
+/* ---------- Mobile off-canvas (forum/topic sheet) --------------------- */
+body.bcx .mobile-menu-overlay {
+  background: rgba(5,7,11,0.78) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+body.bcx .mobile-offcanvas {
+  background: linear-gradient(180deg, #0E1118 0%, #0A0C12 100%) !important;
+  border-right: 1px solid var(--bc-border) !important;
+  color: var(--bc-text) !important;
+}
+body.bcx .mobile-offcanvas .offcanvas-header h2 {
+  color: var(--bc-text) !important;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ---------- Universal modal foundation -------------------------------- */
+body.bcx .modal,
+body.bcx .auth-modal,
+body.bcx .favorites-modal {
+  background: rgba(5,7,11,0.78) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+body.bcx .modal.active,
+body.bcx .auth-modal.active,
+body.bcx .favorites-modal.active {
+  background: rgba(5,7,11,0.78) !important;
+}
+
+body.bcx .modal-card,
+body.bcx .modal-card--glass,
+body.bcx .auth-card,
+body.bcx .auth-content,
+body.bcx .favorites-content {
+  background: linear-gradient(180deg, rgba(20,24,34,0.95) 0%, rgba(12,15,21,0.95) 100%) !important;
+  border: 1px solid var(--bc-border-2) !important;
+  border-radius: var(--bc-radius-xl) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 32px 80px -20px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(46,123,255,0.04) !important;
+  color: var(--bc-text);
+}
+
+/* Modal headers / titles */
+body.bcx .auth-header,
+body.bcx .modal-card .modal-body,
+body.bcx .auth-body { color: var(--bc-text); }
+body.bcx .auth-header h2,
+body.bcx .modal-card h2,
+body.bcx .favorites-header h3 {
+  color: var(--bc-text) !important;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+body.bcx .auth-subtitle {
+  color: var(--bc-text-muted) !important;
+  font-size: 14px;
+}
+body.bcx .auth-brand-logo {
+  background: linear-gradient(135deg, rgba(46,123,255,0.2), rgba(46,123,255,0.06)) !important;
+  border: 1px solid rgba(79,160,255,0.3) !important;
+  color: var(--bc-blue-bright) !important;
+}
+
+/* Close buttons */
+body.bcx .close-auth,
+body.bcx .close-button,
+body.bcx .modal-close {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid var(--bc-border) !important;
+  color: var(--bc-text-soft) !important;
+  border-radius: 10px !important;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+body.bcx .close-auth:hover,
+body.bcx .close-button:hover,
+body.bcx .modal-close:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: var(--bc-text) !important;
+}
+
+/* Auth tabs */
+body.bcx .auth-tabs {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: 999px !important;
+  padding: 4px !important;
+}
+body.bcx .auth-tabs .tab-btn,
+body.bcx .auth-tabs .auth-tab {
+  background: transparent !important;
+  color: var(--bc-text-muted) !important;
+  border: none !important;
+  font-weight: 500;
+  font-size: 13.5px;
+  border-radius: 999px;
+  padding: 8px 16px;
+  transition: color 0.2s, background 0.2s;
+}
+body.bcx .auth-tabs .tab-btn.active,
+body.bcx .auth-tabs .auth-tab.active {
+  background: var(--bc-blue) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px -4px rgba(46,123,255,0.5);
+}
+
+/* Auth & forum form inputs */
+body.bcx .input-group,
+body.bcx .input-with-icon {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: 12px !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+body.bcx .input-group:focus-within,
+body.bcx .input-with-icon:focus-within {
+  border-color: rgba(79,160,255,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(46,123,255,0.18);
+}
+body.bcx .input-group i,
+body.bcx .input-with-icon .input-icon {
+  color: var(--bc-blue-bright) !important;
+  font-size: 13px;
+}
+body.bcx .input-group input,
+body.bcx .input-group select,
+body.bcx .input-group textarea,
+body.bcx .input-with-icon input,
+body.bcx .input-with-icon select,
+body.bcx .input-with-icon textarea {
+  background: transparent !important;
+  border: none !important;
+  color: var(--bc-text) !important;
+  font-family: inherit;
+}
+body.bcx .input-group input::placeholder,
+body.bcx .input-with-icon input::placeholder { color: var(--bc-text-muted) !important; }
+
+/* Generic submit button used in auth modals */
+body.bcx .submit-btn {
+  background: var(--bc-blue) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  font-size: 14.5px;
+  height: 46px;
+  padding: 0 22px;
+  box-shadow: var(--bc-shadow-cta) !important;
+  transition: background 0.2s, transform 0.15s;
+}
+body.bcx .submit-btn:hover { background: var(--bc-blue-bright) !important; transform: translateY(-1px); }
+
+body.bcx .auth-msg {
+  text-align: center;
+  font-size: 13px;
+  margin-top: 8px;
+  color: var(--bc-text-muted);
+}
+body.bcx .auth-link {
+  color: var(--bc-blue-bright) !important;
+  text-decoration: none;
+}
+body.bcx .auth-link:hover { color: #fff !important; }
+
+/* ---------- Universal premium buttons (legacy .btn used on many pages) -- */
+body.bcx .btn:not(.index-header-btn) {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--bc-border);
+  color: var(--bc-text-soft);
+  border-radius: 12px;
+  padding: 9px 16px;
+  min-height: 40px;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 13.5px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+}
+body.bcx .btn:not(.index-header-btn):hover {
+  background: rgba(255,255,255,0.09);
+  border-color: var(--bc-border-2);
+  color: var(--bc-text);
+}
+body.bcx .btn.btn-primary {
+  background: var(--bc-blue) !important;
+  border-color: rgba(255,255,255,0.16) !important;
+  color: #fff !important;
+  box-shadow: var(--bc-shadow-cta) !important;
+}
+body.bcx .btn.btn-primary:hover { background: var(--bc-blue-bright) !important; transform: translateY(-1px); }
+body.bcx .btn.btn-ghost {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--bc-text-soft) !important;
+  box-shadow: none !important;
+}
+body.bcx .btn.btn-ghost:hover {
+  background: rgba(255,255,255,0.06) !important;
+  color: var(--bc-text) !important;
+}
+body.bcx .btn.btn-danger {
+  background: rgba(255,89,101,0.12) !important;
+  border-color: rgba(255,89,101,0.35) !important;
+  color: #FF8E97 !important;
+}
+body.bcx .btn.btn-danger:hover {
+  background: rgba(255,89,101,0.2) !important;
+  color: #FFB6BC !important;
+}
+
+/* ---------- Favorites modal layout polish ----------------------------- */
+body.bcx .favorites-content {
+  width: min(94%, 520px) !important;
+  max-height: 78vh;
+}
+body.bcx .favorites-header {
+  padding: 18px 22px !important;
+  border-bottom: 1px solid var(--bc-border) !important;
+}
+body.bcx .favorites-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px !important;
+}
+body.bcx .favorites-body {
+  padding: 16px !important;
+}
+
+/* Empty state inside favorites */
+body.bcx .favorites-body .empty-favorites,
+body.bcx .favorites-body p:only-child {
+  text-align: center;
+  color: var(--bc-text-muted);
+  padding: 32px 16px;
+  font-size: 14px;
+}
+
+/* ---------- Universal premium scroll-reveal --------------------------- */
+body.bcx.bcx-anim .bcx-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s var(--bc-ease), transform 0.6s var(--bc-ease);
+}
+body.bcx.bcx-anim .bcx-reveal.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.bcx.bcx-anim .bcx-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------- Hide notification bell on non-forum pages (live.js injects it) - */
+body.bcx:not(.forum-page):not(.profile-body) .notification-btn,
+body.bcx:not(.forum-page):not(.profile-body) #notif-btn-wrapper {
+  display: none !important;
+}
+
+/* ---------- Generic shared section helpers ---------------------------- */
+.bcx-wrap {
+  width: min(100%, var(--bc-container));
+  margin-inline: auto;
+  padding-inline: var(--bc-pad);
+}
+.bcx-section {
+  position: relative;
+  padding: clamp(48px, 7vw, 96px) 0;
+}
+.bcx-section--tight { padding: clamp(36px, 5vw, 64px) 0; }
+.bcx-section__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  margin-bottom: clamp(32px, 5vw, 56px);
+}
+.bcx-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bc-blue-bright);
+}
+.bcx-kicker::before,
+.bcx-kicker::after {
+  content: "";
+  width: 28px;
+  height: 1px;
+}
+.bcx-kicker::before { background: linear-gradient(90deg, transparent, var(--bc-blue-bright)); }
+.bcx-kicker::after  { background: linear-gradient(90deg, var(--bc-blue-bright), transparent); }
+.bcx-title {
+  margin: 0;
+  font-size: clamp(28px, 4.5vw, 48px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  text-wrap: balance;
+  background: var(--bc-grad-text);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+.bcx-lead {
+  margin: 0;
+  max-width: 60ch;
+  font-size: clamp(14px, 1.4vw, 17px);
+  line-height: 1.55;
+  color: var(--bc-text-soft);
+  text-wrap: pretty;
+}
+
+/* Premium glass card (reusable across pages) */
+.bcx-card {
+  background: linear-gradient(180deg, rgba(20,24,34,0.7) 0%, rgba(12,15,21,0.7) 100%);
+  border: 1px solid var(--bc-border);
+  border-radius: var(--bc-radius-xl);
+  box-shadow: var(--bc-shadow-card);
+}
+
+/* Premium CTA buttons (reusable) */
+.bcx-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 22px;
+  font-size: 14.5px;
+  font-weight: 600;
+  border-radius: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s var(--bc-ease), background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  border: 1px solid transparent;
+  color: var(--bc-text);
+  background: rgba(255,255,255,0.05);
+}
+.bcx-cta:hover { background: rgba(255,255,255,0.09); border-color: var(--bc-border-2); }
+.bcx-cta--primary {
+  background: var(--bc-blue);
+  color: #fff !important;
+  box-shadow: var(--bc-shadow-cta);
+}
+.bcx-cta--primary:hover {
+  background: var(--bc-blue-bright);
+  transform: translateY(-2px);
+}
+.bcx-cta--ghost {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--bc-border-2);
+}
+
+/* ---------- Skeleton loaders (consistent dark feel) ------------------- */
+body.bcx .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%) !important;
+  background-size: 200% 100% !important;
+  animation: bcx-skel 1.4s linear infinite !important;
+  border-radius: 8px;
+}
+@keyframes bcx-skel { from { background-position: 200% 0; } to { background-position: -200% 0; } }

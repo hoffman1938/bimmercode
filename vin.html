@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en" class="index-bento-page bcx-page scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>BMW VIN Decoder | BimmerCodes</title>
+    <meta name="theme-color" content="#0F172A" />
+
+    <meta
+      name="description"
+      content="Decode a BMW or Mini 17-digit VIN — model year, engine, plant, and more."
+    />
+
+    <!-- Google AdSense -->
+    <meta name="google-adsense-account" content="ca-pub-6807738591111613" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807738591111613"
+      crossorigin="anonymous"
+    ></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap"
+    />
+
+    <link rel="stylesheet" href="./css/style.css?v=2.94" />
+    <link rel="stylesheet" href="./css/responsive.css?v=4" />
+    <link rel="stylesheet" href="./css/notifications.css?v=2.91" />
+    <link rel="stylesheet" href="./css/tokens.css?v=3.0" />
+    <link rel="stylesheet" href="./css/ui-buttons.css?v=1" />
+    <link rel="stylesheet" href="./css/forum.css?v=3.14" />
+    <link rel="stylesheet" href="./css/index-bento.css?v=5" />
+    <link rel="stylesheet" href="./css/vin-page.css?v=3" />
+    <link rel="stylesheet" href="./css/site-premium.css?v=5" />
+    <link rel="stylesheet" href="./css/vin-premium.css?v=1" />
+    <link rel="stylesheet" href="./css/site-responsive.css?v=3" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <link
+      rel="shortcut icon"
+      href="./assets/icons/ico.svg"
+      type="image/x-icon"
+    />
+
+  </head>
+  <body class="bmw-pattern vin-page bcx">
+    <div id="webgl-container" class="index-bento-bg"></div>
+
+    <header class="forum-header index-bento">
+      <div class="logo-container index-header-brand">
+        <a class="main_logo_refr" href="index.html" aria-label="BimmerCodes VIN — home">
+          <div class="logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="48" stroke="white" stroke-width="4" fill="black" />
+              <circle cx="50" cy="50" r="35" fill="white" />
+              <path d="M 50,15 A 35,35 0 0,1 85,50 H 50 Z" fill="#1A6FB0" />
+              <path d="M 50,50 H 85 A 35,35 0 0,1 50,85 Z" fill="white" />
+              <path d="M 50,50 V 15 A 35,35 0 0,0 15,50 Z" fill="white" />
+              <path d="M 50,50 H 15 A 35,35 0 0,0 50,85 Z" fill="#1A6FB0" />
+            </svg>
+          </div>
+          <h1 class="index-header-title">
+            BMW Diagnostic Codes <span class="index-header-title-muted">· VIN</span>
+          </h1>
+        </a>
+      </div>
+      <div class="controls">
+        <a href="index.html" class="index-header-btn btn" title="Home">
+          <i class="fas fa-home" aria-hidden="true"></i>
+          <span data-i18n="homeBtn">Home</span>
+        </a>
+        <a href="forum.html" class="index-header-btn btn">
+          <i class="fas fa-comments" aria-hidden="true"></i>
+          <span data-i18n="forumBtn">Forum</span>
+        </a>
+        <button id="language-toggle" type="button" class="index-header-btn btn" title="Language">
+          <i class="fas fa-globe" aria-hidden="true"></i>
+          <span>EN</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="container index-bento">
+      <div class="vin-hero-card">
+        <div class="max-w-2xl">
+          <p class="vin-hero-kicker">BimmerCodes</p>
+          <h2 class="vin-hero-title" data-i18n="vinTitle">Decode your VIN</h2>
+          <p class="vin-hero-lead" data-i18n="vinSubtitle">
+            Enter 17-digit VIN to check technical specs.
+          </p>
+        </div>
+
+        <div class="vin-search-box">
+          <input
+            type="text"
+            id="vin-input"
+            name="vin"
+            placeholder="WBA · · · · · · · · · · · · · ·"
+            maxlength="17"
+            autocomplete="off"
+            spellcheck="false"
+            inputmode="text"
+            enterkeyhint="search"
+            aria-label="VIN"
+          />
+          <button
+            class="vin-btn"
+            type="button"
+            onclick="decodeVin()"
+            data-i18n="btnCheck"
+          >
+            CHECK
+          </button>
+        </div>
+
+        <div id="history-container" class="history-container">
+          <div class="history-label" data-i18n="lblHistory">Recent checks</div>
+          <div class="history-list" id="history-list"></div>
+        </div>
+      </div>
+
+      <div id="loader" class="loader" aria-live="polite" aria-busy="true">
+        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+        <span data-i18n="loading">Checking database…</span>
+      </div>
+
+      <div id="vin-result">
+        <div class="vin-result-head">
+          <h2 id="car-title" class="vin-result-title">BMW</h2>
+          <p class="vin-vin-line">
+            <span class="vin-vin-prefix">VIN</span>
+            <span id="res-vin" class="vin-mono" aria-label="VIN">—</span>
+          </p>
+        </div>
+
+        <section class="vin-bento-group" aria-label="Vehicle">
+          <h3 class="vin-bento-group-title" data-i18n="vinGroupVehicle">
+            Vehicle
+          </h3>
+          <div class="vin-spec-grid">
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-car"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblModel">Model</h4>
+                <div id="res-model" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblYear">Year</h4>
+                <div id="res-year" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblSeries">Series</h4>
+                <div id="res-series" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-shapes"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblBody">Body</h4>
+                <div id="res-body" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-door-open"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblDoors">Doors</h4>
+                <div id="res-doors" class="vin-stat-value">—</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="vin-bento-group" aria-label="Powertrain">
+          <h3 class="vin-bento-group-title" data-i18n="vinGroupPowertrain">
+            Powertrain
+          </h3>
+          <div class="vin-spec-grid">
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-cogs"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblEngine">Engine</h4>
+                <div id="res-engine" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-horse-head"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblPower">Power</h4>
+                <div id="res-power" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-gas-pump"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblFuel">Fuel</h4>
+                <div id="res-fuel" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-road"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblDrive">Drive</h4>
+                <div id="res-drive" class="vin-stat-value">—</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="vin-bento-group" aria-label="Factory">
+          <h3 class="vin-bento-group-title" data-i18n="vinGroupFactory">
+            Assembly &amp; weight
+          </h3>
+          <div class="vin-spec-grid">
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-flag"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblCountry">Country</h4>
+                <div id="res-country" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-industry"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblPlant">Factory</h4>
+                <div id="res-plant" class="vin-stat-value">—</div>
+              </div>
+            </div>
+            <div class="vin-stat-card">
+              <div class="vin-stat-icon" aria-hidden="true">
+                <i class="fas fa-weight-hanging"></i>
+              </div>
+              <div class="vin-stat-body">
+                <h4 class="vin-stat-label" data-i18n="lblWeight">GVWR</h4>
+                <div id="res-weight" class="vin-stat-value">—</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div
+          id="deep-decode-section"
+          class="vin-deep-decode"
+          style="display: none"
+        >
+          <h3 class="vin-deep-h">
+            <i class="fas fa-wrench" aria-hidden="true"></i>
+            <span data-i18n="deepDecodeTitle">Deep decode &amp; history</span>
+          </h3>
+          <p data-i18n="deepDecodeDesc">
+            Use these specialized external tools to get full factory options,
+            verify auction history, and more.
+          </p>
+
+          <div class="vin-ext-grid">
+            <a
+              href="javascript:void(0)"
+              id="link-bidfax"
+              class="ext-btn"
+              onclick="submitExternalSearch('bidfax'); return false;"
+            >
+              <i class="fas fa-gavel" aria-hidden="true"></i>
+              <div class="ext-btn-content">
+                <span data-i18n="bidfaxTitle">Auction history</span>
+                <small data-i18n="bidfaxDesc">BidFax (Copart &amp; IAAI)</small>
+              </div>
+            </a>
+
+            <a
+              href="javascript:void(0)"
+              id="link-statvin"
+              class="ext-btn"
+              onclick="submitExternalSearch('statvin'); return false;"
+            >
+              <i class="fas fa-car-crash" aria-hidden="true"></i>
+              <div class="ext-btn-content">
+                <span data-i18n="statvinTitle">Salvage search</span>
+                <small data-i18n="statvinDesc">Stat.vin</small>
+              </div>
+            </a>
+
+            <a
+              href="javascript:void(0)"
+              id="link-mdecoder"
+              class="ext-btn"
+              onclick="submitExternalSearch('mdecoder'); return false;"
+            >
+              <i class="fas fa-list" aria-hidden="true"></i>
+              <div class="ext-btn-content">
+                <span data-i18n="factoryDocsTitle">Factory options</span>
+                <small data-i18n="factoryDocsDesc">M-Decoder (S-codes)</small>
+              </div>
+            </a>
+
+            <a
+              href="javascript:void(0)"
+              id="link-bimmerwork"
+              class="ext-btn"
+              onclick="submitExternalSearch('bimmerwork'); return false;"
+            >
+              <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+              <div class="ext-btn-content">
+                <span data-i18n="bimmerWorkTitle">bimmer.work</span>
+                <small data-i18n="bimmerWorkDesc">Alternative decoder</small>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer></footer>
+    <script src="./js/footer.js"></script>
+
+    <script src="./js/vin.js"></script>
+    <script src="./js/live.js?v=2.91"></script>
+  </body>
+</html>
